@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { writeFile } from "node:fs/promises";
+import { lintAgents, renderAgentsLintMarkdown } from "./agentsLint.js";
 import { analyzeTargets } from "./analyze.js";
 import { renderBenchmarkMarkdown, runBenchmark } from "./benchmark.js";
 import { doctorRepo } from "./doctor.js";
@@ -37,6 +38,15 @@ async function main(): Promise<void> {
     const target = String(parsed.flags.target ?? "agents-md");
     const output = target === "skill" ? renderSkill(result) : renderAgentsRules(result);
     await writeOutput(output, parsed.flags.output);
+    return;
+  }
+
+  if (parsed.command === "lint-agents") {
+    const result = await lintAgents(parsed.targets[0] ?? process.cwd());
+    const format = String(parsed.flags.format ?? "markdown");
+    const output = format === "json" ? `${JSON.stringify(result, null, 2)}\n` : renderAgentsLintMarkdown(result);
+    await writeOutput(output, parsed.flags.output);
+    process.exitCode = result.status === "fail" ? 1 : 0;
     return;
   }
 
@@ -277,6 +287,7 @@ Turn failed AI coding-agent runs into reusable rules, skills, and eval evidence.
 Usage:
   trace-to-skill analyze <trace-file-or-dir> [--format markdown|json|sarif] [--output report.md]
   trace-to-skill suggest <trace-file-or-dir> [--target agents-md|skill] [--output AGENTS.generated.md]
+  trace-to-skill lint-agents [repo-dir] [--format markdown|json] [--output report.md]
   trace-to-skill eval <trace-file-or-dir> [--threshold 75] [--format text|json]
   trace-to-skill benchmark [--format markdown|json] [--output docs/BENCHMARK.md]
   trace-to-skill scorecard [repo-dir] [--threshold 85] [--format markdown|json] [--output docs/SCORECARD.md]
@@ -291,6 +302,7 @@ Usage:
 Examples:
   trace-to-skill analyze ./runs
   trace-to-skill suggest ./runs --target skill --output skills/verification-before-completion/SKILL.md
+  trace-to-skill lint-agents .
   trace-to-skill eval ./runs --threshold 80
   trace-to-skill benchmark
   trace-to-skill scorecard .

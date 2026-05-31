@@ -20,6 +20,7 @@ Current proof points:
 - CI-backed TypeScript CLI.
 - Codex-style JSONL parsing.
 - Codex-readiness doctor command for maintainer repositories.
+- Focused AGENTS.md / MCP config linter for repository instruction hygiene.
 - GitHub Action doctor mode with configurable readiness threshold.
 - Pull request comments for Codex readiness scores and recommendations.
 - Self-dogfooding Codex readiness workflow in the repository.
@@ -43,7 +44,7 @@ Current proof points:
 - SARIF output for GitHub code scanning.
 - Before/after eval comparison with keep/revise/reject decisions.
 - One-command repository setup via `trace-to-skill init`.
-- Public release v0.1.24.
+- Public release v0.1.25.
 
 500-character version:
 

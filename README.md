@@ -10,6 +10,7 @@ Turn failed AI coding-agent runs into reusable `AGENTS.md` rules, `SKILL.md` fil
 
 ```bash
 npx github:grnbtqdbyx-create/trace-to-skill doctor .
+npx github:grnbtqdbyx-create/trace-to-skill lint-agents .
 npx github:grnbtqdbyx-create/trace-to-skill analyze ./runs
 npx github:grnbtqdbyx-create/trace-to-skill init --comment --sarif
 npx github:grnbtqdbyx-create/trace-to-skill suggest ./runs --target agents-md
@@ -141,6 +142,15 @@ trace-to-skill doctor . --threshold 85
 trace-to-skill doctor . --format json
 trace-to-skill doctor . --format comment
 ```
+
+Lint `AGENTS.md`, tool-specific agent instruction files, and MCP config risk:
+
+```bash
+trace-to-skill lint-agents .
+trace-to-skill lint-agents . --format json
+```
+
+This focused linter checks whether `AGENTS.md` exists as the canonical instruction source, whether validation commands are discoverable, whether `AGENTS.md` / `CLAUDE.md` / Cursor / Copilot guidance conflicts, and whether MCP configs expose risky capabilities or secrets.
 
 Scaffold a repo:
 
@@ -274,7 +284,7 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v5
-      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.24
+      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.25
         with:
           mode: all
           doctor-threshold: "85"
@@ -323,7 +333,7 @@ Composite action usage:
 
 ```yaml
 - id: trace-to-skill
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.24
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.25
   with:
     mode: all
     doctor-threshold: "85"
@@ -361,7 +371,7 @@ Action outputs:
 
 By default, generated reports are also appended to the GitHub Actions Job Summary. Set `job-summary: "false"` to disable that UI output.
 
-Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to `@v0.1.24` executes that release's checked-out source instead of pulling the default branch at runtime.
+Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to `@v0.1.25` executes that release's checked-out source instead of pulling the default branch at runtime.
 
 ## Codex Skill
 

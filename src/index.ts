@@ -1,3 +1,4 @@
+export { lintAgents, renderAgentsLintMarkdown } from "./agentsLint.js";
 export { analyzeInputs, analyzeTargets } from "./analyze.js";
 export { renderBenchmarkMarkdown, runBenchmark } from "./benchmark.js";
 export { doctorRepo } from "./doctor.js";

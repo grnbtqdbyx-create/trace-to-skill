@@ -3,6 +3,7 @@ import { mkdir, mkdtemp, readFile, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
+import { lintAgents, renderAgentsLintMarkdown } from "../src/agentsLint.js";
 import { analyzeTargets } from "../src/analyze.js";
 import { renderBenchmarkMarkdown, runBenchmark } from "../src/benchmark.js";
 import { doctorRepo } from "../src/doctor.js";
@@ -250,6 +251,34 @@ test("doctorRepo flags missing controls and MCP risk", async () => {
   assert.ok(result.checks.some((check) => check.id === "agent-instructions" && check.status === "fail"));
   assert.ok(result.checks.some((check) => check.id === "license" && check.status === "fail"));
   assert.ok(result.findings.some((finding) => finding.kind === "mcp_risk"));
+});
+
+test("lintAgents passes canonical AGENTS.md and validation controls", async () => {
+  const cwd = await mkdtemp(path.join(os.tmpdir(), "trace-to-skill-agents-lint-ready-"));
+  await writeFile(path.join(cwd, "AGENTS.md"), "Always run npm test before completion.\n", "utf8");
+  await writeFile(path.join(cwd, "package.json"), JSON.stringify({
+    scripts: {
+      test: "node --test"
+    }
+  }), "utf8");
+
+  const result = await lintAgents(cwd);
+  const markdown = renderAgentsLintMarkdown(result);
+
+  assert.equal(result.status, "pass");
+  assert.ok(result.score >= 90);
+  assert.deepEqual(result.instructionFiles, ["AGENTS.md"]);
+  assert.match(markdown, /AGENTS\.md Lint Report/);
+});
+
+test("lintAgents fails missing AGENTS.md and conflicting instruction files", async () => {
+  const result = await lintAgents("fixtures/instruction-drift");
+
+  assert.equal(result.status, "fail");
+  assert.ok(result.score < 90);
+  assert.ok(result.instructionFiles.includes("AGENTS.md"));
+  assert.ok(result.instructionFiles.includes("CLAUDE.md"));
+  assert.ok(result.findings.some((finding) => finding.kind === "ignored_instruction"));
 });
 
 test("composite action exposes Codex readiness doctor mode", async () => {

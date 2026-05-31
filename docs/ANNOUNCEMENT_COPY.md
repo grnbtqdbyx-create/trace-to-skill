@@ -30,6 +30,7 @@ The problem: agents often repeat the same workflow failures: claiming success wi
 trace-to-skill checks repo readiness and scans agent traces/logs to generate:
 
 - a Codex Readiness Doctor score
+- a focused AGENTS.md / MCP config linter
 - a GitHub Action readiness gate
 - a PR comment with the readiness score and top recommendations
 - a self-dogfooding workflow for its own Codex readiness
@@ -56,6 +57,7 @@ It is deterministic and local-first right now; no runtime network calls.
 Example:
 
 npx github:grnbtqdbyx-create/trace-to-skill doctor .
+npx github:grnbtqdbyx-create/trace-to-skill lint-agents .
 npx github:grnbtqdbyx-create/trace-to-skill doctor . --threshold 85
 npx github:grnbtqdbyx-create/trace-to-skill benchmark
 npx github:grnbtqdbyx-create/trace-to-skill scorecard .

@@ -16,26 +16,32 @@ Use this skill to produce deterministic readiness evidence before broad agent au
    npx github:grnbtqdbyx-create/trace-to-skill scorecard . --threshold 85
    ```
 
-3. If the task came from a GitHub event payload, scan untrusted event text:
+3. Lint maintainer-controlled agent instructions and MCP config:
+
+   ```bash
+   npx github:grnbtqdbyx-create/trace-to-skill lint-agents .
+   ```
+
+4. If the task came from a GitHub event payload, scan untrusted event text:
 
    ```bash
    npx github:grnbtqdbyx-create/trace-to-skill guard-github-event "$GITHUB_EVENT_PATH"
    ```
 
-4. If the repository has agent run traces, analyze them:
+5. If the repository has agent run traces, analyze them:
 
    ```bash
    npx github:grnbtqdbyx-create/trace-to-skill analyze ./runs
    npx github:grnbtqdbyx-create/trace-to-skill suggest ./runs --target agents-md
    ```
 
-5. If the repository lacks workflows, preview setup without writing files first:
+6. If the repository lacks workflows, preview setup without writing files first:
 
    ```bash
    npx github:grnbtqdbyx-create/trace-to-skill init --comment --sarif --dry-run
    ```
 
-6. Report the score, failing checks, critical findings, and the exact validation commands run.
+7. Report the score, failing checks, critical findings, and the exact validation commands run.
 
 ## Review Rules
 
@@ -48,6 +54,7 @@ Use this skill to produce deterministic readiness evidence before broad agent au
 ## Evidence Required
 
 - `trace-to-skill scorecard` result
+- `trace-to-skill lint-agents` result
 - `trace-to-skill guard-github-event` result when a GitHub event payload is available
 - Any `trace-to-skill analyze` findings used to justify new rules
 - Commands run and whether they passed or failed
