@@ -56,6 +56,14 @@ Common signals include `Copy as Markdown` disappearing, Copy menus that only exp
 
 The fix is to capture app version, OS, surface, exact Copy menu items or paste action, source text size, generated attachment name/path/size, visible editor text before submit, `pasted-text-attachments.json` or fileAttachments metadata, command path such as `/goal`, whether promptRaw/composer text differs from attached content, preview/edit/revert actions tried, clipboard payload format, and whether paste-as-text, opt-out, explicit file reference, new thread, or downgrade changes behavior.
 
+## Codex Deeplink Launch
+
+Codex deeplink, OAuth callback, notification, browser-extension, mobile pairing, and CLI app-open routes can regress when external activation payloads are treated as Electron app paths or ordinary arguments instead of Codex routes.
+
+Common signals include `codex://oauth_callback?code=...` failing after browser auth succeeds, `Unable to find Electron app`, `Cannot find module ...\app\oauth_callback?code=...`, Windows toast `type=click&tag=...` activation opening an Electron error, AppX/MSIX protocol registration evidence such as `AppUserModelID` or `DelegateExecute`, mobile QR/deeplink setup staying on `Waiting for desktop`, and `codex app .` focusing the app without switching workspace or opening a thread.
+
+The fix is to capture app/CLI/extension version, OS/build, install source, package id/path, affected surface, exact redacted URI shape, browser and connector/plugin name, error dialog text, whether the app was already running, AppX/MSIX protocol registration evidence, HKCU/HKCR `codex` keys, command-line arguments, repair/reinstall/re-register attempts, and whether manual `codex://test` or `Start-Process` reproduces.
+
 ## Codex Approval Friction
 
 Codex approval UX can fail even when the sandbox itself works. The common pattern is that a user chooses `Approve for this session`, `Always`, or an MCP/tool trust setting, but Codex keeps asking for approval, makes the user babysit every step, or pushes them toward `Full Access` just to get useful work done.

@@ -27,6 +27,7 @@ Runtime: Node.js 20+
 - Codex file tree and workspace navigation UI failures such as `View > Toggle File Tree` doing nothing, missing folder icons, stale floating file panels, and built-in preview failures
 - Codex Thinking or Working hangs after accepted turns, successful local tools, or open Responses streams with no streamed assistant follow-up
 - Codex clipboard, copy/export, long paste, and generated `Pasted text.txt` attachment regressions that break prompt, `/goal`, preview/edit, or support-report workflows
+- Codex deeplink, OAuth callback, notification click, browser-extension activation, mobile pairing, and `codex app <path>` launch regressions
 - Codex token-burn and usage-drain failures such as background `write_stdin` polling, idle app usage, compaction tax, retry/tool loops, cached-token-heavy turns, fast-mode drift, subagent fan-out, and unclear usage attribution
 - Codex usage reset schedule drift such as weekly reset dates moving, `reset_at` jumping, saved usage disappearing, outage compensation resets changing the anchor, and `/status` disagreeing with enforcement
 - Codex usage evidence packaging for scattered `/status`, reset-table, usage-limit, and token-total snippets
@@ -68,6 +69,7 @@ npx trace-to-skill doctor .
 npx trace-to-skill demo
 npx trace-to-skill demo thinking-hang
 npx trace-to-skill demo clipboard-attachment
+npx trace-to-skill demo deeplink-launch
 npx trace-to-skill lint-agents .
 npx trace-to-skill guard-github-event "$GITHUB_EVENT_PATH"
 npx trace-to-skill guard-patch ./change.patch --root .
@@ -89,7 +91,7 @@ npx trace-to-skill init --comment --sarif
 ## GitHub Action
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.61
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.62
   with:
     mode: all
     doctor-threshold: "85"
@@ -169,6 +171,11 @@ npx trace-to-skill init --comment --sarif
 - Codex Pasted text.txt attachment preview edit
 - Codex long pasted prompt auto attachment
 - Codex /goal ignores Pasted text.txt fileAttachments
+- Codex deeplink OAuth callback fails
+- Codex codex://oauth_callback Unable to find Electron app
+- Codex Windows toast type=click&tag launches Electron error
+- Codex AppUserModelID DelegateExecute protocol registration
+- Codex codex app path only focuses workspace
 - OpenAI Codex issue report from failed trace
 - Codex bug report evidence checklist
 - Codex token burn write_stdin background polling

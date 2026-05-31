@@ -260,6 +260,27 @@ const RULES: RuleDefinition[] = [
     suggestedSkill: "codex-clipboard-attachment-triage"
   },
   {
+    kind: "codex_deeplink_launch",
+    severity: "high",
+    title: "Codex deeplink, OAuth callback, or external launch regression",
+    why: "Codex OAuth, notification, browser-extension, mobile pairing, and CLI app-open flows depend on external activation routing; when callback payloads are treated as Electron app paths, users cannot connect services, open workspaces, or route notifications back to the right thread.",
+    patterns: [
+      /\bcodex:\/\/(?:oauth_callback|test|\?type=action|\?type=click|\/\?type=click|[^\s]*)\b.{0,260}\b(Unable to find Electron app|Cannot find module|Error launching app|fails?|failed|does not handle|opens? an Electron error)\b/i,
+      /\b(Unable to find Electron app|Cannot find module|Error launching app)\b.{0,260}\b(codex:\/\/|oauth_callback|type=click|tag=|type=action|WindowsApps|OpenAI\.Codex|app\\oauth_callback|\?code=|\?state=)\b/i,
+      /\boauth_callback\b.{0,260}\b(Unable to find Electron app|Cannot find module|codex:\/\/|callback fails?|GitHub authentication succeeds|OAuth completes|connector authorization cannot complete)\b/i,
+      /\b(GitHub|Gmail|Slack|Supabase|Netlify|connector|plugin)\b.{0,220}\b(OAuth|authorization|authentication|connect)\b.{0,220}\b(codex:\/\/|callback fails?|Unable to find Electron app|Cannot find module|does not complete)\b/i,
+      /\b(type=click&tag=|notification activation|toast notification|Windows toast|notification click)\b.{0,240}\b(Unable to find Electron app|Cannot find module|Electron error|app path|interpreted as|opens? an Electron error)\b/i,
+      /\bStart-Process\b.{0,120}\bcodex:\/\/\??(?:\?type=click|type=action|test|oauth_callback)\b/i,
+      /\b(AppX|MSIX|AppUserModelID|DelegateExecute|HKCU\\Software\\Classes\\codex|HKCR\\AppX|windows\.protocol)\b.{0,240}\b(protocol activation|protocol registration|windows\.protocol|AppUserModelID|DelegateExecute|codex:\/\/|oauth_callback|callback|deep[- ]?link|re-register|URL association|handler)\b/i,
+      /`codex\s+app\s+(?:\.|[^`\s]+)`.{0,180}\b(no longer opens|only launches|only focuses|does not switch|does not open|doesn'?t switch|doesn'?t open|workspace|thread)\b/i,
+      /\b(Codex mobile|mobile pairing|QR|deeplink|deep link)\b.{0,220}\b(unhandled (?:link|deeplink|deep link)|callback|deeplink setup|deep link setup|does not open|fails?)\b/i,
+      /\b(external activation|protocol handling|deep[- ]?link activation|URL association)\b.{0,220}\b(fails?|broken|interpreted as an app path|Electron app path|raw URI|normal argument)\b/i
+    ],
+    suggestedRule:
+      "When reporting Codex deeplink or external-launch regressions, capture Codex app/CLI/extension version, OS/build, install source, package id/path, affected surface (OAuth callback, notification click, browser extension, mobile pairing, `codex app <path>`), exact URI or redacted callback shape, browser used, connector/plugin name, error dialog text, whether the app was already running, AppX/MSIX/protocol registration evidence such as AppUserModelID, DelegateExecute, HKCU/HKCR `codex` keys, command-line arguments seen by Codex, re-registration/repair/reinstall attempts, and whether a manual `codex://test` or `Start-Process` repro behaves the same.",
+    suggestedSkill: "codex-deeplink-launch-triage"
+  },
+  {
     kind: "codex_approval_friction",
     severity: "high",
     title: "Codex approval persistence or MCP approval friction",

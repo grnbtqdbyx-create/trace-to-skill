@@ -1,10 +1,10 @@
 # trace-to-skill Demo
 
-Scenario: **Codex clipboard and pasted-text attachment regression**
+Scenario: **Codex deeplink and OAuth callback launch regression**
 
-Copy as Markdown, long-paste conversion, or generated Pasted text.txt attachments break prompt and report workflows.
+OAuth callbacks, notification clicks, mobile links, or `codex app <path>` external activation fail to route into Codex.
 
-Fixture: `fixtures/codex-clipboard-attachment.md`
+Fixture: `fixtures/codex-deeplink-launch.md`
 
 This is a packaged public fixture, so you can try the project without collecting a private trace first.
 
@@ -12,9 +12,9 @@ This is a packaged public fixture, so you can try the project without collecting
 
 # OpenAI Codex Issue Triage Report
 
-Score: **75/100**
+Score: **50/100**
 
-Likely failure class: **Codex clipboard, paste, or attachment workflow regression (codex_clipboard_attachment, high)**
+Likely failure class: **Codex deeplink, OAuth callback, or external launch regression (codex_deeplink_launch, high)**
 
 Agent workflow needs clearer verification, instruction, or security hardening before broad reuse.
 
@@ -23,25 +23,30 @@ Agent workflow needs clearer verification, instruction, or security hardening be
 ```md
 ### What happened?
 
-trace-to-skill detected Codex clipboard, paste, or attachment workflow regression (codex_clipboard_attachment). Copy/export, long-paste conversion, and generated `Pasted text.txt` attachment regressions break the handoff loop maintainers use to preserve Codex context, file high-signal issues, and turn large prompts into direct instructions.
+trace-to-skill detected Codex deeplink, OAuth callback, or external launch regression (codex_deeplink_launch). Codex OAuth, notification, browser-extension, mobile pairing, and CLI app-open flows depend on external activation routing; when callback payloads are treated as Electron app paths, users cannot connect services, open workspaces, or route notifications back to the right thread.
 
 ### Detected failure class
 
-- codex_clipboard_attachment: Codex clipboard, paste, or attachment workflow regression (high)
+- codex_deeplink_launch: Codex deeplink, OAuth callback, or external launch regression (high)
 
 ### Evidence
 
-#### Codex clipboard, paste, or attachment workflow regression
-- fixtures/codex-clipboard-attachment.md:12 - - After updating to Codex Desktop 26.527, `Copy as Markdown` disappeared from the Copy submenu.
-- fixtures/codex-clipboard-attachment.md:13 - - The Copy submenu only shows `Copy working directory`, `Copy session ID`, and `Copy deeplink`, which copies metadata instead of the actual Codex session or chat transcript in Markdown.
-- fixtures/codex-clipboard-attachment.md:14 - - Long pasted structured implementation prompts are automatically converted into `.txt` attachments named `Pasted text.txt`.
-- fixtures/codex-clipboard-attachment.md:15 - - Users need options such as `Paste as text`, `Paste as attachment`, `Convert back to prompt text`, or `Auto-convert long pasted text to attachments: Off`.
-- fixtures/codex-clipboard-attachment.md:17 - - A `/goal` submit path ignored a non-empty `Pasted text.txt` attachment and treated the goal objective as empty because the visible editor text / `promptRaw` / `composer.getText()` did not include `fileAttachments`.
-- fixtures/codex-clipboard-attachment.md:18 - - The generated pasted-text attachment existed on disk under `%USERPROFILE%\.codex\attachments\pasted-text-attachments.json`, with non-empty `pasted-text.txt` files such as 14963 bytes and 28029 bytes.
+#### Codex deeplink, OAuth callback, or external launch regression
+- fixtures/codex-deeplink-launch.md:3 - Issue cluster: Codex external activation fails when OAuth callbacks, notification clicks, browser extension invocations, mobile links, or CLI app-open commands try to route back into Codex.
+- fixtures/codex-deeplink-launch.md:12 - - GitHub authentication succeeds in the browser, but `codex://oauth_callback?code=...` fails with `Error launching app`.
+- fixtures/codex-deeplink-launch.md:13 - - The error says `Unable to find Electron app at C:\Program Files\WindowsApps\OpenAI.Codex_26.527.3686.0_x64__2p2nqsd0c76g0\app\oauth_callback?code=...`.
+- fixtures/codex-deeplink-launch.md:14 - - The same dialog says `Cannot find module C:\Program Files\WindowsApps\OpenAI.Codex_26.527.3686.0_x64__2p2nqsd0c76g0\app\oauth_callback?code=...`.
+- fixtures/codex-deeplink-launch.md:15 - - `Start-Process "codex://test"` reproduces the protocol route problem, and `Start-Process "codex://?type=click&tag=after-successful-reregister-test"` opens the same launch dialog.
+- fixtures/codex-deeplink-launch.md:16 - - Clicking a Windows toast notification opens an Electron error where `type=click&tag=<notification-tag>` is interpreted as an app path.
+
+#### Codex remote-control route health failure
+- fixtures/codex-deeplink-launch.md:21 - - Related mobile reports show QR/deeplink setup resolving to an unhandled link or leaving the client on `Waiting for desktop`.
+- fixtures/codex-deeplink-launch.md:27 - - affected surface: OAuth callback, notification click, Chrome extension, mobile pairing, or `codex app <path>`
 
 ### Diagnostics to attach
 
-- When reporting Codex clipboard, paste, or attachment regressions, capture app/CLI/extension version, OS, surface (Desktop, VS Code, TUI, mobile), exact copy menu items or paste action, source text size and whether it crossed an auto-attachment threshold, visible editor text before submit, generated attachment name/path/size, `pasted-text-attachments.json` or fileAttachments metadata if available, command path such as `/goal`, whether promptRaw/composer text differs from attachments, preview/edit/revert actions tried, clipboard payload format, screenshots or short screen recording, and whether paste-as-text, opt-out, new thread, downgrade, or explicit file reference changes behavior.
+- When reporting Codex deeplink or external-launch regressions, capture Codex app/CLI/extension version, OS/build, install source, package id/path, affected surface (OAuth callback, notification click, browser extension, mobile pairing, `codex app <path>`), exact URI or redacted callback shape, browser used, connector/plugin name, error dialog text, whether the app was already running, AppX/MSIX/protocol registration evidence such as AppUserModelID, DelegateExecute, HKCU/HKCR `codex` keys, command-line arguments seen by Codex, re-registration/repair/reinstall attempts, and whether a manual `codex://test` or `Start-Process` repro behaves the same.
+- When Codex remote-control or mobile routing fails, capture desktop/app/CLI versions, mobile OS/app version, host id, remote-control status, listener pid/executable path, bound port, cache directory id, helper bundle completeness, active server_name/enrollment, workspace root, last mobile command id, and whether re-pairing or restarting the listener changes the route.
 
 ### Privacy
 
@@ -50,25 +55,39 @@ trace-to-skill detected Codex clipboard, paste, or attachment workflow regressio
 
 ## Findings
 
-### 1. Codex clipboard, paste, or attachment workflow regression
+### 1. Codex deeplink, OAuth callback, or external launch regression
 
 Severity: **high**
 
-Copy/export, long-paste conversion, and generated `Pasted text.txt` attachment regressions break the handoff loop maintainers use to preserve Codex context, file high-signal issues, and turn large prompts into direct instructions.
+Codex OAuth, notification, browser-extension, mobile pairing, and CLI app-open flows depend on external activation routing; when callback payloads are treated as Electron app paths, users cannot connect services, open workspaces, or route notifications back to the right thread.
 
 Evidence:
-- `fixtures/codex-clipboard-attachment.md:12` - After updating to Codex Desktop 26.527, `Copy as Markdown` disappeared from the Copy submenu.
-- `fixtures/codex-clipboard-attachment.md:13` - The Copy submenu only shows `Copy working directory`, `Copy session ID`, and `Copy deeplink`, which copies metadata instead of the actual Codex session or chat transcript in Markdown.
-- `fixtures/codex-clipboard-attachment.md:14` - Long pasted structured implementation prompts are automatically converted into `.txt` attachments named `Pasted text.txt`.
-- `fixtures/codex-clipboard-attachment.md:15` - Users need options such as `Paste as text`, `Paste as attachment`, `Convert back to prompt text`, or `Auto-convert long pasted text to attachments: Off`.
-- `fixtures/codex-clipboard-attachment.md:17` - A `/goal` submit path ignored a non-empty `Pasted text.txt` attachment and treated the goal objective as empty because the visible editor text / `promptRaw` / `composer.getText()` did not include `fileAttachments`.
-- `fixtures/codex-clipboard-attachment.md:18` - The generated pasted-text attachment existed on disk under `%USERPROFILE%\.codex\attachments\pasted-text-attachments.json`, with non-empty `pasted-text.txt` files such as 14963 bytes and 28029 bytes.
-- `fixtures/codex-clipboard-attachment.md:19` - Clicking or right-clicking `Pasted text.txt` opens Finder or an external IDE, or only generic context menu items such as `Look Up`, `Search with Google`, and `Copy`.
-- `fixtures/codex-clipboard-attachment.md:20` - The attachment cannot be previewed, edited, expanded, reverted to inline prompt text, or replaced inside Codex before sending.
+- `fixtures/codex-deeplink-launch.md:3` Issue cluster: Codex external activation fails when OAuth callbacks, notification clicks, browser extension invocations, mobile links, or CLI app-open commands try to route back into Codex.
+- `fixtures/codex-deeplink-launch.md:12` - GitHub authentication succeeds in the browser, but `codex://oauth_callback?code=...` fails with `Error launching app`.
+- `fixtures/codex-deeplink-launch.md:13` - The error says `Unable to find Electron app at C:\Program Files\WindowsApps\OpenAI.Codex_26.527.3686.0_x64__2p2nqsd0c76g0\app\oauth_callback?code=...`.
+- `fixtures/codex-deeplink-launch.md:14` - The same dialog says `Cannot find module C:\Program Files\WindowsApps\OpenAI.Codex_26.527.3686.0_x64__2p2nqsd0c76g0\app\oauth_callback?code=...`.
+- `fixtures/codex-deeplink-launch.md:15` - `Start-Process "codex://test"` reproduces the protocol route problem, and `Start-Process "codex://?type=click&tag=after-successful-reregister-test"` opens the same launch dialog.
+- `fixtures/codex-deeplink-launch.md:16` - Clicking a Windows toast notification opens an Electron error where `type=click&tag=<notification-tag>` is interpreted as an app path.
+- `fixtures/codex-deeplink-launch.md:17` - On macOS, `codex app .` only focuses Codex Desktop and does not switch to the requested workspace or open a new thread.
+- `fixtures/codex-deeplink-launch.md:19` - AppX protocol registration appears present: `windows.protocol`, `AppUserModelID OpenAI.Codex_2p2nqsd0c76g0!App`, `PackageRelativeExecutable app\Codex.exe`, and `DelegateExecute {A56A841F-E974-45C1-8001-7E3F8A085917}`.
 
 Suggested rule:
 
-> When reporting Codex clipboard, paste, or attachment regressions, capture app/CLI/extension version, OS, surface (Desktop, VS Code, TUI, mobile), exact copy menu items or paste action, source text size and whether it crossed an auto-attachment threshold, visible editor text before submit, generated attachment name/path/size, `pasted-text-attachments.json` or fileAttachments metadata if available, command path such as `/goal`, whether promptRaw/composer text differs from attachments, preview/edit/revert actions tried, clipboard payload format, screenshots or short screen recording, and whether paste-as-text, opt-out, new thread, downgrade, or explicit file reference changes behavior.
+> When reporting Codex deeplink or external-launch regressions, capture Codex app/CLI/extension version, OS/build, install source, package id/path, affected surface (OAuth callback, notification click, browser extension, mobile pairing, `codex app <path>`), exact URI or redacted callback shape, browser used, connector/plugin name, error dialog text, whether the app was already running, AppX/MSIX/protocol registration evidence such as AppUserModelID, DelegateExecute, HKCU/HKCR `codex` keys, command-line arguments seen by Codex, re-registration/repair/reinstall attempts, and whether a manual `codex://test` or `Start-Process` repro behaves the same.
+
+### 2. Codex remote-control route health failure
+
+Severity: **high**
+
+Codex mobile, SSH remote, and desktop remote-control failures can look connected while commands route through stale listeners, stale enrollments, missing helper bundles, or mismatched workspace/session state.
+
+Evidence:
+- `fixtures/codex-deeplink-launch.md:21` - Related mobile reports show QR/deeplink setup resolving to an unhandled link or leaving the client on `Waiting for desktop`.
+- `fixtures/codex-deeplink-launch.md:27` - affected surface: OAuth callback, notification click, Chrome extension, mobile pairing, or `codex app <path>`
+
+Suggested rule:
+
+> When Codex remote-control or mobile routing fails, capture desktop/app/CLI versions, mobile OS/app version, host id, remote-control status, listener pid/executable path, bound port, cache directory id, helper bundle completeness, active server_name/enrollment, workspace root, last mobile command id, and whether re-pairing or restarting the listener changes the route.
 
 
 ## Reporter Notes
@@ -86,6 +105,7 @@ Suggested rule:
 - `approval-friction`: Repeated approval prompts, Approve for this session misses, and noisy trusted MCP tool approvals.
 - `latency-regression`: Fast mode feels like Standard, with long thinking, search, read, or compaction stalls.
 - `thinking-hang`: A turn or tool call completes, but the session stays on Thinking or Working with no streamed follow-up.
+- `clipboard-attachment`: Copy as Markdown, long-paste conversion, or generated Pasted text.txt attachments break prompt and report workflows.
 - `token-burn`: Usage drains from background polling, idle activity, compaction loops, retries, or cached-heavy turns.
 - `patch-overwrite`: `apply_patch` accepts `*** Add File` for an existing path, turning a create operation into a silent overwrite.
 - `sensitive-files`: Secrets, local credentials, production env files, or private databases enter agent context.
@@ -100,6 +120,7 @@ trace-to-skill demo windows-helper-path
 trace-to-skill demo patch-overwrite
 trace-to-skill demo thinking-hang
 trace-to-skill demo clipboard-attachment
+trace-to-skill demo deeplink-launch
 trace-to-skill demo file-tree-ui
 trace-to-skill demo usage-reset-drift
 ```

@@ -18,6 +18,7 @@ export type FindingKind =
   | "codex_latency_regression"
   | "codex_thinking_hang"
   | "codex_clipboard_attachment"
+  | "codex_deeplink_launch"
   | "codex_approval_friction"
   | "sandbox_permission"
   | "codex_windows_helper_path"

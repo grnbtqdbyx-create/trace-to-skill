@@ -89,6 +89,12 @@ const BENCHMARK_CASES: BenchmarkCaseDefinition[] = [
     expectedKinds: ["codex_clipboard_attachment", "weak_evidence"]
   },
   {
+    id: "codex-deeplink-launch",
+    title: "Codex deeplink, OAuth callback, and external launch regression",
+    fixture: "fixtures/codex-deeplink-launch.md",
+    expectedKinds: ["codex_deeplink_launch", "weak_evidence"]
+  },
+  {
     id: "codex-approval-friction",
     title: "Codex approval persistence and MCP approval friction",
     fixture: "fixtures/codex-approval-friction.md",

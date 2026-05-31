@@ -55,6 +55,12 @@ const DEMO_SCENARIOS: DemoScenario[] = [
     description: "Copy as Markdown, long-paste conversion, or generated Pasted text.txt attachments break prompt and report workflows."
   },
   {
+    id: "deeplink-launch",
+    title: "Codex deeplink and OAuth callback launch regression",
+    fixture: "fixtures/codex-deeplink-launch.md",
+    description: "OAuth callbacks, notification clicks, mobile links, or `codex app <path>` external activation fail to route into Codex."
+  },
+  {
     id: "token-burn",
     title: "Codex token burn",
     fixture: "fixtures/codex-token-burn.md",
@@ -142,6 +148,7 @@ export function renderDemoMarkdown(result: DemoResult): string {
     "trace-to-skill demo patch-overwrite",
     "trace-to-skill demo thinking-hang",
     "trace-to-skill demo clipboard-attachment",
+    "trace-to-skill demo deeplink-launch",
     "trace-to-skill demo file-tree-ui",
     "trace-to-skill demo usage-reset-drift",
     "```",
@@ -167,6 +174,7 @@ export function renderDemoScenarioList(scenarios = listDemoScenarios()): string 
     "trace-to-skill demo latency-regression",
     "trace-to-skill demo thinking-hang",
     "trace-to-skill demo clipboard-attachment",
+    "trace-to-skill demo deeplink-launch",
     "trace-to-skill demo --list",
     "```",
     ""

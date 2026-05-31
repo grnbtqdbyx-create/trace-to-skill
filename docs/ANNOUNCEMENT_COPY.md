@@ -70,6 +70,7 @@ trace-to-skill checks repo readiness and scans agent traces/logs to generate:
 - Codex token-burn attribution for background polling, idle app usage, compaction tax, retry loops, cached-token-heavy turns, and fast-mode/subagent drift
 - Codex usage reset drift detection for moving weekly reset anchors, lost saved usage, and `/status` versus dashboard reset discrepancies
 - a `usage-evidence` command that turns scattered `/status`, reset-table, usage-limit, and token-total snippets into a single Codex rate-limit report
+- Codex deeplink/OAuth launch detection for `codex://oauth_callback`, notification `type=click&tag`, AppX/MSIX protocol evidence, mobile links, and `codex app <path>` routing regressions
 - Codex resource-leak detection for high CPU/GPU/RAM, orphaned shell snapshots, renderer/helper loops, and thinking-animation GPU reports
 - Codex quota mismatch detection for usage-limit, account-switching, reset-time, and rate-limit evidence
 - sensitive-file access detection for `.env`, private keys, package auth files, cloud credentials, local databases, and production secret manifests entering agent context
@@ -86,6 +87,7 @@ Example:
 npx trace-to-skill demo
 npx trace-to-skill demo thinking-hang
 npx trace-to-skill demo clipboard-attachment
+npx trace-to-skill demo deeplink-launch
 npx trace-to-skill init --comment --sarif
 npx trace-to-skill doctor .
 npx trace-to-skill lint-agents .
