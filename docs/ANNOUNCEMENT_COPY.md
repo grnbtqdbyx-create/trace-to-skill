@@ -56,18 +56,19 @@ It is deterministic and local-first right now; no runtime network calls.
 
 Example:
 
-npx github:grnbtqdbyx-create/trace-to-skill doctor .
-npx github:grnbtqdbyx-create/trace-to-skill lint-agents .
-npx github:grnbtqdbyx-create/trace-to-skill doctor . --threshold 85
-npx github:grnbtqdbyx-create/trace-to-skill benchmark
-npx github:grnbtqdbyx-create/trace-to-skill scorecard .
-npx github:grnbtqdbyx-create/trace-to-skill scorecard-comment . --dry-run
-npx github:grnbtqdbyx-create/trace-to-skill guard-github-event "$GITHUB_EVENT_PATH"
-npx github:grnbtqdbyx-create/trace-to-skill doctor-comment . --threshold 85 --dry-run
+npx trace-to-skill doctor .
+npx trace-to-skill lint-agents .
+npx trace-to-skill doctor . --threshold 85
+npx trace-to-skill benchmark
+npx trace-to-skill scorecard .
+npx trace-to-skill scorecard-comment . --dry-run
+npx trace-to-skill guard-github-event "$GITHUB_EVENT_PATH"
+npx trace-to-skill doctor-comment . --threshold 85 --dry-run
 
 I’m especially looking for anonymized failed agent traces and feedback from OSS maintainers who review AI-generated PRs.
 
 Repo: https://github.com/grnbtqdbyx-create/trace-to-skill
+npm: https://www.npmjs.com/package/trace-to-skill
 ```
 
 ## X / LinkedIn

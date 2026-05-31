@@ -29,7 +29,7 @@ Secondary headline:
 - [x] Apache-2.0 license
 - [x] CI passing
 - [x] README with example output
-- [ ] npm package available
+- [x] npm package available
 - [x] GitHub Action example
 - [x] demo traces for failed runs, safe runs, Codex JSONL, MCP risk, and instruction drift
 - [x] first issue labels and roadmap issues
@@ -58,16 +58,18 @@ Secondary headline:
 ## Current Public Proof
 
 - Repository: https://github.com/grnbtqdbyx-create/trace-to-skill
+- npm: https://www.npmjs.com/package/trace-to-skill
 - Latest release: https://github.com/grnbtqdbyx-create/trace-to-skill/releases/tag/v0.1.26
 - CI: passing on `main`
 - Profile README: https://github.com/grnbtqdbyx-create/grnbtqdbyx-create
 
-## Blocked Until Account Action
+## npm Install
 
-Npm publication is blocked until `npm adduser` is completed locally. After authentication:
+The package is published on npm:
 
 ```bash
-npm publish --access public
+npx trace-to-skill doctor .
+npm install -D trace-to-skill
 ```
 
 ## Non-Spam Rule

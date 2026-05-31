@@ -7,7 +7,7 @@ Use this guide when you want to add `trace-to-skill` to an open-source repositor
 Run the initializer:
 
 ```bash
-npx github:grnbtqdbyx-create/trace-to-skill init --comment --sarif
+npx trace-to-skill init --comment --sarif
 ```
 
 This creates:

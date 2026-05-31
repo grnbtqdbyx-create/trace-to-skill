@@ -9,18 +9,18 @@
 Turn failed AI coding-agent runs into reusable `AGENTS.md` rules, `SKILL.md` files, and eval evidence.
 
 ```bash
-npx github:grnbtqdbyx-create/trace-to-skill doctor .
-npx github:grnbtqdbyx-create/trace-to-skill lint-agents .
-npx github:grnbtqdbyx-create/trace-to-skill analyze ./runs
-npx github:grnbtqdbyx-create/trace-to-skill init --comment --sarif
-npx github:grnbtqdbyx-create/trace-to-skill suggest ./runs --target agents-md
-npx github:grnbtqdbyx-create/trace-to-skill eval ./runs --threshold 80
-npx github:grnbtqdbyx-create/trace-to-skill benchmark
-npx github:grnbtqdbyx-create/trace-to-skill scorecard .
-npx github:grnbtqdbyx-create/trace-to-skill scorecard-comment . --dry-run
-npx github:grnbtqdbyx-create/trace-to-skill guard-github-event "$GITHUB_EVENT_PATH"
-npx github:grnbtqdbyx-create/trace-to-skill comment ./runs --dry-run
-npx github:grnbtqdbyx-create/trace-to-skill compare --before ./runs/before --after ./runs/after
+npx trace-to-skill doctor .
+npx trace-to-skill lint-agents .
+npx trace-to-skill analyze ./runs
+npx trace-to-skill init --comment --sarif
+npx trace-to-skill suggest ./runs --target agents-md
+npx trace-to-skill eval ./runs --threshold 80
+npx trace-to-skill benchmark
+npx trace-to-skill scorecard .
+npx trace-to-skill scorecard-comment . --dry-run
+npx trace-to-skill guard-github-event "$GITHUB_EVENT_PATH"
+npx trace-to-skill comment ./runs --dry-run
+npx trace-to-skill compare --before ./runs/before --after ./runs/after
 ```
 
 AI coding agents are getting good enough to change real repositories, but they still repeat the same workflow mistakes: claiming success without tests, ignoring repo instructions, over-editing, inventing files, leaking secrets into traces, or enabling risky MCP tools.
@@ -112,22 +112,22 @@ Trace analysis detects run-level failures:
 
 ## Installation
 
-The GitHub release is available now:
+Run from npm:
 
 ```bash
-npx github:grnbtqdbyx-create/trace-to-skill analyze ./runs
+npx trace-to-skill analyze ./runs
 ```
 
-After npm publication:
+Or install in a repository:
 
 ```bash
 npm install -D trace-to-skill
 ```
 
-or:
+GitHub source installs also work:
 
 ```bash
-npx trace-to-skill analyze ./runs
+npx github:grnbtqdbyx-create/trace-to-skill analyze ./runs
 ```
 
 Requires Node.js 20+.
@@ -316,15 +316,15 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: 20
-      - run: npx github:grnbtqdbyx-create/trace-to-skill analyze ./runs --output agent-learning-report.md
-      - run: npx github:grnbtqdbyx-create/trace-to-skill comment ./runs --token "${{ github.token }}"
-      - run: npx github:grnbtqdbyx-create/trace-to-skill eval ./runs --threshold 80
+      - run: npx trace-to-skill analyze ./runs --output agent-learning-report.md
+      - run: npx trace-to-skill comment ./runs --token "${{ github.token }}"
+      - run: npx trace-to-skill eval ./runs --threshold 80
 ```
 
 Code scanning / SARIF upload:
 
 ```yaml
-- run: npx github:grnbtqdbyx-create/trace-to-skill analyze ./runs --format sarif --output trace-to-skill.sarif
+- run: npx trace-to-skill analyze ./runs --format sarif --output trace-to-skill.sarif
 - uses: github/codeql-action/upload-sarif@v4
   with:
     sarif_file: trace-to-skill.sarif

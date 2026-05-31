@@ -4,7 +4,7 @@
   "description": "Turn failed AI coding-agent runs into reusable AGENTS.md rules, SKILL.md files, and eval evidence.",
   "type": "module",
   "bin": {
-    "trace-to-skill": "./dist/src/cli.js"
+    "trace-to-skill": "dist/src/cli.js"
   },
   "files": [
     "dist/src",
