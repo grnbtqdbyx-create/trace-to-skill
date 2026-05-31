@@ -26,7 +26,7 @@ import { redactTargets, redactText } from "../src/redact.js";
 import { renderAgentsRules, renderCodexIssueReport, renderComparison, renderDoctorPrComment, renderPrComment, renderSarif, renderSkill } from "../src/report.js";
 import { renderScorecardMarkdown, renderScorecardPrComment, runScorecard } from "../src/scorecard.js";
 import { auditCodexSessions, renderSessionAuditMarkdown } from "../src/sessionAudit.js";
-import { auditSensitivePaths, renderSensitiveAuditMarkdown } from "../src/sensitiveAudit.js";
+import { auditSensitivePaths, renderSensitiveAuditMarkdown, renderSensitiveIgnoreFile } from "../src/sensitiveAudit.js";
 import { buildUsageEvidence, buildUsageEvidenceFromInputs, renderUsageEvidenceMarkdown } from "../src/usageEvidence.js";
 
 const execFileAsync = promisify(execFile);
@@ -801,6 +801,7 @@ test("auditSensitivePaths reports sensitive paths without reading file contents"
 
   const result = await auditSensitivePaths(cwd);
   const markdown = renderSensitiveAuditMarkdown(result);
+  const codexIgnore = renderSensitiveIgnoreFile(result, "codexignore");
   const kinds = result.findings.map((finding) => finding.kind);
   const serialized = JSON.stringify(result);
 
@@ -814,6 +815,12 @@ test("auditSensitivePaths reports sensitive paths without reading file contents"
   assert.ok(kinds.includes("sensitive_symlink"));
   assert.ok(result.recommendedExcludes.includes("**/.env*"));
   assert.ok(result.recommendedExcludes.includes("**/.aws/**"));
+  assert.ok(result.ignoreFiles.some((candidate) => candidate.target === "agentignore" && candidate.filename === ".agentignore"));
+  assert.ok(result.ignoreFiles.some((candidate) => candidate.target === "codexignore" && candidate.filename === ".codexignore"));
+  assert.ok(result.ignoreFiles.every((candidate) => candidate.patterns.includes("**/.env*")));
+  assert.match(codexIgnore, /Target: \.codexignore/);
+  assert.match(codexIgnore, /\*\*\/\.aws\/\*\*/);
+  assert.match(codexIgnore, /filename\/path based and did not read file contents/);
   assert.match(markdown, /Sensitive Path Audit/);
   assert.match(markdown, /does not read file contents/);
   assert.doesNotMatch(serialized, /sk-should-not-appear|npm_should_not_appear|PRIVATE KEY|private rows/);
@@ -831,6 +838,7 @@ test("auditSensitivePaths passes ordinary source trees", async () => {
   assert.equal(result.status, "pass");
   assert.equal(result.findings.length, 0);
   assert.equal(result.recommendedExcludes.length, 0);
+  assert.ok(result.ignoreFiles.every((candidate) => candidate.patterns.length === 0));
 });
 
 test("auditLspReadiness reports detected languages and missing servers", async () => {
@@ -1906,8 +1914,10 @@ test("published JSON schemas describe CLI result contracts", async () => {
   assert.deepEqual(checkpointSchema.required, ["generatedAt", "root", "outputDir", "includeUntracked", "includeIgnored", "summary", "files", "artifacts"]);
   assert.ok(checkpointSchema.properties.artifacts);
   assert.ok(checkpointSchema.$defs.file);
-  assert.deepEqual(sensitiveAuditSchema.required, ["generatedAt", "root", "status", "summary", "findings", "recommendedExcludes"]);
+  assert.deepEqual(sensitiveAuditSchema.required, ["generatedAt", "root", "status", "summary", "findings", "recommendedExcludes", "ignoreFiles"]);
   assert.ok(sensitiveAuditSchema.properties.recommendedExcludes);
+  assert.ok(sensitiveAuditSchema.properties.ignoreFiles);
+  assert.ok(sensitiveAuditSchema.$defs.ignoreFile);
   assert.ok((sensitiveAuditSchema.$defs.finding as { properties: { kind: { enum: string[] } } }).properties.kind.enum.includes("env_file"));
   assert.ok((sensitiveAuditSchema.$defs.finding as { properties: { kind: { enum: string[] } } }).properties.kind.enum.includes("sensitive_symlink"));
   assert.deepEqual(lspAuditSchema.required, ["generatedAt", "root", "status", "summary", "languages", "recommendedInstalls"]);
@@ -1988,7 +1998,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.equal(brief.scorecard.benchmarkStatus, "pass");
   assert.equal(brief.scorecard.benchmarkCases, 33);
   assert.equal(brief.packageName, "trace-to-skill");
-  assert.equal(brief.packageVersion, "0.1.76");
+  assert.equal(brief.packageVersion, "0.1.77");
   assert.equal(brief.license, "Apache-2.0");
   assert.ok(brief.repository?.includes("github.com/grnbtqdbyx-create/trace-to-skill"));
   assert.ok(brief.qualification.max500.length <= 500);
@@ -1996,7 +2006,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.match(markdown, /OpenAI OSS Brief/);
   assert.match(markdown, /Why This Repository Qualifies/);
   assert.match(markdown, /500-Character Version/);
-  assert.match(markdown, /npx trace-to-skill@0\.1\.76/);
+  assert.match(markdown, /npx trace-to-skill@0\.1\.77/);
 });
 
 test("scorecard-comment dry-run resolves pull request event", async () => {

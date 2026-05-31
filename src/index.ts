@@ -27,8 +27,8 @@ export { renderAgentsRules, renderCodexIssueReport, renderComparison, renderDoct
 export { renderScorecardMarkdown, renderScorecardPrComment, runScorecard } from "./scorecard.js";
 export { auditCodexSessions, renderSessionAuditMarkdown } from "./sessionAudit.js";
 export type { SessionAuditFile, SessionAuditFinding, SessionAuditOptions, SessionAuditResult, SessionAuditSeverity, SessionAuditStateFile, SessionAuditStatus } from "./sessionAudit.js";
-export { auditSensitivePaths, renderSensitiveAuditMarkdown } from "./sensitiveAudit.js";
-export type { SensitiveAuditFinding, SensitiveAuditFindingKind, SensitiveAuditResult, SensitiveAuditSeverity, SensitiveAuditStatus } from "./sensitiveAudit.js";
+export { auditSensitivePaths, buildSensitiveIgnoreFiles, normalizeSensitiveIgnoreTarget, renderSensitiveAuditMarkdown, renderSensitiveIgnoreFile } from "./sensitiveAudit.js";
+export type { SensitiveAuditFinding, SensitiveAuditFindingKind, SensitiveAuditResult, SensitiveAuditSeverity, SensitiveAuditStatus, SensitiveIgnoreFile, SensitiveIgnoreTarget } from "./sensitiveAudit.js";
 export { buildUsageEvidence, buildUsageEvidenceFromInputs, renderUsageEvidenceMarkdown } from "./usageEvidence.js";
 export type { TokenUsageRecord, UsageDrainExperiment, UsageEvidenceFinding, UsageEvidenceFindingKind, UsageEvidenceResult, UsageEvidenceStatus, UsageOverheadKind, UsageOverheadSignal, UsageReceipt, UsageSnapshot } from "./usageEvidence.js";
 export type { AnalysisResult, Finding, FindingKind, Severity } from "./types.js";

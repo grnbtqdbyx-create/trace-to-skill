@@ -41,7 +41,7 @@ Runtime: Node.js 20+
 - Codex resource leaks and runaway local processes such as high CPU/GPU, `Code Helper`, `Codex Helper Renderer`, orphaned shell snapshots, log floods, thinking animation GPU loops, and non-Git workspace CPU loops
 - Codex quota and usage-limit mismatches where `/status` or the usage page shows remaining quota, accounts share limits unexpectedly, or 5h and weekly quotas move together
 - sensitive-file access in traces, including `.env`, private keys, package auth files, cloud credentials, local databases, and production secret manifests entering agent context
-- sensitive path preflight before agent runs via `sensitive-audit`, with filename/path-only detection and recommended excludes for `.agentignore`, `.aiexclude`, `.codexignore`, or sandbox profiles
+- sensitive path preflight before agent runs via `sensitive-audit`, with filename/path-only detection and reviewable ignore candidates for `.agentignore`, `.aiexclude`, `.codexignore`, `.gitignore`, or sandbox profiles
 - language-server readiness before agent edits via `lsp-audit`, with repo language detection, PATH checks, install hints, and evidence files for Codex LSP setup
 - hallucinated files and broad over-editing
 - conflicting `AGENTS.md`, `CLAUDE.md`, Cursor, Copilot, or Gemini instructions
@@ -95,6 +95,7 @@ npx trace-to-skill process-audit ./process-notes.md --output process-audit.md
 npx trace-to-skill checkpoint . --output .trace-to-skill/checkpoints/before-codex
 npx trace-to-skill redact ./runs --output redacted-runs
 npx trace-to-skill sensitive-audit . --format json
+npx trace-to-skill sensitive-audit . --format ignore --ignore-target codexignore --output .codexignore.generated
 npx trace-to-skill lsp-audit . --format json
 npx trace-to-skill analyze ./runs
 npx trace-to-skill codex-report ./runs --output openai-codex-issue.md
@@ -108,7 +109,7 @@ npx trace-to-skill init --comment --sarif
 ## GitHub Action
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.76
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.77
   with:
     mode: all
     doctor-threshold: "85"

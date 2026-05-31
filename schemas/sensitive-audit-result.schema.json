@@ -4,7 +4,7 @@
   "title": "trace-to-skill sensitive path audit result",
   "type": "object",
   "additionalProperties": false,
-  "required": ["generatedAt", "root", "status", "summary", "findings", "recommendedExcludes"],
+  "required": ["generatedAt", "root", "status", "summary", "findings", "recommendedExcludes", "ignoreFiles"],
   "properties": {
     "generatedAt": {
       "type": "string",
@@ -30,6 +30,12 @@
       "type": "array",
       "items": {
         "type": "string"
+      }
+    },
+    "ignoreFiles": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/ignoreFile"
       }
     }
   },
@@ -90,6 +96,32 @@
         },
         "suggestedExclude": {
           "type": "string"
+        }
+      }
+    },
+    "ignoreFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["target", "filename", "header", "patterns"],
+      "properties": {
+        "target": {
+          "type": "string",
+          "enum": ["agentignore", "codexignore", "aiexclude", "gitignore"]
+        },
+        "filename": {
+          "type": "string"
+        },
+        "header": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "patterns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       }
     }

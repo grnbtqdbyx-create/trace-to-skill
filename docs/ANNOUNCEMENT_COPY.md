@@ -50,7 +50,7 @@ trace-to-skill checks repo readiness and scans agent traces/logs to generate:
 - scorecard PR comments with update-in-place marker
 - a GitHub event context guard for prompt-injection checks before agents read PR/issue/comment text
 - a redaction command for privacy-preserving failed trace sharing
-- a filename/path-only `sensitive-audit` command for building `.agentignore`, `.aiexclude`, `.codexignore`, or sandbox exclude lists before an agent reads the repo
+- a filename/path-only `sensitive-audit` command for building reviewable `.agentignore`, `.aiexclude`, `.codexignore`, `.gitignore`, or sandbox exclude candidates before an agent reads the repo
 - a local `lsp-audit` command for detecting repo languages, missing language-server commands, install hints, and evidence files before Codex attempts symbol-aware edits
 - an OpenAI/Codex issue-ready report command for turning redacted traces into concise, evidence-backed issue bodies
 - a zero-setup `demo` command so people can see a real Codex issue report before collecting private traces
@@ -113,6 +113,7 @@ npx trace-to-skill scorecard-comment . --dry-run
 npx trace-to-skill guard-github-event "$GITHUB_EVENT_PATH"
 npx trace-to-skill session-audit ~/.codex --format json
 npx trace-to-skill sensitive-audit . --format json
+npx trace-to-skill sensitive-audit . --format ignore --ignore-target codexignore --output .codexignore.generated
 npx trace-to-skill lsp-audit . --format json
 npx trace-to-skill config-audit ~/.codex --format json
 npx trace-to-skill plugin-audit ~/.codex --app /Applications/Codex.app --format json

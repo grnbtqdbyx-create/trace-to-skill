@@ -21,6 +21,7 @@ npx trace-to-skill demo mcp-discovery-mismatch
 npx trace-to-skill demo terminal-output-integrity
 npx trace-to-skill demo subagent-lifecycle
 npx trace-to-skill sensitive-audit .
+npx trace-to-skill sensitive-audit . --format ignore --ignore-target codexignore --output .codexignore.generated
 npx trace-to-skill lsp-audit .
 ```
 
@@ -29,7 +30,7 @@ What it proves:
 - packaged fixtures can produce a real Codex issue report immediately
 - maintainers can inspect the output shape before sharing any private log
 - demos cover remote compact failures, Windows helper path failures, patch overwrite safety, approval friction, latency, Thinking hangs, clipboard/attachment regressions, deeplink/OAuth launch regressions, connector auth-cache regressions, MCP discovery/config-scope mismatches, terminal output/scrollback integrity, subagent lifecycle drift, token burn, sensitive files, and prompt injection
-- `sensitive-audit` scans filenames and paths before an agent run, without reading file contents, so teams can build `.agentignore`, `.aiexclude`, `.codexignore`, or sandbox permission profiles from a concrete repo report
+- `sensitive-audit` scans filenames and paths before an agent run, without reading file contents, so teams can build `.agentignore`, `.aiexclude`, `.codexignore`, `.gitignore`, or sandbox permission profiles from a concrete repo report
 - `lsp-audit` scans repo language signals and PATH availability so teams know which language servers are ready before asking Codex for symbol-aware edits
 
 See the generated demo output in [docs/DEMO.md](DEMO.md).
@@ -53,7 +54,7 @@ What it proves:
 Recommended CI surface:
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.76
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.77
   with:
     mode: all
     doctor-threshold: "85"
@@ -398,11 +399,13 @@ Use this before giving an AI coding agent a repository.
 ```bash
 npx trace-to-skill sensitive-audit . --format json
 npx trace-to-skill sensitive-audit . --output sensitive-paths.md
+npx trace-to-skill sensitive-audit . --format ignore --ignore-target agentignore --output .agentignore.generated
+npx trace-to-skill sensitive-audit . --format ignore --ignore-target codexignore --output .codexignore.generated
 ```
 
 This finds sensitive-looking paths such as `.env`, `.env.*`, `.npmrc`, `.pypirc`, `.aws/**`, `.ssh/**`, `.kube/**`, `.docker/**`, private keys, certificates, local databases, mobile signing files, and secret manifests without reading file contents or following symlink targets.
 
-The output includes a stable JSON schema plus recommended exclude globs that can seed `.agentignore`, `.aiexclude`, `.codexignore`, local sandbox permission profiles, or team security review checklists. It is a preflight report, not a sandbox boundary.
+The output includes a stable JSON schema plus recommended exclude globs that can seed `.agentignore`, `.aiexclude`, `.codexignore`, `.gitignore`, local sandbox permission profiles, or team security review checklists. `--format ignore` renders a reviewable generated file candidate and still does not mutate the repo. It is a preflight report, not a sandbox boundary.
 
 ## 27. Workspace Checkpoint Before Agent Runs
 
