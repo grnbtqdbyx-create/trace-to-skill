@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 import { writeFile } from "node:fs/promises";
 import { analyzeTargets } from "./analyze.js";
-import { evaluate } from "./eval.js";
+import { compareAnalyses, evaluate } from "./eval.js";
 import { postPullRequestComment } from "./github.js";
-import { renderAgentsRules, renderMarkdown, renderPrComment, renderSkill } from "./report.js";
+import { renderAgentsRules, renderComparison, renderMarkdown, renderPrComment, renderSkill } from "./report.js";
 
 interface ParsedArgs {
   command: string;
@@ -57,6 +57,23 @@ async function main(): Promise<void> {
       dryRun: Boolean(parsed.flags["dry-run"])
     });
     process.stdout.write(`${message}\n`);
+    return;
+  }
+
+  if (parsed.command === "compare") {
+    const before = stringFlag(parsed.flags.before) ?? parsed.targets[0];
+    const after = stringFlag(parsed.flags.after) ?? parsed.targets[1];
+    if (!before || !after) {
+      throw new Error("compare requires --before <trace> and --after <trace>, or two positional paths.");
+    }
+
+    const beforeResult = await analyzeTargets([before]);
+    const afterResult = await analyzeTargets([after]);
+    const comparison = compareAnalyses(beforeResult, afterResult);
+    const format = String(parsed.flags.format ?? "markdown");
+    const output = format === "json" ? `${JSON.stringify(comparison, null, 2)}\n` : renderComparison(comparison);
+    await writeOutput(output, parsed.flags.output);
+    process.exitCode = comparison.decision === "reject" ? 1 : 0;
     return;
   }
 
@@ -117,12 +134,14 @@ Usage:
   trace-to-skill suggest <trace-file-or-dir> [--target agents-md|skill] [--output AGENTS.generated.md]
   trace-to-skill eval <trace-file-or-dir> [--threshold 75] [--format text|json]
   trace-to-skill comment <trace-file-or-dir> [--dry-run] [--token $GITHUB_TOKEN]
+  trace-to-skill compare --before <old-run> --after <new-run> [--format markdown|json]
 
 Examples:
   trace-to-skill analyze ./runs
   trace-to-skill suggest ./runs --target skill --output skills/verification-before-completion/SKILL.md
   trace-to-skill eval ./runs --threshold 80
   trace-to-skill comment ./runs
+  trace-to-skill compare --before ./runs/before --after ./runs/after
 `);
 }
 

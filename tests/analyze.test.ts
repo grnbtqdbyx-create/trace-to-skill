@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { analyzeTargets } from "../src/analyze.js";
-import { evaluate } from "../src/eval.js";
+import { compareAnalyses, evaluate } from "../src/eval.js";
 import { postPullRequestComment } from "../src/github.js";
-import { renderAgentsRules, renderPrComment, renderSkill } from "../src/report.js";
+import { renderAgentsRules, renderComparison, renderPrComment, renderSkill } from "../src/report.js";
 
 test("analyzeTargets detects failed agent workflow signals", async () => {
   const result = await analyzeTargets(["fixtures/failed-run.md"]);
@@ -79,4 +79,14 @@ test("analyzeTargets detects contradictory agent instruction files", async () =>
   assert.match(finding.evidence.map((evidence) => evidence.excerpt).join("\n"), /npm test/);
   assert.match(finding.evidence.map((evidence) => evidence.excerpt).join("\n"), /pnpm test/);
   assert.match(finding.evidence.map((evidence) => evidence.excerpt).join("\n"), /skips validation/);
+});
+
+test("compareAnalyses keeps improved runs and renders a decision", async () => {
+  const before = await analyzeTargets(["fixtures/failed-run.md"]);
+  const after = await analyzeTargets(["fixtures/safe-run.md"]);
+  const comparison = compareAnalyses(before, after);
+
+  assert.equal(comparison.decision, "keep");
+  assert.ok(comparison.delta > 0);
+  assert.match(renderComparison(comparison), /Decision: \*\*keep\*\*/);
 });

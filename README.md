@@ -12,6 +12,7 @@ npx github:grnbtqdbyx-create/trace-to-skill analyze ./runs
 npx github:grnbtqdbyx-create/trace-to-skill suggest ./runs --target agents-md
 npx github:grnbtqdbyx-create/trace-to-skill eval ./runs --threshold 80
 npx github:grnbtqdbyx-create/trace-to-skill comment ./runs --dry-run
+npx github:grnbtqdbyx-create/trace-to-skill compare --before ./runs/before --after ./runs/after
 ```
 
 AI coding agents are getting good enough to change real repositories, but they still repeat the same workflow mistakes: claiming success without tests, ignoring repo instructions, over-editing, inventing files, leaking secrets into traces, or enabling risky MCP tools.
@@ -137,6 +138,12 @@ Post or update a GitHub pull request comment:
 trace-to-skill comment ./runs --token "$GITHUB_TOKEN"
 ```
 
+Compare an agent run before and after a generated rule or skill:
+
+```bash
+trace-to-skill compare --before ./runs/before --after ./runs/after
+```
+
 ## Supported Inputs
 
 `trace-to-skill` scans directories or individual files:
@@ -184,7 +191,7 @@ jobs:
 Composite action usage:
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.3
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.4
   with:
     traces: ./runs
     threshold: "80"

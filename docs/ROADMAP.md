@@ -12,6 +12,7 @@
 - Secret redaction in evidence excerpts
 - Eval score and non-zero CI gate
 - Pull request comment command with update-in-place marker
+- Before/after comparison command for keep/revise/reject decisions
 
 ## v0.2
 
@@ -25,7 +26,7 @@
 
 - MCP config capability scoring
 - `AGENTS.md` / `CLAUDE.md` contradiction detection
-- Before/after rerun harness
+- Before/after rerun harness that can execute commands, not only compare trace artifacts
 - Keep/revert decision report
 - Public benchmark: "Do agent rules actually reduce repeated failures?"
 
