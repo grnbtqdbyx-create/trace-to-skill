@@ -31,6 +31,7 @@ trace-to-skill checks repo readiness and scans agent traces/logs to generate:
 
 - a Codex Readiness Doctor score
 - a GitHub Action readiness gate
+- a PR comment with the readiness score and top recommendations
 - an Agent Learning Report
 - suggested AGENTS.md rules
 - suggested SKILL.md content
@@ -42,6 +43,7 @@ Example:
 
 npx github:grnbtqdbyx-create/trace-to-skill doctor .
 npx github:grnbtqdbyx-create/trace-to-skill doctor . --threshold 85
+npx github:grnbtqdbyx-create/trace-to-skill doctor-comment . --threshold 85 --dry-run
 
 I’m especially looking for anonymized failed agent traces and feedback from OSS maintainers who review AI-generated PRs.
 

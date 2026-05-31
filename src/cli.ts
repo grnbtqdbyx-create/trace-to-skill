@@ -5,7 +5,7 @@ import { doctorRepo } from "./doctor.js";
 import { compareAnalyses, evaluate } from "./eval.js";
 import { postPullRequestComment } from "./github.js";
 import { initProject } from "./init.js";
-import { renderAgentsRules, renderComparison, renderDoctorMarkdown, renderMarkdown, renderPrComment, renderSarif, renderSkill } from "./report.js";
+import { renderAgentsRules, renderComparison, renderDoctorMarkdown, renderDoctorPrComment, renderMarkdown, renderPrComment, renderSarif, renderSkill } from "./report.js";
 
 interface ParsedArgs {
   command: string;
@@ -83,8 +83,28 @@ async function main(): Promise<void> {
     const result = await doctorRepo(parsed.targets[0] ?? process.cwd());
     const threshold = numberFlag(parsed.flags.threshold);
     const format = String(parsed.flags.format ?? "markdown");
-    const output = format === "json" ? `${JSON.stringify(result, null, 2)}\n` : renderDoctorMarkdown(result);
+    const output = format === "json" ? `${JSON.stringify(result, null, 2)}\n` :
+      format === "comment" ? renderDoctorPrComment(result, threshold) :
+        renderDoctorMarkdown(result);
     await writeOutput(output, parsed.flags.output);
+    process.exitCode = doctorPassed(result, threshold) ? 0 : 1;
+    return;
+  }
+
+  if (parsed.command === "doctor-comment") {
+    const result = await doctorRepo(parsed.targets[0] ?? process.cwd());
+    const threshold = numberFlag(parsed.flags.threshold);
+    const body = renderDoctorPrComment(result, threshold);
+    const message = await postPullRequestComment({
+      body,
+      token: stringFlag(parsed.flags.token),
+      repository: stringFlag(parsed.flags.repository),
+      eventPath: stringFlag(parsed.flags.event),
+      dryRun: Boolean(parsed.flags["dry-run"]),
+      marker: "<!-- trace-to-skill-doctor-report -->",
+      reportName: "trace-to-skill doctor report"
+    });
+    process.stdout.write(`${message}\n`);
     process.exitCode = doctorPassed(result, threshold) ? 0 : 1;
     return;
   }
@@ -203,7 +223,8 @@ Usage:
   trace-to-skill eval <trace-file-or-dir> [--threshold 75] [--format text|json]
   trace-to-skill comment <trace-file-or-dir> [--dry-run] [--token $GITHUB_TOKEN]
   trace-to-skill compare --before <old-run> --after <new-run> [--format markdown|json]
-  trace-to-skill doctor [repo-dir] [--threshold 85] [--format markdown|json] [--output report.md]
+  trace-to-skill doctor [repo-dir] [--threshold 85] [--format markdown|json|comment] [--output report.md]
+  trace-to-skill doctor-comment [repo-dir] [--threshold 85] [--dry-run] [--token $GITHUB_TOKEN]
   trace-to-skill init [--traces runs] [--threshold 80] [--comment] [--sarif] [--dry-run]
 
 Examples:
@@ -213,6 +234,7 @@ Examples:
   trace-to-skill comment ./runs
   trace-to-skill compare --before ./runs/before --after ./runs/after
   trace-to-skill doctor . --threshold 85
+  trace-to-skill doctor-comment . --threshold 85
   trace-to-skill init --comment --sarif
 `);
 }

@@ -6,6 +6,8 @@ interface GitHubCommentOptions {
   eventPath?: string;
   body: string;
   dryRun?: boolean;
+  marker?: string;
+  reportName?: string;
 }
 
 interface ExistingComment {
@@ -22,6 +24,8 @@ export async function postPullRequestComment(options: GitHubCommentOptions): Pro
   const token = options.token ?? process.env.GITHUB_TOKEN;
   const repository = options.repository ?? process.env.GITHUB_REPOSITORY;
   const eventPath = options.eventPath ?? process.env.GITHUB_EVENT_PATH;
+  const marker = options.marker ?? MARKER;
+  const reportName = options.reportName ?? "trace-to-skill report";
 
   if (!repository) {
     throw new Error("GITHUB_REPOSITORY is required for PR comments.");
@@ -33,7 +37,7 @@ export async function postPullRequestComment(options: GitHubCommentOptions): Pro
   }
 
   if (options.dryRun) {
-    return `dry-run: would post trace-to-skill report to ${repository}#${pullNumber}`;
+    return `dry-run: would post ${reportName} to ${repository}#${pullNumber}`;
   }
 
   if (!token) {
@@ -42,14 +46,14 @@ export async function postPullRequestComment(options: GitHubCommentOptions): Pro
 
   const commentsUrl = `https://api.github.com/repos/${repository}/issues/${pullNumber}/comments`;
   const comments = (await githubRequest(commentsUrl, token)) as ExistingComment[];
-  const existing = comments.find((comment) => comment.user?.type === "Bot" && comment.body?.includes(MARKER));
+  const existing = comments.find((comment) => comment.user?.type === "Bot" && comment.body?.includes(marker));
 
   if (existing) {
     await githubRequest(`https://api.github.com/repos/${repository}/issues/comments/${existing.id}`, token, {
       method: "PATCH",
       body: JSON.stringify({ body: options.body })
     });
-    return `updated trace-to-skill report comment on ${repository}#${pullNumber}`;
+    return `updated ${reportName} comment on ${repository}#${pullNumber}`;
   }
 
   await githubRequest(commentsUrl, token, {
@@ -57,7 +61,7 @@ export async function postPullRequestComment(options: GitHubCommentOptions): Pro
     body: JSON.stringify({ body: options.body })
   });
 
-  return `posted trace-to-skill report comment on ${repository}#${pullNumber}`;
+  return `posted ${reportName} comment on ${repository}#${pullNumber}`;
 }
 
 async function resolvePullRequestNumber(eventPath: string | undefined): Promise<number | undefined> {

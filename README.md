@@ -133,6 +133,7 @@ Check whether a repository is ready for Codex automation:
 trace-to-skill doctor .
 trace-to-skill doctor . --threshold 85
 trace-to-skill doctor . --format json
+trace-to-skill doctor . --format comment
 ```
 
 Scaffold a repo:
@@ -168,6 +169,12 @@ Post or update a GitHub pull request comment:
 
 ```bash
 trace-to-skill comment ./runs --token "$GITHUB_TOKEN"
+```
+
+Post or update a GitHub pull request comment with the Codex readiness doctor:
+
+```bash
+trace-to-skill doctor-comment . --threshold 85 --token "$GITHUB_TOKEN"
 ```
 
 Compare an agent run before and after a generated rule or skill:
@@ -208,12 +215,16 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      pull-requests: write
+      issues: write
     steps:
       - uses: actions/checkout@v5
-      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.8
+      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.9
         with:
           mode: doctor
           doctor-threshold: "85"
+          doctor-comment: "true"
+          github-token: ${{ github.token }}
 ```
 
 Add this to `.github/workflows/agent-learning.yml` for trace analysis:
@@ -256,10 +267,11 @@ Code scanning / SARIF upload:
 Composite action usage:
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.8
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.9
   with:
     mode: both
     doctor-threshold: "85"
+    doctor-comment: "true"
     traces: ./runs
     threshold: "80"
     comment: "true"
@@ -290,6 +302,7 @@ The goal is not to let agents autonomously rewrite project policy. The goal is t
 - SARIF output for GitHub code scanning
 - `trace-to-skill doctor` for Codex readiness scoring
 - GitHub Action doctor mode with score threshold
+- Doctor PR summary comments
 - `trace-to-skill init` for repository setup
 - public benchmark of common agent failure classes
 

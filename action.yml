@@ -14,6 +14,10 @@ inputs:
     description: Minimum passing Codex readiness doctor score.
     required: false
     default: "85"
+  doctor-comment:
+    description: Post or update a pull request comment with the Codex readiness doctor summary.
+    required: false
+    default: "false"
   traces:
     description: File or directory containing agent traces.
     required: false
@@ -45,11 +49,14 @@ runs:
     - run: npx github:grnbtqdbyx-create/trace-to-skill doctor "${{ inputs.doctor-path }}" --threshold "${{ inputs.doctor-threshold }}" --output codex-readiness-report.md
       if: inputs.mode == 'doctor' || inputs.mode == 'both'
       shell: bash
+    - run: npx github:grnbtqdbyx-create/trace-to-skill doctor-comment "${{ inputs.doctor-path }}" --threshold "${{ inputs.doctor-threshold }}" --token "${{ inputs.github-token }}"
+      if: always() && github.event_name == 'pull_request' && inputs.doctor-comment == 'true' && (inputs.mode == 'doctor' || inputs.mode == 'both')
+      shell: bash
     - run: npx github:grnbtqdbyx-create/trace-to-skill analyze "${{ inputs.traces }}" --output agent-learning-report.md
       if: inputs.mode == 'traces' || inputs.mode == 'both'
       shell: bash
     - run: npx github:grnbtqdbyx-create/trace-to-skill comment "${{ inputs.traces }}" --token "${{ inputs.github-token }}"
-      if: inputs.comment == 'true' && (inputs.mode == 'traces' || inputs.mode == 'both')
+      if: github.event_name == 'pull_request' && inputs.comment == 'true' && (inputs.mode == 'traces' || inputs.mode == 'both')
       shell: bash
     - run: npx github:grnbtqdbyx-create/trace-to-skill eval "${{ inputs.traces }}" --threshold "${{ inputs.threshold }}"
       if: inputs.mode == 'traces' || inputs.mode == 'both'

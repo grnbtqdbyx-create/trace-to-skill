@@ -8,7 +8,7 @@ import { doctorRepo } from "../src/doctor.js";
 import { compareAnalyses, evaluate } from "../src/eval.js";
 import { postPullRequestComment } from "../src/github.js";
 import { initProject } from "../src/init.js";
-import { renderAgentsRules, renderComparison, renderPrComment, renderSarif, renderSkill } from "../src/report.js";
+import { renderAgentsRules, renderComparison, renderDoctorPrComment, renderPrComment, renderSarif, renderSkill } from "../src/report.js";
 
 test("analyzeTargets detects failed agent workflow signals", async () => {
   const result = await analyzeTargets(["fixtures/failed-run.md"]);
@@ -65,6 +65,19 @@ test("postPullRequestComment dry-run resolves pull request event", async () => {
   });
 
   assert.equal(message, "dry-run: would post trace-to-skill report to owner/repo#42");
+});
+
+test("postPullRequestComment dry-run supports custom report markers", async () => {
+  const message = await postPullRequestComment({
+    repository: "owner/repo",
+    eventPath: "fixtures/github-pr-event.json",
+    body: "test",
+    marker: "<!-- trace-to-skill-doctor-report -->",
+    reportName: "trace-to-skill doctor report",
+    dryRun: true
+  });
+
+  assert.equal(message, "dry-run: would post trace-to-skill doctor report to owner/repo#42");
 });
 
 test("analyzeTargets scores MCP config capabilities and secret env keys", async () => {
@@ -163,6 +176,8 @@ test("doctorRepo scores a Codex-ready repository", async () => {
   assert.ok(result.score >= 85);
   assert.equal(result.checks.some((check) => check.status === "fail"), false);
   assert.ok(result.checks.some((check) => check.id === "agent-instructions" && check.status === "pass"));
+  assert.match(renderDoctorPrComment(result, 85), /trace-to-skill-doctor-report/);
+  assert.match(renderDoctorPrComment(result, 85), /Score: \*\*/);
 });
 
 test("doctorRepo flags missing controls and MCP risk", async () => {
@@ -193,7 +208,11 @@ test("composite action exposes Codex readiness doctor mode", async () => {
 
   assert.match(action, /mode:/);
   assert.match(action, /doctor-threshold:/);
+  assert.match(action, /doctor-comment:/);
   assert.match(action, /trace-to-skill doctor/);
+  assert.match(action, /trace-to-skill doctor-comment/);
   assert.match(action, /inputs\.mode == 'doctor' \|\| inputs\.mode == 'both'/);
+  assert.match(action, /always\(\) && github\.event_name == 'pull_request' && inputs\.doctor-comment == 'true'/);
+  assert.match(action, /github\.event_name == 'pull_request' && inputs\.comment == 'true'/);
   assert.match(action, /mode must be one of: traces, doctor, both/);
 });

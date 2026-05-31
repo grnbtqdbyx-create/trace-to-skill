@@ -14,6 +14,8 @@ Core commands:
 ```bash
 npx github:grnbtqdbyx-create/trace-to-skill doctor .
 npx github:grnbtqdbyx-create/trace-to-skill doctor . --threshold 85
+npx github:grnbtqdbyx-create/trace-to-skill doctor . --format comment
+npx github:grnbtqdbyx-create/trace-to-skill doctor-comment . --threshold 85 --dry-run
 npx github:grnbtqdbyx-create/trace-to-skill analyze ./runs
 npx github:grnbtqdbyx-create/trace-to-skill init --comment --sarif
 npx github:grnbtqdbyx-create/trace-to-skill analyze ./runs --format sarif --output trace-to-skill.sarif
