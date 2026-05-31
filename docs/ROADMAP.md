@@ -15,12 +15,13 @@
 - Before/after comparison command for keep/revise/reject decisions
 - SARIF output for GitHub code scanning and security dashboards
 - `trace-to-skill doctor` for repository Codex-readiness scoring
+- GitHub Action doctor mode with score threshold
 - `trace-to-skill init` for one-command repository setup
 
 ## v0.2
 
 - Claude Code transcript adapters
-- GitHub Action that comments on pull requests
+- GitHub Action doctor PR summary comments
 - SARIF output for security-oriented findings
 - Doctor checks for OpenAI API credit usage documentation and maintainer handoff depth
 - Fixture pack for common agent failures

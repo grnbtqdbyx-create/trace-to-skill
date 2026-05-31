@@ -131,6 +131,7 @@ Check whether a repository is ready for Codex automation:
 
 ```bash
 trace-to-skill doctor .
+trace-to-skill doctor . --threshold 85
 trace-to-skill doctor . --format json
 ```
 
@@ -193,7 +194,29 @@ Instruction files such as `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `.cursor/rules`
 
 ## GitHub Action
 
-Add this to `.github/workflows/agent-learning.yml`:
+Run the Codex readiness doctor as a GitHub Action:
+
+```yaml
+name: Codex Readiness
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  codex-readiness:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v5
+      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.8
+        with:
+          mode: doctor
+          doctor-threshold: "85"
+```
+
+Add this to `.github/workflows/agent-learning.yml` for trace analysis:
 
 ```yaml
 name: Agent Learning Report
@@ -233,8 +256,10 @@ Code scanning / SARIF upload:
 Composite action usage:
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.7
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.8
   with:
+    mode: both
+    doctor-threshold: "85"
     traces: ./runs
     threshold: "80"
     comment: "true"
@@ -264,6 +289,7 @@ The goal is not to let agents autonomously rewrite project policy. The goal is t
 - before/after eval runner
 - SARIF output for GitHub code scanning
 - `trace-to-skill doctor` for Codex readiness scoring
+- GitHub Action doctor mode with score threshold
 - `trace-to-skill init` for repository setup
 - public benchmark of common agent failure classes
 

@@ -81,10 +81,11 @@ async function main(): Promise<void> {
 
   if (parsed.command === "doctor") {
     const result = await doctorRepo(parsed.targets[0] ?? process.cwd());
+    const threshold = numberFlag(parsed.flags.threshold);
     const format = String(parsed.flags.format ?? "markdown");
     const output = format === "json" ? `${JSON.stringify(result, null, 2)}\n` : renderDoctorMarkdown(result);
     await writeOutput(output, parsed.flags.output);
-    process.exitCode = result.checks.some((check) => check.status === "fail") || result.findings.some((finding) => finding.severity === "critical") ? 1 : 0;
+    process.exitCode = doctorPassed(result, threshold) ? 0 : 1;
     return;
   }
 
@@ -109,6 +110,35 @@ async function main(): Promise<void> {
 
 function stringFlag(value: string | boolean | undefined): string | undefined {
   return typeof value === "string" ? value : undefined;
+}
+
+function numberFlag(value: string | boolean | undefined): number | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+
+  if (typeof value !== "string" || !/^[0-9]{1,3}$/.test(value)) {
+    throw new Error("--threshold must be an integer between 1 and 100");
+  }
+
+  const parsed = Number(value);
+  if (!Number.isInteger(parsed) || parsed < 1 || parsed > 100) {
+    throw new Error("--threshold must be an integer between 1 and 100");
+  }
+
+  return parsed;
+}
+
+function doctorPassed(result: Awaited<ReturnType<typeof doctorRepo>>, threshold: number | undefined): boolean {
+  if (result.checks.some((check) => check.status === "fail")) {
+    return false;
+  }
+
+  if (result.findings.some((finding) => finding.severity === "critical")) {
+    return false;
+  }
+
+  return threshold === undefined || result.score >= threshold;
 }
 
 function renderAnalysis(result: Awaited<ReturnType<typeof analyzeTargets>>, format: string): string {
@@ -173,7 +203,7 @@ Usage:
   trace-to-skill eval <trace-file-or-dir> [--threshold 75] [--format text|json]
   trace-to-skill comment <trace-file-or-dir> [--dry-run] [--token $GITHUB_TOKEN]
   trace-to-skill compare --before <old-run> --after <new-run> [--format markdown|json]
-  trace-to-skill doctor [repo-dir] [--format markdown|json] [--output report.md]
+  trace-to-skill doctor [repo-dir] [--threshold 85] [--format markdown|json] [--output report.md]
   trace-to-skill init [--traces runs] [--threshold 80] [--comment] [--sarif] [--dry-run]
 
 Examples:
@@ -182,7 +212,7 @@ Examples:
   trace-to-skill eval ./runs --threshold 80
   trace-to-skill comment ./runs
   trace-to-skill compare --before ./runs/before --after ./runs/after
-  trace-to-skill doctor .
+  trace-to-skill doctor . --threshold 85
   trace-to-skill init --comment --sarif
 `);
 }

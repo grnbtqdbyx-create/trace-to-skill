@@ -30,6 +30,7 @@ The problem: agents often repeat the same workflow failures: claiming success wi
 trace-to-skill checks repo readiness and scans agent traces/logs to generate:
 
 - a Codex Readiness Doctor score
+- a GitHub Action readiness gate
 - an Agent Learning Report
 - suggested AGENTS.md rules
 - suggested SKILL.md content
@@ -40,6 +41,7 @@ It is deterministic and local-first right now; no runtime network calls.
 Example:
 
 npx github:grnbtqdbyx-create/trace-to-skill doctor .
+npx github:grnbtqdbyx-create/trace-to-skill doctor . --threshold 85
 
 I’m especially looking for anonymized failed agent traces and feedback from OSS maintainers who review AI-generated PRs.
 

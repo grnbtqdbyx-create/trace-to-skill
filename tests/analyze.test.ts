@@ -187,3 +187,13 @@ test("doctorRepo flags missing controls and MCP risk", async () => {
   assert.ok(result.checks.some((check) => check.id === "license" && check.status === "fail"));
   assert.ok(result.findings.some((finding) => finding.kind === "mcp_risk"));
 });
+
+test("composite action exposes Codex readiness doctor mode", async () => {
+  const action = await readFile("action.yml", "utf8");
+
+  assert.match(action, /mode:/);
+  assert.match(action, /doctor-threshold:/);
+  assert.match(action, /trace-to-skill doctor/);
+  assert.match(action, /inputs\.mode == 'doctor' \|\| inputs\.mode == 'both'/);
+  assert.match(action, /mode must be one of: traces, doctor, both/);
+});

@@ -2,6 +2,18 @@ name: trace-to-skill
 description: Turn failed AI coding-agent runs into reusable AGENTS.md rules, SKILL.md files, and eval evidence.
 author: grnbtqdbyx-create
 inputs:
+  mode:
+    description: Run "traces", "doctor", or "both".
+    required: false
+    default: traces
+  doctor-path:
+    description: Repository path to score with the Codex readiness doctor.
+    required: false
+    default: "."
+  doctor-threshold:
+    description: Minimum passing Codex readiness doctor score.
+    required: false
+    default: "85"
   traces:
     description: File or directory containing agent traces.
     required: false
@@ -24,10 +36,21 @@ runs:
     - uses: actions/setup-node@v5
       with:
         node-version: 20
+    - run: |
+        case "${{ inputs.mode }}" in
+          traces|doctor|both) ;;
+          *) echo "::error::mode must be one of: traces, doctor, both"; exit 1 ;;
+        esac
+      shell: bash
+    - run: npx github:grnbtqdbyx-create/trace-to-skill doctor "${{ inputs.doctor-path }}" --threshold "${{ inputs.doctor-threshold }}" --output codex-readiness-report.md
+      if: inputs.mode == 'doctor' || inputs.mode == 'both'
+      shell: bash
     - run: npx github:grnbtqdbyx-create/trace-to-skill analyze "${{ inputs.traces }}" --output agent-learning-report.md
+      if: inputs.mode == 'traces' || inputs.mode == 'both'
       shell: bash
     - run: npx github:grnbtqdbyx-create/trace-to-skill comment "${{ inputs.traces }}" --token "${{ inputs.github-token }}"
-      if: inputs.comment == 'true'
+      if: inputs.comment == 'true' && (inputs.mode == 'traces' || inputs.mode == 'both')
       shell: bash
     - run: npx github:grnbtqdbyx-create/trace-to-skill eval "${{ inputs.traces }}" --threshold "${{ inputs.threshold }}"
+      if: inputs.mode == 'traces' || inputs.mode == 'both'
       shell: bash
