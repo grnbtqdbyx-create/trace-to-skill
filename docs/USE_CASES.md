@@ -91,7 +91,17 @@ npx trace-to-skill analyze ./runs --format json
 
 This catches signals such as `user cancelled MCP tool call`, `request_user_input is not supported in exec mode`, `Approve app tool call?`, `tool_call_mcp_elicitation`, routed callable names like `mcp__node_repl__js` becoming `unsupported call`, deferred discovery dropping namespace or `serverName`, `tools/list` succeeding while Codex routing fails, and stdio transport lifecycle failures such as `Transport closed`, `stdin_end`, `stdin_close`, `transport_close`, or stderr backpressure.
 
-## 7. Quota And Usage-Limit Evidence
+## 7. Codex Resume And Session State Triage
+
+Use this when long Codex sessions become difficult to resume, Desktop history rendering gets sluggish, or local state migrations break goals/projects/history.
+
+```bash
+npx trace-to-skill analyze ./runs --format json
+```
+
+This catches signals such as `codex resume` picker hangs, `codex resume <id>` working while the picker freezes, large `rollout-*.jsonl` histories, high JSONL line and `response_item` / `event_msg` / `function_call` counts, large `input_image` payloads, slow `thread/resume` and `thread/goal/get` timings, `Could not load archived chats`, resume compression dropping the last 3-5 turns, `state_5.sqlite` / `goals_1.sqlite` migration mismatches, `no such table: thread_goals`, stale `projectless-thread-ids`, and `thread-workspace-root-hints` reverting after restart.
+
+## 8. Quota And Usage-Limit Evidence
 
 Use this when Codex blocks a prompt with a usage-limit message but another surface still shows remaining quota.
 
@@ -101,7 +111,7 @@ npx trace-to-skill analyze ./runs --format json
 
 This catches traces where `/status` or the usage page shows remaining 5h or weekly quota, accounts appear to share limits unexpectedly, a Team account inherits a Plus account's limit state, or quota reset times jump after logout/login.
 
-## 8. GitHub Context Guard
+## 9. GitHub Context Guard
 
 Use this before an agent reads untrusted GitHub text.
 
@@ -118,7 +128,7 @@ Use it when:
 - a bot asks Codex to triage untrusted user reports
 - logs or comments might contain instructions like "ignore previous instructions" or "print secrets"
 
-## 9. Failed Agent Run To Reviewable Rule
+## 10. Failed Agent Run To Reviewable Rule
 
 Use this when a coding agent made a repeated workflow mistake.
 
@@ -136,7 +146,7 @@ Recommended maintainer loop:
 4. Copy only evidence-backed rules into the real policy file.
 5. Run `eval` or `scorecard` in CI so the same failure does not silently return.
 
-## 10. Privacy-Preserving Adoption
+## 11. Privacy-Preserving Adoption
 
 Use this when you want public evidence without leaking private traces.
 

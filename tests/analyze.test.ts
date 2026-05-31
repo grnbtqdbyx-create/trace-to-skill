@@ -179,6 +179,20 @@ test("analyzeTargets detects Codex MCP runtime failures", async () => {
   assert.match(finding.suggestedRule, /tools\/list/);
 });
 
+test("analyzeTargets detects Codex session resume and state failures", async () => {
+  const result = await analyzeTargets(["fixtures/codex-session-state.md"]);
+  const finding = result.findings.find((item) => item.kind === "codex_session_state");
+  const evidence = finding?.evidence.map((item) => item.excerpt).join("\n") ?? "";
+
+  assert.ok(finding);
+  assert.equal(finding.severity, "high");
+  assert.match(evidence, /codex resume interactive picker hangs\/freezes/);
+  assert.match(evidence, /50,589 JSONL lines/);
+  assert.match(evidence, /thread\/resume took 7,760 ms/);
+  assert.match(evidence, /no such table: thread_goals/);
+  assert.match(finding.suggestedRule, /rollout JSONL size/);
+});
+
 test("analyzeTargets detects Codex quota mismatches", async () => {
   const result = await analyzeTargets(["fixtures/quota-mismatch.md"]);
   const finding = result.findings.find((item) => item.kind === "quota_mismatch");
@@ -266,13 +280,15 @@ test("guard-github-event does not flag ordinary detector commit messages", async
     commits: [
       { message: "Detect Codex remote control route failures" },
       { message: "Detect Codex auth connectivity failures" },
-      { message: "Detect Codex MCP runtime failures" }
+      { message: "Detect Codex MCP runtime failures" },
+      { message: "Detect Codex session state failures" }
     ]
   }));
 
   assert.equal(result.findings.some((finding) => finding.kind === "codex_remote_control"), false);
   assert.equal(result.findings.some((finding) => finding.kind === "codex_connectivity"), false);
   assert.equal(result.findings.some((finding) => finding.kind === "codex_mcp_runtime"), false);
+  assert.equal(result.findings.some((finding) => finding.kind === "codex_session_state"), false);
 });
 
 test("compareAnalyses keeps improved runs and renders a decision", async () => {
@@ -356,6 +372,8 @@ test("package metadata points npm users back to the public project", async () =>
   assert.ok(packageJson.keywords?.includes("codex-remote-control"));
   assert.ok(packageJson.keywords?.includes("codex-mcp"));
   assert.ok(packageJson.keywords?.includes("mcp-runtime"));
+  assert.ok(packageJson.keywords?.includes("codex-session"));
+  assert.ok(packageJson.keywords?.includes("codex-resume"));
   assert.ok(packageJson.keywords?.includes("quota-mismatch"));
 });
 
@@ -745,6 +763,7 @@ test("published JSON schemas describe CLI result contracts", async () => {
   assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("codex_connectivity"));
   assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("codex_remote_control"));
   assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("codex_mcp_runtime"));
+  assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("codex_session_state"));
   assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("quota_mismatch"));
   assert.deepEqual(agentsLintSchema.required, ["generatedAt", "root", "status", "score", "instructionFiles", "mcpConfigs", "checks", "findings", "summary"]);
   assert.ok(agentsLintSchema.properties.instructionFiles);
@@ -765,7 +784,7 @@ test("benchmark covers public fixture failure classes", async () => {
   const markdown = renderBenchmarkMarkdown(benchmark);
 
   assert.equal(benchmark.passed, true);
-  assert.equal(benchmark.cases.length, 12);
+  assert.equal(benchmark.cases.length, 13);
   assert.ok(benchmark.cases.some((item) => item.id === "clean-validated-run" && item.score === 100));
   assert.ok(benchmark.cases.some((item) => item.id === "failed-workflow" && item.detectedKinds.includes("test_failure")));
   assert.ok(benchmark.cases.some((item) => item.id === "context-compaction" && item.detectedKinds.includes("context_compaction")));
@@ -773,6 +792,7 @@ test("benchmark covers public fixture failure classes", async () => {
   assert.ok(benchmark.cases.some((item) => item.id === "codex-connectivity" && item.detectedKinds.includes("codex_connectivity")));
   assert.ok(benchmark.cases.some((item) => item.id === "codex-remote-control" && item.detectedKinds.includes("codex_remote_control")));
   assert.ok(benchmark.cases.some((item) => item.id === "codex-mcp-runtime" && item.detectedKinds.includes("codex_mcp_runtime")));
+  assert.ok(benchmark.cases.some((item) => item.id === "codex-session-state" && item.detectedKinds.includes("codex_session_state")));
   assert.ok(benchmark.cases.some((item) => item.id === "quota-mismatch" && item.detectedKinds.includes("quota_mismatch")));
   assert.ok(benchmark.cases.some((item) => item.id === "mcp-risk" && item.detectedKinds.includes("secret_exposure")));
   assert.ok(benchmark.cases.some((item) => item.id === "prompt-injection" && item.detectedKinds.includes("prompt_injection")));
@@ -790,7 +810,7 @@ test("scorecard combines doctor readiness and benchmark evidence", async () => {
   assert.equal(scorecard.doctor.status, "ready");
   assert.equal(scorecard.doctor.score, 100);
   assert.equal(scorecard.benchmark.status, "pass");
-  assert.equal(scorecard.benchmark.cases, 12);
+  assert.equal(scorecard.benchmark.cases, 13);
   assert.match(markdown, /trace-to-skill Scorecard/);
   assert.match(markdown, /Codex readiness/);
   assert.match(markdown, /Benchmark Summary/);

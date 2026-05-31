@@ -71,6 +71,8 @@
     "codex-mobile",
     "codex-mcp",
     "mcp-runtime",
+    "codex-session",
+    "codex-resume",
     "quota-mismatch",
     "codex-rate-limits",
     "usage-limit",

@@ -96,6 +96,12 @@ const BENCHMARK_CASES: BenchmarkCaseDefinition[] = [
     expectedKinds: ["codex_mcp_runtime", "weak_evidence"]
   },
   {
+    id: "codex-session-state",
+    title: "Codex session resume and state failure",
+    fixture: "fixtures/codex-session-state.md",
+    expectedKinds: ["codex_session_state", "weak_evidence"]
+  },
+  {
     id: "prompt-injection",
     title: "Untrusted PR comment prompt injection",
     fixture: "fixtures/prompt-injection.md",

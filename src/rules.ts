@@ -232,6 +232,33 @@ const RULES: RuleDefinition[] = [
     suggestedSkill: "codex-mcp-runtime-triage"
   },
   {
+    kind: "codex_session_state",
+    severity: "high",
+    title: "Codex session resume or state failure",
+    why: "Large local session histories, resume compression, archived chat loading, and state-store migrations can strand long-running Codex work unless reports preserve the exact session size, state files, latency, and recovery path.",
+    patterns: [
+      /\bcodex resume\b.{0,160}\b(interactive picker|picker)\b.{0,160}\b(hangs?|freezes?|unresponsive|Enter has no effect|works fine)\b/i,
+      /\bcodex resume\s+<?id>?\b.{0,180}\b(works|bypasses|workaround)\b/i,
+      /\brollout[-_].{0,120}\b\d{1,3}(?:\.\d+)?\s*MB\b/i,
+      /\b\d{1,3}(?:,\d{3})+\s+JSONL lines\b/i,
+      /\b(input_image|response_item|event_msg|function_call) records\b.{0,160}\b(thread|rollout|history|session)\b/i,
+      /\bthread\/resume\b.{0,80}\b\d{3,6}\s*ms\b/i,
+      /\bthread\/goal\/get\b.{0,80}\b\d{3,6}\s*ms\b/i,
+      /\bCodex Desktop\b.{0,180}\b(sluggish|freezing-like|extremely slow|unresponsive|high app-server\/renderer CPU|large local thread)\b/i,
+      /\bCould not load archived chats\b/i,
+      /\bcontext compression\b.{0,180}\b(drops recent|last 3-5 turns|recent conversation context|amnesic|cannot continue)\b/i,
+      /\bcodex resume\b.{0,180}\b(drops recent|last 3-5 turns|recent conversation context|cannot continue)\b/i,
+      /\bstate_5\.sqlite\b.{0,180}\b(thread_goals|drop thread goals|no such table|migration)\b/i,
+      /\bgoals_1\.sqlite\b.{0,180}\b(thread_goals|empty|migration)\b/i,
+      /\bno such table:\s*thread_goals\b/i,
+      /\bprojectless-thread-ids\b.{0,180}\b(restored|returned|orphaned|projectless)\b/i,
+      /\bthread-workspace-root-hints\b.{0,180}\b(restored|returned|stale|projectless)\b/i
+    ],
+    suggestedRule:
+      "When Codex session resume or local state fails, capture app/CLI version, OS, session/thread id, rollout JSONL size, line and record counts, largest line size, image/tool-output counts, thread/resume and thread/goal/get timings, renderer/app-server CPU and memory, affected SQLite/global-state files and migration versions, whether codex resume <id> works, whether a new thread works, and any backup or restore steps before editing local state.",
+    suggestedSkill: "codex-session-state-triage"
+  },
+  {
     kind: "quota_mismatch",
     severity: "high",
     title: "Codex quota or usage-limit mismatch",

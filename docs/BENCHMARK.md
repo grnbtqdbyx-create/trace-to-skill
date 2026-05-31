@@ -16,6 +16,7 @@ This benchmark runs the public fixture pack that ships with the repository and p
 | Codex quota mismatch | `fixtures/quota-mismatch.md` | 75 | 2 | 0 | `quota_mismatch`, `weak_evidence` | pass |
 | MCP config with secret exposure | `fixtures/mcp-risk.json` | 59 | 2 | 1 | `mcp_risk`, `secret_exposure` | pass |
 | Codex MCP runtime failure | `fixtures/codex-mcp-runtime.md` | 75 | 2 | 0 | `codex_mcp_runtime`, `weak_evidence` | pass |
+| Codex session resume and state failure | `fixtures/codex-session-state.md` | 75 | 2 | 0 | `codex_session_state`, `weak_evidence` | pass |
 | Untrusted PR comment prompt injection | `fixtures/prompt-injection.md` | 50 | 3 | 1 | `premature_completion`, `prompt_injection`, `weak_evidence` | pass |
 | Conflicting agent instruction files | `fixtures/instruction-drift` | 84 | 1 | 0 | `ignored_instruction` | pass |
 

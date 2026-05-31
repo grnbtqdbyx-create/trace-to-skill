@@ -48,6 +48,14 @@ Common signals include `user cancelled MCP tool call`, `request_user_input is no
 
 The fix is to capture the Codex version, MCP server name and transport, tool name, exposed callable name, whether `tools/list` and manual `tools/call` succeed, `approval_policy`, sandbox mode, exec or interactive mode, elicitation setting, namespace or `serverName` metadata, exact `item.started` / `item.completed` JSONL, stderr or backpressure evidence, and whether restarting or reinitializing the transport changes the result.
 
+## Codex Session State
+
+Codex resume, Desktop history rendering, archived chat loading, context compression, or local state migrations can fail after a long thread accumulates large JSONL history, images, tool output, or stale SQLite/global-state metadata.
+
+Common signals include `codex resume` interactive picker hangs or freezes, `codex resume <id>` working while the picker is unresponsive, large `rollout-*.jsonl` or session files, 10+ MB or 100+ MB histories, high `response_item`, `event_msg`, `function_call`, or `input_image` counts, `thread/resume` or `thread/goal/get` taking thousands of milliseconds, Codex Desktop becoming sluggish with high app-server/renderer CPU, `Could not load archived chats`, resume compression dropping the last 3-5 turns, `state_5.sqlite`, `goals_1.sqlite`, `no such table: thread_goals`, `projectless-thread-ids`, and `thread-workspace-root-hints` reverting after restart.
+
+The fix is to capture app and CLI versions, OS, session or thread id, rollout JSONL size, line and record counts, largest line size, image/tool-output counts, `thread/resume` and `thread/goal/get` timings, renderer/app-server CPU and memory, affected SQLite/global-state files and migration versions, whether `codex resume <id>` works, whether a new thread works, and any backup or restore steps before editing local state.
+
 ## Quota Mismatch
 
 Codex reports a usage-limit block even though another surface shows remaining quota, or quota state appears to be shared across accounts, consumed in parallel across 5h and weekly windows, or reset at an impossible time.
