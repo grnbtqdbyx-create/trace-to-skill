@@ -1,10 +1,10 @@
 # trace-to-skill Demo
 
-Scenario: **Codex app connector auth cache regression**
+Scenario: **Codex MCP discovery mismatch**
 
-App connectors keep stale `link_*` auth or discovery metadata after reauth-required responses.
+MCP servers work in CLI or one config scope but are absent in Desktop, VS Code, WSL, or project-local sessions.
 
-Fixture: `fixtures/codex-connector-auth-cache.md`
+Fixture: `fixtures/codex-mcp-discovery-mismatch.md`
 
 This is a packaged public fixture, so you can try the project without collecting a private trace first.
 
@@ -14,7 +14,7 @@ This is a packaged public fixture, so you can try the project without collecting
 
 Score: **75/100**
 
-Likely failure class: **Codex app connector auth cache or stale link regression (codex_connector_auth_cache, high)**
+Likely failure class: **Codex MCP discovery or config-scope mismatch (codex_mcp_discovery_mismatch, high)**
 
 Agent workflow needs clearer verification, instruction, or security hardening before broad reuse.
 
@@ -23,25 +23,22 @@ Agent workflow needs clearer verification, instruction, or security hardening be
 ```md
 ### What happened?
 
-trace-to-skill detected Codex app connector auth cache or stale link regression (codex_connector_auth_cache). Codex app connectors can keep stale server-side or local `link_*` authorization metadata after reauth-required responses, making plugin reinstall and app restart look successful while connector tools still fail.
+trace-to-skill detected Codex MCP discovery or config-scope mismatch (codex_mcp_discovery_mismatch). MCP servers can work in Codex CLI or one config scope while Desktop, VS Code, WSL, remote, or project-local sessions silently load another scope and expose no tools.
 
 ### Detected failure class
 
-- codex_connector_auth_cache: Codex app connector auth cache or stale link regression (high)
+- codex_mcp_discovery_mismatch: Codex MCP discovery or config-scope mismatch (high)
 
 ### Evidence
 
-#### Codex app connector auth cache or stale link regression
-- fixtures/codex-connector-auth-cache.md:13 - - A read-only Linear tool is visible, but `mcp__codex_apps__linear._list_teams` returns `401: "Server returned 401: 'Reauthentication required'"`.
-- fixtures/codex-connector-auth-cache.md:14 - - Codex Desktop also showed `Your access token could not be refreshed because your refresh token was revoked. Please log out and sign in again` during an active session.
-- fixtures/codex-connector-auth-cache.md:15 - - Restarting Codex Desktop did not fix the connector.
-- fixtures/codex-connector-auth-cache.md:16 - - `codex plugin remove linear@openai-curated` followed by `codex plugin add linear@openai-curated` did not fix auth.
-- fixtures/codex-connector-auth-cache.md:17 - - Moving aside `~/.codex/cache/codex_apps_tools/*.json` and `~/.codex/cache/codex_app_directory/*.json` regenerated files but kept the same connector link id.
-- fixtures/codex-connector-auth-cache.md:18 - - Before and after cache regeneration, Linear still referenced `link_69ebf2fff8cc8191a42ae4b585c191f6`.
+#### Codex MCP discovery or config-scope mismatch
+- fixtures/codex-mcp-discovery-mismatch.md:20 - MCP servers not detected in Codex VS Code extension, but working in Codex CLI.
+- fixtures/codex-mcp-discovery-mismatch.md:60 - Open config.toml in WSL environment still opens the Windows config.toml.
+- fixtures/codex-mcp-discovery-mismatch.md:63 - CODEX_HOME differs between CLI, VS Code, WSL, remote SSH, and the standalone app.
 
 ### Diagnostics to attach
 
-- When reporting Codex app connector auth-cache regressions, capture app/CLI version, OS, connector/plugin name and id, installed plugin root, exact tool name such as `mcp__codex_apps__linear.*`, error text, `link_*` id before and after reconnect, `isAccessible` state, relevant `~/.codex/cache/codex_apps_tools` and `codex_app_directory` metadata without tokens, restart/remove/re-add/cache-clear attempts, whether the ChatGPT app page shows Connect, whether a server-side link appears unchanged, and whether an external MCP workaround succeeds.
+- When reporting Codex MCP discovery or config-scope mismatches, capture app/CLI/extension version, OS, IDE, remote/WSL/SSH state, workspace root, effective CODEX_HOME, all config files considered (`~/.codex/config.toml`, project `.codex/config.toml`, `.vscode/mcp.json`, `.mcp.json`), exact MCP sections without secrets, trust/profile/default-permissions state, `codex mcp list` and `codex mcp get <server>`, CLI versus Desktop/VS Code comparison, loaded config path or extension logs, whether moving the same server to user-global config fixes it, whether reload/restart/new conversation changes tool exposure, and whether the current session exposes any `mcp__*` tools.
 
 ### Privacy
 
@@ -50,25 +47,20 @@ trace-to-skill detected Codex app connector auth cache or stale link regression 
 
 ## Findings
 
-### 1. Codex app connector auth cache or stale link regression
+### 1. Codex MCP discovery or config-scope mismatch
 
 Severity: **high**
 
-Codex app connectors can keep stale server-side or local `link_*` authorization metadata after reauth-required responses, making plugin reinstall and app restart look successful while connector tools still fail.
+MCP servers can work in Codex CLI or one config scope while Desktop, VS Code, WSL, remote, or project-local sessions silently load another scope and expose no tools.
 
 Evidence:
-- `fixtures/codex-connector-auth-cache.md:13` - A read-only Linear tool is visible, but `mcp__codex_apps__linear._list_teams` returns `401: "Server returned 401: 'Reauthentication required'"`.
-- `fixtures/codex-connector-auth-cache.md:14` - Codex Desktop also showed `Your access token could not be refreshed because your refresh token was revoked. Please log out and sign in again` during an active session.
-- `fixtures/codex-connector-auth-cache.md:15` - Restarting Codex Desktop did not fix the connector.
-- `fixtures/codex-connector-auth-cache.md:16` - `codex plugin remove linear@openai-curated` followed by `codex plugin add linear@openai-curated` did not fix auth.
-- `fixtures/codex-connector-auth-cache.md:17` - Moving aside `~/.codex/cache/codex_apps_tools/*.json` and `~/.codex/cache/codex_app_directory/*.json` regenerated files but kept the same connector link id.
-- `fixtures/codex-connector-auth-cache.md:18` - Before and after cache regeneration, Linear still referenced `link_69ebf2fff8cc8191a42ae4b585c191f6`.
-- `fixtures/codex-connector-auth-cache.md:19` - The regenerated app directory still reported `isAccessible: false`.
-- `fixtures/codex-connector-auth-cache.md:21` - An external Linear MCP workaround succeeded with `codex mcp add linear --url https://mcp.linear.app/mcp`:
+- `fixtures/codex-mcp-discovery-mismatch.md:20` MCP servers not detected in Codex VS Code extension, but working in Codex CLI.
+- `fixtures/codex-mcp-discovery-mismatch.md:60` Open config.toml in WSL environment still opens the Windows config.toml.
+- `fixtures/codex-mcp-discovery-mismatch.md:63` CODEX_HOME differs between CLI, VS Code, WSL, remote SSH, and the standalone app.
 
 Suggested rule:
 
-> When reporting Codex app connector auth-cache regressions, capture app/CLI version, OS, connector/plugin name and id, installed plugin root, exact tool name such as `mcp__codex_apps__linear.*`, error text, `link_*` id before and after reconnect, `isAccessible` state, relevant `~/.codex/cache/codex_apps_tools` and `codex_app_directory` metadata without tokens, restart/remove/re-add/cache-clear attempts, whether the ChatGPT app page shows Connect, whether a server-side link appears unchanged, and whether an external MCP workaround succeeds.
+> When reporting Codex MCP discovery or config-scope mismatches, capture app/CLI/extension version, OS, IDE, remote/WSL/SSH state, workspace root, effective CODEX_HOME, all config files considered (`~/.codex/config.toml`, project `.codex/config.toml`, `.vscode/mcp.json`, `.mcp.json`), exact MCP sections without secrets, trust/profile/default-permissions state, `codex mcp list` and `codex mcp get <server>`, CLI versus Desktop/VS Code comparison, loaded config path or extension logs, whether moving the same server to user-global config fixes it, whether reload/restart/new conversation changes tool exposure, and whether the current session exposes any `mcp__*` tools.
 
 
 ## Reporter Notes
@@ -88,6 +80,7 @@ Suggested rule:
 - `thinking-hang`: A turn or tool call completes, but the session stays on Thinking or Working with no streamed follow-up.
 - `clipboard-attachment`: Copy as Markdown, long-paste conversion, or generated Pasted text.txt attachments break prompt and report workflows.
 - `deeplink-launch`: OAuth callbacks, notification clicks, mobile links, or `codex app <path>` external activation fail to route into Codex.
+- `connector-auth-cache`: App connectors keep stale `link_*` auth or discovery metadata after reauth-required responses.
 - `token-burn`: Usage drains from background polling, idle activity, compaction loops, retries, or cached-heavy turns.
 - `patch-overwrite`: `apply_patch` accepts `*** Add File` for an existing path, turning a create operation into a silent overwrite.
 - `sensitive-files`: Secrets, local credentials, production env files, or private databases enter agent context.
@@ -104,6 +97,7 @@ trace-to-skill demo thinking-hang
 trace-to-skill demo clipboard-attachment
 trace-to-skill demo deeplink-launch
 trace-to-skill demo connector-auth-cache
+trace-to-skill demo mcp-discovery-mismatch
 trace-to-skill demo file-tree-ui
 trace-to-skill demo usage-reset-drift
 ```

@@ -415,6 +415,30 @@ const RULES: RuleDefinition[] = [
     suggestedSkill: "codex-remote-control-triage"
   },
   {
+    kind: "codex_mcp_discovery_mismatch",
+    severity: "high",
+    title: "Codex MCP discovery or config-scope mismatch",
+    why: "MCP servers can work in Codex CLI or one config scope while Desktop, VS Code, WSL, remote, or project-local sessions silently load another scope and expose no tools.",
+    patterns: [
+      /\bMCP servers? not detected\b.{0,220}\b(VS Code|extension|IDE|Desktop|Codex App)\b.{0,220}\b(working|works|detected|listed|available)\b.{0,120}\b(Codex CLI|CLI|\/mcp)\b/i,
+      /\b(Codex CLI|CLI|\/mcp|codex mcp list)\b.{0,220}\b(working|works|detects?|lists?|shows?|can access)\b.{0,220}\b(VS Code|extension|IDE|Desktop|Codex App)\b.{0,220}\b(no MCP|empty|not detected|missing|unknown MCP server|not exposed|not wired)\b/i,
+      /\b(VS Code|extension|IDE|Desktop|Codex App)\b.{0,220}\b(no MCP|list_mcp_resources remains empty|list_mcp_resource_templates.*empty|unknown MCP server|not detected|missing|not exposed|not registered)\b.{0,220}\b(Codex CLI|CLI|\/mcp|codex mcp list)\b.{0,220}\b(works|working|detects?|lists?|shows?)\b/i,
+      /\bproject[- ](?:scoped|level|local)\b.{0,160}\b\.codex\/config\.toml\b.{0,220}\b(ignored|not loaded|does not load|not picked up|does not pick up|absent|missing|unavailable)\b/i,
+      /\b\.codex\/config\.toml\b.{0,220}\b(project[- ](?:scoped|level|local)|trusted project|workspace)\b.{0,220}\b(ignored|not loaded|does not load|not picked up|does not pick up|absent|missing|unavailable)\b/i,
+      /\b(codex mcp get|codex mcp list)\b.{0,180}\b(No MCP server named|only shows servers from|does not show|absent|missing)\b.{0,180}\b(~\/\.codex\/config\.toml|\.codex\/config\.toml|project[- ](?:scoped|level|local)|global|user[- ]level)\b/i,
+      /\b(user[- ]level|global|~\/\.codex\/config\.toml)\b.{0,180}\b(works|detected|loads?)\b.{0,180}\b(project[- ](?:scoped|level|local)|\.codex\/config\.toml)\b.{0,180}\b(does not|doesn't|not|ignored|missing|unavailable)\b/i,
+      /\bmove(?:d)?\b.{0,160}\b(MCP server|same MCP|definition|config)\b.{0,120}\b(to|into)\b.{0,80}\b~\/\.codex\/config\.toml\b.{0,160}\b(works|detected|registered|fixes?|loads?)\b/i,
+      /\bCODEX_HOME\b.{0,220}\b(differs|different|not inherited|not set|VS Code|Desktop|WSL|remote|SSH|workspace|repo local)\b/i,
+      /\bWSL\b.{0,220}\b(config\.toml|CODEX_HOME|Windows-hosted|Windows `?config\.toml`?|\/home\/[^/\s]+\/\.codex\/config\.toml)\b.{0,220}\b(opens?|references?|uses?|points? to)\b.{0,120}\b(Windows|wrong|C:\\\\Users|not WSL)\b/i,
+      /\bOpen config\.toml in WSL environment\b.{0,220}\b(Windows|wrong config|C:\\\\Users|not WSL|still opens)\b/i,
+      /\b\.vscode[\\\/]mcp\.json\b.{0,220}\b(Codex|extension|IDE)\b.{0,220}\b(not supported|stopped recognizing|not detected|never supported|ignored)\b/i,
+      /\b(mcp__[-A-Za-z0-9_]+|mcp__\*)\b.{0,180}\b(not exposed|not wired|current session|old conversation|new conversation|curated namespaces only|missing)\b/i
+    ],
+    suggestedRule:
+      "When reporting Codex MCP discovery or config-scope mismatches, capture app/CLI/extension version, OS, IDE, remote/WSL/SSH state, workspace root, effective CODEX_HOME, all config files considered (`~/.codex/config.toml`, project `.codex/config.toml`, `.vscode/mcp.json`, `.mcp.json`), exact MCP sections without secrets, trust/profile/default-permissions state, `codex mcp list` and `codex mcp get <server>`, CLI versus Desktop/VS Code comparison, loaded config path or extension logs, whether moving the same server to user-global config fixes it, whether reload/restart/new conversation changes tool exposure, and whether the current session exposes any `mcp__*` tools.",
+    suggestedSkill: "codex-mcp-discovery-triage"
+  },
+  {
     kind: "codex_mcp_runtime",
     severity: "high",
     title: "Codex MCP runtime or routing failure",

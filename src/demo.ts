@@ -67,6 +67,12 @@ const DEMO_SCENARIOS: DemoScenario[] = [
     description: "App connectors keep stale `link_*` auth or discovery metadata after reauth-required responses."
   },
   {
+    id: "mcp-discovery-mismatch",
+    title: "Codex MCP discovery mismatch",
+    fixture: "fixtures/codex-mcp-discovery-mismatch.md",
+    description: "MCP servers work in CLI or one config scope but are absent in Desktop, VS Code, WSL, or project-local sessions."
+  },
+  {
     id: "token-burn",
     title: "Codex token burn",
     fixture: "fixtures/codex-token-burn.md",
@@ -156,6 +162,7 @@ export function renderDemoMarkdown(result: DemoResult): string {
     "trace-to-skill demo clipboard-attachment",
     "trace-to-skill demo deeplink-launch",
     "trace-to-skill demo connector-auth-cache",
+    "trace-to-skill demo mcp-discovery-mismatch",
     "trace-to-skill demo file-tree-ui",
     "trace-to-skill demo usage-reset-drift",
     "```",
@@ -183,6 +190,7 @@ export function renderDemoScenarioList(scenarios = listDemoScenarios()): string 
     "trace-to-skill demo clipboard-attachment",
     "trace-to-skill demo deeplink-launch",
     "trace-to-skill demo connector-auth-cache",
+    "trace-to-skill demo mcp-discovery-mismatch",
     "trace-to-skill demo --list",
     "```",
     ""

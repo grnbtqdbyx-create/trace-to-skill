@@ -23,6 +23,7 @@ Runtime: Node.js 20+
 - Codex auth and connectivity failures such as `token_exchange_failed`, `auth.openai.com/oauth/token`, missing `ca-certificates`, proxy or MITM TLS behavior, IPv6 fallback problems, Cloudflare challenge responses, and ChatGPT stream disconnects
 - Codex mobile and remote-control route health failures such as `Waiting for desktop`, `Directory Unavailable`, stale listeners on `127.0.0.1:14567`, stale `server_name` enrollment, empty backend environments, and incomplete helper bundles
 - Codex MCP runtime failures such as cancelled non-interactive approvals, `request_user_input is not supported in exec mode`, dropped namespace or `serverName` metadata, `unsupported call: mcp__...__...`, and closed `StdioServerTransport` sessions
+- Codex MCP discovery and config-scope mismatches where CLI `/mcp` works but VS Code, Desktop, WSL, project `.codex/config.toml`, `CODEX_HOME`, or an older conversation exposes no `mcp__*` tools
 - Codex resume and session-state failures such as frozen resume pickers, large rollout JSONL histories, short `session_index.jsonl`, sluggish Desktop thread rendering, dropped recent context after resume, archived chat loading failures, and `state_5.sqlite` / `goals_1.sqlite` migration drift
 - Codex file tree and workspace navigation UI failures such as `View > Toggle File Tree` doing nothing, missing folder icons, stale floating file panels, and built-in preview failures
 - Codex Thinking or Working hangs after accepted turns, successful local tools, or open Responses streams with no streamed assistant follow-up
@@ -72,6 +73,7 @@ npx trace-to-skill demo thinking-hang
 npx trace-to-skill demo clipboard-attachment
 npx trace-to-skill demo deeplink-launch
 npx trace-to-skill demo connector-auth-cache
+npx trace-to-skill demo mcp-discovery-mismatch
 npx trace-to-skill lint-agents .
 npx trace-to-skill guard-github-event "$GITHUB_EVENT_PATH"
 npx trace-to-skill guard-patch ./change.patch --root .
@@ -93,7 +95,7 @@ npx trace-to-skill init --comment --sarif
 ## GitHub Action
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.63
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.64
   with:
     mode: all
     doctor-threshold: "85"
@@ -156,6 +158,9 @@ npx trace-to-skill init --comment --sarif
 - Codex mobile Waiting for desktop Directory Unavailable
 - Codex MCP unsupported call mcp__node_repl__js
 - Codex MCP tools/list succeeds but runtime call fails
+- Codex MCP servers not detected in VS Code extension but working in CLI
+- Codex project .codex/config.toml MCP ignored Desktop
+- Codex WSL opens Windows config.toml CODEX_HOME mismatch
 - Codex MCP Transport closed StdioServerTransport
 - Codex View Toggle File Tree does nothing
 - Codex missing file tree folder icon

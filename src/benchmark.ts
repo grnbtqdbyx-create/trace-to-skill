@@ -156,6 +156,12 @@ const BENCHMARK_CASES: BenchmarkCaseDefinition[] = [
     expectedKinds: ["codex_mcp_runtime", "weak_evidence"]
   },
   {
+    id: "codex-mcp-discovery-mismatch",
+    title: "Codex MCP discovery and config-scope mismatch",
+    fixture: "fixtures/codex-mcp-discovery-mismatch.md",
+    expectedKinds: ["codex_mcp_discovery_mismatch", "weak_evidence"]
+  },
+  {
     id: "codex-plugin-runtime",
     title: "Codex plugin runtime and bundled capability failure",
     fixture: "fixtures/codex-plugin-runtime.md",

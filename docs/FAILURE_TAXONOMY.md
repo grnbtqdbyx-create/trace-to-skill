@@ -104,6 +104,14 @@ Common signals include `user cancelled MCP tool call`, `request_user_input is no
 
 The fix is to capture the Codex version, MCP server name and transport, tool name, exposed callable name, whether `tools/list` and manual `tools/call` succeed, `approval_policy`, sandbox mode, exec or interactive mode, elicitation setting, namespace or `serverName` metadata, exact `item.started` / `item.completed` JSONL, stderr or backpressure evidence, and whether restarting or reinitializing the transport changes the result.
 
+## Codex MCP Discovery Mismatch
+
+Codex MCP servers can work in CLI or one config scope but disappear in another surface before any tool call is possible. This is different from runtime failure: the user may have no `mcp__*` tools exposed in VS Code, Desktop, WSL, a remote session, project-local `.codex/config.toml`, or an older conversation even though CLI `/mcp` works.
+
+Common signals include `MCP servers not detected in Codex VS Code extension (but working in Codex CLI)`, `list_mcp_resources remains empty`, `unknown MCP server`, project `.codex/config.toml` ignored while `~/.codex/config.toml` works, `codex mcp get <server>` returning `No MCP server named`, WSL opening a Windows-hosted `config.toml`, `CODEX_HOME` mismatch, `.vscode/mcp.json` confusion, curated namespaces only, or a new conversation seeing tools while the previous conversation does not.
+
+The fix is to capture app/CLI/extension version, OS, IDE, remote/WSL/SSH state, workspace root, effective `CODEX_HOME`, config files considered, redacted MCP sections, trust/profile/default-permissions state, `codex mcp list`, `codex mcp get <server>`, CLI-versus-Desktop/VS Code comparison, loaded config path or extension logs, whether moving the same server to user-global config fixes it, and restart/reload/new-conversation behavior.
+
 ## Codex Plugin Runtime
 
 Codex Desktop can show a plugin, connector, Browser, Computer Use, or bundled skill as available while the shared plugin runtime is not actually usable. Common causes include missing native pipe/helper metadata, plugin-list schema drift, stale plugin cache reconciliation, file-lock issues, or installed plugins being silently downgraded.

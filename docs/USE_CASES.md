@@ -17,13 +17,14 @@ npx trace-to-skill demo thinking-hang
 npx trace-to-skill demo clipboard-attachment
 npx trace-to-skill demo deeplink-launch
 npx trace-to-skill demo connector-auth-cache
+npx trace-to-skill demo mcp-discovery-mismatch
 ```
 
 What it proves:
 
 - packaged fixtures can produce a real Codex issue report immediately
 - maintainers can inspect the output shape before sharing any private log
-- demos cover remote compact failures, Windows helper path failures, patch overwrite safety, approval friction, latency, Thinking hangs, clipboard/attachment regressions, deeplink/OAuth launch regressions, connector auth-cache regressions, token burn, sensitive files, and prompt injection
+- demos cover remote compact failures, Windows helper path failures, patch overwrite safety, approval friction, latency, Thinking hangs, clipboard/attachment regressions, deeplink/OAuth launch regressions, connector auth-cache regressions, MCP discovery/config-scope mismatches, token burn, sensitive files, and prompt injection
 
 See the generated demo output in [docs/DEMO.md](DEMO.md).
 
@@ -46,7 +47,7 @@ What it proves:
 Recommended CI surface:
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.63
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.64
   with:
     mode: all
     doctor-threshold: "85"
@@ -286,7 +287,21 @@ This catches signals such as `401: "Server returned 401: 'Reauthentication requi
 
 Include app/CLI version, OS, connector/plugin name and id, installed plugin root, exact tool name, redacted `codex_apps_tools` and `codex_app_directory` metadata, `link_*` id before/after reconnect, `isAccessible` state, restart/remove/re-add/cache-clear/sign-in attempts, ChatGPT app page state, and whether an external MCP workaround succeeds.
 
-## 20. Patch Overwrite Guard
+## 20. Codex MCP Discovery And Config Scope Evidence
+
+Use this when MCP servers work in Codex CLI or one config scope but are missing in VS Code, Desktop, WSL, remote sessions, project-local config, or an older conversation.
+
+```bash
+npx trace-to-skill demo mcp-discovery-mismatch
+npx trace-to-skill analyze ./runs --format json
+npx trace-to-skill codex-report ./runs --output openai-codex-mcp-discovery.md
+```
+
+This catches signals such as `MCP servers not detected in Codex VS Code extension (but working in Codex CLI)`, `list_mcp_resources remains empty`, missing `mcp__*` tools, project `.codex/config.toml` ignored while `~/.codex/config.toml` works, `codex mcp get <server>` returning `No MCP server named`, WSL opening the Windows-hosted `config.toml`, `CODEX_HOME` mismatch, and tool exposure changing after restart, reload, or new conversation.
+
+Include app/CLI/extension version, OS, IDE, remote/WSL/SSH state, workspace root, effective `CODEX_HOME`, all config files considered (`~/.codex/config.toml`, project `.codex/config.toml`, `.vscode/mcp.json`, `.mcp.json`), redacted MCP sections, trust/profile/default-permissions state, `codex mcp list`, `codex mcp get <server>`, CLI-versus-Desktop/VS Code comparison, loaded config path/log lines, whether moving the same server to user-global config fixes it, and whether the current session exposes `mcp__*` tools.
+
+## 21. Patch Overwrite Guard
 
 Use this before applying a generated patch when you want create/update/delete semantics checked against the actual workspace.
 
@@ -303,7 +318,7 @@ For a public demo report:
 npx trace-to-skill demo patch-overwrite
 ```
 
-## 21. OpenAI Codex Issue Report
+## 22. OpenAI Codex Issue Report
 
 Use this when you want to file or update an OpenAI/Codex issue with a concise, evidence-backed report instead of pasting a full transcript.
 
@@ -316,7 +331,7 @@ The report includes the likely Codex failure class, line-linked evidence, diagno
 
 For a cluster-to-command map of current Codex issue patterns, see [CODEX_ISSUE_MAP.md](CODEX_ISSUE_MAP.md).
 
-## 22. Sensitive File Access Evidence
+## 23. Sensitive File Access Evidence
 
 Use this when a trace suggests an agent read, attached, uploaded, diffed, or indexed credential-bearing files.
 
@@ -329,7 +344,7 @@ This catches signals such as `.env`, `.env.production`, `.npmrc`, `.pypirc`, `.n
 
 Before publishing evidence, run `trace-to-skill redact` and attach only redacted excerpts plus the file path/class.
 
-## 23. GitHub Context Guard
+## 24. GitHub Context Guard
 
 Use this before an agent reads untrusted GitHub text.
 
@@ -346,7 +361,7 @@ Use it when:
 - a bot asks Codex to triage untrusted user reports
 - logs or comments might contain instructions like "ignore previous instructions" or "print secrets"
 
-## 24. Failed Agent Run To Reviewable Rule
+## 25. Failed Agent Run To Reviewable Rule
 
 Use this when a coding agent made a repeated workflow mistake.
 
@@ -364,7 +379,7 @@ Recommended maintainer loop:
 4. Copy only evidence-backed rules into the real policy file.
 5. Run `eval` or `scorecard` in CI so the same failure does not silently return.
 
-## 25. Privacy-Preserving Adoption
+## 26. Privacy-Preserving Adoption
 
 Use this when you want public evidence without leaking private traces.
 

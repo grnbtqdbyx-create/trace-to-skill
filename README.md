@@ -70,6 +70,7 @@ Use it when you need to:
 - **Report clipboard and pasted-text attachment regressions:** run `trace-to-skill codex-report ./runs` when `Copy as Markdown` disappears, long prompts become `Pasted text.txt`, generated attachments cannot be previewed/edited, or `/goal` treats attached pasted text as empty.
 - **Report deeplink and OAuth launch regressions:** run `trace-to-skill codex-report ./runs` when `codex://oauth_callback`, notification clicks, browser-extension activation, mobile links, or `codex app <path>` fail to route back into Codex.
 - **Diagnose stale connector auth/cache:** run `trace-to-skill codex-report ./runs` when Codex app connectors return `401 Reauthentication required`, keep the same `link_*`, report `isAccessible: false`, or survive restart/plugin reinstall/cache clearing.
+- **Explain missing MCP tools across Codex surfaces:** run `trace-to-skill codex-report ./runs` when MCP servers work in CLI or user-global config but are absent in VS Code, Desktop, WSL, or project-local sessions.
 - **Reduce approval friction:** run `trace-to-skill analyze ./runs` when `Approve for this session` is not remembered, repeated prompts push users toward Full Access, or trusted MCP tools like Playwright require dozens of approvals.
 - **Diagnose sandbox blockers:** run `trace-to-skill analyze ./runs` on Codex traces that fail with sandbox setup refresh, `os error 740`, ACL, ownership, or approval-mode permission errors.
 - **Debug Codex auth/connectivity:** run `trace-to-skill analyze ./runs` on logs with `token_exchange_failed`, `auth.openai.com/oauth/token`, Cloudflare challenge, proxy/CA, IPv6, or stream disconnect symptoms.
@@ -120,6 +121,7 @@ Open-source maintainers do not need more AI-generated noise. They need agents th
 - Did copy/export, long-paste conversion, generated `Pasted text.txt`, or `/goal` attachment handling break the prompt or support-report workflow?
 - Did `codex://` OAuth callbacks, notification clicks, browser-extension launches, mobile pairing links, or `codex app <path>` fail to open the right Codex route?
 - Did a Codex app connector keep stale `link_*` or `isAccessible: false` metadata after `401 Reauthentication required`, restart, plugin reinstall, or cache regeneration?
+- Did MCP servers work in Codex CLI, `~/.codex/config.toml`, or a new conversation, but disappear from VS Code, Desktop, WSL, project `.codex/config.toml`, or an older session?
 - Did repeated approval prompts make a safer scoped mode unusable or require huge per-tool MCP approval configs?
 - Can the failure be reported to OpenAI with line-linked evidence, redaction notes, and the exact diagnostics maintainers need?
 - Can we produce an application-ready OpenAI OSS brief from the repo's actual license, distribution, readiness, and benchmark state?
@@ -198,6 +200,7 @@ Trace analysis detects run-level failures:
 | Sandbox permission | Codex sandbox setup, approval mode, ACL, or workspace ownership blocks tool execution |
 | Codex connectivity | Auth token exchange, proxy/CA, IPv6, Cloudflare challenge, or ChatGPT transport errors block Codex |
 | Codex remote control | Mobile or remote sessions route through stale listeners, stale enrollment, or incomplete helper bundles |
+| Codex MCP discovery mismatch | MCP works in CLI or one config scope but disappears in VS Code, Desktop, WSL, project config, or an older session |
 | Codex MCP runtime | MCP tools are configured but approval, namespace routing, unsupported callable names, or stdio transport fail at runtime |
 | Codex plugin runtime | Browser, Computer Use, Chrome, connectors, or bundled plugins are advertised but fail because helper paths, plugin-list schemas, or cache state drift |
 | Codex file tree UI | Desktop file tree, floating file panel, or file preview cannot be revealed, refreshes stale entries, or loses workspace navigation |
@@ -243,6 +246,7 @@ trace-to-skill demo thinking-hang
 trace-to-skill demo clipboard-attachment
 trace-to-skill demo deeplink-launch
 trace-to-skill demo connector-auth-cache
+trace-to-skill demo mcp-discovery-mismatch
 trace-to-skill demo patch-overwrite
 trace-to-skill guard-patch ./change.patch --root .
 trace-to-skill session-audit ~/.codex --format json
@@ -457,7 +461,7 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v5
-      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.63
+      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.64
         with:
           mode: all
           doctor-threshold: "85"
@@ -506,7 +510,7 @@ Composite action usage:
 
 ```yaml
 - id: trace-to-skill
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.63
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.64
   with:
     mode: all
     doctor-threshold: "85"
@@ -548,7 +552,7 @@ Action outputs:
 
 By default, generated reports are also appended to the GitHub Actions Job Summary. Set `job-summary: "false"` to disable that UI output.
 
-Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.63` executes that release's checked-out source instead of pulling the default branch at runtime.
+Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.64` executes that release's checked-out source instead of pulling the default branch at runtime.
 
 ## Codex Skill
 

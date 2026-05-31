@@ -63,6 +63,7 @@ trace-to-skill checks repo readiness and scans agent traces/logs to generate:
 - Codex auth/connectivity detection for token exchange, CA certificate, proxy, IPv6, Cloudflare challenge, and stream disconnect evidence
 - Codex mobile/remote-control route health detection for stale listener, stale enrollment, missing helper bundle, and `Waiting for desktop` evidence
 - Codex MCP runtime detection for cancelled approvals, unsupported routed tool calls, dropped namespace/serverName metadata, and closed stdio transports
+- Codex MCP discovery/config-scope detection for CLI-versus-VS Code/Desktop gaps, ignored project `.codex/config.toml`, WSL config path mismatch, `CODEX_HOME` drift, and missing `mcp__*` tools
 - Codex file tree and workspace navigation UI failure detection for missing `View > Toggle File Tree`, stale floating panels, and file-preview failures
 - Codex resume/session-state detection for large JSONL histories, sluggish Desktop thread rendering, dropped recent context, archived chat failures, and SQLite migration drift
 - Codex Thinking/Working hang detection for accepted turns, completed local tools, delayed first `response_item`, `responses_http` `time.busy` / `time.idle`, stop/interrupt failures, MCP state, and subagent parent/child lifecycle evidence
@@ -90,6 +91,7 @@ npx trace-to-skill demo thinking-hang
 npx trace-to-skill demo clipboard-attachment
 npx trace-to-skill demo deeplink-launch
 npx trace-to-skill demo connector-auth-cache
+npx trace-to-skill demo mcp-discovery-mismatch
 npx trace-to-skill init --comment --sarif
 npx trace-to-skill doctor .
 npx trace-to-skill lint-agents .

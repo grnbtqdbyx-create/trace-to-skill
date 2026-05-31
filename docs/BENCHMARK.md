@@ -26,6 +26,7 @@ This benchmark runs the public fixture pack that ships with the repository and p
 | MCP config with secret exposure | `fixtures/mcp-risk.json` | 59 | 2 | 1 | `mcp_risk`, `secret_exposure` | pass |
 | Sensitive file access in agent context | `fixtures/sensitive-file-access.md` | 75 | 2 | 0 | `sensitive_file_access`, `weak_evidence` | pass |
 | Codex MCP runtime failure | `fixtures/codex-mcp-runtime.md` | 75 | 2 | 0 | `codex_mcp_runtime`, `weak_evidence` | pass |
+| Codex MCP discovery and config-scope mismatch | `fixtures/codex-mcp-discovery-mismatch.md` | 75 | 2 | 0 | `codex_mcp_discovery_mismatch`, `weak_evidence` | pass |
 | Codex plugin runtime and bundled capability failure | `fixtures/codex-plugin-runtime.md` | 59 | 3 | 0 | `codex_plugin_runtime`, `codex_windows_helper_path`, `weak_evidence` | pass |
 | Codex file tree and workspace navigation UI failure | `fixtures/codex-file-tree-ui.md` | 75 | 2 | 0 | `codex_file_tree_ui`, `weak_evidence` | pass |
 | Codex session resume and state failure | `fixtures/codex-session-state.md` | 59 | 3 | 0 | `codex_resource_leak`, `codex_session_state`, `weak_evidence` | pass |

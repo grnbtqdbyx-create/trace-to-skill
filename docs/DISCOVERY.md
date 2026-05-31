@@ -27,6 +27,7 @@ This page is written for maintainers, search engines, package indexes, and AI re
 - Codex login or response streaming fails because of `token_exchange_failed`, `auth.openai.com/oauth/token`, missing CA certificates, proxy/MITM, IPv6 fallback, Cloudflare challenge, or `stream disconnected before completion`.
 - Codex mobile or remote-control appears connected but routes through stale listeners, stale enrollment, incomplete helper bundles, empty backend environments, or stale Android/iOS session state.
 - Codex MCP tools are visible in `tools/list` but fail at runtime because approval is cancelled, elicitation is unsupported in exec mode, namespace or `serverName` metadata is dropped, routed names become `unsupported call`, or stdio transport closes.
+- Codex MCP servers work in CLI or one config scope but are absent in VS Code, Desktop, WSL, remote, project-local, or older-conversation sessions because the effective config path, `CODEX_HOME`, trust/profile state, or tool exposure differs.
 - Codex approval flow repeatedly prompts after `Approve for this session`, forgets a safe approval scope, or forces large trusted MCP servers into noisy per-tool approval configs.
 - Codex config drift makes Preferences unable to save, keeps legacy `profile` / `[profiles.*]` config after migration, pins an unavailable model, points `default_permissions` at a missing profile, enables Windows elevated sandbox mode, or references plugin cache entries that are missing on disk.
 - Codex Desktop file tree, folder icon, floating file panel, or built-in file preview disappears, goes stale, or cannot be revealed by `View > Toggle File Tree`.
@@ -67,6 +68,7 @@ npx trace-to-skill demo thinking-hang
 npx trace-to-skill demo clipboard-attachment
 npx trace-to-skill demo deeplink-launch
 npx trace-to-skill demo connector-auth-cache
+npx trace-to-skill demo mcp-discovery-mismatch
 npx trace-to-skill scorecard .
 npx trace-to-skill lint-agents .
 npx trace-to-skill guard-github-event "$GITHUB_EVENT_PATH"

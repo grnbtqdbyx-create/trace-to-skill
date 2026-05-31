@@ -25,6 +25,7 @@ export type FindingKind =
   | "codex_windows_helper_path"
   | "codex_connectivity"
   | "codex_remote_control"
+  | "codex_mcp_discovery_mismatch"
   | "codex_mcp_runtime"
   | "codex_plugin_runtime"
   | "codex_file_tree_ui"
