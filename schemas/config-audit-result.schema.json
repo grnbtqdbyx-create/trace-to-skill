@@ -1,0 +1,125 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/grnbtqdbyx-create/trace-to-skill/schemas/config-audit-result.schema.json",
+  "title": "trace-to-skill Codex config audit result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["generatedAt", "target", "configPath", "status", "summary", "values", "findings"],
+  "properties": {
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "target": {
+      "type": "string"
+    },
+    "configPath": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["pass", "warn", "fail"]
+    },
+    "summary": {
+      "$ref": "#/$defs/summary"
+    },
+    "values": {
+      "$ref": "#/$defs/values"
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/finding"
+      }
+    }
+  },
+  "$defs": {
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["exists", "sizeBytes", "topLevelKeys", "sections", "mcpServers", "pluginSections"],
+      "properties": {
+        "exists": {
+          "type": "boolean"
+        },
+        "sizeBytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "topLevelKeys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "sections": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "mcpServers": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "pluginSections": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "values": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "model": {
+          "type": "string"
+        },
+        "approvalPolicy": {
+          "type": "string"
+        },
+        "sandboxMode": {
+          "type": "string"
+        },
+        "windowsSandbox": {
+          "type": "string"
+        },
+        "defaultPermissions": {
+          "type": "string"
+        }
+      }
+    },
+    "finding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["severity", "kind", "message"],
+      "properties": {
+        "severity": {
+          "type": "string",
+          "enum": ["warning", "error"]
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "missing_config",
+            "model_pin",
+            "danger_full_access",
+            "windows_elevated_sandbox",
+            "default_permissions_missing",
+            "deprecated_codex_hooks",
+            "machine_local_project_state",
+            "plugin_cache_missing",
+            "mcp_approval_sprawl"
+          ]
+        },
+        "line": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "message": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

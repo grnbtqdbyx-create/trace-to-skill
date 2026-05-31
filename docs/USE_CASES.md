@@ -42,7 +42,7 @@ What it proves:
 Recommended CI surface:
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.54
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.55
   with:
     mode: all
     doctor-threshold: "85"
@@ -78,9 +78,12 @@ Use this when Codex cannot start tools, apply patches, or write to the workspace
 
 ```bash
 npx trace-to-skill analyze ./runs --format json
+npx trace-to-skill config-audit ~/.codex --format json
 ```
 
 This catches signals such as Windows sandbox setup refresh failures, `os error 740`, `CodexSandboxOffline` ownership drift, ACL denial, approval-policy mismatch, and Full Access sessions behaving like workspace-write or on-request mode.
+
+`config-audit` is local and read-only: it summarizes `config.toml` model pins, `sandbox_mode`, `approval_policy`, `[windows].sandbox`, missing `default_permissions` profiles, deprecated `codex_hooks`, machine-local project trust entries, enabled plugins with missing cache directories, and large per-tool MCP approval configs.
 
 ## 5. Codex Auth And Connectivity Triage
 
@@ -128,6 +131,7 @@ Use this when MCP tools are configured and visible, but Codex cannot actually ca
 
 ```bash
 npx trace-to-skill analyze ./runs --format json
+npx trace-to-skill config-audit ~/.codex --format json
 ```
 
 This catches signals such as `user cancelled MCP tool call`, `request_user_input is not supported in exec mode`, `Approve app tool call?`, `tool_call_mcp_elicitation`, routed callable names like `mcp__node_repl__js` becoming `unsupported call`, deferred discovery dropping namespace or `serverName`, `tools/list` succeeding while Codex routing fails, and stdio transport lifecycle failures such as `Transport closed`, `stdin_end`, `stdin_close`, `transport_close`, or stderr backpressure.

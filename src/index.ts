@@ -1,6 +1,8 @@
 export { lintAgents, renderAgentsLintMarkdown } from "./agentsLint.js";
 export { analyzeInputs, analyzeTargets } from "./analyze.js";
 export { renderBenchmarkMarkdown, runBenchmark } from "./benchmark.js";
+export { auditCodexConfig, renderConfigAuditMarkdown } from "./configAudit.js";
+export type { ConfigAuditFinding, ConfigAuditResult, ConfigAuditSeverity, ConfigAuditStatus } from "./configAudit.js";
 export { listDemoScenarios, renderDemoMarkdown, renderDemoScenarioList, runDemo } from "./demo.js";
 export { doctorRepo } from "./doctor.js";
 export { compareAnalyses, evaluate } from "./eval.js";

@@ -3,6 +3,7 @@ import { writeFile } from "node:fs/promises";
 import { lintAgents, renderAgentsLintMarkdown } from "./agentsLint.js";
 import { analyzeTargets } from "./analyze.js";
 import { renderBenchmarkMarkdown, runBenchmark } from "./benchmark.js";
+import { auditCodexConfig, renderConfigAuditMarkdown } from "./configAudit.js";
 import { listDemoScenarios, renderDemoMarkdown, renderDemoScenarioList, runDemo } from "./demo.js";
 import { doctorRepo } from "./doctor.js";
 import { compareAnalyses, evaluate } from "./eval.js";
@@ -189,6 +190,15 @@ async function main(): Promise<void> {
     });
     const format = String(parsed.flags.format ?? "markdown");
     const output = format === "json" ? `${JSON.stringify(result, null, 2)}\n` : renderSessionAuditMarkdown(result);
+    await writeOutput(output, parsed.flags.output);
+    process.exitCode = result.status === "fail" ? 1 : 0;
+    return;
+  }
+
+  if (parsed.command === "config-audit") {
+    const result = await auditCodexConfig(parsed.targets[0] ?? "~/.codex");
+    const format = String(parsed.flags.format ?? "markdown");
+    const output = format === "json" ? `${JSON.stringify(result, null, 2)}\n` : renderConfigAuditMarkdown(result);
     await writeOutput(output, parsed.flags.output);
     process.exitCode = result.status === "fail" ? 1 : 0;
     return;
@@ -396,6 +406,7 @@ Usage:
   trace-to-skill guard-github-event [event.json] [--threshold 80] [--format markdown|json] [--output report.md]
   trace-to-skill guard-patch <patch-file> [--root repo-dir] [--format markdown|json] [--output report.md]
   trace-to-skill session-audit [codex-home-or-sessions-dir] [--large-mb 10] [--huge-line-kb 512] [--format markdown|json]
+  trace-to-skill config-audit [codex-home-or-config.toml] [--format markdown|json]
   trace-to-skill comment <trace-file-or-dir> [--dry-run] [--token $GITHUB_TOKEN]
   trace-to-skill compare --before <old-run> --after <new-run> [--format markdown|json]
   trace-to-skill doctor [repo-dir] [--threshold 85] [--format markdown|json|comment] [--output report.md]
@@ -418,6 +429,7 @@ Examples:
   trace-to-skill guard-github-event "$GITHUB_EVENT_PATH"
   trace-to-skill guard-patch ./change.patch --root .
   trace-to-skill session-audit ~/.codex --format json
+  trace-to-skill config-audit ~/.codex --format json
   trace-to-skill comment ./runs
   trace-to-skill compare --before ./runs/before --after ./runs/after
   trace-to-skill doctor . --threshold 85

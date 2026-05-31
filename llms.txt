@@ -19,6 +19,7 @@ Runtime: Node.js 20+
 - Codex Windows helper path failures such as bundled `rg.exe`, `node_repl.exe`, Browser, Chrome, or Computer Use helpers resolving through blocked WindowsApps/MSIX package paths, missing `%LOCALAPPDATA%\OpenAI\Codex\bin`, broken LocalCache helper bins, `CodexSandboxUsers` ACL gaps, EFS/copyfile failures, and `missing-helper-path`
 - Codex patch safety failures such as `apply_patch` accepting `*** Add File` for an existing path, misleading `A <path>` summaries, symlink target replacement, and missing preflight checks before generated patches touch the workspace
 - Codex sandbox and permission failures such as setup refresh errors, `os error 740`, `CodexSandboxOffline` ownership drift, ACL denial, and approval-mode downgrades
+- Codex config drift such as Preferences `Unable to save`, `configVersionConflict`, stale model pins, missing permission profiles, Windows elevated sandbox mode, plugin cache drift, and MCP approval sprawl
 - Codex auth and connectivity failures such as `token_exchange_failed`, `auth.openai.com/oauth/token`, missing `ca-certificates`, proxy or MITM TLS behavior, IPv6 fallback problems, Cloudflare challenge responses, and ChatGPT stream disconnects
 - Codex mobile and remote-control route health failures such as `Waiting for desktop`, `Directory Unavailable`, stale listeners on `127.0.0.1:14567`, stale `server_name` enrollment, empty backend environments, and incomplete helper bundles
 - Codex MCP runtime failures such as cancelled non-interactive approvals, `request_user_input is not supported in exec mode`, dropped namespace or `serverName` metadata, `unsupported call: mcp__...__...`, and closed `StdioServerTransport` sessions
@@ -66,6 +67,7 @@ npx trace-to-skill lint-agents .
 npx trace-to-skill guard-github-event "$GITHUB_EVENT_PATH"
 npx trace-to-skill guard-patch ./change.patch --root .
 npx trace-to-skill session-audit ~/.codex --format json
+npx trace-to-skill config-audit ~/.codex --format json
 npx trace-to-skill redact ./runs --output redacted-runs
 npx trace-to-skill analyze ./runs
 npx trace-to-skill codex-report ./runs --output openai-codex-issue.md
@@ -79,7 +81,7 @@ npx trace-to-skill init --comment --sarif
 ## GitHub Action
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.54
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.55
   with:
     mode: all
     doctor-threshold: "85"
@@ -97,6 +99,7 @@ npx trace-to-skill init --comment --sarif
 - Redaction JSON schema: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/schemas/redact-result.schema.json
 - Scorecard JSON schema: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/schemas/scorecard-result.schema.json
 - Patch guard JSON schema: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/schemas/patch-guard-result.schema.json
+- Config audit JSON schema: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/schemas/config-audit-result.schema.json
 - Session audit JSON schema: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/schemas/session-audit-result.schema.json
 
 ## Search phrases this project should answer
@@ -124,6 +127,9 @@ npx trace-to-skill init --comment --sarif
 - Codex apply_patch Add File overwrites existing file
 - Codex patch guard for generated patches
 - trace-to-skill guard-patch Add File symlink
+- Codex config-audit for config.toml diagnostics
+- Codex Preferences unable to save configVersionConflict
+- Codex Windows elevated sandbox node_repl spawn setup refresh
 - Codex ca-certificates update-ca-certificates Dev Container
 - Codex remote-control stale listener 127.0.0.1:14567
 - Codex mobile Waiting for desktop Directory Unavailable

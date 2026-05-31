@@ -26,6 +26,7 @@ npx trace-to-skill scorecard-comment . --dry-run
 npx trace-to-skill guard-github-event "$GITHUB_EVENT_PATH"
 npx trace-to-skill guard-patch ./change.patch --root .
 npx trace-to-skill session-audit ~/.codex --format json
+npx trace-to-skill config-audit ~/.codex --format json
 npx trace-to-skill comment ./runs --dry-run
 npx trace-to-skill compare --before ./runs/before --after ./runs/after
 ```
@@ -51,6 +52,7 @@ Use it when you need to:
 - **Protect agent context:** run `trace-to-skill guard-github-event "$GITHUB_EVENT_PATH"` before feeding issue, PR, comment, discussion, check-run, or commit text into an agent.
 - **Prevent unsafe patch overwrites:** run `trace-to-skill guard-patch ./change.patch --root .` before applying generated patches so `*** Add File` cannot silently replace an existing file or symlink target.
 - **Audit local Codex session history:** run `trace-to-skill session-audit ~/.codex --format json` to summarize rollout JSONL sizes, huge lines, parse errors, state files, and short `session_index.jsonl` evidence without publishing private transcripts.
+- **Audit Codex config drift:** run `trace-to-skill config-audit ~/.codex --format json` to summarize model pins, sandbox/approval posture, Windows elevated sandbox mode, missing permission profiles, plugin cache drift, and MCP approval sprawl.
 - **Share failed traces safely:** run `trace-to-skill redact ./runs --output redacted-runs` before publishing anonymized failure fixtures.
 - **Catch sensitive file access:** run `trace-to-skill analyze ./runs` when an agent trace includes `.env`, private keys, `.npmrc`, cloud credentials, local databases, or production secret manifests.
 - **Report remote compact failures:** run `trace-to-skill codex-report ./runs` when `/compact` or auto-compaction fails with `responses/compact` timeouts, stream disconnects, provider timeout workarounds, or long-thread recovery loss.
@@ -94,6 +96,7 @@ Open-source maintainers do not need more AI-generated noise. They need agents th
 - Did an `apply_patch` create operation actually overwrite an existing file or symlink target?
 - Can a generated patch be guarded before it touches the workspace?
 - Which local Codex rollout JSONL or `session_index.jsonl` files make `codex resume` or Desktop history sluggish?
+- Which `config.toml` setting explains a sandbox, approval, plugin, model, or Preferences save regression?
 - Did Codex sandbox setup or workspace permissions block every tool call?
 - Did quota accounting, account switching, or reset timing contradict the runtime usage-limit error?
 - Did an MCP tool appear in `tools/list` but fail at Codex runtime because approval, namespace routing, or stdio lifecycle broke?
@@ -218,6 +221,7 @@ trace-to-skill demo latency-regression
 trace-to-skill demo patch-overwrite
 trace-to-skill guard-patch ./change.patch --root .
 trace-to-skill session-audit ~/.codex --format json
+trace-to-skill config-audit ~/.codex --format json
 trace-to-skill demo --format json
 ```
 
@@ -380,6 +384,7 @@ Stable machine-readable contracts are published with the npm package and release
 - [`schemas/scorecard-result.schema.json`](schemas/scorecard-result.schema.json) describes `trace-to-skill scorecard --format json`.
 - [`schemas/oss-brief-result.schema.json`](schemas/oss-brief-result.schema.json) describes `trace-to-skill oss-brief --format json`.
 - [`schemas/patch-guard-result.schema.json`](schemas/patch-guard-result.schema.json) describes `trace-to-skill guard-patch --format json`.
+- [`schemas/config-audit-result.schema.json`](schemas/config-audit-result.schema.json) describes `trace-to-skill config-audit --format json`.
 - [`schemas/session-audit-result.schema.json`](schemas/session-audit-result.schema.json) describes `trace-to-skill session-audit --format json`.
 
 These schemas let downstream Codex workflows, dashboards, and CI bots consume reports without scraping Markdown.
@@ -412,7 +417,7 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v5
-      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.54
+      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.55
         with:
           mode: all
           doctor-threshold: "85"
@@ -461,7 +466,7 @@ Composite action usage:
 
 ```yaml
 - id: trace-to-skill
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.54
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.55
   with:
     mode: all
     doctor-threshold: "85"
@@ -503,7 +508,7 @@ Action outputs:
 
 By default, generated reports are also appended to the GitHub Actions Job Summary. Set `job-summary: "false"` to disable that UI output.
 
-Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.54` executes that release's checked-out source instead of pulling the default branch at runtime.
+Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.55` executes that release's checked-out source instead of pulling the default branch at runtime.
 
 ## Codex Skill
 

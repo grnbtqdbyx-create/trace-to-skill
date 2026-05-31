@@ -1,6 +1,6 @@
 {
   "name": "trace-to-skill",
-  "version": "0.1.54",
+  "version": "0.1.55",
   "description": "Turn failed AI coding-agent runs into reusable AGENTS.md rules, SKILL.md files, and eval evidence.",
   "type": "module",
   "main": "dist/src/index.js",
@@ -71,6 +71,8 @@
     "gpt-5-5",
     "codex-approval",
     "mcp-approval",
+    "codex-config-audit",
+    "codex-config",
     "sandbox-permission",
     "codex-sandbox",
     "windows-sandbox",

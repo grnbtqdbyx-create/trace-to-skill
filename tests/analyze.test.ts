@@ -6,6 +6,7 @@ import { test } from "node:test";
 import { lintAgents, renderAgentsLintMarkdown } from "../src/agentsLint.js";
 import { analyzeInputs, analyzeTargets } from "../src/analyze.js";
 import { renderBenchmarkMarkdown, runBenchmark } from "../src/benchmark.js";
+import { auditCodexConfig, renderConfigAuditMarkdown } from "../src/configAudit.js";
 import { listDemoScenarios, renderDemoMarkdown, renderDemoScenarioList, runDemo } from "../src/demo.js";
 import { doctorRepo } from "../src/doctor.js";
 import { compareAnalyses, evaluate } from "../src/eval.js";
@@ -529,6 +530,63 @@ test("auditCodexSessions passes small healthy session directories", async () => 
   assert.equal(result.status, "pass");
   assert.equal(result.summary.jsonlFiles, 1);
   assert.equal(result.findings.length, 0);
+});
+
+test("auditCodexConfig reports risky Codex config drift", async () => {
+  const cwd = await mkdtemp(path.join(os.tmpdir(), "trace-to-skill-config-"));
+  await writeFile(path.join(cwd, "config.toml"), [
+    "model = \"gpt-5.5\"",
+    "sandbox_mode = \"danger-full-access\"",
+    "default_permissions = \"trusted\"",
+    "",
+    "[windows]",
+    "sandbox = \"elevated\"",
+    "",
+    "[features]",
+    "codex_hooks = true",
+    "",
+    "[projects.\"C:\\\\Users\\\\user\\\\repo\"]",
+    "trusted_level = \"trusted\"",
+    "",
+    "[plugins.\"chrome@openai-bundled\"]",
+    "enabled = true",
+    ""
+  ].join("\n"), "utf8");
+
+  const result = await auditCodexConfig(cwd);
+  const markdown = renderConfigAuditMarkdown(result);
+  const kinds = result.findings.map((finding) => finding.kind);
+
+  assert.equal(result.status, "fail");
+  assert.equal(result.summary.exists, true);
+  assert.equal(result.values.model, "gpt-5.5");
+  assert.ok(kinds.includes("model_pin"));
+  assert.ok(kinds.includes("danger_full_access"));
+  assert.ok(kinds.includes("windows_elevated_sandbox"));
+  assert.ok(kinds.includes("default_permissions_missing"));
+  assert.ok(kinds.includes("deprecated_codex_hooks"));
+  assert.ok(kinds.includes("machine_local_project_state"));
+  assert.ok(kinds.includes("plugin_cache_missing"));
+  assert.match(markdown, /Codex Config Audit/);
+  assert.match(markdown, /gpt-5\.5/);
+});
+
+test("auditCodexConfig passes a minimal portable config", async () => {
+  const cwd = await mkdtemp(path.join(os.tmpdir(), "trace-to-skill-config-"));
+  await writeFile(path.join(cwd, "config.toml"), [
+    "approval_policy = \"on-request\"",
+    "sandbox_mode = \"workspace-write\"",
+    "",
+    "[permissions.trusted]",
+    "description = \"trusted local repo\"",
+    ""
+  ].join("\n"), "utf8");
+
+  const result = await auditCodexConfig(path.join(cwd, "config.toml"));
+
+  assert.equal(result.status, "pass");
+  assert.equal(result.findings.length, 0);
+  assert.equal(result.values.sandboxMode, "workspace-write");
 });
 
 test("analyzeTargets detects Codex quota mismatches", async () => {
@@ -1155,6 +1213,11 @@ test("published JSON schemas describe CLI result contracts", async () => {
     properties: Record<string, unknown>;
     $defs: Record<string, unknown>;
   };
+  const configAuditSchema = JSON.parse(await readFile("schemas/config-audit-result.schema.json", "utf8")) as {
+    required: string[];
+    properties: Record<string, unknown>;
+    $defs: Record<string, unknown>;
+  };
   const sessionAuditSchema = JSON.parse(await readFile("schemas/session-audit-result.schema.json", "utf8")) as {
     required: string[];
     properties: Record<string, unknown>;
@@ -1201,6 +1264,9 @@ test("published JSON schemas describe CLI result contracts", async () => {
   assert.deepEqual(patchGuardSchema.required, ["generatedAt", "patch", "root", "status", "findings"]);
   assert.ok(patchGuardSchema.properties.findings);
   assert.ok(patchGuardSchema.$defs.finding);
+  assert.deepEqual(configAuditSchema.required, ["generatedAt", "target", "configPath", "status", "summary", "values", "findings"]);
+  assert.ok(configAuditSchema.properties.values);
+  assert.ok(configAuditSchema.$defs.finding);
   assert.deepEqual(sessionAuditSchema.required, ["generatedAt", "root", "status", "thresholds", "summary", "files", "stateFiles", "findings"]);
   assert.ok(sessionAuditSchema.properties.summary);
   assert.ok(sessionAuditSchema.$defs.file);
@@ -1271,7 +1337,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.equal(brief.scorecard.benchmarkStatus, "pass");
   assert.equal(brief.scorecard.benchmarkCases, 26);
   assert.equal(brief.packageName, "trace-to-skill");
-  assert.equal(brief.packageVersion, "0.1.54");
+  assert.equal(brief.packageVersion, "0.1.55");
   assert.equal(brief.license, "Apache-2.0");
   assert.ok(brief.repository?.includes("github.com/grnbtqdbyx-create/trace-to-skill"));
   assert.ok(brief.qualification.max500.length <= 500);
@@ -1279,7 +1345,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.match(markdown, /OpenAI OSS Brief/);
   assert.match(markdown, /Why This Repository Qualifies/);
   assert.match(markdown, /500-Character Version/);
-  assert.match(markdown, /npx trace-to-skill@0\.1\.54/);
+  assert.match(markdown, /npx trace-to-skill@0\.1\.55/);
 });
 
 test("scorecard-comment dry-run resolves pull request event", async () => {
