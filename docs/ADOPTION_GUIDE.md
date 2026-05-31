@@ -100,4 +100,4 @@ Use the schemas instead of scraping Markdown reports.
 
 ## Maintainer Release Note
 
-For this package itself, releases are prepared for npm Trusted Publishing through `.github/workflows/npm-publish.yml`. See `docs/RELEASE.md` for the one-time npm package settings and release checklist.
+For this package itself, releases are prepared for npm Trusted Publishing through `.github/workflows/npm-publish.yml`. See `docs/RELEASE.md` for the one-time `npm trust github` command and release checklist.

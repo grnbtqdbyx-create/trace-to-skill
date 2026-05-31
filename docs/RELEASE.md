@@ -4,7 +4,15 @@ This repository is configured for npm Trusted Publishing so releases do not need
 
 ## One-Time npm Setup
 
-In the npm package settings for `trace-to-skill`, add a Trusted Publisher:
+Preferred CLI setup:
+
+```bash
+npm trust github trace-to-skill \
+  --file npm-publish.yml \
+  --repo grnbtqdbyx-create/trace-to-skill
+```
+
+Or, in the npm package settings for `trace-to-skill`, add a Trusted Publisher:
 
 - Publisher: GitHub Actions
 - Organization or user: `grnbtqdbyx-create`
@@ -12,7 +20,16 @@ In the npm package settings for `trace-to-skill`, add a Trusted Publisher:
 - Workflow filename: `npm-publish.yml`
 - Allowed action: `npm publish`
 
-After this one-time npm setting is saved, publishing should happen from GitHub Actions using OIDC.
+After this one-time npm trust setting is saved, publishing should happen from GitHub Actions using OIDC.
+
+You can preview the CLI trust command without changing npm state:
+
+```bash
+npm trust github trace-to-skill \
+  --file npm-publish.yml \
+  --repo grnbtqdbyx-create/trace-to-skill \
+  --dry-run --json
+```
 
 ## Release Checklist
 

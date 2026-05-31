@@ -300,7 +300,7 @@ For a copy-paste maintainer rollout, see [docs/ADOPTION_GUIDE.md](docs/ADOPTION_
 
 ## Release Hygiene
 
-Releases are prepared for npm Trusted Publishing through the [`Publish npm`](.github/workflows/npm-publish.yml) workflow. Once the npm package settings trust `grnbtqdbyx-create/trace-to-skill` and workflow filename `npm-publish.yml`, a GitHub release can publish without a long-lived npm token or repeated local browser authentication. See [docs/RELEASE.md](docs/RELEASE.md).
+Releases are prepared for npm Trusted Publishing through the [`Publish npm`](.github/workflows/npm-publish.yml) workflow. Once npm trusts `grnbtqdbyx-create/trace-to-skill` and workflow filename `npm-publish.yml`, a GitHub release can publish without a long-lived npm token or repeated local browser authentication. See [docs/RELEASE.md](docs/RELEASE.md).
 
 ## GitHub Action
 

@@ -646,6 +646,8 @@ test("repository publishes npm through trusted publishing workflow", async () =>
   assert.match(workflow, /GITHUB_REF_NAME/);
   assert.match(workflow, /npm view "trace-to-skill@\$\{PACKAGE_VERSION\}" version/);
   assert.match(workflow, /npm publish --provenance --access public/);
+  assert.match(releaseGuide, /npm trust github trace-to-skill/);
+  assert.match(releaseGuide, /--repo grnbtqdbyx-create\/trace-to-skill/);
   assert.match(releaseGuide, /Workflow filename: `npm-publish\.yml`/);
   assert.match(releaseGuide, /Allowed action: `npm publish`/);
 });
