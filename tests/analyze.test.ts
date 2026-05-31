@@ -206,6 +206,9 @@ test("doctorRepo flags missing controls and MCP risk", async () => {
 test("composite action exposes Codex readiness doctor mode", async () => {
   const action = await readFile("action.yml", "utf8");
 
+  assert.match(action, /branding:/);
+  assert.match(action, /icon: check-circle/);
+  assert.match(action, /color: green/);
   assert.match(action, /mode:/);
   assert.match(action, /doctor-threshold:/);
   assert.match(action, /doctor-comment:/);
@@ -215,4 +218,14 @@ test("composite action exposes Codex readiness doctor mode", async () => {
   assert.match(action, /always\(\) && github\.event_name == 'pull_request' && inputs\.doctor-comment == 'true'/);
   assert.match(action, /github\.event_name == 'pull_request' && inputs\.comment == 'true'/);
   assert.match(action, /mode must be one of: traces, doctor, both/);
+});
+
+test("repository dogfoods the local Codex readiness action", async () => {
+  const workflow = await readFile(".github/workflows/codex-readiness.yml", "utf8");
+
+  assert.match(workflow, /name: Codex Readiness/);
+  assert.match(workflow, /uses: \.\//);
+  assert.match(workflow, /mode: doctor/);
+  assert.match(workflow, /doctor-threshold: "95"/);
+  assert.match(workflow, /doctor-comment: "true"/);
 });

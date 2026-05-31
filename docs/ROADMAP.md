@@ -17,6 +17,7 @@
 - `trace-to-skill doctor` for repository Codex-readiness scoring
 - GitHub Action doctor mode with score threshold
 - Doctor PR summary comments with update-in-place marker
+- Marketplace-ready action branding and self-dogfooding workflow
 - `trace-to-skill init` for one-command repository setup
 
 ## v0.2

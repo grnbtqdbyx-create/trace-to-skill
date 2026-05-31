@@ -1,6 +1,9 @@
 name: trace-to-skill
 description: Turn failed AI coding-agent runs into reusable AGENTS.md rules, SKILL.md files, and eval evidence.
 author: grnbtqdbyx-create
+branding:
+  icon: check-circle
+  color: green
 inputs:
   mode:
     description: Run "traces", "doctor", or "both".
