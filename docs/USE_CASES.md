@@ -61,7 +61,17 @@ npx trace-to-skill analyze ./runs --format json
 
 This catches signals such as Windows sandbox setup refresh failures, `os error 740`, `CodexSandboxOffline` ownership drift, ACL denial, approval-policy mismatch, and Full Access sessions behaving like workspace-write or on-request mode.
 
-## 4. Quota And Usage-Limit Evidence
+## 4. Codex Auth And Connectivity Triage
+
+Use this when Codex cannot log in, exchange an auth token, stream a response, or connect through a container, proxy, VPN, corporate CA, IPv6 network, or Cloudflare challenge.
+
+```bash
+npx trace-to-skill analyze ./runs --format json
+```
+
+This catches signals such as `token_exchange_failed`, `auth.openai.com/oauth/token`, `codex_login::server`, `cf-mitigated: challenge`, missing `ca-certificates`, `update-ca-certificates`, `CODEX_CA_CERTIFICATE`, IPv6 fallback evidence, proxy/MITM TLS failures, and `stream disconnected before completion` on `chatgpt.com/backend-api/codex/responses`.
+
+## 5. Quota And Usage-Limit Evidence
 
 Use this when Codex blocks a prompt with a usage-limit message but another surface still shows remaining quota.
 
@@ -71,7 +81,7 @@ npx trace-to-skill analyze ./runs --format json
 
 This catches traces where `/status` or the usage page shows remaining 5h or weekly quota, accounts appear to share limits unexpectedly, a Team account inherits a Plus account's limit state, or quota reset times jump after logout/login.
 
-## 5. GitHub Context Guard
+## 6. GitHub Context Guard
 
 Use this before an agent reads untrusted GitHub text.
 
@@ -88,7 +98,7 @@ Use it when:
 - a bot asks Codex to triage untrusted user reports
 - logs or comments might contain instructions like "ignore previous instructions" or "print secrets"
 
-## 6. Failed Agent Run To Reviewable Rule
+## 7. Failed Agent Run To Reviewable Rule
 
 Use this when a coding agent made a repeated workflow mistake.
 
@@ -106,7 +116,7 @@ Recommended maintainer loop:
 4. Copy only evidence-backed rules into the real policy file.
 5. Run `eval` or `scorecard` in CI so the same failure does not silently return.
 
-## 7. Privacy-Preserving Adoption
+## 8. Privacy-Preserving Adoption
 
 Use this when you want public evidence without leaking private traces.
 

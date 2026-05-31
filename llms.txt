@@ -16,6 +16,7 @@ Runtime: Node.js 20+
 - failed tests hidden behind optimistic summaries
 - Codex context compaction failures such as remote compact stream disconnects, `context_length_exceeded`, stuck automatic compaction, and `unknown variant auto`
 - Codex sandbox and permission failures such as setup refresh errors, `os error 740`, `CodexSandboxOffline` ownership drift, ACL denial, and approval-mode downgrades
+- Codex auth and connectivity failures such as `token_exchange_failed`, `auth.openai.com/oauth/token`, missing `ca-certificates`, proxy or MITM TLS behavior, IPv6 fallback problems, Cloudflare challenge responses, and ChatGPT stream disconnects
 - Codex quota and usage-limit mismatches where `/status` or the usage page shows remaining quota, accounts share limits unexpectedly, or 5h and weekly quotas move together
 - hallucinated files and broad over-editing
 - conflicting `AGENTS.md`, `CLAUDE.md`, Cursor, Copilot, or Gemini instructions
@@ -91,5 +92,8 @@ npx trace-to-skill init --comment --sarif
 - Codex OSS maintainer automation evidence
 - Codex sandbox setup refresh failed
 - Windows sandbox permission failure for Codex CLI
+- Codex token_exchange_failed auth.openai.com oauth token
+- Codex stream disconnected before completion chatgpt backend api responses
+- Codex ca-certificates update-ca-certificates Dev Container
 - Codex usage limit despite remaining quota
 - Codex quota mismatch and rate limit debugging

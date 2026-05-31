@@ -162,6 +162,29 @@ const RULES: RuleDefinition[] = [
       "When Codex sandbox or permission setup fails, capture the OS, Codex version, sandbox_mode, approval_policy, exact stderr, workspace ownership/ACL evidence, and whether a clean directory can run a simple command plus apply_patch."
   },
   {
+    kind: "codex_connectivity",
+    severity: "high",
+    title: "Codex auth or connectivity failure",
+    why: "Codex login, ChatGPT transport, proxy, CA, IPv6, and Cloudflare challenge failures are hard to triage unless traces preserve the exact endpoint, client, network environment, and local certificate/DNS evidence.",
+    patterns: [
+      /\btoken_exchange_failed\b/i,
+      /\bToken exchange (?:failed|error)\b.{0,160}\bauth\.openai\.com\/oauth\/token\b/i,
+      /\bcodex_login::server\b.{0,180}\b(oauth token exchange transport failure|login callback token exchange failed)\b/i,
+      /\bauth\.openai\.com\/api\/accounts\/deviceauth\/usercode\b/i,
+      /\bcf-mitigated:\s*challenge\b/i,
+      /\bCloudflare\b.{0,120}\b(challenge|WAF|mitigated)\b/i,
+      /\bCODEX_CA_CERTIFICATE\b|\bSSL_CERT_FILE\b/i,
+      /\bca-certificates\b|\bupdate-ca-certificates\b/i,
+      /\bIPv6\b.{0,160}\b(auth\.openai\.com|broken|hangs|no fallback|curl -6)\b/i,
+      /\bproxy\b.{0,160}\b(TLS|certificate|MITM|CONNECT|auth\.openai\.com|chatgpt\.com)\b/i,
+      /\bstream disconnected before completion\b.{0,180}\b(chatgpt\.com\/backend-api\/codex\/responses(?!\/compact)|Transport error|error decoding response body|network error)\b/i,
+      /\bReconnecting\.{3}\s*\d+\/\d+\b.{0,160}\b(stream disconnected|chatgpt\.com\/backend-api\/codex\/responses(?!\/compact))\b/i
+    ],
+    suggestedRule:
+      "When Codex auth or connectivity fails, capture the client/app version, OS/container/proxy/VPN state, endpoint URL, exact error, DNS IPv4/IPv6 results, curl -4/-6 checks, CA variables, ca-certificates/update-ca-certificates status, and whether API-key, browser login, and device-auth paths differ.",
+    suggestedSkill: "codex-connectivity-triage"
+  },
+  {
     kind: "quota_mismatch",
     severity: "high",
     title: "Codex quota or usage-limit mismatch",
@@ -440,7 +463,7 @@ function matchRule(inputs: TraceInput[], rule: RuleDefinition): Evidence[] {
     });
   }
 
-  return evidence.slice(0, 5);
+  return evidence.slice(0, 8);
 }
 
 function detectOverEditing(inputs: TraceInput[], maxFilesChanged: number): Evidence[] {

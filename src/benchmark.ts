@@ -65,6 +65,12 @@ const BENCHMARK_CASES: BenchmarkCaseDefinition[] = [
     expectedKinds: ["sandbox_permission", "weak_evidence"]
   },
   {
+    id: "codex-connectivity",
+    title: "Codex auth and connectivity failure",
+    fixture: "fixtures/codex-connectivity.md",
+    expectedKinds: ["codex_connectivity", "weak_evidence"]
+  },
+  {
     id: "quota-mismatch",
     title: "Codex quota mismatch",
     fixture: "fixtures/quota-mismatch.md",

@@ -24,6 +24,14 @@ Codex sandbox setup, approval mode, ACL, or workspace ownership failed before to
 
 The fix is to capture the OS, Codex version, `sandbox_mode`, `approval_policy`, exact stderr, workspace ownership/ACL evidence, and whether a clean directory can run a simple command plus `apply_patch`.
 
+## Codex Connectivity
+
+Codex login, device auth, API-key auth, ChatGPT response streaming, or remote transport fails because of token exchange errors, missing CA certificates, proxy or MITM behavior, Cloudflare challenges, IPv6 routing, DNS, VPN, or WebSocket/HTTPS fallback problems.
+
+Common signals include `token_exchange_failed`, `auth.openai.com/oauth/token`, `codex_login::server`, `cf-mitigated: challenge`, `ca-certificates`, `update-ca-certificates`, `CODEX_CA_CERTIFICATE`, `SSL_CERT_FILE`, IPv6-only lookup evidence, and `stream disconnected before completion` errors against `chatgpt.com/backend-api/codex/responses`.
+
+The fix is to capture the client or app version, OS/container image, proxy or VPN state, endpoint URL, exact error, DNS IPv4/IPv6 results, `curl -4` / `curl -6` checks, CA variables, certificate package status, and whether browser login, device auth, and API-key paths fail differently.
+
 ## Quota Mismatch
 
 Codex reports a usage-limit block even though another surface shows remaining quota, or quota state appears to be shared across accounts, consumed in parallel across 5h and weekly windows, or reset at an impossible time.

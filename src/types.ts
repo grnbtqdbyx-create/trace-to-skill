@@ -13,6 +13,7 @@ export type FindingKind =
   | "prompt_injection"
   | "context_compaction"
   | "sandbox_permission"
+  | "codex_connectivity"
   | "quota_mismatch"
   | "mcp_risk"
   | "weak_evidence";
