@@ -6,7 +6,7 @@ branding:
   color: green
 inputs:
   mode:
-    description: Run "traces", "doctor", or "both".
+    description: Run "traces", "doctor", "benchmark", "both", or "all".
     required: false
     default: traces
   doctor-path:
@@ -60,6 +60,18 @@ outputs:
   agent-report:
     description: Path to the Markdown agent learning report.
     value: ${{ steps.agent-report.outputs.report }}
+  benchmark-status:
+    description: Built-in fixture benchmark status, either pass or fail.
+    value: ${{ steps.benchmark.outputs.status }}
+  benchmark-cases:
+    description: Number of benchmark cases executed.
+    value: ${{ steps.benchmark.outputs.cases }}
+  benchmark-report:
+    description: Path to the Markdown benchmark report.
+    value: ${{ steps.benchmark.outputs.report }}
+  benchmark-json:
+    description: Path to the JSON benchmark report.
+    value: ${{ steps.benchmark.outputs.json }}
 runs:
   using: composite
   steps:
@@ -68,8 +80,8 @@ runs:
         node-version: 20
     - run: |
         case "${{ inputs.mode }}" in
-          traces|doctor|both) ;;
-          *) echo "::error::mode must be one of: traces, doctor, both"; exit 1 ;;
+          traces|doctor|benchmark|both|all) ;;
+          *) echo "::error::mode must be one of: traces, doctor, benchmark, both, all"; exit 1 ;;
         esac
       shell: bash
     - id: doctor
@@ -103,7 +115,7 @@ runs:
         ].join("\n");
         await import("node:fs").then(({ appendFileSync }) => appendFileSync(process.env.GITHUB_OUTPUT, `${output}\n`));
         NODE
-      if: inputs.mode == 'doctor' || inputs.mode == 'both'
+      if: inputs.mode == 'doctor' || inputs.mode == 'both' || inputs.mode == 'all'
       shell: bash
     - run: |
         {
@@ -111,21 +123,21 @@ runs:
           echo
           cat codex-readiness-report.md
         } >> "$GITHUB_STEP_SUMMARY"
-      if: always() && inputs.job-summary == 'true' && (inputs.mode == 'doctor' || inputs.mode == 'both')
+      if: always() && inputs.job-summary == 'true' && (inputs.mode == 'doctor' || inputs.mode == 'both' || inputs.mode == 'all')
       shell: bash
     - run: npx github:grnbtqdbyx-create/trace-to-skill doctor-comment "${{ inputs.doctor-path }}" --threshold "${{ inputs.doctor-threshold }}" --token "${{ inputs.github-token }}"
-      if: always() && github.event_name == 'pull_request' && inputs.doctor-comment == 'true' && (inputs.mode == 'doctor' || inputs.mode == 'both')
+      if: always() && github.event_name == 'pull_request' && inputs.doctor-comment == 'true' && (inputs.mode == 'doctor' || inputs.mode == 'both' || inputs.mode == 'all')
       shell: bash
     - run: |
         echo "::error::Codex readiness doctor status is ${{ steps.doctor.outputs.status }} with score ${{ steps.doctor.outputs.score }}/${{ inputs.doctor-threshold }}"
         exit 1
-      if: steps.doctor.outputs.status == 'needs-attention' && (inputs.mode == 'doctor' || inputs.mode == 'both')
+      if: steps.doctor.outputs.status == 'needs-attention' && (inputs.mode == 'doctor' || inputs.mode == 'both' || inputs.mode == 'all')
       shell: bash
     - id: agent-report
       run: |
         npx github:grnbtqdbyx-create/trace-to-skill analyze "${{ inputs.traces }}" --output agent-learning-report.md
         echo "report=agent-learning-report.md" >> "$GITHUB_OUTPUT"
-      if: inputs.mode == 'traces' || inputs.mode == 'both'
+      if: inputs.mode == 'traces' || inputs.mode == 'both' || inputs.mode == 'all'
       shell: bash
     - run: |
         {
@@ -133,11 +145,42 @@ runs:
           echo
           cat agent-learning-report.md
         } >> "$GITHUB_STEP_SUMMARY"
-      if: always() && inputs.job-summary == 'true' && (inputs.mode == 'traces' || inputs.mode == 'both')
+      if: always() && inputs.job-summary == 'true' && (inputs.mode == 'traces' || inputs.mode == 'both' || inputs.mode == 'all')
       shell: bash
     - run: npx github:grnbtqdbyx-create/trace-to-skill comment "${{ inputs.traces }}" --token "${{ inputs.github-token }}"
-      if: github.event_name == 'pull_request' && inputs.comment == 'true' && (inputs.mode == 'traces' || inputs.mode == 'both')
+      if: github.event_name == 'pull_request' && inputs.comment == 'true' && (inputs.mode == 'traces' || inputs.mode == 'both' || inputs.mode == 'all')
       shell: bash
     - run: npx github:grnbtqdbyx-create/trace-to-skill eval "${{ inputs.traces }}" --threshold "${{ inputs.threshold }}"
-      if: inputs.mode == 'traces' || inputs.mode == 'both'
+      if: inputs.mode == 'traces' || inputs.mode == 'both' || inputs.mode == 'all'
+      shell: bash
+    - id: benchmark
+      run: |
+        set -euo pipefail
+        npx github:grnbtqdbyx-create/trace-to-skill benchmark --format json --output trace-to-skill-benchmark.json
+        npx github:grnbtqdbyx-create/trace-to-skill benchmark --output trace-to-skill-benchmark.md
+        node --input-type=module <<'NODE'
+        import { appendFileSync, readFileSync } from "node:fs";
+        const report = JSON.parse(readFileSync("trace-to-skill-benchmark.json", "utf8"));
+        const output = [
+          `status=${report.passed ? "pass" : "fail"}`,
+          `cases=${report.cases.length}`,
+          "report=trace-to-skill-benchmark.md",
+          "json=trace-to-skill-benchmark.json"
+        ].join("\n");
+        appendFileSync(process.env.GITHUB_OUTPUT, `${output}\n`);
+        NODE
+      if: inputs.mode == 'benchmark' || inputs.mode == 'all'
+      shell: bash
+    - run: |
+        {
+          echo "## trace-to-skill Benchmark"
+          echo
+          cat trace-to-skill-benchmark.md
+        } >> "$GITHUB_STEP_SUMMARY"
+      if: always() && inputs.job-summary == 'true' && (inputs.mode == 'benchmark' || inputs.mode == 'all')
+      shell: bash
+    - run: |
+        echo "::error::trace-to-skill benchmark failed"
+        exit 1
+      if: steps.benchmark.outputs.status == 'fail' && (inputs.mode == 'benchmark' || inputs.mode == 'all')
       shell: bash

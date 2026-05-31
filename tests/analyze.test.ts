@@ -137,10 +137,11 @@ test("initProject scaffolds workflow without overwriting existing files", async 
   assert.ok(first.written.includes(".github/workflows/codex-readiness.yml"));
   assert.ok(second.skipped.includes(".github/workflows/agent-learning.yml"));
   assert.ok(second.skipped.includes(".github/workflows/codex-readiness.yml"));
-  assert.match(doctorWorkflow, /mode: doctor/);
+  assert.match(doctorWorkflow, /mode: all/);
   assert.match(doctorWorkflow, /doctor-threshold: "85"/);
   assert.match(doctorWorkflow, /doctor-comment: "true"/);
   assert.match(doctorWorkflow, /job-summary: "true"/);
+  assert.match(doctorWorkflow, /benchmark-status/);
   assert.match(workflow, /upload-sarif/);
   assert.match(workflow, /mode: traces/);
   assert.match(workflow, /comment: "true"/);
@@ -224,10 +225,16 @@ test("composite action exposes Codex readiness doctor mode", async () => {
   assert.match(action, /doctor-status:/);
   assert.match(action, /doctor-summary:/);
   assert.match(action, /doctor-report:/);
+  assert.match(action, /benchmark-status:/);
+  assert.match(action, /benchmark-cases:/);
+  assert.match(action, /benchmark-report:/);
+  assert.match(action, /benchmark-json:/);
   assert.match(action, /agent-report:/);
   assert.match(action, /steps\.doctor\.outputs\.report/);
   assert.match(action, /steps\.agent-report\.outputs\.report/);
+  assert.match(action, /steps\.benchmark\.outputs\.status/);
   assert.match(action, /codex-readiness-report\.json/);
+  assert.match(action, /trace-to-skill-benchmark\.json/);
   assert.match(action, /mode:/);
   assert.match(action, /doctor-threshold:/);
   assert.match(action, /doctor-comment:/);
@@ -235,12 +242,15 @@ test("composite action exposes Codex readiness doctor mode", async () => {
   assert.match(action, /GITHUB_STEP_SUMMARY/);
   assert.match(action, /trace-to-skill Codex Readiness/);
   assert.match(action, /trace-to-skill Agent Learning/);
+  assert.match(action, /trace-to-skill Benchmark/);
   assert.match(action, /trace-to-skill doctor/);
   assert.match(action, /trace-to-skill doctor-comment/);
-  assert.match(action, /inputs\.mode == 'doctor' \|\| inputs\.mode == 'both'/);
+  assert.match(action, /trace-to-skill benchmark/);
+  assert.match(action, /inputs\.mode == 'doctor' \|\| inputs\.mode == 'both' \|\| inputs\.mode == 'all'/);
+  assert.match(action, /inputs\.mode == 'benchmark' \|\| inputs\.mode == 'all'/);
   assert.match(action, /always\(\) && github\.event_name == 'pull_request' && inputs\.doctor-comment == 'true'/);
   assert.match(action, /github\.event_name == 'pull_request' && inputs\.comment == 'true'/);
-  assert.match(action, /mode must be one of: traces, doctor, both/);
+  assert.match(action, /mode must be one of: traces, doctor, benchmark, both, all/);
 });
 
 test("repository dogfoods the local Codex readiness action", async () => {
@@ -249,11 +259,12 @@ test("repository dogfoods the local Codex readiness action", async () => {
   assert.match(workflow, /name: Codex Readiness/);
   assert.match(workflow, /id: readiness/);
   assert.match(workflow, /uses: \.\//);
-  assert.match(workflow, /mode: doctor/);
+  assert.match(workflow, /mode: all/);
   assert.match(workflow, /doctor-threshold: "95"/);
   assert.match(workflow, /doctor-comment: "true"/);
   assert.match(workflow, /job-summary: "true"/);
   assert.match(workflow, /steps\.readiness\.outputs\.doctor-score/);
+  assert.match(workflow, /steps\.readiness\.outputs\.benchmark-status/);
 });
 
 test("published JSON schemas describe CLI result contracts", async () => {

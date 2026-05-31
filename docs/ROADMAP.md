@@ -23,6 +23,7 @@
 - `trace-to-skill init` for Codex readiness and agent-learning workflow setup
 - Published JSON schemas for `analyze --format json` and `doctor --format json`
 - `trace-to-skill benchmark` for the public fixture scorecard
+- GitHub Action `benchmark` and `all` modes
 
 ## v0.2
 

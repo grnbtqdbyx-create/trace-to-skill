@@ -245,9 +245,9 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v5
-      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.16
+      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.17
         with:
-          mode: doctor
+          mode: all
           doctor-threshold: "85"
           doctor-comment: "true"
           job-summary: "true"
@@ -293,9 +293,9 @@ Composite action usage:
 
 ```yaml
 - id: trace-to-skill
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.16
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.17
   with:
-    mode: both
+    mode: all
     doctor-threshold: "85"
     doctor-comment: "true"
     job-summary: "true"
@@ -316,6 +316,10 @@ Action outputs:
 | `doctor-report` | Markdown report path |
 | `doctor-json` | JSON report path |
 | `agent-report` | Agent learning report path |
+| `benchmark-status` | Built-in fixture benchmark status, `pass` or `fail` |
+| `benchmark-cases` | Number of benchmark cases executed |
+| `benchmark-report` | Markdown benchmark report path |
+| `benchmark-json` | JSON benchmark report path |
 
 By default, generated reports are also appended to the GitHub Actions Job Summary. Set `job-summary: "false"` to disable that UI output.
 
@@ -350,6 +354,7 @@ The goal is not to let agents autonomously rewrite project policy. The goal is t
 - `trace-to-skill init` for Codex readiness and agent-learning workflow setup
 - Published JSON schemas for deterministic CLI report contracts
 - `trace-to-skill benchmark` for public fixture scorecards
+- GitHub Action `benchmark` and `all` modes
 - public benchmark of common agent failure classes
 
 See [docs/ROADMAP.md](docs/ROADMAP.md).

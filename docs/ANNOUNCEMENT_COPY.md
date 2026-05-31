@@ -39,6 +39,7 @@ trace-to-skill checks repo readiness and scans agent traces/logs to generate:
 - JSON schemas for deterministic CLI report contracts
 - a maintainer adoption guide with privacy checklist and PR template
 - a built-in fixture benchmark and public scorecard
+- GitHub Action benchmark and all-in-one modes
 - an Agent Learning Report
 - suggested AGENTS.md rules
 - suggested SKILL.md content
