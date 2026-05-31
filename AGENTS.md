@@ -13,7 +13,7 @@ This repository builds `trace-to-skill`, a CLI that turns failed AI coding-agent
 
 ## Design Boundaries
 
-- Generated `AGENTS.md` and `SKILL.md` content is advisory. Do not auto-commit generated policy files.
+- Generated agent-rule and skill content is advisory. Do not auto-commit generated policy files.
 - Prefer deterministic rules before LLM-based analysis.
 - Keep outputs useful in GitHub PR comments: concise, evidence-backed, and safe to share.
 
@@ -27,4 +27,3 @@ npm pack --dry-run
 ```
 
 The package should include `dist/src`, `README.md`, `LICENSE`, and `package.json`, not compiled tests.
-

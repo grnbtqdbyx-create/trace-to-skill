@@ -163,7 +163,7 @@ trace-to-skill lint-agents .
 trace-to-skill lint-agents . --format json
 ```
 
-This focused linter checks whether `AGENTS.md` exists as the canonical instruction source, whether validation commands are discoverable, whether `AGENTS.md` / `CLAUDE.md` / Cursor / Copilot guidance conflicts, whether instruction files reference missing paths or grow large enough to risk ignored guidance, and whether MCP configs expose risky capabilities or secrets.
+This focused linter checks whether `AGENTS.md` exists as the canonical instruction source, whether validation commands are discoverable, whether `AGENTS.md` / `CLAUDE.md` / Cursor / Copilot guidance conflicts, whether instruction files reference missing paths or grow large enough to risk ignored guidance, and whether MCP configs expose risky capabilities, secrets, unresolved commands, missing `cwd` values, placeholder env vars, or wrong `mcpServers` casing.
 
 Redact traces before sharing them:
 
@@ -269,7 +269,7 @@ trace-to-skill compare --before ./runs/before --after ./runs/after
 
 JSONL traces are normalized by extracting common fields such as `message`, `content`, `text`, `output`, and `error`. Codex-style JSONL traces with `response_item`, `function_call`, `function_call_output`, and `event_msg` payloads are normalized into readable evidence lines.
 
-MCP configs with `mcpServers` are parsed for capability hints such as filesystem, shell, browser, network, database, container, and secret-bearing environment variables.
+MCP configs with `mcpServers` are parsed for capability hints such as filesystem, shell, browser, network, database, container, and secret-bearing environment variables. `lint-agents` also checks static startup inputs such as `command`, `cwd`, env placeholders, unresolved `$VARS`, and the common `mcp_servers` / `mcpServers` casing mismatch.
 
 Instruction files such as `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `.cursor/rules`, and `.github/copilot-instructions.md` are checked for obvious contradictions in validation commands, test requirements, and destructive-command approval rules.
 
@@ -309,7 +309,7 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v5
-      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.31
+      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.32
         with:
           mode: all
           doctor-threshold: "85"
@@ -358,7 +358,7 @@ Composite action usage:
 
 ```yaml
 - id: trace-to-skill
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.31
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.32
   with:
     mode: all
     doctor-threshold: "85"
@@ -400,7 +400,7 @@ Action outputs:
 
 By default, generated reports are also appended to the GitHub Actions Job Summary. Set `job-summary: "false"` to disable that UI output.
 
-Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.31` executes that release's checked-out source instead of pulling the default branch at runtime.
+Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.32` executes that release's checked-out source instead of pulling the default branch at runtime.
 
 ## Codex Skill
 
@@ -433,7 +433,7 @@ The goal is not to let agents autonomously rewrite project policy. The goal is t
 - Codex session JSONL adapters
 - Claude Code transcript adapters
 - `AGENTS.md` contradiction detector
-- MCP config parser with explicit capability scoring
+- MCP config parser with explicit capability scoring and static startup diagnostics
 - GitHub PR comment mode
 - before/after eval runner
 - SARIF output for GitHub code scanning

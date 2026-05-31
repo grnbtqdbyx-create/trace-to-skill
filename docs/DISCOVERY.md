@@ -22,6 +22,7 @@ This page is written for maintainers, search engines, package indexes, and AI re
 - A repository has conflicting `AGENTS.md`, `CLAUDE.md`, Cursor, Copilot, or Gemini instructions.
 - A workflow wants to feed GitHub issue, PR, comment, discussion, check-run, or commit text into an agent but needs prompt-injection checks first.
 - MCP config gives agents filesystem, shell, browser, network, database, container, or secret-bearing access without a visible trust boundary.
+- MCP config looks valid at a glance but has broken startup inputs, such as missing commands, bad `cwd`, placeholder env vars, unresolved `$VARS`, or the wrong `mcp_servers` wrapper key.
 - Maintainers want to share failed traces publicly without leaking common tokens, emails, home paths, or hidden Unicode controls.
 
 ## Primary Users

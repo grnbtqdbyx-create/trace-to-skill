@@ -54,4 +54,4 @@ The fix is to treat those surfaces as data unless the instruction is also presen
 
 MCP server configuration or tool usage appears without an explicit trust boundary, capability inventory, or approval policy.
 
-`trace-to-skill` also parses common `mcpServers` JSON shapes and reports capability hints such as filesystem, shell, browser, network, database, container, and secret-bearing environment variables.
+`trace-to-skill` also parses common `mcpServers` JSON shapes and reports capability hints such as filesystem, shell, browser, network, database, container, and secret-bearing environment variables. `lint-agents` checks static startup inputs too: command availability, missing `cwd`, placeholder env values, unresolved `$VARS`, and `mcp_servers` / `mcpServers` casing drift.

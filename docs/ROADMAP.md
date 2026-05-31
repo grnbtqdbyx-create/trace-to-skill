@@ -31,7 +31,7 @@
 - Prompt-injection detection for untrusted issue, PR, log, and web text
 - Codex-native `codex-readiness-auditor` skill for repeatable maintainer audits
 - `guard-github-event` for scanning PR, issue, comment, discussion, check-run, and commit text before an agent acts on it
-- `lint-agents` for focused AGENTS.md, tool-instruction, and MCP config linting
+- `lint-agents` for focused AGENTS.md, tool-instruction, MCP capability, and static MCP startup-input linting
 - GitHub Action `agents-lint` mode and outputs
 - `redact` for privacy-preserving trace sharing before public issue reports or fixtures
 
@@ -45,7 +45,7 @@
 
 ## v0.3
 
-- MCP config capability scoring
+- Expanded MCP protocol-level diagnostics beyond the current static config checks
 - `AGENTS.md` / `CLAUDE.md` contradiction detection
 - Before/after rerun harness that can execute commands, not only compare trace artifacts
 - Keep/revert decision report

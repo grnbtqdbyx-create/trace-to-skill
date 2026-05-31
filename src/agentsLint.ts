@@ -1,7 +1,8 @@
-import { promises as fs } from "node:fs";
+import { constants as fsConstants, promises as fs } from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { doctorRepo, type DoctorCheck } from "./doctor.js";
-import type { Finding } from "./types.js";
+import type { Evidence, Finding } from "./types.js";
 
 export interface AgentsLintResult {
   generatedAt: string;
@@ -34,6 +35,7 @@ export async function lintAgents(target = process.cwd()): Promise<AgentsLintResu
     finding.kind === "prompt_injection"
   );
   findings.push(...(await detectInstructionFileRisks(root, instructionFiles)));
+  findings.push(...(await detectMcpConfigDiagnostics(root, mcpConfigs)));
   const score = calculateAgentsLintScore(checks, findings);
   const status = statusFrom(score, checks, findings);
 
@@ -314,4 +316,244 @@ async function pathExists(root: string, reference: string): Promise<boolean> {
   } catch {
     return false;
   }
+}
+
+async function detectMcpConfigDiagnostics(root: string, mcpConfigs: string[]): Promise<Finding[]> {
+  const evidence: Evidence[] = [];
+
+  for (const file of mcpConfigs) {
+    const absolute = path.join(root, file);
+    const content = await fs.readFile(absolute, "utf8");
+    const parsed = parseJsonObject(stripJsonComments(content));
+    if (!parsed) {
+      evidence.push({
+        file,
+        line: 1,
+        excerpt: "MCP config could not be parsed as JSON/JSONC."
+      });
+      continue;
+    }
+
+    if (asObject(parsed.mcp_servers) && !asObject(parsed.mcpServers)) {
+      evidence.push({
+        file,
+        line: findLine(content, "mcp_servers"),
+        excerpt: "uses mcp_servers; Codex plugin MCP configs commonly expect mcpServers or a direct top-level server map"
+      });
+    }
+
+    const servers = discoverMcpServers(parsed);
+    if (!servers) {
+      evidence.push({
+        file,
+        line: 1,
+        excerpt: "no MCP server map found; expected mcpServers, servers, or a direct top-level server map"
+      });
+      continue;
+    }
+
+    for (const [name, rawServer] of Object.entries(servers)) {
+      const server = asObject(rawServer);
+      if (!server) {
+        evidence.push({
+          file,
+          line: findLine(content, name),
+          excerpt: `server "${name}" is not an object`
+        });
+        continue;
+      }
+
+      evidence.push(...(await inspectMcpServer(root, file, content, name, server)));
+    }
+  }
+
+  if (evidence.length === 0) {
+    return [];
+  }
+
+  return [{
+    kind: "mcp_risk",
+    severity: "medium",
+    title: "MCP config has unresolved startup inputs",
+    why: "Codex MCP failures are hard to debug when config shape, command paths, cwd values, or required environment variables are invalid before the server even starts.",
+    evidence: evidence.slice(0, 10),
+    suggestedRule:
+      "Before enabling an MCP server for coding agents, verify config key casing, command availability, cwd existence, and required environment variables with trace-to-skill lint-agents."
+  }];
+}
+
+async function inspectMcpServer(root: string, file: string, content: string, name: string, server: Record<string, unknown>): Promise<Evidence[]> {
+  const evidence: Evidence[] = [];
+  const hasUrl = typeof server.url === "string" || typeof server.httpUrl === "string";
+  const command = typeof server.command === "string" ? server.command.trim() : "";
+
+  if (!command && !hasUrl) {
+    evidence.push({
+      file,
+      line: findLine(content, name),
+      excerpt: `server "${name}" has neither command nor url`
+    });
+  }
+
+  if (command && !(await commandExists(root, command))) {
+    evidence.push({
+      file,
+      line: findLine(content, command),
+      excerpt: `server "${name}" command is not resolvable without starting it: ${command}`
+    });
+  }
+
+  if (typeof server.cwd === "string" && server.cwd.trim()) {
+    const cwd = server.cwd.trim();
+    if (!(await localPathExists(root, cwd))) {
+      evidence.push({
+        file,
+        line: findLine(content, cwd),
+        excerpt: `server "${name}" cwd does not exist: ${cwd}`
+      });
+    }
+  }
+
+  const env = asObject(server.env);
+  if (env) {
+    for (const [key, value] of Object.entries(env)) {
+      const issue = envValueIssue(key, value);
+      if (issue) {
+        evidence.push({
+          file,
+          line: findLine(content, key),
+          excerpt: `server "${name}" env ${key}: ${issue}`
+        });
+      }
+    }
+  }
+
+  return evidence;
+}
+
+function discoverMcpServers(parsed: Record<string, unknown>): Record<string, unknown> | undefined {
+  const wrapped = asObject(parsed.mcpServers) ?? asObject(parsed.servers) ?? asObject(parsed.mcp_servers);
+  if (wrapped) {
+    return wrapped;
+  }
+
+  const entries = Object.entries(parsed).filter(([key, value]) => !key.startsWith("$") && asObject(value));
+  if (entries.length > 0 && entries.every(([, value]) => looksLikeMcpServer(value))) {
+    return Object.fromEntries(entries);
+  }
+
+  return undefined;
+}
+
+function looksLikeMcpServer(value: unknown): boolean {
+  const server = asObject(value);
+  return Boolean(server && (
+    typeof server.command === "string" ||
+    typeof server.url === "string" ||
+    typeof server.httpUrl === "string" ||
+    Array.isArray(server.args) ||
+    asObject(server.env)
+  ));
+}
+
+async function commandExists(root: string, command: string): Promise<boolean> {
+  if (command.includes("/") || command.includes("\\")) {
+    return localPathExists(root, command);
+  }
+
+  const paths = (process.env.PATH ?? "").split(path.delimiter).filter(Boolean);
+  const extensions = process.platform === "win32"
+    ? (process.env.PATHEXT ?? ".EXE;.CMD;.BAT;.COM").split(";")
+    : [""];
+
+  for (const directory of paths) {
+    for (const extension of extensions) {
+      const candidate = path.join(directory, `${command}${extension}`);
+      if (await isExecutableFile(candidate)) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+async function localPathExists(root: string, value: string): Promise<boolean> {
+  const expanded = value === "~" || value.startsWith("~/")
+    ? path.join(os.homedir(), value.slice(2))
+    : value;
+  const candidate = path.isAbsolute(expanded) ? expanded : path.join(root, expanded);
+  try {
+    await fs.access(candidate);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function isExecutableFile(candidate: string): Promise<boolean> {
+  try {
+    const stat = await fs.stat(candidate);
+    if (!stat.isFile()) {
+      return false;
+    }
+    if (process.platform === "win32") {
+      return true;
+    }
+    await fs.access(candidate, fsConstants.X_OK);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function envValueIssue(key: string, value: unknown): string | undefined {
+  if (typeof value !== "string") {
+    return "value should be a string so the launcher receives the intended environment variable";
+  }
+
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return "empty value";
+  }
+
+  if (/^(todo|tbd|changeme|change-me|your[-_ ]?(token|key|secret|password)|example)$/i.test(trimmed)) {
+    return "placeholder value";
+  }
+
+  const variableReference = /^\$\{?([A-Za-z_][A-Za-z0-9_]*)\}?$/.exec(trimmed);
+  if (variableReference && !process.env[variableReference[1]]) {
+    return `references unset environment variable ${variableReference[1]}`;
+  }
+
+  if (/token|secret|key|password/i.test(key) && /^[A-Za-z0-9_./+=-]{16,}$/.test(trimmed) && !variableReference) {
+    return "appears to contain a literal secret; prefer referencing an external environment variable";
+  }
+
+  return undefined;
+}
+
+function stripJsonComments(content: string): string {
+  return content
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/^\s*\/\/.*$/gm, "");
+}
+
+function parseJsonObject(content: string): Record<string, unknown> | undefined {
+  try {
+    const parsed = JSON.parse(content);
+    return asObject(parsed);
+  } catch {
+    return undefined;
+  }
+}
+
+function asObject(value: unknown): Record<string, unknown> | undefined {
+  return value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : undefined;
+}
+
+function findLine(content: string, needle: string): number {
+  const lines = content.split(/\r?\n/);
+  const index = lines.findIndex((line) => line.includes(needle));
+  return index >= 0 ? index + 1 : 1;
 }

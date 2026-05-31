@@ -374,6 +374,40 @@ test("lintAgents detects missing paths and oversized instruction files", async (
   assert.match(markdown, /Agent instruction references missing paths/);
 });
 
+test("lintAgents detects static MCP config startup problems", async () => {
+  const cwd = await mkdtemp(path.join(os.tmpdir(), "trace-to-skill-agents-lint-mcp-"));
+  await writeFile(path.join(cwd, "AGENTS.md"), "Always run npm test before completion.\n", "utf8");
+  await writeFile(path.join(cwd, "package.json"), JSON.stringify({
+    scripts: {
+      test: "node --test"
+    }
+  }), "utf8");
+  await writeFile(path.join(cwd, ".mcp.json"), JSON.stringify({
+    mcp_servers: {
+      docs: {
+        command: "./missing-server",
+        cwd: "missing-dir",
+        env: {
+          OPENAI_API_KEY: "$TRACE_TO_SKILL_TEST_MISSING_KEY",
+          GITHUB_TOKEN: "your-token"
+        }
+      }
+    }
+  }, null, 2), "utf8");
+
+  const result = await lintAgents(cwd);
+  const mcpFinding = result.findings.find((finding) => finding.kind === "mcp_risk" && /unresolved startup/.test(finding.title));
+  const evidence = mcpFinding?.evidence.map((item) => item.excerpt).join("\n") ?? "";
+
+  assert.equal(result.status, "warn");
+  assert.ok(mcpFinding);
+  assert.match(evidence, /mcp_servers/);
+  assert.match(evidence, /missing-server/);
+  assert.match(evidence, /missing-dir/);
+  assert.match(evidence, /TRACE_TO_SKILL_TEST_MISSING_KEY/);
+  assert.match(evidence, /placeholder value/);
+});
+
 test("composite action exposes Codex readiness doctor mode", async () => {
   const action = await readFile("action.yml", "utf8");
 
