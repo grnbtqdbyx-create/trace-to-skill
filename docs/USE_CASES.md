@@ -21,7 +21,7 @@ What it proves:
 Recommended CI surface:
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.46
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.47
   with:
     mode: all
     doctor-threshold: "85"

@@ -41,7 +41,7 @@ npx npm@11.16.0 trust github trace-to-skill \
 2. Run `npm run check`.
 3. Regenerate `docs/BENCHMARK.md` and `docs/SCORECARD.md` if benchmark fixtures changed.
 4. Commit and push to `main`.
-5. Create a GitHub release whose tag matches the package version, such as `v0.1.46`.
+5. Create a GitHub release whose tag matches the package version, such as `v0.1.47`.
 6. Confirm the `Publish npm` workflow succeeds.
 7. Confirm `npm view trace-to-skill version dist-tags.latest --json` shows the new version.
 

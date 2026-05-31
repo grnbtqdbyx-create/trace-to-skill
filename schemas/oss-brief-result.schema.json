@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/grnbtqdbyx-create/trace-to-skill/main/schemas/oss-brief-result.schema.json",
+  "title": "trace-to-skill OssBriefResult",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "generatedAt",
+    "root",
+    "scorecard",
+    "qualification",
+    "apiCredits",
+    "evidence",
+    "nextSteps"
+  ],
+  "properties": {
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "root": {
+      "type": "string"
+    },
+    "repository": {
+      "type": "string"
+    },
+    "packageName": {
+      "type": "string"
+    },
+    "packageVersion": {
+      "type": "string"
+    },
+    "license": {
+      "type": "string"
+    },
+    "scorecard": {
+      "$ref": "#/$defs/scorecard"
+    },
+    "qualification": {
+      "$ref": "#/$defs/briefText"
+    },
+    "apiCredits": {
+      "$ref": "#/$defs/briefText"
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "nextSteps": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "$defs": {
+    "scorecard": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "passed",
+        "doctorScore",
+        "doctorStatus",
+        "benchmarkStatus",
+        "benchmarkCases"
+      ],
+      "properties": {
+        "passed": {
+          "type": "boolean"
+        },
+        "doctorScore": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "doctorStatus": {
+          "type": "string",
+          "enum": [
+            "ready",
+            "needs-attention"
+          ]
+        },
+        "benchmarkStatus": {
+          "type": "string",
+          "enum": [
+            "pass",
+            "fail"
+          ]
+        },
+        "benchmarkCases": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "briefText": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "long",
+        "max500"
+      ],
+      "properties": {
+        "long": {
+          "type": "string"
+        },
+        "max500": {
+          "type": "string",
+          "maxLength": 500
+        }
+      }
+    }
+  }
+}

@@ -11,6 +11,7 @@ import { compareAnalyses, evaluate } from "../src/eval.js";
 import { analyzeGithubEventContext, extractGithubContextInputs } from "../src/githubContext.js";
 import { postPullRequestComment } from "../src/github.js";
 import { initProject } from "../src/init.js";
+import { renderOssBriefMarkdown, runOssBrief } from "../src/ossBrief.js";
 import { redactTargets, redactText } from "../src/redact.js";
 import { renderAgentsRules, renderCodexIssueReport, renderComparison, renderDoctorPrComment, renderPrComment, renderSarif, renderSkill } from "../src/report.js";
 import { renderScorecardMarkdown, renderScorecardPrComment, runScorecard } from "../src/scorecard.js";
@@ -510,6 +511,7 @@ test("package metadata points npm users back to the public project", async () =>
   assert.ok(packageJson.files?.includes("llms.txt"));
   assert.ok(packageJson.files?.includes("docs/DISCOVERY.md"));
   assert.ok(packageJson.files?.includes("docs/CODEX_ISSUE_MAP.md"));
+  assert.ok(packageJson.files?.includes("docs/OPENAI_OSS_BRIEF.md"));
   assert.ok(packageJson.keywords?.includes("openai-codex"));
   assert.ok(packageJson.keywords?.includes("prompt-injection"));
   assert.ok(packageJson.keywords?.includes("context-compaction"));
@@ -522,6 +524,8 @@ test("package metadata points npm users back to the public project", async () =>
   assert.ok(packageJson.keywords?.includes("codex-resume"));
   assert.ok(packageJson.keywords?.includes("codex-issue-report"));
   assert.ok(packageJson.keywords?.includes("openai-triage"));
+  assert.ok(packageJson.keywords?.includes("openai-oss"));
+  assert.ok(packageJson.keywords?.includes("oss-maintainers"));
   assert.ok(packageJson.keywords?.includes("codex-token-burn"));
   assert.ok(packageJson.keywords?.includes("codex-usage"));
   assert.ok(packageJson.keywords?.includes("codex-resource-leak"));
@@ -906,6 +910,11 @@ test("published JSON schemas describe CLI result contracts", async () => {
     required: string[];
     properties: Record<string, unknown>;
   };
+  const ossBriefSchema = JSON.parse(await readFile("schemas/oss-brief-result.schema.json", "utf8")) as {
+    required: string[];
+    properties: Record<string, unknown>;
+    $defs: Record<string, unknown>;
+  };
   const redactSchema = JSON.parse(await readFile("schemas/redact-result.schema.json", "utf8")) as {
     required: string[];
     properties: Record<string, unknown>;
@@ -939,6 +948,9 @@ test("published JSON schemas describe CLI result contracts", async () => {
   assert.deepEqual(scorecardSchema.required, ["generatedAt", "passed", "threshold", "doctor", "benchmark", "reports"]);
   assert.ok(scorecardSchema.properties.doctor);
   assert.ok(scorecardSchema.properties.benchmark);
+  assert.deepEqual(ossBriefSchema.required, ["generatedAt", "root", "scorecard", "qualification", "apiCredits", "evidence", "nextSteps"]);
+  assert.ok(ossBriefSchema.properties.scorecard);
+  assert.ok(ossBriefSchema.$defs.briefText);
   assert.deepEqual(redactSchema.required, ["generatedAt", "files", "totals"]);
   assert.ok(redactSchema.properties.files);
   assert.ok(redactSchema.$defs.redactedFile);
@@ -989,6 +1001,27 @@ test("scorecard combines doctor readiness and benchmark evidence", async () => {
   assert.match(markdown, /Benchmark Summary/);
   assert.match(comment, /trace-to-skill-scorecard-report/);
   assert.match(comment, /trace-to-skill Scorecard/);
+});
+
+test("oss-brief creates OpenAI application-ready evidence", async () => {
+  const brief = await runOssBrief(".", 95);
+  const markdown = renderOssBriefMarkdown(brief);
+
+  assert.equal(brief.scorecard.passed, true);
+  assert.equal(brief.scorecard.doctorStatus, "ready");
+  assert.equal(brief.scorecard.doctorScore, 100);
+  assert.equal(brief.scorecard.benchmarkStatus, "pass");
+  assert.equal(brief.scorecard.benchmarkCases, 21);
+  assert.equal(brief.packageName, "trace-to-skill");
+  assert.equal(brief.packageVersion, "0.1.47");
+  assert.equal(brief.license, "Apache-2.0");
+  assert.ok(brief.repository?.includes("github.com/grnbtqdbyx-create/trace-to-skill"));
+  assert.ok(brief.qualification.max500.length <= 500);
+  assert.ok(brief.apiCredits.max500.length <= 500);
+  assert.match(markdown, /OpenAI OSS Brief/);
+  assert.match(markdown, /Why This Repository Qualifies/);
+  assert.match(markdown, /500-Character Version/);
+  assert.match(markdown, /npx trace-to-skill@0\.1\.47/);
 });
 
 test("scorecard-comment dry-run resolves pull request event", async () => {

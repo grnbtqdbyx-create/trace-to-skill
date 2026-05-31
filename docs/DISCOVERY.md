@@ -69,6 +69,7 @@ npx trace-to-skill suggest ./runs --target agents-md
 - `trace-to-skill scorecard --format json`
 - SARIF from `trace-to-skill analyze --format sarif`
 - OpenAI/Codex issue-ready Markdown from `trace-to-skill codex-report`
+- OpenAI OSS support/application brief from `trace-to-skill oss-brief`
 - Codex issue-cluster mapping in `docs/CODEX_ISSUE_MAP.md`
 - GitHub Action outputs for doctor, AGENTS lint, GitHub context guard, benchmark, and scorecard modes
 
@@ -79,6 +80,7 @@ npx trace-to-skill suggest ./runs --target agents-md
 - `schemas/doctor-result.schema.json`
 - `schemas/redact-result.schema.json`
 - `schemas/scorecard-result.schema.json`
+- `schemas/oss-brief-result.schema.json`
 
 ## Related Keywords
 

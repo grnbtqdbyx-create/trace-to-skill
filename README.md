@@ -20,6 +20,7 @@ npx trace-to-skill suggest ./runs --target agents-md
 npx trace-to-skill eval ./runs --threshold 80
 npx trace-to-skill benchmark
 npx trace-to-skill scorecard .
+npx trace-to-skill oss-brief .
 npx trace-to-skill scorecard-comment . --dry-run
 npx trace-to-skill guard-github-event "$GITHUB_EVENT_PATH"
 npx trace-to-skill comment ./runs --dry-run
@@ -41,6 +42,7 @@ It is built for maintainers using Codex, Claude Code, Cursor, Copilot coding age
 Use it when you need to:
 
 - **Gate Codex-ready PRs:** run `trace-to-skill scorecard .` in CI and post a reviewer-friendly readiness comment.
+- **Prepare OpenAI OSS evidence:** run `trace-to-skill oss-brief .` to generate application-ready proof, 500-character summary fields, readiness score, benchmark status, license, and next steps.
 - **Harden agent instructions:** run `trace-to-skill lint-agents .` to catch missing `AGENTS.md`, conflicting tool instructions, missing includes, nested instruction drift, encoding issues, and risky MCP config.
 - **Protect agent context:** run `trace-to-skill guard-github-event "$GITHUB_EVENT_PATH"` before feeding issue, PR, comment, discussion, check-run, or commit text into an agent.
 - **Share failed traces safely:** run `trace-to-skill redact ./runs --output redacted-runs` before publishing anonymized failure fixtures.
@@ -85,6 +87,7 @@ Open-source maintainers do not need more AI-generated noise. They need agents th
 - Did a model/runtime latency regression make Fast behave like Standard, stall before first output, or spend minutes in thinking, search, read, or compaction phases?
 - Did repeated approval prompts make a safer scoped mode unusable or require huge per-tool MCP approval configs?
 - Can the failure be reported to OpenAI with line-linked evidence, redaction notes, and the exact diagnostics maintainers need?
+- Can we produce an application-ready OpenAI OSS brief from the repo's actual license, distribution, readiness, and benchmark state?
 
 ## Example Output
 
@@ -274,6 +277,16 @@ trace-to-skill scorecard . --format json
 
 See this repository's current public scorecard in [docs/SCORECARD.md](docs/SCORECARD.md).
 
+Generate an OpenAI OSS support/application brief:
+
+```bash
+trace-to-skill oss-brief .
+trace-to-skill oss-brief . --format json
+trace-to-skill oss-brief . --output docs/OPENAI_OSS_BRIEF.md
+```
+
+See this repository's current brief in [docs/OPENAI_OSS_BRIEF.md](docs/OPENAI_OSS_BRIEF.md).
+
 To map a Codex problem to the right failure class and report command, see [docs/CODEX_ISSUE_MAP.md](docs/CODEX_ISSUE_MAP.md).
 
 Post or update a pull request comment with the combined scorecard:
@@ -334,6 +347,7 @@ Stable machine-readable contracts are published with the npm package and release
 - [`schemas/doctor-result.schema.json`](schemas/doctor-result.schema.json) describes `trace-to-skill doctor --format json`.
 - [`schemas/redact-result.schema.json`](schemas/redact-result.schema.json) describes `trace-to-skill redact --format json`.
 - [`schemas/scorecard-result.schema.json`](schemas/scorecard-result.schema.json) describes `trace-to-skill scorecard --format json`.
+- [`schemas/oss-brief-result.schema.json`](schemas/oss-brief-result.schema.json) describes `trace-to-skill oss-brief --format json`.
 
 These schemas let downstream Codex workflows, dashboards, and CI bots consume reports without scraping Markdown.
 
@@ -365,7 +379,7 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v5
-      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.46
+      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.47
         with:
           mode: all
           doctor-threshold: "85"
@@ -414,7 +428,7 @@ Composite action usage:
 
 ```yaml
 - id: trace-to-skill
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.46
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.47
   with:
     mode: all
     doctor-threshold: "85"
@@ -456,7 +470,7 @@ Action outputs:
 
 By default, generated reports are also appended to the GitHub Actions Job Summary. Set `job-summary: "false"` to disable that UI output.
 
-Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.46` executes that release's checked-out source instead of pulling the default branch at runtime.
+Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.47` executes that release's checked-out source instead of pulling the default branch at runtime.
 
 ## Codex Skill
 
@@ -504,6 +518,7 @@ The goal is not to let agents autonomously rewrite project policy. The goal is t
 - `trace-to-skill benchmark` for public fixture scorecards
 - GitHub Action `benchmark` and `all` modes
 - `trace-to-skill scorecard` for combined reviewer proof
+- `trace-to-skill oss-brief` for OpenAI OSS application-ready evidence
 - Scorecard JSON schema and Action outputs
 - Tag-pinned GitHub Action runtime via `$GITHUB_ACTION_PATH`
 - Scorecard PR comments with update-in-place marker
