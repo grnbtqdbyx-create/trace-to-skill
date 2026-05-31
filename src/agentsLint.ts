@@ -1,6 +1,7 @@
 import { constants as fsConstants, promises as fs } from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { TextDecoder } from "node:util";
 import { doctorRepo, type DoctorCheck } from "./doctor.js";
 import type { Evidence, Finding } from "./types.js";
 
@@ -206,11 +207,26 @@ async function detectInstructionFileRisks(root: string, instructionFiles: string
   const findings: Finding[] = [];
   const missingPathEvidence = [];
   const largeFileEvidence = [];
+  const missingIncludeEvidence = [];
+  const nestedInstructionEvidence = [];
+  const encodingEvidence = [];
+  const instructionContents = new Map<string, string>();
 
   for (const file of instructionFiles) {
     const absolute = path.join(root, file);
-    const content = await fs.readFile(absolute, "utf8");
+    const raw = await fs.readFile(absolute);
+    const decoded = decodeInstructionFile(raw);
+    const content = decoded.content;
+    instructionContents.set(file, content);
     const lines = content.split(/\r?\n/);
+
+    if (decoded.invalidUtf8) {
+      encodingEvidence.push({
+        file,
+        line: 1,
+        excerpt: `${file} contains bytes that are not valid UTF-8; Codex may skip or misread this instruction file.`
+      });
+    }
 
     if (Buffer.byteLength(content, "utf8") > INSTRUCTION_SIZE_WARN_BYTES) {
       largeFileEvidence.push({
@@ -229,6 +245,35 @@ async function detectInstructionFileRisks(root: string, instructionFiles: string
         });
       }
     }
+
+    for (const reference of collectIncludeReferences(lines)) {
+      if (reference.invalid) {
+        missingIncludeEvidence.push({
+          file,
+          line: reference.line,
+          excerpt: `include target is not a safe repo-relative markdown path: ${reference.value}`
+        });
+      } else if (!(await pathExists(root, reference.value))) {
+        missingIncludeEvidence.push({
+          file,
+          line: reference.line,
+          excerpt: `include target does not exist: ${reference.value}`
+        });
+      }
+    }
+  }
+
+  const rootInstructions = instructionContents.get("AGENTS.md") ?? "";
+  if (rootInstructions) {
+    for (const file of instructionFiles) {
+      if (file !== "AGENTS.md" && /(^|\/)AGENTS\.md$/i.test(file) && !rootInstructions.includes(file) && !rootInstructions.includes(path.dirname(file))) {
+        nestedInstructionEvidence.push({
+          file,
+          line: 1,
+          excerpt: `nested AGENTS.md may not be loaded unless Codex starts in ${path.dirname(file)} or the root AGENTS.md explicitly points to it`
+        });
+      }
+    }
   }
 
   if (missingPathEvidence.length > 0) {
@@ -240,6 +285,18 @@ async function detectInstructionFileRisks(root: string, instructionFiles: string
       evidence: missingPathEvidence.slice(0, 8),
       suggestedRule:
         "Keep paths in agent instruction files verified; run trace-to-skill lint-agents after moving or deleting referenced files."
+    });
+  }
+
+  if (missingIncludeEvidence.length > 0) {
+    findings.push({
+      kind: "hallucinated_file",
+      severity: "medium",
+      title: "Agent instruction include references missing paths",
+      why: "Teams often split AGENTS.md or CLAUDE.md into reusable markdown files. Missing or unsafe include targets make instruction assembly unverifiable and create cross-tool drift.",
+      evidence: missingIncludeEvidence.slice(0, 8),
+      suggestedRule:
+        "Keep @include-style instruction references repo-relative, present, and auditable; run trace-to-skill lint-agents after moving shared instruction files."
     });
   }
 
@@ -255,7 +312,45 @@ async function detectInstructionFileRisks(root: string, instructionFiles: string
     });
   }
 
+  if (nestedInstructionEvidence.length > 0) {
+    findings.push({
+      kind: "ignored_instruction",
+      severity: "medium",
+      title: "Nested AGENTS.md may not be loaded automatically",
+      why: "Codex users report that nested AGENTS.md files in monorepos are easy to miss unless the agent starts in the right directory or the root instructions explicitly mention them.",
+      evidence: nestedInstructionEvidence.slice(0, 8),
+      suggestedRule:
+        "List nested AGENTS.md files in the root AGENTS.md or add explicit package-scope rules so maintainers can verify which instruction files should be loaded for each path."
+    });
+  }
+
+  if (encodingEvidence.length > 0) {
+    findings.push({
+      kind: "ignored_instruction",
+      severity: "medium",
+      title: "Agent instruction file may fail UTF-8 loading",
+      why: "Instruction files with invalid encoding can be silently skipped or misread by coding agents, making policy failures hard to diagnose.",
+      evidence: encodingEvidence.slice(0, 8),
+      suggestedRule:
+        "Save AGENTS.md, CLAUDE.md, and other agent instruction files as valid UTF-8 and reject files with replacement characters or unsupported encodings."
+    });
+  }
+
   return findings;
+}
+
+function decodeInstructionFile(raw: Buffer): { content: string; invalidUtf8: boolean } {
+  try {
+    return {
+      content: new TextDecoder("utf-8", { fatal: true }).decode(raw),
+      invalidUtf8: false
+    };
+  } catch {
+    return {
+      content: raw.toString("utf8"),
+      invalidUtf8: true
+    };
+  }
 }
 
 function collectPathReferences(lines: string[]): Array<{ line: number; value: string }> {
@@ -283,6 +378,47 @@ function addPathReference(references: Array<{ line: number; value: string }>, se
 
   seen.add(value);
   references.push({ line, value });
+}
+
+function collectIncludeReferences(lines: string[]): Array<{ line: number; value: string; invalid: boolean }> {
+  const references: Array<{ line: number; value: string; invalid: boolean }> = [];
+  const seen = new Set<string>();
+
+  lines.forEach((line, index) => {
+    for (const match of line.matchAll(/(?:^|\s)@([A-Za-z0-9._/-]+\.md)\b/g)) {
+      const raw = match[1];
+      const value = normalizeIncludeReference(raw);
+      const key = value ?? raw;
+      if (seen.has(key)) {
+        continue;
+      }
+      seen.add(key);
+      references.push({
+        line: index + 1,
+        value: key,
+        invalid: !value
+      });
+    }
+  });
+
+  return references;
+}
+
+function normalizeIncludeReference(raw: string): string | undefined {
+  const value = raw.trim().replace(/^[.]\//, "").replace(/[),.;:]+$/, "");
+  if (
+    !value ||
+    value.startsWith("/") ||
+    value.startsWith("~") ||
+    value.includes("..") ||
+    value.includes("$") ||
+    value.includes("*") ||
+    value.includes(" ")
+  ) {
+    return undefined;
+  }
+
+  return /^[A-Za-z0-9._/-]+\.md$/i.test(value) ? value : undefined;
 }
 
 function normalizePathReference(raw: string): string | undefined {

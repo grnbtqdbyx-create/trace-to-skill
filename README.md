@@ -40,7 +40,7 @@ It is built for maintainers using Codex, Claude Code, Cursor, Copilot coding age
 Use it when you need to:
 
 - **Gate Codex-ready PRs:** run `trace-to-skill scorecard .` in CI and post a reviewer-friendly readiness comment.
-- **Harden agent instructions:** run `trace-to-skill lint-agents .` to catch missing `AGENTS.md`, conflicting tool instructions, and risky MCP config.
+- **Harden agent instructions:** run `trace-to-skill lint-agents .` to catch missing `AGENTS.md`, conflicting tool instructions, missing includes, nested instruction drift, encoding issues, and risky MCP config.
 - **Protect agent context:** run `trace-to-skill guard-github-event "$GITHUB_EVENT_PATH"` before feeding issue, PR, comment, discussion, check-run, or commit text into an agent.
 - **Share failed traces safely:** run `trace-to-skill redact ./runs --output redacted-runs` before publishing anonymized failure fixtures.
 
@@ -163,7 +163,7 @@ trace-to-skill lint-agents .
 trace-to-skill lint-agents . --format json
 ```
 
-This focused linter checks whether `AGENTS.md` exists as the canonical instruction source, whether validation commands are discoverable, whether `AGENTS.md` / `CLAUDE.md` / Cursor / Copilot guidance conflicts, whether instruction files reference missing paths or grow large enough to risk ignored guidance, and whether JSON or `.codex/config.toml` MCP/Codex configs expose risky capabilities, secrets, unresolved commands, missing `cwd` values, placeholder env vars, wrong `mcpServers` casing, unresolved plugin placeholders, deprecated `codex_hooks`, missing `default_permissions` profiles, or synced `projects.* trusted_level` state.
+This focused linter checks whether `AGENTS.md` exists as the canonical instruction source, whether validation commands are discoverable, whether `AGENTS.md` / `CLAUDE.md` / Cursor / Copilot guidance conflicts, whether instruction files reference missing paths, missing `@file.md` includes, nested `AGENTS.md` files that the root instructions do not mention, invalid UTF-8, or grow large enough to risk ignored guidance, and whether JSON or `.codex/config.toml` MCP/Codex configs expose risky capabilities, secrets, unresolved commands, missing `cwd` values, placeholder env vars, wrong `mcpServers` casing, unresolved plugin placeholders, deprecated `codex_hooks`, missing `default_permissions` profiles, or synced `projects.* trusted_level` state.
 
 Redact traces before sharing them:
 
@@ -271,7 +271,7 @@ JSONL traces are normalized by extracting common fields such as `message`, `cont
 
 MCP configs with `mcpServers`, `.mcp.json`, or project-local `.codex/config.toml` are parsed for capability hints such as filesystem, shell, browser, network, database, container, and secret-bearing environment variables. `lint-agents` also checks static startup inputs such as `command`, `cwd`, env placeholders, unresolved `$VARS`, `${CLAUDE_PLUGIN_ROOT}`-style plugin placeholders, local stdio commands without explicit `cwd`, and the common JSON `mcp_servers` / `mcpServers` casing mismatch. Codex config hygiene checks catch deprecated `[features].codex_hooks`, missing `default_permissions` profile definitions, and machine-local `projects.* trusted_level` metadata in synced config files.
 
-Instruction files such as `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `.cursor/rules`, and `.github/copilot-instructions.md` are checked for obvious contradictions in validation commands, test requirements, and destructive-command approval rules.
+Instruction files such as `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `.cursor/rules`, and `.github/copilot-instructions.md` are checked for obvious contradictions in validation commands, test requirements, destructive-command approval rules, invalid UTF-8, missing include targets, and nested `AGENTS.md` files that may not be loaded automatically.
 
 ## JSON Schemas
 
@@ -309,7 +309,7 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v5
-      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.34
+      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.35
         with:
           mode: all
           doctor-threshold: "85"
@@ -358,7 +358,7 @@ Composite action usage:
 
 ```yaml
 - id: trace-to-skill
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.34
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.35
   with:
     mode: all
     doctor-threshold: "85"
@@ -400,7 +400,7 @@ Action outputs:
 
 By default, generated reports are also appended to the GitHub Actions Job Summary. Set `job-summary: "false"` to disable that UI output.
 
-Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.34` executes that release's checked-out source instead of pulling the default branch at runtime.
+Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.35` executes that release's checked-out source instead of pulling the default branch at runtime.
 
 ## Codex Skill
 

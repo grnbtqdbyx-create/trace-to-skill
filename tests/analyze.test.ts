@@ -468,6 +468,37 @@ test("lintAgents detects drift-prone Codex config settings", async () => {
   assert.match(evidence, /machine-local path/);
 });
 
+test("lintAgents detects instruction include, nested AGENTS, and encoding risks", async () => {
+  const cwd = await mkdtemp(path.join(os.tmpdir(), "trace-to-skill-agents-lint-includes-"));
+  await mkdir(path.join(cwd, "docs"), { recursive: true });
+  await mkdir(path.join(cwd, "packages/api"), { recursive: true });
+  await writeFile(path.join(cwd, "AGENTS.md"), [
+    "Always run npm test before completion.",
+    "Shared policy: @docs/shared.md",
+    "Missing policy: @docs/missing.md",
+    ""
+  ].join("\n"), "utf8");
+  await writeFile(path.join(cwd, "docs/shared.md"), "# Shared\n", "utf8");
+  await writeFile(path.join(cwd, "packages/api/AGENTS.md"), "Run API tests for package changes.\n", "utf8");
+  await writeFile(path.join(cwd, "CLAUDE.md"), Buffer.from([0xff, 0xfe, 0x41, 0x00]));
+  await writeFile(path.join(cwd, "package.json"), JSON.stringify({
+    scripts: {
+      test: "node --test"
+    }
+  }), "utf8");
+
+  const result = await lintAgents(cwd);
+  const evidence = result.findings.flatMap((finding) => finding.evidence.map((item) => item.excerpt)).join("\n");
+
+  assert.equal(result.status, "warn");
+  assert.ok(result.findings.some((finding) => finding.title === "Agent instruction include references missing paths"));
+  assert.ok(result.findings.some((finding) => finding.title === "Nested AGENTS.md may not be loaded automatically"));
+  assert.ok(result.findings.some((finding) => finding.title === "Agent instruction file may fail UTF-8 loading"));
+  assert.match(evidence, /docs\/missing\.md/);
+  assert.match(evidence, /packages\/api/);
+  assert.match(evidence, /valid UTF-8/);
+});
+
 test("composite action exposes Codex readiness doctor mode", async () => {
   const action = await readFile("action.yml", "utf8");
 

@@ -31,7 +31,7 @@
 - Prompt-injection detection for untrusted issue, PR, log, and web text
 - Codex-native `codex-readiness-auditor` skill for repeatable maintainer audits
 - `guard-github-event` for scanning PR, issue, comment, discussion, check-run, and commit text before an agent acts on it
-- `lint-agents` for focused AGENTS.md, tool-instruction, MCP capability, JSON/TOML static MCP startup-input linting, and Codex config drift checks
+- `lint-agents` for focused AGENTS.md, tool-instruction composition, MCP capability, JSON/TOML static MCP startup-input linting, and Codex config drift checks
 - GitHub Action `agents-lint` mode and outputs
 - `redact` for privacy-preserving trace sharing before public issue reports or fixtures
 

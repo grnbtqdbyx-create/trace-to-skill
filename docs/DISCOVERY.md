@@ -20,6 +20,7 @@ This page is written for maintainers, search engines, package indexes, and AI re
 - Codex or Claude Code claims a task is done without validation evidence.
 - A coding agent repeats the same test/build/lint failure.
 - A repository has conflicting `AGENTS.md`, `CLAUDE.md`, Cursor, Copilot, or Gemini instructions.
+- A monorepo has nested `AGENTS.md` files, `@file.md` instruction includes, or invalid instruction-file encoding that makes Codex load the wrong policy.
 - A workflow wants to feed GitHub issue, PR, comment, discussion, check-run, or commit text into an agent but needs prompt-injection checks first.
 - MCP config gives agents filesystem, shell, browser, network, database, container, or secret-bearing access without a visible trust boundary.
 - MCP config looks valid at a glance but has broken startup inputs, such as missing commands, bad `cwd`, placeholder env vars, unresolved `$VARS`, unresolved plugin placeholders, local stdio commands without explicit `cwd`, or the wrong JSON `mcp_servers` wrapper key.

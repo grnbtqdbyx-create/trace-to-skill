@@ -27,6 +27,9 @@ Agent instruction files disagree or the agent ignores an existing repository rul
 - different package managers for validation commands
 - "always run tests" vs "do not run tests"
 - approval required vs approval bypassed for destructive commands
+- missing `@file.md` include targets
+- nested `AGENTS.md` files that the root instructions do not point to
+- invalid UTF-8 bytes that can make instruction loading fail or become hard to debug
 
 ## Over-Editing
 

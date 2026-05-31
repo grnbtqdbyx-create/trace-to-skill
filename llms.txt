@@ -16,7 +16,7 @@ Runtime: Node.js 20+
 - failed tests hidden behind optimistic summaries
 - hallucinated files and broad over-editing
 - conflicting `AGENTS.md`, `CLAUDE.md`, Cursor, Copilot, or Gemini instructions
-- stale path references and oversized instruction files that can make Codex follow wrong or truncated guidance
+- stale path references, missing `@file.md` includes, nested `AGENTS.md` visibility gaps, invalid UTF-8, and oversized instruction files that can make Codex follow wrong or truncated guidance
 - prompt injection in issue, PR, review, discussion, check-run, commit, log, or web text
 - risky MCP server capabilities, secret-bearing environment variables, broken JSON/TOML startup inputs, unresolved plugin placeholders, missing `cwd`, deprecated `codex_hooks`, missing `default_permissions` profiles, synced `projects.* trusted_level` metadata, and `mcp_servers` / `mcpServers` casing mismatches
 - sharing failed agent traces without leaking tokens, emails, local paths, or hidden Unicode controls
@@ -58,7 +58,7 @@ npx trace-to-skill init --comment --sarif
 ## GitHub Action
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.34
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.35
   with:
     mode: all
     doctor-threshold: "85"

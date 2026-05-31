@@ -25,7 +25,7 @@ Current proof points:
 - Codex-style JSONL parsing.
 - Codex-readiness doctor command for maintainer repositories.
 - Focused AGENTS.md / MCP config linter for repository instruction hygiene.
-- Missing-path and oversized-instruction checks for AGENTS.md and tool instruction files.
+- Missing-path, missing-include, nested-instruction, invalid-UTF-8, and oversized-instruction checks for AGENTS.md and tool instruction files.
 - GitHub Action `agents-lint` mode and public AGENTS.md lint report.
 - GitHub Action doctor mode with configurable readiness threshold.
 - Pull request comments for Codex readiness scores and recommendations.
@@ -51,7 +51,7 @@ Current proof points:
 - SARIF output for GitHub code scanning.
 - Before/after eval comparison with keep/revise/reject decisions.
 - One-command repository setup via `trace-to-skill init`.
-- Public release v0.1.34.
+- Public release v0.1.35.
 - Current GitHub scorecard: 100/100 Codex-ready, benchmark passing.
 
 500-character version:
