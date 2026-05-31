@@ -298,6 +298,10 @@ These schemas let downstream Codex workflows, dashboards, and CI bots consume re
 
 For a copy-paste maintainer rollout, see [docs/ADOPTION_GUIDE.md](docs/ADOPTION_GUIDE.md). It includes the first PR shape, privacy checklist, and a short pull request template for adding Codex readiness checks without handing policy changes to an agent.
 
+## Release Hygiene
+
+Releases are prepared for npm Trusted Publishing through the [`Publish npm`](.github/workflows/npm-publish.yml) workflow. Once the npm package settings trust `grnbtqdbyx-create/trace-to-skill` and workflow filename `npm-publish.yml`, a GitHub release can publish without a long-lived npm token or repeated local browser authentication. See [docs/RELEASE.md](docs/RELEASE.md).
+
 ## GitHub Action
 
 Run the Codex readiness doctor as a GitHub Action:

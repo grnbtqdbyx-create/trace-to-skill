@@ -97,3 +97,7 @@ For dashboards, bots, or custom CI:
 - `schemas/scorecard-result.schema.json` describes `trace-to-skill scorecard --format json`.
 
 Use the schemas instead of scraping Markdown reports.
+
+## Maintainer Release Note
+
+For this package itself, releases are prepared for npm Trusted Publishing through `.github/workflows/npm-publish.yml`. See `docs/RELEASE.md` for the one-time npm package settings and release checklist.

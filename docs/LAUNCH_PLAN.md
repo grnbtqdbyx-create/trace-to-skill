@@ -55,6 +55,7 @@ Secondary headline:
 - [x] discovery PR to awesome-codex-cli: https://github.com/RoggeOhta/awesome-codex-cli/pull/63
 - [x] discovery PR to awesome-codex-skills: https://github.com/ComposioHQ/awesome-codex-skills/pull/90
 - [x] crawler-friendly `llms.txt` and `docs/DISCOVERY.md`
+- [x] npm Trusted Publishing workflow prepared for release automation without repeated local web auth
 
 ## Current Public Proof
 

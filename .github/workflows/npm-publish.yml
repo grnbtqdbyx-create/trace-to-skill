@@ -1,0 +1,52 @@
+name: Publish npm
+
+on:
+  release:
+    types:
+      - published
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: Publish the current package version if it is not already on npm
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    if: github.event_name == 'release' || inputs.publish == true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+      - run: npm ci
+      - run: npm run check
+      - name: Verify release tag matches package version
+        if: github.event_name == 'release'
+        run: |
+          PACKAGE_VERSION="$(node -p "require('./package.json').version")"
+          if [ "${GITHUB_REF_NAME}" != "v${PACKAGE_VERSION}" ]; then
+            echo "Release tag ${GITHUB_REF_NAME} does not match package version v${PACKAGE_VERSION}" >&2
+            exit 1
+          fi
+      - id: published
+        name: Check npm version
+        run: |
+          PACKAGE_VERSION="$(node -p "require('./package.json').version")"
+          if npm view "trace-to-skill@${PACKAGE_VERSION}" version --json >/tmp/npm-version.json 2>/dev/null; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "trace-to-skill@${PACKAGE_VERSION} is already published"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "trace-to-skill@${PACKAGE_VERSION} is not published yet"
+          fi
+      - name: Publish to npm with trusted publishing
+        if: steps.published.outputs.exists == 'false'
+        run: npm publish --provenance --access public

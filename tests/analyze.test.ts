@@ -632,6 +632,24 @@ test("repository dogfoods the local Codex readiness action", async () => {
   assert.match(workflow, /steps\.readiness\.outputs\.scorecard-status/);
 });
 
+test("repository publishes npm through trusted publishing workflow", async () => {
+  const workflow = await readFile(".github/workflows/npm-publish.yml", "utf8");
+  const releaseGuide = await readFile("docs/RELEASE.md", "utf8");
+
+  assert.match(workflow, /name: Publish npm/);
+  assert.match(workflow, /types:\n\s+- published/);
+  assert.match(workflow, /workflow_dispatch:/);
+  assert.match(workflow, /id-token: write/);
+  assert.match(workflow, /node-version: 24/);
+  assert.match(workflow, /registry-url: https:\/\/registry\.npmjs\.org/);
+  assert.match(workflow, /npm run check/);
+  assert.match(workflow, /GITHUB_REF_NAME/);
+  assert.match(workflow, /npm view "trace-to-skill@\$\{PACKAGE_VERSION\}" version/);
+  assert.match(workflow, /npm publish --provenance --access public/);
+  assert.match(releaseGuide, /Workflow filename: `npm-publish\.yml`/);
+  assert.match(releaseGuide, /Allowed action: `npm publish`/);
+});
+
 test("published JSON schemas describe CLI result contracts", async () => {
   const analysisSchema = JSON.parse(await readFile("schemas/analysis-result.schema.json", "utf8")) as {
     required: string[];

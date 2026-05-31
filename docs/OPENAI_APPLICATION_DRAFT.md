@@ -20,6 +20,7 @@ Current proof points:
 
 - Public repo with Apache-2.0 license.
 - Public npm package for one-command use.
+- npm Trusted Publishing workflow prepared to reduce manual release friction and avoid long-lived publish tokens.
 - Crawler-friendly `llms.txt` and `docs/DISCOVERY.md` for bot/research discovery.
 - CI-backed TypeScript CLI.
 - Codex-style JSONL parsing.
