@@ -211,6 +211,10 @@ Stable machine-readable contracts are published with the npm package and release
 
 These schemas let downstream Codex workflows, dashboards, and CI bots consume reports without scraping Markdown.
 
+## Adoption Guide
+
+For a copy-paste maintainer rollout, see [docs/ADOPTION_GUIDE.md](docs/ADOPTION_GUIDE.md). It includes the first PR shape, privacy checklist, and a short pull request template for adding Codex readiness checks without handing policy changes to an agent.
+
 ## GitHub Action
 
 Run the Codex readiness doctor as a GitHub Action:
@@ -231,7 +235,7 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v5
-      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.14
+      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.15
         with:
           mode: doctor
           doctor-threshold: "85"
@@ -279,7 +283,7 @@ Composite action usage:
 
 ```yaml
 - id: trace-to-skill
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.14
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.15
   with:
     mode: both
     doctor-threshold: "85"

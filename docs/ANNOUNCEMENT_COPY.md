@@ -37,6 +37,7 @@ trace-to-skill checks repo readiness and scans agent traces/logs to generate:
 - GitHub Actions Job Summary reports
 - one-command setup for Codex readiness and agent-learning workflows
 - JSON schemas for deterministic CLI report contracts
+- a maintainer adoption guide with privacy checklist and PR template
 - an Agent Learning Report
 - suggested AGENTS.md rules
 - suggested SKILL.md content
