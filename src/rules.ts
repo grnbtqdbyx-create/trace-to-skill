@@ -236,6 +236,28 @@ const RULES: RuleDefinition[] = [
     suggestedSkill: "codex-approval-friction-triage"
   },
   {
+    kind: "codex_windows_helper_path",
+    severity: "high",
+    title: "Codex Windows helper or bundled tool path failure",
+    why: "Windows Codex Desktop can expose bundled tools or plugin helpers from MSIX/WindowsApps paths that are discoverable but not executable, breaking search, node_repl, Browser, Chrome, Computer Use, and sandbox startup.",
+    patterns: [
+      /\bWindowsApps\\OpenAI\.Codex_[^\\\s]+\\app\\resources\\(?:rg|node|node_repl|codex-command-runner|codex-windows-sandbox-setup|codex|codex-computer-use)\.exe\b.{0,260}\b(Access is denied|拒绝访问|failed to run|cannot start|not executable)\b/i,
+      /\bProgram ['"]?(?:rg|node|node_repl|codex-command-runner|codex-windows-sandbox-setup|codex)\.exe['"]? failed to run\b.{0,220}\b(Access is denied|拒绝访问|WindowsApps|OpenAI\.Codex)\b/i,
+      /\bGet-Command\s+rg\b.{0,220}\b(WindowsApps|OpenAI\.Codex|app\\resources|Access is denied|not recognized|falls? through)\b/i,
+      /\bwhere\.exe\s+rg\b.{0,220}\b(WindowsApps|OpenAI\.Codex|app\\resources|LocalCache|Local\\OpenAI\\Codex\\bin)\b/i,
+      /\b%LOCALAPPDATA%\\OpenAI\\Codex\\bin\b.{0,260}\b(missing|did not exist|not created|not linked|junction|falls? through|PATH|rg\.exe|node\.exe|codex\.exe)\b/i,
+      /\bLocalCache\\Local\\OpenAI\\Codex\\bin\b.{0,260}\b(missing|contains|rg\.exe|node_repl\.exe|codex-command-runner\.exe|CodexSandboxUsers|read\/execute|RX)\b/i,
+      /\bCodexSandboxUsers\b.{0,260}\b(missing|Read\/Execute|read\/execute|RX|icacls|ACE|ACL|grant|LocalCache|rg\.exe|sandbox setup)\b/i,
+      /\bcopyfile\b.{0,260}\b(WindowsApps|OpenAI\.Codex|bundled_plugins_marketplace_resolve_failed|plugin\.json|EFS|encrypted|The specified file could not be encrypted)\b/i,
+      /\b(EFS|Application Protected|Encrypted attribute|WindowsApps\/MSIX|MSIX)\b.{0,260}\b(copyfile|Copy-Item|robocopy|rg\.exe|plugin\.json|app\\resources|LocalCache)\b/i,
+      /\bnode_repl\b.{0,220}\b(windows sandbox failed: spawn setup refresh|kernel exited unexpectedly|stdout_eof|missing-helper-path|native pipe path is unavailable)\b/i,
+      /\b(Chrome plugin|in-app Browser|Computer Use|Browser plugin|bundled plugins?)\b.{0,260}\b(unavailable|missing-helper-path|native pipe path is unavailable|spawn setup refresh|WindowsApps|copyfile|LocalCache)\b/i
+    ],
+    suggestedRule:
+      "When reporting Codex Windows helper path failures, capture Codex Desktop version, Windows build, install source, terminal/tool-runner context, `Get-Command rg -All`, `where.exe rg`, exact failing helper path, `%LOCALAPPDATA%\\OpenAI\\Codex\\bin` and MSIX LocalCache bin contents, ACL/`icacls` output for CodexSandboxUsers, file attributes such as EFS/Application Protected, node_repl/plugin diagnostics, sandbox mode, and whether installing an external rg, recreating the local bin junction, rerunning sandbox setup, changing elevated/unelevated mode, or restarting Codex changes behavior.",
+    suggestedSkill: "codex-windows-helper-path-triage"
+  },
+  {
     kind: "sandbox_permission",
     severity: "high",
     title: "Codex sandbox or permission failure",

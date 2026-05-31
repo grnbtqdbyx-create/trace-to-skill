@@ -25,6 +25,12 @@ const DEMO_SCENARIOS: DemoScenario[] = [
     description: "Long sessions break when `/compact` or auto-compaction times out, disconnects, or fails at `responses/compact`."
   },
   {
+    id: "windows-helper-path",
+    title: "Codex Windows helper path failure",
+    fixture: "fixtures/codex-windows-helper-path.md",
+    description: "Windows Desktop exposes bundled rg/node/plugin helpers from WindowsApps or missing LocalCache paths that cannot execute."
+  },
+  {
     id: "approval-friction",
     title: "Codex approval friction",
     fixture: "fixtures/codex-approval-friction.md",
@@ -114,6 +120,7 @@ export function renderDemoMarkdown(result: DemoResult): string {
     "```bash",
     "trace-to-skill demo --list",
     "trace-to-skill demo remote-compact",
+    "trace-to-skill demo windows-helper-path",
     "trace-to-skill demo file-tree-ui",
     "trace-to-skill demo usage-reset-drift",
     "```",
@@ -134,6 +141,7 @@ export function renderDemoScenarioList(scenarios = listDemoScenarios()): string 
     "```bash",
     "trace-to-skill demo",
     "trace-to-skill demo remote-compact",
+    "trace-to-skill demo windows-helper-path",
     "trace-to-skill demo latency-regression",
     "trace-to-skill demo --list",
     "```",

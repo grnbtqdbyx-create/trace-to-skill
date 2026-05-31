@@ -10,6 +10,7 @@ Use this before collecting or redacting private traces.
 npx trace-to-skill demo
 npx trace-to-skill demo --list
 npx trace-to-skill demo remote-compact
+npx trace-to-skill demo windows-helper-path
 npx trace-to-skill demo latency-regression
 ```
 
@@ -17,7 +18,7 @@ What it proves:
 
 - packaged fixtures can produce a real Codex issue report immediately
 - maintainers can inspect the output shape before sharing any private log
-- demos cover remote compact failures, approval friction, latency, token burn, sensitive files, and prompt injection
+- demos cover remote compact failures, Windows helper path failures, approval friction, latency, token burn, sensitive files, and prompt injection
 
 See the generated demo output in [docs/DEMO.md](DEMO.md).
 
@@ -40,7 +41,7 @@ What it proves:
 Recommended CI surface:
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.51
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.52
   with:
     mode: all
     doctor-threshold: "85"
@@ -100,7 +101,17 @@ npx trace-to-skill codex-report ./runs --output openai-codex-compact-issue.md
 
 This catches signals such as `Error running remote compact task`, `timeout waiting for child process to exit`, `stream disconnected before completion`, `responses/compact`, `tcp_user_timeout`, `stream_idle_timeout_ms`, provider-id timeout workarounds, Azure provider config drift, and long-running tasks broken by failed compaction.
 
-## 7. Codex Mobile And Remote-Control Route Health
+## 7. Codex Windows Helper Path Triage
+
+Use this when Codex Desktop on Windows discovers bundled tools or plugin helpers but cannot execute them from the integrated terminal, tool runner, Browser, Chrome, Computer Use, or node_repl path.
+
+```bash
+npx trace-to-skill codex-report ./runs --output openai-codex-windows-helper-issue.md
+```
+
+This catches signals such as `Program 'rg.exe' failed to run`, `Access is denied`, `WindowsApps\OpenAI.Codex...\app\resources`, missing `%LOCALAPPDATA%\OpenAI\Codex\bin`, missing MSIX LocalCache helper bins, `CodexSandboxUsers` ACL/RX problems, `copyfile` failures from WindowsApps bundled plugin manifests, EFS/Application Protected attributes, `windows sandbox failed: spawn setup refresh`, `missing-helper-path`, and unavailable Browser/Chrome/Computer Use plugin helpers.
+
+## 8. Codex Mobile And Remote-Control Route Health
 
 Use this when Codex mobile, SSH remote, or desktop remote-control says it is connected but commands do not reach the expected host, workspace, or app-server.
 
@@ -110,7 +121,7 @@ npx trace-to-skill analyze ./runs --format json
 
 This catches signals such as `Waiting for desktop`, `Directory: Unavailable`, stale `server_name` enrollment, stale remote-control listener, `127.0.0.1:14567`, missing cached helper files such as `codex-windows-sandbox-setup.exe` or `codex-command-runner.exe`, empty backend environments, stale Android session lists, and temporary recovery after re-pairing or listener restart.
 
-## 8. Codex MCP Runtime Triage
+## 9. Codex MCP Runtime Triage
 
 Use this when MCP tools are configured and visible, but Codex cannot actually call them at runtime.
 
@@ -120,7 +131,7 @@ npx trace-to-skill analyze ./runs --format json
 
 This catches signals such as `user cancelled MCP tool call`, `request_user_input is not supported in exec mode`, `Approve app tool call?`, `tool_call_mcp_elicitation`, routed callable names like `mcp__node_repl__js` becoming `unsupported call`, deferred discovery dropping namespace or `serverName`, `tools/list` succeeding while Codex routing fails, and stdio transport lifecycle failures such as `Transport closed`, `stdin_end`, `stdin_close`, `transport_close`, or stderr backpressure.
 
-## 9. Codex Resume And Session State Triage
+## 10. Codex Resume And Session State Triage
 
 Use this when long Codex sessions become difficult to resume, Desktop history rendering gets sluggish, or local state migrations break goals/projects/history.
 
@@ -130,7 +141,7 @@ npx trace-to-skill analyze ./runs --format json
 
 This catches signals such as `codex resume` picker hangs, `codex resume <id>` working while the picker freezes, large `rollout-*.jsonl` histories, high JSONL line and `response_item` / `event_msg` / `function_call` counts, large `input_image` payloads, slow `thread/resume` and `thread/goal/get` timings, `Could not load archived chats`, resume compression dropping the last 3-5 turns, `state_5.sqlite` / `goals_1.sqlite` migration mismatches, `no such table: thread_goals`, stale `projectless-thread-ids`, and `thread-workspace-root-hints` reverting after restart.
 
-## 10. Codex File Tree UI Evidence
+## 11. Codex File Tree UI Evidence
 
 Use this when Codex Desktop cannot reveal project files through the native file tree, folder icon, floating file panel, or built-in preview.
 
@@ -141,7 +152,7 @@ npx trace-to-skill codex-report ./runs --output openai-codex-issue.md
 
 This catches signals such as `View > Toggle File Tree` doing nothing, `Cmd+Shift+E` or `Ctrl+Shift+E` having no visible effect, the folder icon disappearing, the floating file panel showing stale or unclickable entries after add/rename/delete operations, and `.doc`, `.pdf`, or `.ppt` previews failing until restart.
 
-## 11. Codex Token Burn Attribution
+## 12. Codex Token Burn Attribution
 
 Use this when Codex usage drains faster than expected and the trace needs to separate useful model work from orchestration overhead.
 
@@ -152,7 +163,7 @@ npx trace-to-skill codex-report ./runs --output openai-codex-issue.md
 
 This catches signals such as tokens `burning very fast`, usage dropping by visible percentages after one or two prompts, weekly allowance depletion, 5-hour usage reaching 0%, large `input` plus `cached input` totals, `write_stdin` empty polling, background commands repeatedly reporting no new output, idle app usage, compaction tax, retry/tool loops, and missing attribution between normal turns, compaction, background polling, subagents, and retries.
 
-## 12. Usage Reset Drift Evidence
+## 13. Usage Reset Drift Evidence
 
 Use this when Codex reset timing changes unexpectedly or users lose the ability to plan paid usage.
 
@@ -163,7 +174,7 @@ npx trace-to-skill codex-report ./runs --output openai-codex-issue.md
 
 This catches signals such as weekly reset dates moving from one date to another, `reset_at` jumping after the first prompt, saved weekly usage being wiped or pushed into the next window, outage compensation resets changing the anchor, `/status` and dashboard disagreement, and requests for deterministic reset schedules or rollover of unused prior-window usage.
 
-## 13. Quota And Usage-Limit Evidence
+## 14. Quota And Usage-Limit Evidence
 
 Use this when Codex blocks a prompt with a usage-limit message but another surface still shows remaining quota.
 
@@ -173,7 +184,7 @@ npx trace-to-skill analyze ./runs --format json
 
 This catches traces where `/status` or the usage page shows remaining 5h or weekly quota, accounts appear to share limits unexpectedly, a Team account inherits a Plus account's limit state, or quota reset times jump after logout/login.
 
-## 14. Codex Resource Leak Evidence
+## 15. Codex Resource Leak Evidence
 
 Use this when Codex Desktop, the VS Code extension, renderer, app-server, GPU process, shell snapshot, or helper process keeps burning local resources after the useful work should be idle.
 
@@ -186,7 +197,7 @@ This catches signals such as high `Code Helper (Renderer)` or `Code Helper (Plug
 
 Include process names/PIDs, CPU/GPU/RSS samples over time, log-loop snippets, workspace Git-root state, animation/reduce-motion state, and whether closing the panel/app, killing exact PIDs, `git init`, rollback, or restart clears the leak.
 
-## 15. OpenAI Codex Issue Report
+## 16. OpenAI Codex Issue Report
 
 Use this when you want to file or update an OpenAI/Codex issue with a concise, evidence-backed report instead of pasting a full transcript.
 
@@ -199,7 +210,7 @@ The report includes the likely Codex failure class, line-linked evidence, diagno
 
 For a cluster-to-command map of current Codex issue patterns, see [CODEX_ISSUE_MAP.md](CODEX_ISSUE_MAP.md).
 
-## 16. Sensitive File Access Evidence
+## 17. Sensitive File Access Evidence
 
 Use this when a trace suggests an agent read, attached, uploaded, diffed, or indexed credential-bearing files.
 
@@ -212,7 +223,7 @@ This catches signals such as `.env`, `.env.production`, `.npmrc`, `.pypirc`, `.n
 
 Before publishing evidence, run `trace-to-skill redact` and attach only redacted excerpts plus the file path/class.
 
-## 17. GitHub Context Guard
+## 18. GitHub Context Guard
 
 Use this before an agent reads untrusted GitHub text.
 
@@ -229,7 +240,7 @@ Use it when:
 - a bot asks Codex to triage untrusted user reports
 - logs or comments might contain instructions like "ignore previous instructions" or "print secrets"
 
-## 18. Failed Agent Run To Reviewable Rule
+## 19. Failed Agent Run To Reviewable Rule
 
 Use this when a coding agent made a repeated workflow mistake.
 
@@ -247,7 +258,7 @@ Recommended maintainer loop:
 4. Copy only evidence-backed rules into the real policy file.
 5. Run `eval` or `scorecard` in CI so the same failure does not silently return.
 
-## 19. Privacy-Preserving Adoption
+## 20. Privacy-Preserving Adoption
 
 Use this when you want public evidence without leaking private traces.
 

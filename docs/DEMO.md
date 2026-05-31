@@ -1,10 +1,10 @@
 # trace-to-skill Demo
 
-Scenario: **Codex remote compact task failure**
+Scenario: **Codex Windows helper path failure**
 
-Long sessions break when `/compact` or auto-compaction times out, disconnects, or fails at `responses/compact`.
+Windows Desktop exposes bundled rg/node/plugin helpers from WindowsApps or missing LocalCache paths that cannot execute.
 
-Fixture: `fixtures/codex-remote-compact.md`
+Fixture: `fixtures/codex-windows-helper-path.md`
 
 This is a packaged public fixture, so you can try the project without collecting a private trace first.
 
@@ -12,9 +12,9 @@ This is a packaged public fixture, so you can try the project without collecting
 
 # OpenAI Codex Issue Triage Report
 
-Score: **59/100**
+Score: **43/100**
 
-Likely failure class: **Codex remote compact task failure (codex_remote_compact, high)**
+Likely failure class: **Codex Windows helper or bundled tool path failure (codex_windows_helper_path, high)**
 
 Agent workflow needs clearer verification, instruction, or security hardening before broad reuse.
 
@@ -23,32 +23,34 @@ Agent workflow needs clearer verification, instruction, or security hardening be
 ```md
 ### What happened?
 
-trace-to-skill detected Codex remote compact task failure (codex_remote_compact). Remote compaction failures interrupt long Codex sessions, force users to recreate context, and need timeout/provider evidence separated from generic context-window errors.
+trace-to-skill detected Codex Windows helper or bundled tool path failure (codex_windows_helper_path). Windows Codex Desktop can expose bundled tools or plugin helpers from MSIX/WindowsApps paths that are discoverable but not executable, breaking search, node_repl, Browser, Chrome, Computer Use, and sandbox startup.
 
 ### Detected failure class
 
-- codex_remote_compact: Codex remote compact task failure (high)
+- codex_windows_helper_path: Codex Windows helper or bundled tool path failure (high)
 
 ### Evidence
 
-#### Codex remote compact task failure
-- fixtures/codex-remote-compact.md:23 - Error running remote compact task: timeout waiting for child process to exit
-- fixtures/codex-remote-compact.md:29 - Error running remote compact task: stream disconnected before completion: error sending request for url (https://chatgpt.com/backend-api/codex/responses/compact)
-- fixtures/codex-remote-compact.md:38 - - Some users tried `stream_idle_timeout_ms = 900000` as a provider-level compact workaround.
-- fixtures/codex-remote-compact.md:39 - - A Codex.app compact timeout workaround that changes `model_provider` to `openai-long-timeout` can hide existing threads because old threads are stored under the original provider id.
-- fixtures/codex-remote-compact.md:40 - - Azure Foundry reports mention `responses/compact`, `base_url`, and removing `api-version`, but the issue still needs provider config captured without secrets.
-- fixtures/codex-remote-compact.md:56 - - whether `responses/compact` failed with timeout, high demand, or stream disconnect
+#### Codex Windows helper or bundled tool path failure
+- fixtures/codex-windows-helper-path.md:32 - Program 'rg.exe' failed to run: An error occurred trying to start process 'C:\Program Files\WindowsApps\OpenAI.Codex_26.527.3686.0_x64__2p2nqsd0c76g0\app\resources\rg.exe' with working directory 'D:\repo'. Access is denied.
+- fixtures/codex-windows-helper-path.md:56 - The expected MSIX LocalCache helper bin was either missing or not used:
+- fixtures/codex-windows-helper-path.md:73 - One workaround created a junction from `%LOCALAPPDATA%\OpenAI\Codex\bin` to the MSIX LocalCache bin directory. Another workaround installed external ripgrep earlier in PATH and restarted Codex.
+- fixtures/codex-windows-helper-path.md:83 - showed that `CodexSandboxUsers` was missing read/execute permissions. Granting:
+- fixtures/codex-windows-helper-path.md:86 - icacls "$env:LOCALAPPDATA\Packages\OpenAI.Codex_2p2nqsd0c76g0\LocalCache\Local\OpenAI" /grant 'CodexSandboxUsers:(OI)(CI)(RX)' /T
+- fixtures/codex-windows-helper-path.md:94 - node_repl kernel exited unexpectedly
 
-#### Codex context compaction failure
-- fixtures/codex-remote-compact.md:23 - Error running remote compact task: timeout waiting for child process to exit
-- fixtures/codex-remote-compact.md:29 - Error running remote compact task: stream disconnected before completion: error sending request for url (https://chatgpt.com/backend-api/codex/responses/compact)
-- fixtures/codex-remote-compact.md:40 - - Azure Foundry reports mention `responses/compact`, `base_url`, and removing `api-version`, but the issue still needs provider config captured without secrets.
-- fixtures/codex-remote-compact.md:56 - - whether `responses/compact` failed with timeout, high demand, or stream disconnect
+#### Codex sandbox or permission failure
+- fixtures/codex-windows-helper-path.md:75 - ## Symptom C: sandbox ACL and plugin helper startup failures
+- fixtures/codex-windows-helper-path.md:95 - node_repl diagnostics: {"kernel_status":"running","kernel_stderr_tail":"windows sandbox failed: spawn setup refresh","reason":"stdout_eof","stream_error":null}
+
+#### Codex plugin runtime or bundled capability failure
+- fixtures/codex-windows-helper-path.md:108 - Windows Computer Use helper paths are unavailable
 
 ### Diagnostics to attach
 
-- When reporting Codex remote compact failures, capture app/CLI/extension version, OS, model and reasoning/speed mode, provider config without secrets, exact /compact or auto-compact error, `responses/compact` endpoint shape, timeout values such as tcp_user_timeout or stream_idle_timeout_ms, context/token level before compaction, whether lowering reasoning/speed changes behavior, whether local fallback or a new session recovers, and related thread/feedback ids.
-- When Codex compaction fails, capture the compact error, model/app version, thread state, and whether the session is recoverable before continuing or reporting success.
+- When reporting Codex Windows helper path failures, capture Codex Desktop version, Windows build, install source, terminal/tool-runner context, `Get-Command rg -All`, `where.exe rg`, exact failing helper path, `%LOCALAPPDATA%\OpenAI\Codex\bin` and MSIX LocalCache bin contents, ACL/`icacls` output for CodexSandboxUsers, file attributes such as EFS/Application Protected, node_repl/plugin diagnostics, sandbox mode, and whether installing an external rg, recreating the local bin junction, rerunning sandbox setup, changing elevated/unelevated mode, or restarting Codex changes behavior.
+- When Codex sandbox or permission setup fails, capture the OS, Codex version, sandbox_mode, approval_policy, exact stderr, workspace ownership/ACL evidence, and whether a clean directory can run a simple command plus apply_patch.
+- When reporting Codex plugin runtime failures, capture app version, OS, plugin name and version, plugin cache path, helper binary/client path, native pipe or helper env vars, plugin/list or settings error text, connector install return flow, cache reconciliation/file-lock logs, whether the UI still lists the plugin, whether restarting resets or downgrades it, and whether a clean profile reproduces the failure.
 
 ### Privacy
 
@@ -57,39 +59,52 @@ trace-to-skill detected Codex remote compact task failure (codex_remote_compact)
 
 ## Findings
 
-### 1. Codex remote compact task failure
+### 1. Codex Windows helper or bundled tool path failure
 
 Severity: **high**
 
-Remote compaction failures interrupt long Codex sessions, force users to recreate context, and need timeout/provider evidence separated from generic context-window errors.
+Windows Codex Desktop can expose bundled tools or plugin helpers from MSIX/WindowsApps paths that are discoverable but not executable, breaking search, node_repl, Browser, Chrome, Computer Use, and sandbox startup.
 
 Evidence:
-- `fixtures/codex-remote-compact.md:23` Error running remote compact task: timeout waiting for child process to exit
-- `fixtures/codex-remote-compact.md:29` Error running remote compact task: stream disconnected before completion: error sending request for url (https://chatgpt.com/backend-api/codex/responses/compact)
-- `fixtures/codex-remote-compact.md:38` - Some users tried `stream_idle_timeout_ms = 900000` as a provider-level compact workaround.
-- `fixtures/codex-remote-compact.md:39` - A Codex.app compact timeout workaround that changes `model_provider` to `openai-long-timeout` can hide existing threads because old threads are stored under the original provider id.
-- `fixtures/codex-remote-compact.md:40` - Azure Foundry reports mention `responses/compact`, `base_url`, and removing `api-version`, but the issue still needs provider config captured without secrets.
-- `fixtures/codex-remote-compact.md:56` - whether `responses/compact` failed with timeout, high demand, or stream disconnect
+- `fixtures/codex-windows-helper-path.md:32` Program 'rg.exe' failed to run: An error occurred trying to start process 'C:\Program Files\WindowsApps\OpenAI.Codex_26.527.3686.0_x64__2p2nqsd0c76g0\app\resources\rg.exe' with working directory 'D:\repo'. Access is denied.
+- `fixtures/codex-windows-helper-path.md:56` The expected MSIX LocalCache helper bin was either missing or not used:
+- `fixtures/codex-windows-helper-path.md:73` One workaround created a junction from `%LOCALAPPDATA%\OpenAI\Codex\bin` to the MSIX LocalCache bin directory. Another workaround installed external ripgrep earlier in PATH and restarted Codex.
+- `fixtures/codex-windows-helper-path.md:83` showed that `CodexSandboxUsers` was missing read/execute permissions. Granting:
+- `fixtures/codex-windows-helper-path.md:86` icacls "$env:LOCALAPPDATA\Packages\OpenAI.Codex_2p2nqsd0c76g0\LocalCache\Local\OpenAI" /grant 'CodexSandboxUsers:(OI)(CI)(RX)' /T
+- `fixtures/codex-windows-helper-path.md:94` node_repl kernel exited unexpectedly
+- `fixtures/codex-windows-helper-path.md:95` node_repl diagnostics: {"kernel_status":"running","kernel_stderr_tail":"windows sandbox failed: spawn setup refresh","reason":"stdout_eof","stream_error":null}
+- `fixtures/codex-windows-helper-path.md:102` errorMessage="UNKNOWN: unknown error, copyfile 'C:\Program Files\WindowsApps\OpenAI.Codex_26.527.3686.0_x64__2p2nqsd0c76g0\app\resources\plugins\openai-bundled\plugins\computer-use.codex-plugin\plugin.json' -> 'C:\Users\user\.codex\.tmp\bun
 
 Suggested rule:
 
-> When reporting Codex remote compact failures, capture app/CLI/extension version, OS, model and reasoning/speed mode, provider config without secrets, exact /compact or auto-compact error, `responses/compact` endpoint shape, timeout values such as tcp_user_timeout or stream_idle_timeout_ms, context/token level before compaction, whether lowering reasoning/speed changes behavior, whether local fallback or a new session recovers, and related thread/feedback ids.
+> When reporting Codex Windows helper path failures, capture Codex Desktop version, Windows build, install source, terminal/tool-runner context, `Get-Command rg -All`, `where.exe rg`, exact failing helper path, `%LOCALAPPDATA%\OpenAI\Codex\bin` and MSIX LocalCache bin contents, ACL/`icacls` output for CodexSandboxUsers, file attributes such as EFS/Application Protected, node_repl/plugin diagnostics, sandbox mode, and whether installing an external rg, recreating the local bin junction, rerunning sandbox setup, changing elevated/unelevated mode, or restarting Codex changes behavior.
 
-### 2. Codex context compaction failure
+### 2. Codex sandbox or permission failure
 
 Severity: **high**
 
-Context compaction failures can strand long coding sessions, burn quota, and make maintainer handoff difficult unless the exact compact error and recovery state are captured.
+Sandbox setup, approval-mode, and workspace permission failures can block every tool call or leave the worktree in a broken ownership state.
 
 Evidence:
-- `fixtures/codex-remote-compact.md:23` Error running remote compact task: timeout waiting for child process to exit
-- `fixtures/codex-remote-compact.md:29` Error running remote compact task: stream disconnected before completion: error sending request for url (https://chatgpt.com/backend-api/codex/responses/compact)
-- `fixtures/codex-remote-compact.md:40` - Azure Foundry reports mention `responses/compact`, `base_url`, and removing `api-version`, but the issue still needs provider config captured without secrets.
-- `fixtures/codex-remote-compact.md:56` - whether `responses/compact` failed with timeout, high demand, or stream disconnect
+- `fixtures/codex-windows-helper-path.md:75` ## Symptom C: sandbox ACL and plugin helper startup failures
+- `fixtures/codex-windows-helper-path.md:95` node_repl diagnostics: {"kernel_status":"running","kernel_stderr_tail":"windows sandbox failed: spawn setup refresh","reason":"stdout_eof","stream_error":null}
 
 Suggested rule:
 
-> When Codex compaction fails, capture the compact error, model/app version, thread state, and whether the session is recoverable before continuing or reporting success.
+> When Codex sandbox or permission setup fails, capture the OS, Codex version, sandbox_mode, approval_policy, exact stderr, workspace ownership/ACL evidence, and whether a clean directory can run a simple command plus apply_patch.
+
+### 3. Codex plugin runtime or bundled capability failure
+
+Severity: **high**
+
+Codex Desktop can advertise Browser, Computer Use, skills, or connectors while the shared plugin runtime is missing helper paths, stale cache state, or marketplace variants, leaving users without the capability they were told is available.
+
+Evidence:
+- `fixtures/codex-windows-helper-path.md:108` Windows Computer Use helper paths are unavailable
+
+Suggested rule:
+
+> When reporting Codex plugin runtime failures, capture app version, OS, plugin name and version, plugin cache path, helper binary/client path, native pipe or helper env vars, plugin/list or settings error text, connector install return flow, cache reconciliation/file-lock logs, whether the UI still lists the plugin, whether restarting resets or downgrades it, and whether a clean profile reproduces the failure.
 
 
 ## Reporter Notes
@@ -102,6 +117,7 @@ Suggested rule:
 
 ## Other Demo Scenarios
 
+- `remote-compact`: Long sessions break when `/compact` or auto-compaction times out, disconnects, or fails at `responses/compact`.
 - `approval-friction`: Repeated approval prompts, Approve for this session misses, and noisy trusted MCP tool approvals.
 - `latency-regression`: Fast mode feels like Standard, with long thinking, search, read, or compaction stalls.
 - `token-burn`: Usage drains from background polling, idle activity, compaction loops, retries, or cached-heavy turns.
@@ -113,6 +129,7 @@ Suggested rule:
 ```bash
 trace-to-skill demo --list
 trace-to-skill demo remote-compact
+trace-to-skill demo windows-helper-path
 trace-to-skill demo file-tree-ui
 trace-to-skill demo usage-reset-drift
 ```

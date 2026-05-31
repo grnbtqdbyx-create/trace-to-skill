@@ -217,6 +217,7 @@ test("demo command runs packaged scenarios without private traces", async () => 
 
   assert.ok(scenarios.some((scenario) => scenario.id === "approval-friction"));
   assert.ok(scenarios.some((scenario) => scenario.id === "remote-compact"));
+  assert.ok(scenarios.some((scenario) => scenario.id === "windows-helper-path"));
   assert.ok(scenarios.some((scenario) => scenario.id === "latency-regression"));
   assert.ok(scenarios.some((scenario) => scenario.id === "file-tree-ui"));
   assert.ok(scenarios.some((scenario) => scenario.id === "usage-reset-drift"));
@@ -227,6 +228,7 @@ test("demo command runs packaged scenarios without private traces", async () => 
   assert.match(markdown, /codex_approval_friction/);
   assert.match(list, /latency-regression/);
   assert.match(list, /remote-compact/);
+  assert.match(list, /windows-helper-path/);
   assert.match(list, /file-tree-ui/);
   assert.match(list, /usage-reset-drift/);
   await assert.rejects(() => runDemo("missing"), /unknown demo scenario/);
@@ -243,6 +245,23 @@ test("analyzeTargets detects Codex sandbox permission failures", async () => {
   assert.match(evidence, /os error 740/);
   assert.match(evidence, /CodexSandboxOffline/);
   assert.match(finding.suggestedRule, /sandbox_mode/);
+});
+
+test("analyzeTargets detects Codex Windows helper path failures", async () => {
+  const result = await analyzeTargets(["fixtures/codex-windows-helper-path.md"]);
+  const finding = result.findings.find((item) => item.kind === "codex_windows_helper_path");
+  const evidence = finding?.evidence.map((item) => item.excerpt).join("\n") ?? "";
+  const report = renderCodexIssueReport(result);
+
+  assert.ok(finding);
+  assert.equal(finding.severity, "high");
+  assert.match(evidence, /WindowsApps\\OpenAI\.Codex/);
+  assert.match(evidence, /Program 'rg\.exe' failed to run/);
+  assert.match(evidence, /%LOCALAPPDATA%\\OpenAI\\Codex\\bin/);
+  assert.match(evidence, /CodexSandboxUsers/);
+  assert.match(evidence, /node_repl kernel exited unexpectedly/);
+  assert.match(finding.suggestedRule, /Get-Command rg -All/);
+  assert.match(report, /codex_windows_helper_path/);
 });
 
 test("analyzeTargets detects Codex auth and connectivity failures", async () => {
@@ -592,6 +611,7 @@ test("package metadata points npm users back to the public project", async () =>
   assert.ok(packageJson.keywords?.includes("sandbox-permission"));
   assert.ok(packageJson.keywords?.includes("codex-connectivity"));
   assert.ok(packageJson.keywords?.includes("codex-remote-compact"));
+  assert.ok(packageJson.keywords?.includes("codex-windows-helper"));
   assert.ok(packageJson.keywords?.includes("codex-remote-control"));
   assert.ok(packageJson.keywords?.includes("codex-mcp"));
   assert.ok(packageJson.keywords?.includes("mcp-runtime"));
@@ -1043,7 +1063,7 @@ test("benchmark covers public fixture failure classes", async () => {
   const markdown = renderBenchmarkMarkdown(benchmark);
 
   assert.equal(benchmark.passed, true);
-  assert.equal(benchmark.cases.length, 24);
+  assert.equal(benchmark.cases.length, 25);
   assert.ok(benchmark.cases.some((item) => item.id === "clean-validated-run" && item.score === 100));
   assert.ok(benchmark.cases.some((item) => item.id === "failed-workflow" && item.detectedKinds.includes("test_failure")));
   assert.ok(benchmark.cases.some((item) => item.id === "context-compaction" && item.detectedKinds.includes("context_compaction")));
@@ -1052,6 +1072,7 @@ test("benchmark covers public fixture failure classes", async () => {
   assert.ok(benchmark.cases.some((item) => item.id === "codex-latency-regression" && item.detectedKinds.includes("codex_latency_regression")));
   assert.ok(benchmark.cases.some((item) => item.id === "codex-approval-friction" && item.detectedKinds.includes("codex_approval_friction")));
   assert.ok(benchmark.cases.some((item) => item.id === "sandbox-permission" && item.detectedKinds.includes("sandbox_permission")));
+  assert.ok(benchmark.cases.some((item) => item.id === "codex-windows-helper-path" && item.detectedKinds.includes("codex_windows_helper_path")));
   assert.ok(benchmark.cases.some((item) => item.id === "codex-connectivity" && item.detectedKinds.includes("codex_connectivity")));
   assert.ok(benchmark.cases.some((item) => item.id === "codex-remote-control" && item.detectedKinds.includes("codex_remote_control")));
   assert.ok(benchmark.cases.some((item) => item.id === "codex-mcp-runtime" && item.detectedKinds.includes("codex_mcp_runtime")));
@@ -1080,7 +1101,7 @@ test("scorecard combines doctor readiness and benchmark evidence", async () => {
   assert.equal(scorecard.doctor.status, "ready");
   assert.equal(scorecard.doctor.score, 100);
   assert.equal(scorecard.benchmark.status, "pass");
-  assert.equal(scorecard.benchmark.cases, 24);
+  assert.equal(scorecard.benchmark.cases, 25);
   assert.match(markdown, /trace-to-skill Scorecard/);
   assert.match(markdown, /Codex readiness/);
   assert.match(markdown, /Benchmark Summary/);
@@ -1096,9 +1117,9 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.equal(brief.scorecard.doctorStatus, "ready");
   assert.equal(brief.scorecard.doctorScore, 100);
   assert.equal(brief.scorecard.benchmarkStatus, "pass");
-  assert.equal(brief.scorecard.benchmarkCases, 24);
+  assert.equal(brief.scorecard.benchmarkCases, 25);
   assert.equal(brief.packageName, "trace-to-skill");
-  assert.equal(brief.packageVersion, "0.1.51");
+  assert.equal(brief.packageVersion, "0.1.52");
   assert.equal(brief.license, "Apache-2.0");
   assert.ok(brief.repository?.includes("github.com/grnbtqdbyx-create/trace-to-skill"));
   assert.ok(brief.qualification.max500.length <= 500);
@@ -1106,7 +1127,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.match(markdown, /OpenAI OSS Brief/);
   assert.match(markdown, /Why This Repository Qualifies/);
   assert.match(markdown, /500-Character Version/);
-  assert.match(markdown, /npx trace-to-skill@0\.1\.51/);
+  assert.match(markdown, /npx trace-to-skill@0\.1\.52/);
 });
 
 test("scorecard-comment dry-run resolves pull request event", async () => {

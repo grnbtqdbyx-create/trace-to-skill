@@ -89,6 +89,12 @@ const BENCHMARK_CASES: BenchmarkCaseDefinition[] = [
     expectedKinds: ["sandbox_permission", "weak_evidence"]
   },
   {
+    id: "codex-windows-helper-path",
+    title: "Codex Windows helper and bundled tool path failure",
+    fixture: "fixtures/codex-windows-helper-path.md",
+    expectedKinds: ["codex_windows_helper_path", "sandbox_permission", "codex_plugin_runtime", "weak_evidence"]
+  },
+  {
     id: "codex-connectivity",
     title: "Codex auth and connectivity failure",
     fixture: "fixtures/codex-connectivity.md",
