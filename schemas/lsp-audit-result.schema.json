@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/grnbtqdbyx-create/trace-to-skill/schemas/lsp-audit-result.schema.json",
+  "title": "trace-to-skill LSP readiness audit result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["generatedAt", "root", "status", "summary", "languages", "recommendedInstalls"],
+  "properties": {
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "root": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["pass", "warn", "fail"]
+    },
+    "summary": {
+      "$ref": "#/$defs/summary"
+    },
+    "languages": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/language"
+      }
+    },
+    "recommendedInstalls": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "$defs": {
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["detectedLanguages", "installedServers", "missingServers", "scannedFiles"],
+      "properties": {
+        "detectedLanguages": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "installedServers": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "missingServers": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "scannedFiles": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "language": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "detected", "evidence", "server"],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "detected": {
+          "type": "boolean"
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "server": {
+          "$ref": "#/$defs/server"
+        }
+      }
+    },
+    "server": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["command", "installed", "install", "purpose"],
+      "properties": {
+        "command": {
+          "type": "string"
+        },
+        "installed": {
+          "type": "boolean"
+        },
+        "install": {
+          "type": "string"
+        },
+        "purpose": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

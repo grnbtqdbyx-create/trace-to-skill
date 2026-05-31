@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdir, mkdtemp, readFile, symlink, writeFile } from "node:fs/promises";
+import { chmod, mkdir, mkdtemp, readFile, symlink, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
@@ -14,6 +14,7 @@ import { compareAnalyses, evaluate } from "../src/eval.js";
 import { analyzeGithubEventContext, extractGithubContextInputs } from "../src/githubContext.js";
 import { postPullRequestComment } from "../src/github.js";
 import { initProject } from "../src/init.js";
+import { auditLspReadiness, renderLspAuditMarkdown } from "../src/lspAudit.js";
 import { renderOssBriefMarkdown, runOssBrief } from "../src/ossBrief.js";
 import { guardPatchContent, guardPatchFile, renderPatchGuardMarkdown } from "../src/patchGuard.js";
 import { auditCodexPlugins, renderPluginAuditMarkdown } from "../src/pluginAudit.js";
@@ -799,6 +800,64 @@ test("auditSensitivePaths passes ordinary source trees", async () => {
   assert.equal(result.status, "pass");
   assert.equal(result.findings.length, 0);
   assert.equal(result.recommendedExcludes.length, 0);
+});
+
+test("auditLspReadiness reports detected languages and missing servers", async () => {
+  const cwd = await mkdtemp(path.join(os.tmpdir(), "trace-to-skill-lsp-"));
+  await mkdir(path.join(cwd, "src"), { recursive: true });
+  await writeFile(path.join(cwd, "package.json"), "{\"type\":\"module\"}", "utf8");
+  await writeFile(path.join(cwd, "tsconfig.json"), "{}", "utf8");
+  await writeFile(path.join(cwd, "src", "index.ts"), "export const ok = true;", "utf8");
+  await writeFile(path.join(cwd, "pyproject.toml"), "[project]\nname = \"demo\"\n", "utf8");
+  await writeFile(path.join(cwd, "app.py"), "print('ok')\n", "utf8");
+  const previousPath = process.env.PATH;
+  process.env.PATH = "";
+
+  try {
+    const result = await auditLspReadiness(cwd);
+    const markdown = renderLspAuditMarkdown(result);
+    const languageIds = result.languages.map((language) => language.id);
+
+    assert.equal(result.status, "warn");
+    assert.equal(result.summary.detectedLanguages, 2);
+    assert.equal(result.summary.installedServers, 0);
+    assert.equal(result.summary.missingServers, 2);
+    assert.ok(languageIds.includes("typescript"));
+    assert.ok(languageIds.includes("python"));
+    assert.ok(result.recommendedInstalls.includes("npm install --save-dev typescript typescript-language-server"));
+    assert.ok(result.recommendedInstalls.includes("npm install --global pyright"));
+    assert.match(markdown, /LSP Readiness Audit/);
+    assert.match(markdown, /typescript-language-server is \*\*missing\*\*/);
+    assert.match(markdown, /pyright-langserver is \*\*missing\*\*/);
+  } finally {
+    process.env.PATH = previousPath;
+  }
+});
+
+test("auditLspReadiness detects installed language server commands on PATH", async () => {
+  const cwd = await mkdtemp(path.join(os.tmpdir(), "trace-to-skill-lsp-"));
+  const bin = path.join(cwd, "bin");
+  await mkdir(path.join(cwd, "src"), { recursive: true });
+  await mkdir(bin, { recursive: true });
+  await writeFile(path.join(cwd, "tsconfig.json"), "{}", "utf8");
+  await writeFile(path.join(cwd, "src", "index.ts"), "export const ok = true;", "utf8");
+  await writeFile(path.join(bin, "typescript-language-server"), "#!/bin/sh\n", "utf8");
+  await chmod(path.join(bin, "typescript-language-server"), 0o755);
+  const previousPath = process.env.PATH;
+  process.env.PATH = bin;
+
+  try {
+    const result = await auditLspReadiness(cwd);
+
+    assert.equal(result.status, "pass");
+    assert.equal(result.summary.detectedLanguages, 1);
+    assert.equal(result.summary.installedServers, 1);
+    assert.equal(result.summary.missingServers, 0);
+    assert.equal(result.recommendedInstalls.length, 0);
+    assert.equal(result.languages[0]?.server.installed, true);
+  } finally {
+    process.env.PATH = previousPath;
+  }
 });
 
 test("auditCodexPlugins reports bundled plugin cache and marketplace drift", async () => {
@@ -1622,6 +1681,11 @@ test("published JSON schemas describe CLI result contracts", async () => {
     properties: Record<string, unknown>;
     $defs: Record<string, unknown>;
   };
+  const lspAuditSchema = JSON.parse(await readFile("schemas/lsp-audit-result.schema.json", "utf8")) as {
+    required: string[];
+    properties: Record<string, unknown>;
+    $defs: Record<string, unknown>;
+  };
   const redactSchema = JSON.parse(await readFile("schemas/redact-result.schema.json", "utf8")) as {
     required: string[];
     properties: Record<string, unknown>;
@@ -1686,6 +1750,10 @@ test("published JSON schemas describe CLI result contracts", async () => {
   assert.ok(sensitiveAuditSchema.properties.recommendedExcludes);
   assert.ok((sensitiveAuditSchema.$defs.finding as { properties: { kind: { enum: string[] } } }).properties.kind.enum.includes("env_file"));
   assert.ok((sensitiveAuditSchema.$defs.finding as { properties: { kind: { enum: string[] } } }).properties.kind.enum.includes("sensitive_symlink"));
+  assert.deepEqual(lspAuditSchema.required, ["generatedAt", "root", "status", "summary", "languages", "recommendedInstalls"]);
+  assert.ok(lspAuditSchema.properties.recommendedInstalls);
+  assert.ok(lspAuditSchema.$defs.language);
+  assert.ok(lspAuditSchema.$defs.server);
   assert.deepEqual(redactSchema.required, ["generatedAt", "files", "totals"]);
   assert.ok(redactSchema.properties.files);
   assert.ok(redactSchema.$defs.redactedFile);
@@ -1760,7 +1828,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.equal(brief.scorecard.benchmarkStatus, "pass");
   assert.equal(brief.scorecard.benchmarkCases, 33);
   assert.equal(brief.packageName, "trace-to-skill");
-  assert.equal(brief.packageVersion, "0.1.68");
+  assert.equal(brief.packageVersion, "0.1.69");
   assert.equal(brief.license, "Apache-2.0");
   assert.ok(brief.repository?.includes("github.com/grnbtqdbyx-create/trace-to-skill"));
   assert.ok(brief.qualification.max500.length <= 500);
@@ -1768,7 +1836,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.match(markdown, /OpenAI OSS Brief/);
   assert.match(markdown, /Why This Repository Qualifies/);
   assert.match(markdown, /500-Character Version/);
-  assert.match(markdown, /npx trace-to-skill@0\.1\.68/);
+  assert.match(markdown, /npx trace-to-skill@0\.1\.69/);
 });
 
 test("scorecard-comment dry-run resolves pull request event", async () => {

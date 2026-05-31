@@ -11,6 +11,8 @@ export { compareAnalyses, evaluate } from "./eval.js";
 export { analyzeGithubEventContext, extractGithubContextInputs } from "./githubContext.js";
 export { postPullRequestComment } from "./github.js";
 export { initProject } from "./init.js";
+export { auditLspReadiness, renderLspAuditMarkdown } from "./lspAudit.js";
+export type { LspAuditLanguage, LspAuditResult, LspAuditStatus } from "./lspAudit.js";
 export { renderOssBriefMarkdown, runOssBrief } from "./ossBrief.js";
 export { guardPatchContent, guardPatchFile, renderPatchGuardMarkdown } from "./patchGuard.js";
 export type { PatchGuardFinding, PatchGuardOperation, PatchGuardResult, PatchGuardSeverity } from "./patchGuard.js";

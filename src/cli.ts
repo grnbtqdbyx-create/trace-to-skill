@@ -11,6 +11,7 @@ import { compareAnalyses, evaluate } from "./eval.js";
 import { analyzeGithubEventContext } from "./githubContext.js";
 import { postPullRequestComment } from "./github.js";
 import { initProject } from "./init.js";
+import { auditLspReadiness, renderLspAuditMarkdown } from "./lspAudit.js";
 import { renderOssBriefMarkdown, runOssBrief } from "./ossBrief.js";
 import { guardPatchFile, renderPatchGuardMarkdown } from "./patchGuard.js";
 import { auditCodexPlugins, renderPluginAuditMarkdown } from "./pluginAudit.js";
@@ -122,6 +123,15 @@ async function main(): Promise<void> {
     const result = await auditSensitivePaths(parsed.targets[0] ?? process.cwd());
     const format = String(parsed.flags.format ?? "markdown");
     const output = format === "json" ? `${JSON.stringify(result, null, 2)}\n` : renderSensitiveAuditMarkdown(result);
+    await writeOutput(output, parsed.flags.output);
+    process.exitCode = result.status === "fail" ? 1 : 0;
+    return;
+  }
+
+  if (parsed.command === "lsp-audit") {
+    const result = await auditLspReadiness(parsed.targets[0] ?? process.cwd());
+    const format = String(parsed.flags.format ?? "markdown");
+    const output = format === "json" ? `${JSON.stringify(result, null, 2)}\n` : renderLspAuditMarkdown(result);
     await writeOutput(output, parsed.flags.output);
     process.exitCode = result.status === "fail" ? 1 : 0;
     return;
@@ -450,6 +460,7 @@ Usage:
   trace-to-skill lint-agents [repo-dir] [--format markdown|json] [--output report.md]
   trace-to-skill redact <trace-file-or-dir> [--output redacted-runs] [--format text|json]
   trace-to-skill sensitive-audit [repo-dir] [--format markdown|json] [--output sensitive-paths.md]
+  trace-to-skill lsp-audit [repo-dir] [--format markdown|json] [--output lsp-readiness.md]
   trace-to-skill eval <trace-file-or-dir> [--threshold 75] [--format text|json]
   trace-to-skill benchmark [--format markdown|json] [--output docs/BENCHMARK.md]
   trace-to-skill scorecard [repo-dir] [--threshold 85] [--format markdown|json] [--output docs/SCORECARD.md]
@@ -477,6 +488,7 @@ Examples:
   trace-to-skill lint-agents .
   trace-to-skill redact ./runs --output redacted-runs
   trace-to-skill sensitive-audit .
+  trace-to-skill lsp-audit .
   trace-to-skill eval ./runs --threshold 80
   trace-to-skill benchmark
   trace-to-skill scorecard .

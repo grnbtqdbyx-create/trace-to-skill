@@ -1,6 +1,6 @@
 {
   "name": "trace-to-skill",
-  "version": "0.1.68",
+  "version": "0.1.69",
   "description": "Turn failed AI coding-agent runs into reusable AGENTS.md rules, SKILL.md files, and eval evidence.",
   "type": "module",
   "main": "dist/src/index.js",
@@ -41,7 +41,7 @@
     "build": "tsc -p tsconfig.json",
     "clean": "rm -rf dist coverage",
     "test": "npm run build && node --test dist/tests/*.test.js",
-    "check": "npm run test && node dist/src/cli.js doctor . --format json > /tmp/trace-to-skill-doctor.json && node dist/src/cli.js lint-agents . --format json > /tmp/trace-to-skill-agents-lint.json && node dist/src/cli.js analyze fixtures --format json > /tmp/trace-to-skill-smoke.json && node dist/src/cli.js usage-evidence fixtures --format json > /tmp/trace-to-skill-usage-evidence.json && node dist/src/cli.js sensitive-audit . --format json > /tmp/trace-to-skill-sensitive-audit.json && node dist/src/cli.js suggest fixtures --target agents-md > /tmp/trace-to-skill-suggest.md && node dist/src/cli.js demo --format json > /tmp/trace-to-skill-demo.json && node dist/src/cli.js benchmark --format json > /tmp/trace-to-skill-benchmark.json && node dist/src/cli.js scorecard . --format json > /tmp/trace-to-skill-scorecard.json && node dist/src/cli.js oss-brief . --format json > /tmp/trace-to-skill-oss-brief.json",
+    "check": "npm run test && node dist/src/cli.js doctor . --format json > /tmp/trace-to-skill-doctor.json && node dist/src/cli.js lint-agents . --format json > /tmp/trace-to-skill-agents-lint.json && node dist/src/cli.js analyze fixtures --format json > /tmp/trace-to-skill-smoke.json && node dist/src/cli.js usage-evidence fixtures --format json > /tmp/trace-to-skill-usage-evidence.json && node dist/src/cli.js sensitive-audit . --format json > /tmp/trace-to-skill-sensitive-audit.json && node dist/src/cli.js lsp-audit . --format json > /tmp/trace-to-skill-lsp-audit.json && node dist/src/cli.js suggest fixtures --target agents-md > /tmp/trace-to-skill-suggest.md && node dist/src/cli.js demo --format json > /tmp/trace-to-skill-demo.json && node dist/src/cli.js benchmark --format json > /tmp/trace-to-skill-benchmark.json && node dist/src/cli.js scorecard . --format json > /tmp/trace-to-skill-scorecard.json && node dist/src/cli.js oss-brief . --format json > /tmp/trace-to-skill-oss-brief.json",
     "prepack": "npm run build",
     "prepare": "npm run build"
   },
@@ -157,7 +157,12 @@
     "aiexclude",
     "sensitive-audit",
     "agent-privacy",
-    "context-privacy"
+    "context-privacy",
+    "lsp",
+    "language-server",
+    "lsp-audit",
+    "codex-lsp",
+    "agent-lsp"
   ],
   "author": "Ogün <https://github.com/grnbtqdbyx-create>",
   "license": "Apache-2.0",
