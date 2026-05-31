@@ -2,7 +2,8 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { analyzeTargets } from "../src/analyze.js";
 import { evaluate } from "../src/eval.js";
-import { renderAgentsRules, renderSkill } from "../src/report.js";
+import { postPullRequestComment } from "../src/github.js";
+import { renderAgentsRules, renderPrComment, renderSkill } from "../src/report.js";
 
 test("analyzeTargets detects failed agent workflow signals", async () => {
   const result = await analyzeTargets(["fixtures/failed-run.md"]);
@@ -33,4 +34,30 @@ test("renderers produce reusable AGENTS.md and SKILL.md content", async () => {
   assert.match(agents, /validation command/);
   assert.match(skill, /Skill Generated From Agent Traces/);
   assert.match(skill, /Evidence Required/);
+});
+
+test("analyzeTargets normalizes Codex-style JSONL traces", async () => {
+  const result = await analyzeTargets(["fixtures/codex-session.jsonl"]);
+
+  assert.ok(result.findings.some((finding) => finding.kind === "premature_completion"));
+  assert.ok(result.findings.some((finding) => finding.kind === "test_failure"));
+});
+
+test("renderPrComment includes marker for update-in-place behavior", async () => {
+  const result = await analyzeTargets(["fixtures/failed-run.md"]);
+  const comment = renderPrComment(result);
+
+  assert.match(comment, /trace-to-skill-report/);
+  assert.match(comment, /Top Findings/);
+});
+
+test("postPullRequestComment dry-run resolves pull request event", async () => {
+  const message = await postPullRequestComment({
+    repository: "owner/repo",
+    eventPath: "fixtures/github-pr-event.json",
+    body: "test",
+    dryRun: true
+  });
+
+  assert.equal(message, "dry-run: would post trace-to-skill report to owner/repo#42");
 });

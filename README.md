@@ -11,6 +11,7 @@ Turn failed AI coding-agent runs into reusable `AGENTS.md` rules, `SKILL.md` fil
 npx github:grnbtqdbyx-create/trace-to-skill analyze ./runs
 npx github:grnbtqdbyx-create/trace-to-skill suggest ./runs --target agents-md
 npx github:grnbtqdbyx-create/trace-to-skill eval ./runs --threshold 80
+npx github:grnbtqdbyx-create/trace-to-skill comment ./runs --dry-run
 ```
 
 AI coding agents are getting good enough to change real repositories, but they still repeat the same workflow mistakes: claiming success without tests, ignoring repo instructions, over-editing, inventing files, leaking secrets into traces, or enabling risky MCP tools.
@@ -130,6 +131,12 @@ trace-to-skill eval ./runs --threshold 80
 
 The eval command exits non-zero when the score is below the threshold or critical findings exist.
 
+Post or update a GitHub pull request comment:
+
+```bash
+trace-to-skill comment ./runs --token "$GITHUB_TOKEN"
+```
+
 ## Supported Inputs
 
 `trace-to-skill` scans directories or individual files:
@@ -140,7 +147,7 @@ The eval command exits non-zero when the score is below the threshold or critica
 - `.json`
 - `.jsonl`
 
-JSONL traces are normalized by extracting common fields such as `message`, `content`, `text`, `output`, and `error`.
+JSONL traces are normalized by extracting common fields such as `message`, `content`, `text`, `output`, and `error`. Codex-style JSONL traces with `response_item`, `function_call`, `function_call_output`, and `event_msg` payloads are normalized into readable evidence lines.
 
 ## GitHub Action
 
@@ -156,13 +163,29 @@ on:
 jobs:
   agent-learning:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
         with:
           node-version: 20
       - run: npx github:grnbtqdbyx-create/trace-to-skill analyze ./runs --output agent-learning-report.md
+      - run: npx github:grnbtqdbyx-create/trace-to-skill comment ./runs --token "${{ github.token }}"
       - run: npx github:grnbtqdbyx-create/trace-to-skill eval ./runs --threshold 80
+```
+
+Composite action usage:
+
+```yaml
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.1
+  with:
+    traces: ./runs
+    threshold: "80"
+    comment: "true"
+    github-token: ${{ github.token }}
 ```
 
 ## OpenAI / Codex Use Case

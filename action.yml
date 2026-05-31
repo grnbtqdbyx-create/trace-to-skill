@@ -10,13 +10,24 @@ inputs:
     description: Minimum passing score.
     required: false
     default: "75"
+  github-token:
+    description: GitHub token used to post or update a pull request comment.
+    required: false
+    default: ""
+  comment:
+    description: Post or update a pull request comment with the report.
+    required: false
+    default: "false"
 runs:
   using: composite
   steps:
     - uses: actions/setup-node@v5
       with:
         node-version: 20
-    - run: npx trace-to-skill analyze "${{ inputs.traces }}" --output agent-learning-report.md
+    - run: npx github:grnbtqdbyx-create/trace-to-skill analyze "${{ inputs.traces }}" --output agent-learning-report.md
       shell: bash
-    - run: npx trace-to-skill eval "${{ inputs.traces }}" --threshold "${{ inputs.threshold }}"
+    - run: npx github:grnbtqdbyx-create/trace-to-skill comment "${{ inputs.traces }}" --token "${{ inputs.github-token }}"
+      if: inputs.comment == 'true'
+      shell: bash
+    - run: npx github:grnbtqdbyx-create/trace-to-skill eval "${{ inputs.traces }}" --threshold "${{ inputs.threshold }}"
       shell: bash

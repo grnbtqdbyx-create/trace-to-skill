@@ -15,4 +15,5 @@ Core commands:
 npx github:grnbtqdbyx-create/trace-to-skill analyze ./runs
 npx github:grnbtqdbyx-create/trace-to-skill suggest ./runs --target agents-md
 npx github:grnbtqdbyx-create/trace-to-skill eval ./runs --threshold 80
+npx github:grnbtqdbyx-create/trace-to-skill comment ./runs --dry-run
 ```

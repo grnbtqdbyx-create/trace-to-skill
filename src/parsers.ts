@@ -62,7 +62,7 @@ function normalizeJsonl(raw: string): string {
 
     try {
       const parsed = JSON.parse(trimmed) as Record<string, unknown>;
-      return extractJsonMessage(parsed) ?? line;
+      return extractTraceLine(parsed) ?? line;
     } catch {
       return line;
     }
@@ -71,18 +71,98 @@ function normalizeJsonl(raw: string): string {
   return normalized.join("\n");
 }
 
-function extractJsonMessage(value: Record<string, unknown>): string | undefined {
-  for (const key of ["message", "content", "text", "output", "error"]) {
-    const candidate = value[key];
-    if (typeof candidate === "string") {
-      return candidate;
+function extractTraceLine(value: Record<string, unknown>): string | undefined {
+  const timestamp = typeof value.timestamp === "string" ? value.timestamp : undefined;
+  const type = typeof value.type === "string" ? value.type : undefined;
+  const payload = asObject(value.payload);
+
+  if (type === "response_item" && payload) {
+    const payloadType = typeof payload.type === "string" ? payload.type : "response_item";
+    const role = typeof payload.role === "string" ? payload.role : undefined;
+
+    if (payloadType === "function_call") {
+      const name = typeof payload.name === "string" ? payload.name : "function_call";
+      const args = stringifyUnknown(payload.arguments);
+      return joinParts(timestamp, "tool_call", name, args);
+    }
+
+    if (payloadType === "function_call_output") {
+      return joinParts(timestamp, "tool_output", extractText(payload.output) ?? stringifyUnknown(payload.output));
+    }
+
+    const text = extractText(payload.content) ?? extractText(payload.summary);
+    if (text) {
+      return joinParts(timestamp, payloadType, role, text);
     }
   }
 
-  const nested = value.item ?? value.event ?? value.payload;
-  if (nested && typeof nested === "object" && !Array.isArray(nested)) {
-    return extractJsonMessage(nested as Record<string, unknown>);
+  if (type === "event_msg" && payload) {
+    const payloadType = typeof payload.type === "string" ? payload.type : "event_msg";
+    const text = extractText(payload.message) ?? extractText(payload.content) ?? extractText(payload.text);
+    if (text) {
+      return joinParts(timestamp, payloadType, text);
+    }
+
+    if (payloadType === "token_count") {
+      return joinParts(timestamp, payloadType, stringifyUnknown(payload));
+    }
+  }
+
+  return extractText(value);
+}
+
+function extractText(value: unknown): string | undefined {
+  if (typeof value === "string") {
+    return value;
+  }
+
+  if (Array.isArray(value)) {
+    const parts = value.map((item) => extractText(item)).filter((item): item is string => Boolean(item));
+    return parts.length > 0 ? parts.join("\n") : undefined;
+  }
+
+  const object = asObject(value);
+  if (!object) {
+    return undefined;
+  }
+
+  for (const key of ["message", "content", "text", "output", "error", "summary"]) {
+    const candidate = object[key];
+    const text = extractText(candidate);
+    if (text) {
+      return text;
+    }
+  }
+
+  const nested = object.item ?? object.event ?? object.payload ?? object.delta;
+  const nestedObject = asObject(nested);
+  if (nestedObject) {
+    return extractText(nestedObject);
   }
 
   return undefined;
+}
+
+function joinParts(...parts: Array<string | undefined>): string {
+  return parts.filter((part): part is string => Boolean(part && part.trim().length > 0)).join(" ");
+}
+
+function stringifyUnknown(value: unknown): string | undefined {
+  if (value === undefined || value === null) {
+    return undefined;
+  }
+
+  if (typeof value === "string") {
+    return value;
+  }
+
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return String(value);
+  }
+}
+
+function asObject(value: unknown): Record<string, unknown> | undefined {
+  return value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : undefined;
 }

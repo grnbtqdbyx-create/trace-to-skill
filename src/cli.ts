@@ -2,7 +2,8 @@
 import { writeFile } from "node:fs/promises";
 import { analyzeTargets } from "./analyze.js";
 import { evaluate } from "./eval.js";
-import { renderAgentsRules, renderMarkdown, renderSkill } from "./report.js";
+import { postPullRequestComment } from "./github.js";
+import { renderAgentsRules, renderMarkdown, renderPrComment, renderSkill } from "./report.js";
 
 interface ParsedArgs {
   command: string;
@@ -45,8 +46,26 @@ async function main(): Promise<void> {
     return;
   }
 
+  if (parsed.command === "comment") {
+    const result = await analyzeTargets(parsed.targets);
+    const body = renderPrComment(result);
+    const message = await postPullRequestComment({
+      body,
+      token: stringFlag(parsed.flags.token),
+      repository: stringFlag(parsed.flags.repository),
+      eventPath: stringFlag(parsed.flags.event),
+      dryRun: Boolean(parsed.flags["dry-run"])
+    });
+    process.stdout.write(`${message}\n`);
+    return;
+  }
+
   printHelp();
   process.exitCode = 1;
+}
+
+function stringFlag(value: string | boolean | undefined): string | undefined {
+  return typeof value === "string" ? value : undefined;
 }
 
 function parseArgs(args: string[]): ParsedArgs {
@@ -97,11 +116,13 @@ Usage:
   trace-to-skill analyze <trace-file-or-dir> [--format markdown|json] [--output report.md]
   trace-to-skill suggest <trace-file-or-dir> [--target agents-md|skill] [--output AGENTS.generated.md]
   trace-to-skill eval <trace-file-or-dir> [--threshold 75] [--format text|json]
+  trace-to-skill comment <trace-file-or-dir> [--dry-run] [--token $GITHUB_TOKEN]
 
 Examples:
   trace-to-skill analyze ./runs
   trace-to-skill suggest ./runs --target skill --output skills/verification-before-completion/SKILL.md
   trace-to-skill eval ./runs --threshold 80
+  trace-to-skill comment ./runs
 `);
 }
 

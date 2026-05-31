@@ -12,5 +12,5 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: 20
-      - run: npx trace-to-skill analyze fixtures/safe-run.md --output agent-learning-report.md
-      - run: npx trace-to-skill eval fixtures/safe-run.md --threshold 80
+      - run: npx github:grnbtqdbyx-create/trace-to-skill analyze fixtures/safe-run.md --output agent-learning-report.md
+      - run: npx github:grnbtqdbyx-create/trace-to-skill eval fixtures/safe-run.md --threshold 80

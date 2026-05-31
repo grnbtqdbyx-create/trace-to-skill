@@ -15,6 +15,8 @@ Codex gets more useful when maintainers can repeatedly improve repository-specif
 
 `trace-to-skill` turns those repeated failures into reviewable instructions and skills.
 
+The first public release already supports Codex-style JSONL normalization and pull request comment reports, so maintainers can connect real agent runs to GitHub review workflows.
+
 ## OSS Maintainer Value
 
 Maintainers can use the tool to:
@@ -32,4 +34,3 @@ Maintainers can use the tool to:
 - reduction in repeated failure classes across runs
 - number of external issue reports with real traces
 - star growth from maintainer communities
-

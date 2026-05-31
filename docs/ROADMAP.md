@@ -5,15 +5,16 @@
 ## v0.1
 
 - CLI with `analyze`, `suggest`, and `eval`
+- Codex-style JSONL normalization for `response_item`, `function_call`, `function_call_output`, and `event_msg`
 - Markdown, text, JSON, and JSONL inputs
 - Failure taxonomy for common coding-agent mistakes
 - `AGENTS.md` and `SKILL.md` suggestions
 - Secret redaction in evidence excerpts
 - Eval score and non-zero CI gate
+- Pull request comment command with update-in-place marker
 
 ## v0.2
 
-- First-class Codex session adapters
 - Claude Code transcript adapters
 - GitHub Action that comments on pull requests
 - SARIF output for security-oriented findings
@@ -35,4 +36,3 @@
 - Multi-agent support matrix
 - Maintainer adoption guide
 - Signed release artifacts
-
