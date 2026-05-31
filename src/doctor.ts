@@ -62,6 +62,7 @@ async function buildChecks(root: string, files: string[], fileSet: Set<string>):
   checks.push(await checkLicense(root, fileSet));
   checks.push(checkOssHealth(fileSet));
   checks.push(checkDistribution(fileSet));
+  checks.push(await checkReleaseAutomation(root, files, fileSet));
   checks.push(checkTraceLoop(fileSet));
   return checks;
 }
@@ -224,6 +225,48 @@ function checkDistribution(fileSet: Set<string>): DoctorCheck {
   };
 }
 
+async function checkReleaseAutomation(root: string, files: string[], fileSet: Set<string>): Promise<DoctorCheck> {
+  if (!fileSet.has("package.json")) {
+    return {
+      id: "release-automation",
+      status: "pass",
+      title: "No npm package release surface detected",
+      detail: "No package.json was found, so npm trusted publishing is not required."
+    };
+  }
+
+  const packageJson = await readJsonObject(path.join(root, "package.json"));
+  if (packageJson?.private === true) {
+    return {
+      id: "release-automation",
+      status: "pass",
+      title: "Private npm package detected",
+      detail: "package.json is marked private, so public npm release automation is not required."
+    };
+  }
+
+  const workflows = files.filter((file) => /^\.github\/workflows\/.+\.ya?ml$/i.test(file));
+  for (const workflow of workflows) {
+    const content = await safeReadText(path.join(root, workflow));
+    if (isTrustedNpmPublishWorkflow(content)) {
+      return {
+        id: "release-automation",
+        status: "pass",
+        title: "npm trusted publishing workflow found",
+        detail: `${workflow} grants OIDC id-token permission and runs npm publish from GitHub Actions.`
+      };
+    }
+  }
+
+  return {
+    id: "release-automation",
+    status: "warn",
+    title: "npm release automation is not OIDC-backed",
+    detail: "This public npm package does not appear to have a trusted publishing workflow.",
+    recommendation: "Add a GitHub Actions release workflow with id-token: write, actions/setup-node registry-url, and npm publish so releases do not depend on local long-lived tokens or repeated browser authentication."
+  };
+}
+
 function checkTraceLoop(fileSet: Set<string>): DoctorCheck {
   const hasRuns = fileSet.has("runs/README.md") || fileSet.has("runs/.gitkeep");
   const hasTraceToSkillWorkflow = Array.from(fileSet).some((file) => /^\.github\/workflows\/.+\.ya?ml$/i.test(file));
@@ -358,6 +401,20 @@ async function readJsonObject(filePath: string): Promise<Record<string, unknown>
   } catch {
     return undefined;
   }
+}
+
+async function safeReadText(filePath: string): Promise<string> {
+  try {
+    return await fs.readFile(filePath, "utf8");
+  } catch {
+    return "";
+  }
+}
+
+function isTrustedNpmPublishWorkflow(content: string): boolean {
+  return /\bid-token:\s*write\b/i.test(content) &&
+    /\bregistry-url:\s*['"]?https:\/\/registry\.npmjs\.org['"]?/i.test(content) &&
+    /\bnpm\s+publish\b/i.test(content);
 }
 
 function asObject(value: unknown): Record<string, unknown> | undefined {

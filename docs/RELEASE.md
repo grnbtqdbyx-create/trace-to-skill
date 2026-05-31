@@ -43,6 +43,8 @@ npm trust github trace-to-skill \
 
 The workflow also supports manual dispatch with `publish=true` for a version that has already been committed but not published.
 
+`trace-to-skill doctor .` checks for this release surface. Public npm packages without an OIDC-backed `npm publish` workflow receive a `release-automation` warning.
+
 ## Why This Exists
 
 Local `npm publish` with account 2FA can ask for browser/passkey approval on every release. Trusted Publishing moves the repeated release authentication into GitHub Actions and uses short-lived OIDC credentials instead.

@@ -341,6 +341,7 @@ test("doctorRepo scores a Codex-ready repository", async () => {
   assert.ok(result.score >= 85);
   assert.equal(result.checks.some((check) => check.status === "fail"), false);
   assert.ok(result.checks.some((check) => check.id === "agent-instructions" && check.status === "pass"));
+  assert.ok(result.checks.some((check) => check.id === "release-automation" && check.status === "warn"));
   assert.match(renderDoctorPrComment(result, 85), /trace-to-skill-doctor-report/);
   assert.match(renderDoctorPrComment(result, 85), /Score: \*\*/);
 });
@@ -635,6 +636,7 @@ test("repository dogfoods the local Codex readiness action", async () => {
 test("repository publishes npm through trusted publishing workflow", async () => {
   const workflow = await readFile(".github/workflows/npm-publish.yml", "utf8");
   const releaseGuide = await readFile("docs/RELEASE.md", "utf8");
+  const doctor = await doctorRepo(".");
 
   assert.match(workflow, /name: Publish npm/);
   assert.match(workflow, /types:\n\s+- published/);
@@ -650,6 +652,7 @@ test("repository publishes npm through trusted publishing workflow", async () =>
   assert.match(releaseGuide, /--repo grnbtqdbyx-create\/trace-to-skill/);
   assert.match(releaseGuide, /Workflow filename: `npm-publish\.yml`/);
   assert.match(releaseGuide, /Allowed action: `npm publish`/);
+  assert.ok(doctor.checks.some((check) => check.id === "release-automation" && check.status === "pass"));
 });
 
 test("published JSON schemas describe CLI result contracts", async () => {

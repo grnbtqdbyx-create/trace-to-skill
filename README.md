@@ -111,6 +111,7 @@ Generated `AGENTS.md` snippet:
 | License | OSS adoption and review need clear terms |
 | Maintainer docs | Contributors and agent PRs need process |
 | Distribution | Users should be able to try the project in one command |
+| Release automation | npm packages should publish from OIDC-backed CI, not local long-lived tokens or repeated browser auth |
 | Agent learning loop | Failed runs should become evidence, not folklore |
 
 Trace analysis detects run-level failures:
