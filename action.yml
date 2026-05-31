@@ -1,0 +1,22 @@
+name: trace-to-skill
+description: Turn failed AI coding-agent runs into reusable AGENTS.md rules, SKILL.md files, and eval evidence.
+author: grnbtqdbyx-create
+inputs:
+  traces:
+    description: File or directory containing agent traces.
+    required: false
+    default: runs
+  threshold:
+    description: Minimum passing score.
+    required: false
+    default: "75"
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v5
+      with:
+        node-version: 20
+    - run: npx trace-to-skill analyze "${{ inputs.traces }}" --output agent-learning-report.md
+      shell: bash
+    - run: npx trace-to-skill eval "${{ inputs.traces }}" --threshold "${{ inputs.threshold }}"
+      shell: bash

@@ -1,0 +1,19 @@
+# trace-to-skill
+
+> Turn failed AI coding-agent runs into reusable AGENTS.md rules, SKILL.md files, and eval evidence.
+
+Useful entry points:
+
+- README: https://github.com/grnbtqdbyx-create/trace-to-skill#readme
+- Roadmap: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/ROADMAP.md
+- Failure taxonomy: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/FAILURE_TAXONOMY.md
+- OpenAI OSS strategy: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/OPENAI_OSS_STRATEGY.md
+
+Core commands:
+
+```bash
+npx trace-to-skill analyze ./runs
+npx trace-to-skill suggest ./runs --target agents-md
+npx trace-to-skill eval ./runs --threshold 80
+```
+

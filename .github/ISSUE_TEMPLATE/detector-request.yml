@@ -1,0 +1,27 @@
+name: Detector request
+description: Request a new failure detector.
+title: "[detector] "
+labels:
+  - detector
+  - enhancement
+body:
+  - type: textarea
+    id: failure
+    attributes:
+      label: Failure class
+      description: Describe the repeated agent behavior this detector should catch.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence pattern
+      description: What text, diff, command output, or trace structure proves it?
+    validations:
+      required: true
+  - type: textarea
+    id: rule
+    attributes:
+      label: Suggested maintainer rule
+    validations:
+      required: true

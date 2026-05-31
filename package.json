@@ -1,0 +1,42 @@
+{
+  "name": "trace-to-skill",
+  "version": "0.1.0",
+  "description": "Turn failed AI coding-agent runs into reusable AGENTS.md rules, SKILL.md files, and eval evidence.",
+  "type": "module",
+  "bin": {
+    "trace-to-skill": "./dist/src/cli.js"
+  },
+  "files": [
+    "dist/src",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "clean": "rm -rf dist coverage",
+    "test": "npm run build && node --test dist/tests/*.test.js",
+    "check": "npm run test && node dist/src/cli.js analyze fixtures --format json > /tmp/trace-to-skill-smoke.json && node dist/src/cli.js suggest fixtures --target agents-md > /tmp/trace-to-skill-suggest.md",
+    "prepack": "npm run build"
+  },
+  "keywords": [
+    "codex",
+    "agents",
+    "ai-agents",
+    "agent-skills",
+    "claude-code",
+    "agents-md",
+    "mcp",
+    "evals",
+    "open-source-maintainers",
+    "self-improvement"
+  ],
+  "author": "Ogün <https://github.com/grnbtqdbyx-create>",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "typescript": "^5.9.3"
+  }
+}
