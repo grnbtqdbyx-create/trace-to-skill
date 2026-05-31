@@ -281,6 +281,28 @@ const RULES: RuleDefinition[] = [
     suggestedSkill: "codex-deeplink-launch-triage"
   },
   {
+    kind: "codex_connector_auth_cache",
+    severity: "high",
+    title: "Codex app connector auth cache or stale link regression",
+    why: "Codex app connectors can keep stale server-side or local `link_*` authorization metadata after reauth-required responses, making plugin reinstall and app restart look successful while connector tools still fail.",
+    patterns: [
+      /\b(Linear|Teams|Google Drive|OpenAI Platform|Supabase|Figma|connector|plugin|Codex app)\b.{0,220}\b(401|Reauthentication required|reauthentication required|refresh token was revoked|Please log out and sign in again)\b/i,
+      /\b(Server returned 401|401:)\b.{0,180}\b(Reauthentication required|reauth|connector|plugin|Codex app|mcp__codex_apps)\b/i,
+      /\b(refresh token was revoked|access token could not be refreshed)\b.{0,220}\b(active session|current session|log out and sign in again|preserve.*context|pending work)\b/i,
+      /\b(codex_apps_tools|codex_app_directory|codex_apps cache|app\/tool discovery cache|app connector cache)\b.{0,240}\b(stale|clear|cleared|moving aside|regenerated|same link|link_|isAccessible|does not fix|survived)\b/i,
+      /\blink_[A-Za-z0-9_-]{8,}\b.{0,220}\b(stale|same|different|invalid|broken|reauth|401|isAccessible|connector link|regenerated)\b/i,
+      /\b(stale|same|different|invalid|broken|unchanged|still referenced|kept)\b.{0,220}\blink_[A-Za-z0-9_-]{8,}\b/i,
+      /\bisAccessible:\s*false\b.{0,220}\b(Linear|Teams|connector|plugin|app directory|codex_app_directory|Connect)\b/i,
+      /\b(app directory|codex_app_directory|regenerated app directory)\b.{0,220}\bisAccessible:\s*false\b/i,
+      /\b(plugin remove|plugin add|remove\/re-add|removing and reinstalling|restart(?:ing)? Codex|restarted Codex)\b.{0,240}\b(did not fix|does not fix|same 401|same link|stale connector|auth|reauth)\b/i,
+      /\b(mcp__codex_apps__|codex_apps\.)[A-Za-z0-9_.-]+\b.{0,220}\b(401|Reauthentication required|isAccessible|stale|link_|auth)\b/i,
+      /\b(use only the external .* MCP tools|external .* MCP|Do not use bundled Codex Apps|do not fall back to Codex Apps|codex mcp add)\b.{0,220}\b(workaround|Linear|Teams|connector|mcp__linear)\b/i
+    ],
+    suggestedRule:
+      "When reporting Codex app connector auth-cache regressions, capture app/CLI version, OS, connector/plugin name and id, installed plugin root, exact tool name such as `mcp__codex_apps__linear.*`, error text, `link_*` id before and after reconnect, `isAccessible` state, relevant `~/.codex/cache/codex_apps_tools` and `codex_app_directory` metadata without tokens, restart/remove/re-add/cache-clear attempts, whether the ChatGPT app page shows Connect, whether a server-side link appears unchanged, and whether an external MCP workaround succeeds.",
+    suggestedSkill: "codex-connector-auth-cache-triage"
+  },
+  {
     kind: "codex_approval_friction",
     severity: "high",
     title: "Codex approval persistence or MCP approval friction",

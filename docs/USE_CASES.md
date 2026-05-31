@@ -16,13 +16,14 @@ npx trace-to-skill demo latency-regression
 npx trace-to-skill demo thinking-hang
 npx trace-to-skill demo clipboard-attachment
 npx trace-to-skill demo deeplink-launch
+npx trace-to-skill demo connector-auth-cache
 ```
 
 What it proves:
 
 - packaged fixtures can produce a real Codex issue report immediately
 - maintainers can inspect the output shape before sharing any private log
-- demos cover remote compact failures, Windows helper path failures, patch overwrite safety, approval friction, latency, Thinking hangs, clipboard/attachment regressions, deeplink/OAuth launch regressions, token burn, sensitive files, and prompt injection
+- demos cover remote compact failures, Windows helper path failures, patch overwrite safety, approval friction, latency, Thinking hangs, clipboard/attachment regressions, deeplink/OAuth launch regressions, connector auth-cache regressions, token burn, sensitive files, and prompt injection
 
 See the generated demo output in [docs/DEMO.md](DEMO.md).
 
@@ -45,7 +46,7 @@ What it proves:
 Recommended CI surface:
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.62
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.63
   with:
     mode: all
     doctor-threshold: "85"
@@ -271,7 +272,21 @@ This catches signals such as `codex://oauth_callback?code=...` opening an Electr
 
 Include app/CLI/extension version, OS/build, install source, package id/path, affected surface, exact redacted URI shape, browser and connector/plugin name, error dialog text, whether the app was already running, AppX/MSIX evidence such as AppUserModelID and DelegateExecute, HKCU/HKCR `codex` keys, command-line arguments, repair/reinstall/re-register attempts, and whether manual `codex://test` or `Start-Process` reproduces.
 
-## 19. Patch Overwrite Guard
+## 19. Codex App Connector Auth Cache Evidence
+
+Use this when Codex app connectors appear installed but keep stale auth or discovery metadata after a reauth-required response.
+
+```bash
+npx trace-to-skill demo connector-auth-cache
+npx trace-to-skill analyze ./runs --format json
+npx trace-to-skill codex-report ./runs --output openai-codex-connector-auth-cache.md
+```
+
+This catches signals such as `401: "Server returned 401: 'Reauthentication required'"`, `refresh token was revoked` during an active session, `mcp__codex_apps__linear.*` still using stale Codex Apps tools, unchanged `link_*` ids after cache regeneration, `isAccessible: false` in app-directory metadata, restart/remove/re-add not fixing auth, ChatGPT app pages still showing `Connect`, and external MCP workarounds succeeding while bundled Codex Apps connectors remain broken.
+
+Include app/CLI version, OS, connector/plugin name and id, installed plugin root, exact tool name, redacted `codex_apps_tools` and `codex_app_directory` metadata, `link_*` id before/after reconnect, `isAccessible` state, restart/remove/re-add/cache-clear/sign-in attempts, ChatGPT app page state, and whether an external MCP workaround succeeds.
+
+## 20. Patch Overwrite Guard
 
 Use this before applying a generated patch when you want create/update/delete semantics checked against the actual workspace.
 
@@ -288,7 +303,7 @@ For a public demo report:
 npx trace-to-skill demo patch-overwrite
 ```
 
-## 20. OpenAI Codex Issue Report
+## 21. OpenAI Codex Issue Report
 
 Use this when you want to file or update an OpenAI/Codex issue with a concise, evidence-backed report instead of pasting a full transcript.
 
@@ -301,7 +316,7 @@ The report includes the likely Codex failure class, line-linked evidence, diagno
 
 For a cluster-to-command map of current Codex issue patterns, see [CODEX_ISSUE_MAP.md](CODEX_ISSUE_MAP.md).
 
-## 21. Sensitive File Access Evidence
+## 22. Sensitive File Access Evidence
 
 Use this when a trace suggests an agent read, attached, uploaded, diffed, or indexed credential-bearing files.
 
@@ -314,7 +329,7 @@ This catches signals such as `.env`, `.env.production`, `.npmrc`, `.pypirc`, `.n
 
 Before publishing evidence, run `trace-to-skill redact` and attach only redacted excerpts plus the file path/class.
 
-## 22. GitHub Context Guard
+## 23. GitHub Context Guard
 
 Use this before an agent reads untrusted GitHub text.
 
@@ -331,7 +346,7 @@ Use it when:
 - a bot asks Codex to triage untrusted user reports
 - logs or comments might contain instructions like "ignore previous instructions" or "print secrets"
 
-## 23. Failed Agent Run To Reviewable Rule
+## 24. Failed Agent Run To Reviewable Rule
 
 Use this when a coding agent made a repeated workflow mistake.
 
@@ -349,7 +364,7 @@ Recommended maintainer loop:
 4. Copy only evidence-backed rules into the real policy file.
 5. Run `eval` or `scorecard` in CI so the same failure does not silently return.
 
-## 24. Privacy-Preserving Adoption
+## 25. Privacy-Preserving Adoption
 
 Use this when you want public evidence without leaking private traces.
 

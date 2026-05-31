@@ -64,6 +64,14 @@ Common signals include `codex://oauth_callback?code=...` failing after browser a
 
 The fix is to capture app/CLI/extension version, OS/build, install source, package id/path, affected surface, exact redacted URI shape, browser and connector/plugin name, error dialog text, whether the app was already running, AppX/MSIX protocol registration evidence, HKCU/HKCR `codex` keys, command-line arguments, repair/reinstall/re-register attempts, and whether manual `codex://test` or `Start-Process` reproduces.
 
+## Codex Connector Auth Cache
+
+Codex app connectors can keep stale local or server-side authorization metadata after a reauth-required response. The connector appears installed and tools remain visible, but calls keep using a stale `link_*` or inaccessible app-directory entry.
+
+Common signals include `401: "Server returned 401: 'Reauthentication required'"`, `refresh token was revoked` during an active session, `mcp__codex_apps__...` tools returning auth errors, `~/.codex/cache/codex_apps_tools` or `~/.codex/cache/codex_app_directory` regeneration keeping the same `link_*`, `isAccessible: false`, restart/plugin remove/re-add not fixing auth, ChatGPT app pages still showing `Connect`, and external MCP workarounds succeeding while bundled Codex Apps connectors remain broken.
+
+The fix is to capture app and CLI versions, OS, connector/plugin name and id, installed plugin root, exact Codex Apps tool name, error text, redacted cache metadata, `link_*` before and after reconnect/cache regeneration, `isAccessible` state, restart/remove/re-add/sign-in/cache-clear attempts, ChatGPT app page state, and whether an external MCP workaround succeeds.
+
 ## Codex Approval Friction
 
 Codex approval UX can fail even when the sandbox itself works. The common pattern is that a user chooses `Approve for this session`, `Always`, or an MCP/tool trust setting, but Codex keeps asking for approval, makes the user babysit every step, or pushes them toward `Full Access` just to get useful work done.

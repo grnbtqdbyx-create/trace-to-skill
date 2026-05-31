@@ -16,6 +16,7 @@ This benchmark runs the public fixture pack that ships with the repository and p
 | Codex thinking and stream hang | `fixtures/codex-thinking-hang.md` | 75 | 2 | 0 | `codex_thinking_hang`, `weak_evidence` | pass |
 | Codex clipboard, paste, and attachment workflow regression | `fixtures/codex-clipboard-attachment.md` | 75 | 2 | 0 | `codex_clipboard_attachment`, `weak_evidence` | pass |
 | Codex deeplink, OAuth callback, and external launch regression | `fixtures/codex-deeplink-launch.md` | 50 | 4 | 0 | `codex_deeplink_launch`, `codex_remote_control`, `hallucinated_file`, `weak_evidence` | pass |
+| Codex app connector auth cache and stale link regression | `fixtures/codex-connector-auth-cache.md` | 75 | 2 | 0 | `codex_connector_auth_cache`, `weak_evidence` | pass |
 | Codex approval persistence and MCP approval friction | `fixtures/codex-approval-friction.md` | 59 | 3 | 0 | `codex_approval_friction`, `sandbox_permission`, `weak_evidence` | pass |
 | Codex sandbox permission failure | `fixtures/sandbox-permission.md` | 59 | 3 | 0 | `codex_windows_helper_path`, `sandbox_permission`, `weak_evidence` | pass |
 | Codex Windows helper and bundled tool path failure | `fixtures/codex-windows-helper-path.md` | 43 | 4 | 0 | `codex_plugin_runtime`, `codex_windows_helper_path`, `sandbox_permission`, `weak_evidence` | pass |

@@ -19,6 +19,7 @@ export type FindingKind =
   | "codex_thinking_hang"
   | "codex_clipboard_attachment"
   | "codex_deeplink_launch"
+  | "codex_connector_auth_cache"
   | "codex_approval_friction"
   | "sandbox_permission"
   | "codex_windows_helper_path"

@@ -95,6 +95,12 @@ const BENCHMARK_CASES: BenchmarkCaseDefinition[] = [
     expectedKinds: ["codex_deeplink_launch", "weak_evidence"]
   },
   {
+    id: "codex-connector-auth-cache",
+    title: "Codex app connector auth cache and stale link regression",
+    fixture: "fixtures/codex-connector-auth-cache.md",
+    expectedKinds: ["codex_connector_auth_cache", "weak_evidence"]
+  },
+  {
     id: "codex-approval-friction",
     title: "Codex approval persistence and MCP approval friction",
     fixture: "fixtures/codex-approval-friction.md",

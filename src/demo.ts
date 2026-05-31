@@ -61,6 +61,12 @@ const DEMO_SCENARIOS: DemoScenario[] = [
     description: "OAuth callbacks, notification clicks, mobile links, or `codex app <path>` external activation fail to route into Codex."
   },
   {
+    id: "connector-auth-cache",
+    title: "Codex app connector auth cache regression",
+    fixture: "fixtures/codex-connector-auth-cache.md",
+    description: "App connectors keep stale `link_*` auth or discovery metadata after reauth-required responses."
+  },
+  {
     id: "token-burn",
     title: "Codex token burn",
     fixture: "fixtures/codex-token-burn.md",
@@ -149,6 +155,7 @@ export function renderDemoMarkdown(result: DemoResult): string {
     "trace-to-skill demo thinking-hang",
     "trace-to-skill demo clipboard-attachment",
     "trace-to-skill demo deeplink-launch",
+    "trace-to-skill demo connector-auth-cache",
     "trace-to-skill demo file-tree-ui",
     "trace-to-skill demo usage-reset-drift",
     "```",
@@ -175,6 +182,7 @@ export function renderDemoScenarioList(scenarios = listDemoScenarios()): string 
     "trace-to-skill demo thinking-hang",
     "trace-to-skill demo clipboard-attachment",
     "trace-to-skill demo deeplink-launch",
+    "trace-to-skill demo connector-auth-cache",
     "trace-to-skill demo --list",
     "```",
     ""
