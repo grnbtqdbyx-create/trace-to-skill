@@ -34,6 +34,7 @@ Secondary headline:
 - [x] demo traces for failed runs, safe runs, Codex JSONL, MCP risk, and instruction drift
 - [x] first issue labels and roadmap issues
 - [x] first release tag
+- [x] zero-setup demo command with packaged public fixture output
 - [x] SARIF output for GitHub code scanning
 - [x] Codex readiness scorecard with `trace-to-skill doctor`
 - [x] GitHub Action doctor mode with score threshold
@@ -66,9 +67,10 @@ Secondary headline:
 
 - Repository: https://github.com/grnbtqdbyx-create/trace-to-skill
 - npm: https://www.npmjs.com/package/trace-to-skill
-- Latest release: https://github.com/grnbtqdbyx-create/trace-to-skill/releases/tag/v0.1.47
+- Latest release: https://github.com/grnbtqdbyx-create/trace-to-skill/releases/tag/v0.1.48
 - CI: passing on `main`
 - Codex issue map: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/CODEX_ISSUE_MAP.md
+- Demo: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/DEMO.md
 - Profile README: https://github.com/grnbtqdbyx-create/grnbtqdbyx-create
 
 ## npm Install
@@ -76,6 +78,7 @@ Secondary headline:
 The package is published on npm:
 
 ```bash
+npx trace-to-skill demo
 npx trace-to-skill doctor .
 npm install -D trace-to-skill
 ```

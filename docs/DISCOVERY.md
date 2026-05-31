@@ -15,6 +15,7 @@ This page is written for maintainers, search engines, package indexes, and AI re
 - Codex issue map: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/CODEX_ISSUE_MAP.md
 - Scorecard: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/SCORECARD.md
 - OpenAI OSS strategy: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/OPENAI_OSS_STRATEGY.md
+- Zero-setup demo: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/DEMO.md
 
 ## Problems It Solves
 
@@ -51,6 +52,7 @@ This page is written for maintainers, search engines, package indexes, and AI re
 
 ```bash
 npx trace-to-skill doctor .
+npx trace-to-skill demo
 npx trace-to-skill scorecard .
 npx trace-to-skill lint-agents .
 npx trace-to-skill guard-github-event "$GITHUB_EVENT_PATH"
@@ -65,10 +67,12 @@ npx trace-to-skill suggest ./runs --target agents-md
 - `trace-to-skill analyze --format json`
 - `trace-to-skill lint-agents --format json`
 - `trace-to-skill doctor --format json`
+- `trace-to-skill demo --format json`
 - `trace-to-skill redact --format json`
 - `trace-to-skill scorecard --format json`
 - SARIF from `trace-to-skill analyze --format sarif`
 - OpenAI/Codex issue-ready Markdown from `trace-to-skill codex-report`
+- Packaged zero-setup Codex issue-report demo from `trace-to-skill demo`
 - OpenAI OSS support/application brief from `trace-to-skill oss-brief`
 - Codex issue-cluster mapping in `docs/CODEX_ISSUE_MAP.md`
 - GitHub Action outputs for doctor, AGENTS lint, GitHub context guard, benchmark, and scorecard modes

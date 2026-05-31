@@ -11,6 +11,7 @@
 Turn failed AI coding-agent runs into reusable `AGENTS.md` rules, `SKILL.md` files, and eval evidence.
 
 ```bash
+npx trace-to-skill demo
 npx trace-to-skill doctor .
 npx trace-to-skill lint-agents .
 npx trace-to-skill analyze ./runs
@@ -42,6 +43,7 @@ It is built for maintainers using Codex, Claude Code, Cursor, Copilot coding age
 Use it when you need to:
 
 - **Gate Codex-ready PRs:** run `trace-to-skill scorecard .` in CI and post a reviewer-friendly readiness comment.
+- **Try it before collecting traces:** run `trace-to-skill demo` to generate a real Codex issue report from packaged public fixtures in one command.
 - **Prepare OpenAI OSS evidence:** run `trace-to-skill oss-brief .` to generate application-ready proof, 500-character summary fields, readiness score, benchmark status, license, and next steps.
 - **Harden agent instructions:** run `trace-to-skill lint-agents .` to catch missing `AGENTS.md`, conflicting tool instructions, missing includes, nested instruction drift, encoding issues, and risky MCP config.
 - **Protect agent context:** run `trace-to-skill guard-github-event "$GITHUB_EVENT_PATH"` before feeding issue, PR, comment, discussion, check-run, or commit text into an agent.
@@ -191,6 +193,17 @@ npx github:grnbtqdbyx-create/trace-to-skill analyze ./runs
 Requires Node.js 20+.
 
 ## CLI
+
+Try a packaged public demo before collecting private traces:
+
+```bash
+trace-to-skill demo
+trace-to-skill demo --list
+trace-to-skill demo latency-regression
+trace-to-skill demo --format json
+```
+
+See this repository's generated demo in [docs/DEMO.md](docs/DEMO.md).
 
 Check whether a repository is ready for Codex automation:
 
@@ -379,7 +392,7 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v5
-      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.47
+      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.48
         with:
           mode: all
           doctor-threshold: "85"
@@ -428,7 +441,7 @@ Composite action usage:
 
 ```yaml
 - id: trace-to-skill
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.47
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.48
   with:
     mode: all
     doctor-threshold: "85"
@@ -470,7 +483,7 @@ Action outputs:
 
 By default, generated reports are also appended to the GitHub Actions Job Summary. Set `job-summary: "false"` to disable that UI output.
 
-Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.47` executes that release's checked-out source instead of pulling the default branch at runtime.
+Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.48` executes that release's checked-out source instead of pulling the default branch at runtime.
 
 ## Codex Skill
 

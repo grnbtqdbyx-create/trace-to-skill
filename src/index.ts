@@ -1,6 +1,7 @@
 export { lintAgents, renderAgentsLintMarkdown } from "./agentsLint.js";
 export { analyzeInputs, analyzeTargets } from "./analyze.js";
 export { renderBenchmarkMarkdown, runBenchmark } from "./benchmark.js";
+export { listDemoScenarios, renderDemoMarkdown, renderDemoScenarioList, runDemo } from "./demo.js";
 export { doctorRepo } from "./doctor.js";
 export { compareAnalyses, evaluate } from "./eval.js";
 export { analyzeGithubEventContext, extractGithubContextInputs } from "./githubContext.js";

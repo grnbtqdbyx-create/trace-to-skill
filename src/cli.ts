@@ -3,6 +3,7 @@ import { writeFile } from "node:fs/promises";
 import { lintAgents, renderAgentsLintMarkdown } from "./agentsLint.js";
 import { analyzeTargets } from "./analyze.js";
 import { renderBenchmarkMarkdown, runBenchmark } from "./benchmark.js";
+import { listDemoScenarios, renderDemoMarkdown, renderDemoScenarioList, runDemo } from "./demo.js";
 import { doctorRepo } from "./doctor.js";
 import { compareAnalyses, evaluate } from "./eval.js";
 import { analyzeGithubEventContext } from "./githubContext.js";
@@ -31,6 +32,21 @@ async function main(): Promise<void> {
     const result = await analyzeTargets(parsed.targets);
     const format = String(parsed.flags.format ?? "markdown");
     const output = renderAnalysis(result, format);
+    await writeOutput(output, parsed.flags.output);
+    return;
+  }
+
+  if (parsed.command === "demo") {
+    const format = String(parsed.flags.format ?? "markdown");
+    if (parsed.flags.list) {
+      const scenarios = listDemoScenarios();
+      const output = format === "json" ? `${JSON.stringify({ scenarios }, null, 2)}\n` : renderDemoScenarioList(scenarios);
+      await writeOutput(output, parsed.flags.output);
+      return;
+    }
+
+    const result = await runDemo(parsed.targets[0]);
+    const output = format === "json" ? `${JSON.stringify(result, null, 2)}\n` : renderDemoMarkdown(result);
     await writeOutput(output, parsed.flags.output);
     return;
   }
@@ -321,6 +337,7 @@ function printHelp(): void {
 Turn failed AI coding-agent runs into reusable rules, skills, and eval evidence.
 
 Usage:
+  trace-to-skill demo [scenario] [--list] [--format markdown|json] [--output docs/DEMO.md]
   trace-to-skill analyze <trace-file-or-dir> [--format markdown|json|sarif] [--output report.md]
   trace-to-skill codex-report <trace-file-or-dir> [--output openai-codex-issue.md]
   trace-to-skill suggest <trace-file-or-dir> [--target agents-md|skill] [--output AGENTS.generated.md]
@@ -339,6 +356,8 @@ Usage:
   trace-to-skill init [--traces runs] [--threshold 80] [--doctor-threshold 85] [--comment] [--sarif] [--dry-run]
 
 Examples:
+  trace-to-skill demo
+  trace-to-skill demo latency-regression
   trace-to-skill analyze ./runs
   trace-to-skill codex-report ./runs --output openai-codex-issue.md
   trace-to-skill suggest ./runs --target skill --output skills/verification-before-completion/SKILL.md

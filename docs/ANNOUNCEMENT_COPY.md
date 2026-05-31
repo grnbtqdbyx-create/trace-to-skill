@@ -51,6 +51,7 @@ trace-to-skill checks repo readiness and scans agent traces/logs to generate:
 - a GitHub event context guard for prompt-injection checks before agents read PR/issue/comment text
 - a redaction command for privacy-preserving failed trace sharing
 - an OpenAI/Codex issue-ready report command for turning redacted traces into concise, evidence-backed issue bodies
+- a zero-setup `demo` command so people can see a real Codex issue report before collecting private traces
 - Codex sandbox setup and permission failure detection for setup refresh, ACL, ownership, and approval-mode problems
 - Codex auth/connectivity detection for token exchange, CA certificate, proxy, IPv6, Cloudflare challenge, and stream disconnect evidence
 - Codex mobile/remote-control route health detection for stale listener, stale enrollment, missing helper bundle, and `Waiting for desktop` evidence
@@ -70,6 +71,7 @@ It is deterministic and local-first right now; no runtime network calls.
 
 Example:
 
+npx trace-to-skill demo
 npx trace-to-skill init --comment --sarif
 npx trace-to-skill doctor .
 npx trace-to-skill lint-agents .
@@ -87,6 +89,7 @@ I’m especially looking for anonymized failed agent traces and feedback from OS
 Repo: https://github.com/grnbtqdbyx-create/trace-to-skill
 npm: https://www.npmjs.com/package/trace-to-skill
 Codex issue map: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/CODEX_ISSUE_MAP.md
+Demo output: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/DEMO.md
 ```
 
 ## X / LinkedIn

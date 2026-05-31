@@ -6,6 +6,7 @@ import { test } from "node:test";
 import { lintAgents, renderAgentsLintMarkdown } from "../src/agentsLint.js";
 import { analyzeInputs, analyzeTargets } from "../src/analyze.js";
 import { renderBenchmarkMarkdown, runBenchmark } from "../src/benchmark.js";
+import { listDemoScenarios, renderDemoMarkdown, renderDemoScenarioList, runDemo } from "../src/demo.js";
 import { doctorRepo } from "../src/doctor.js";
 import { compareAnalyses, evaluate } from "../src/eval.js";
 import { analyzeGithubEventContext, extractGithubContextInputs } from "../src/githubContext.js";
@@ -190,6 +191,23 @@ test("analyzeTargets detects Codex approval friction", async () => {
   assert.match(finding.suggestedRule, /displayed command versus executed command/);
   assert.match(finding.suggestedRule, /MCP server name/);
   assert.match(report, /Codex approval persistence or MCP approval friction/);
+});
+
+test("demo command runs packaged scenarios without private traces", async () => {
+  const scenarios = listDemoScenarios();
+  const result = await runDemo();
+  const markdown = renderDemoMarkdown(result);
+  const list = renderDemoScenarioList(scenarios);
+
+  assert.ok(scenarios.some((scenario) => scenario.id === "approval-friction"));
+  assert.ok(scenarios.some((scenario) => scenario.id === "latency-regression"));
+  assert.equal(result.scenario.id, "approval-friction");
+  assert.ok(result.analysis.findings.some((finding) => finding.kind === "codex_approval_friction"));
+  assert.match(markdown, /trace-to-skill Demo/);
+  assert.match(markdown, /Generated Codex Issue Report/);
+  assert.match(markdown, /codex_approval_friction/);
+  assert.match(list, /latency-regression/);
+  await assert.rejects(() => runDemo("missing"), /unknown demo scenario/);
 });
 
 test("analyzeTargets detects Codex sandbox permission failures", async () => {
@@ -511,6 +529,7 @@ test("package metadata points npm users back to the public project", async () =>
   assert.ok(packageJson.files?.includes("llms.txt"));
   assert.ok(packageJson.files?.includes("docs/DISCOVERY.md"));
   assert.ok(packageJson.files?.includes("docs/CODEX_ISSUE_MAP.md"));
+  assert.ok(packageJson.files?.includes("docs/DEMO.md"));
   assert.ok(packageJson.files?.includes("docs/OPENAI_OSS_BRIEF.md"));
   assert.ok(packageJson.keywords?.includes("openai-codex"));
   assert.ok(packageJson.keywords?.includes("prompt-injection"));
@@ -526,6 +545,7 @@ test("package metadata points npm users back to the public project", async () =>
   assert.ok(packageJson.keywords?.includes("openai-triage"));
   assert.ok(packageJson.keywords?.includes("openai-oss"));
   assert.ok(packageJson.keywords?.includes("oss-maintainers"));
+  assert.ok(packageJson.keywords?.includes("codex-demo"));
   assert.ok(packageJson.keywords?.includes("codex-token-burn"));
   assert.ok(packageJson.keywords?.includes("codex-usage"));
   assert.ok(packageJson.keywords?.includes("codex-resource-leak"));
@@ -1013,7 +1033,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.equal(brief.scorecard.benchmarkStatus, "pass");
   assert.equal(brief.scorecard.benchmarkCases, 21);
   assert.equal(brief.packageName, "trace-to-skill");
-  assert.equal(brief.packageVersion, "0.1.47");
+  assert.equal(brief.packageVersion, "0.1.48");
   assert.equal(brief.license, "Apache-2.0");
   assert.ok(brief.repository?.includes("github.com/grnbtqdbyx-create/trace-to-skill"));
   assert.ok(brief.qualification.max500.length <= 500);
@@ -1021,7 +1041,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.match(markdown, /OpenAI OSS Brief/);
   assert.match(markdown, /Why This Repository Qualifies/);
   assert.match(markdown, /500-Character Version/);
-  assert.match(markdown, /npx trace-to-skill@0\.1\.47/);
+  assert.match(markdown, /npx trace-to-skill@0\.1\.48/);
 });
 
 test("scorecard-comment dry-run resolves pull request event", async () => {

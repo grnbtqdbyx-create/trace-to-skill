@@ -43,6 +43,7 @@ failed agent run -> failure class -> evidence-backed AGENTS.md/SKILL.md suggesti
 - Use cases: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/USE_CASES.md
 - Codex issue map: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/CODEX_ISSUE_MAP.md
 - Discovery summary: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/DISCOVERY.md
+- Demo output: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/DEMO.md
 - Adoption guide: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/ADOPTION_GUIDE.md
 - Failure taxonomy: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/FAILURE_TAXONOMY.md
 - OpenAI OSS strategy: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/OPENAI_OSS_STRATEGY.md
@@ -55,6 +56,7 @@ failed agent run -> failure class -> evidence-backed AGENTS.md/SKILL.md suggesti
 
 ```bash
 npx trace-to-skill doctor .
+npx trace-to-skill demo
 npx trace-to-skill lint-agents .
 npx trace-to-skill guard-github-event "$GITHUB_EVENT_PATH"
 npx trace-to-skill redact ./runs --output redacted-runs
@@ -91,6 +93,7 @@ npx trace-to-skill init --comment --sarif
 ## Search phrases this project should answer
 
 - Codex readiness checker for open-source repositories
+- Codex issue report demo without private traces
 - AGENTS.md linter for Codex and Claude Code
 - turn failed agent runs into AGENTS.md rules
 - prompt injection guard for GitHub issue and PR comments
