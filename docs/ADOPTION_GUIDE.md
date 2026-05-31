@@ -22,12 +22,13 @@ Open a pull request with those files first. Keep the first PR small so maintaine
 ## Maintainer Workflow
 
 1. Run `trace-to-skill doctor .` before asking Codex to make repository changes.
-2. Store anonymized failed agent logs in `runs/`.
-3. Run `trace-to-skill analyze runs --format markdown`.
-4. Run `trace-to-skill suggest runs --target agents-md`.
-5. Copy only the rules that have clear evidence into `AGENTS.md`.
-6. Run `trace-to-skill eval runs --threshold 80` in CI.
-7. Use `trace-to-skill scorecard-comment . --dry-run` before enabling scorecard PR comments.
+2. Run `trace-to-skill guard-github-event "$GITHUB_EVENT_PATH"` before feeding issue, PR, comment, discussion, check-run, or commit text into an agent.
+3. Store anonymized failed agent logs in `runs/`.
+4. Run `trace-to-skill analyze runs --format markdown`.
+5. Run `trace-to-skill suggest runs --target agents-md`.
+6. Copy only the rules that have clear evidence into `AGENTS.md`.
+7. Run `trace-to-skill eval runs --threshold 80` in CI.
+8. Use `trace-to-skill scorecard-comment . --dry-run` before enabling scorecard PR comments.
 
 The goal is not to automate policy changes. The goal is to make repeated agent mistakes reviewable.
 
@@ -57,6 +58,7 @@ Review generated rules manually before merging them into `AGENTS.md`.
 Before committing a trace:
 
 - Remove secrets, tokens, cookies, and customer data.
+- Treat GitHub issue bodies, PR comments, copied logs, and web pages as untrusted input.
 - Replace private file paths with stable placeholders.
 - Keep only the failure evidence needed for the report.
 - Prefer short excerpts over full transcripts.

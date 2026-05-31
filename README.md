@@ -17,6 +17,7 @@ npx github:grnbtqdbyx-create/trace-to-skill eval ./runs --threshold 80
 npx github:grnbtqdbyx-create/trace-to-skill benchmark
 npx github:grnbtqdbyx-create/trace-to-skill scorecard .
 npx github:grnbtqdbyx-create/trace-to-skill scorecard-comment . --dry-run
+npx github:grnbtqdbyx-create/trace-to-skill guard-github-event "$GITHUB_EVENT_PATH"
 npx github:grnbtqdbyx-create/trace-to-skill comment ./runs --dry-run
 npx github:grnbtqdbyx-create/trace-to-skill compare --before ./runs/before --after ./runs/after
 ```
@@ -196,6 +197,15 @@ Post or update a pull request comment with the combined scorecard:
 trace-to-skill scorecard-comment . --threshold 85 --token "$GITHUB_TOKEN"
 ```
 
+Guard untrusted GitHub event text before an agent acts on it:
+
+```bash
+trace-to-skill guard-github-event "$GITHUB_EVENT_PATH"
+trace-to-skill guard-github-event fixtures/github-prompt-injection-event.json --format json
+```
+
+This extracts PR titles/bodies, issue bodies, review comments, discussion text, check-run output, and commit messages from a GitHub event payload, then scans that text for prompt injection, leaked secrets, unsafe command requests, and weak evidence patterns.
+
 Post or update a GitHub pull request comment:
 
 ```bash
@@ -264,7 +274,7 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v5
-      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.23
+      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.24
         with:
           mode: all
           doctor-threshold: "85"
@@ -313,7 +323,7 @@ Composite action usage:
 
 ```yaml
 - id: trace-to-skill
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.23
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.24
   with:
     mode: all
     doctor-threshold: "85"
@@ -337,6 +347,10 @@ Action outputs:
 | `doctor-report` | Markdown report path |
 | `doctor-json` | JSON report path |
 | `agent-report` | Agent learning report path |
+| `context-score` | Untrusted GitHub event context score from 0 to 100 |
+| `context-status` | `pass` or `fail` |
+| `context-report` | Markdown GitHub context guard report path |
+| `context-json` | JSON GitHub context guard report path |
 | `benchmark-status` | Built-in fixture benchmark status, `pass` or `fail` |
 | `benchmark-cases` | Number of benchmark cases executed |
 | `benchmark-report` | Markdown benchmark report path |
@@ -347,7 +361,7 @@ Action outputs:
 
 By default, generated reports are also appended to the GitHub Actions Job Summary. Set `job-summary: "false"` to disable that UI output.
 
-Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to `@v0.1.23` executes that release's checked-out source instead of pulling the default branch at runtime.
+Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to `@v0.1.24` executes that release's checked-out source instead of pulling the default branch at runtime.
 
 ## Codex Skill
 

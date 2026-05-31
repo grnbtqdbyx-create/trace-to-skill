@@ -7,6 +7,7 @@ import { analyzeTargets } from "../src/analyze.js";
 import { renderBenchmarkMarkdown, runBenchmark } from "../src/benchmark.js";
 import { doctorRepo } from "../src/doctor.js";
 import { compareAnalyses, evaluate } from "../src/eval.js";
+import { analyzeGithubEventContext, extractGithubContextInputs } from "../src/githubContext.js";
 import { postPullRequestComment } from "../src/github.js";
 import { initProject } from "../src/init.js";
 import { renderAgentsRules, renderComparison, renderDoctorPrComment, renderPrComment, renderSarif, renderSkill } from "../src/report.js";
@@ -109,6 +110,31 @@ test("analyzeTargets detects prompt injection in untrusted agent inputs", async 
   assert.equal(finding.severity, "critical");
   assert.match(finding.suggestedRule, /untrusted data/);
   assert.ok(finding.evidence.length >= 2);
+});
+
+test("guard-github-event extracts untrusted PR text and detects prompt injection", async () => {
+  const result = await analyzeGithubEventContext("fixtures/github-prompt-injection-event.json");
+
+  assert.equal(result.eventPath, "fixtures/github-prompt-injection-event.json");
+  assert.ok(result.inputs.includes("github-event/pull_request"));
+  assert.ok(result.findings.some((finding) => finding.kind === "prompt_injection"));
+  assert.equal(evaluate(result, 80).passed, false);
+});
+
+test("extractGithubContextInputs keeps supported event fields scoped", () => {
+  const inputs = extractGithubContextInputs({
+    pull_request: {
+      title: "Update docs",
+      body: "Please update README."
+    },
+    comment: {
+      body: "Looks good."
+    }
+  });
+
+  assert.deepEqual(inputs.map((input) => input.path), ["github-event/pull_request", "github-event/comment"]);
+  assert.match(inputs[0].content, /title: Update docs/);
+  assert.match(inputs[1].content, /body: Looks good/);
 });
 
 test("compareAnalyses keeps improved runs and renders a decision", async () => {
@@ -245,14 +271,21 @@ test("composite action exposes Codex readiness doctor mode", async () => {
   assert.match(action, /scorecard-report:/);
   assert.match(action, /scorecard-json:/);
   assert.match(action, /agent-report:/);
+  assert.match(action, /context-score:/);
+  assert.match(action, /context-status:/);
+  assert.match(action, /context-report:/);
+  assert.match(action, /context-json:/);
   assert.match(action, /steps\.doctor\.outputs\.report/);
   assert.match(action, /steps\.agent-report\.outputs\.report/);
+  assert.match(action, /steps\.github-context\.outputs\.status/);
   assert.match(action, /steps\.benchmark\.outputs\.status/);
   assert.match(action, /steps\.scorecard\.outputs\.status/);
   assert.match(action, /codex-readiness-report\.json/);
+  assert.match(action, /github-context-report\.json/);
   assert.match(action, /trace-to-skill-benchmark\.json/);
   assert.match(action, /trace-to-skill-scorecard\.json/);
   assert.match(action, /mode:/);
+  assert.match(action, /context-threshold:/);
   assert.match(action, /doctor-threshold:/);
   assert.match(action, /doctor-comment:/);
   assert.match(action, /scorecard-comment:/);
@@ -265,20 +298,23 @@ test("composite action exposes Codex readiness doctor mode", async () => {
   assert.match(action, /npm run build/);
   assert.equal(action.includes("npx github:grnbtqdbyx-create/trace-to-skill"), false);
   assert.match(action, /trace-to-skill Codex Readiness/);
+  assert.match(action, /trace-to-skill GitHub Context Guard/);
   assert.match(action, /trace-to-skill Agent Learning/);
   assert.match(action, /trace-to-skill Benchmark/);
   assert.match(action, /trace-to-skill Scorecard/);
   assert.match(action, /node "\$TRACE_TO_SKILL_CLI" doctor/);
+  assert.match(action, /node "\$TRACE_TO_SKILL_CLI" guard-github-event/);
   assert.match(action, /node "\$TRACE_TO_SKILL_CLI" doctor-comment/);
   assert.match(action, /node "\$TRACE_TO_SKILL_CLI" benchmark/);
   assert.match(action, /node "\$TRACE_TO_SKILL_CLI" scorecard/);
   assert.match(action, /node "\$TRACE_TO_SKILL_CLI" scorecard-comment/);
+  assert.match(action, /inputs\.mode == 'github-context' \|\| inputs\.mode == 'all'/);
   assert.match(action, /inputs\.mode == 'doctor' \|\| inputs\.mode == 'both' \|\| inputs\.mode == 'all'/);
   assert.match(action, /inputs\.mode == 'benchmark' \|\| inputs\.mode == 'all'/);
   assert.match(action, /always\(\) && github\.event_name == 'pull_request' && inputs\.doctor-comment == 'true'/);
   assert.match(action, /always\(\) && github\.event_name == 'pull_request' && inputs\.scorecard-comment == 'true'/);
   assert.match(action, /github\.event_name == 'pull_request' && inputs\.comment == 'true'/);
-  assert.match(action, /mode must be one of: traces, doctor, benchmark, both, all/);
+  assert.match(action, /mode must be one of: traces, github-context, doctor, benchmark, both, all/);
 });
 
 test("repository dogfoods the local Codex readiness action", async () => {
@@ -293,6 +329,7 @@ test("repository dogfoods the local Codex readiness action", async () => {
   assert.match(workflow, /scorecard-comment: "true"/);
   assert.match(workflow, /job-summary: "true"/);
   assert.match(workflow, /steps\.readiness\.outputs\.doctor-score/);
+  assert.match(workflow, /steps\.readiness\.outputs\.context-status/);
   assert.match(workflow, /steps\.readiness\.outputs\.benchmark-status/);
   assert.match(workflow, /steps\.readiness\.outputs\.scorecard-status/);
 });

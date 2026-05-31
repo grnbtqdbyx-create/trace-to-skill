@@ -4,6 +4,7 @@ import { analyzeTargets } from "./analyze.js";
 import { renderBenchmarkMarkdown, runBenchmark } from "./benchmark.js";
 import { doctorRepo } from "./doctor.js";
 import { compareAnalyses, evaluate } from "./eval.js";
+import { analyzeGithubEventContext } from "./githubContext.js";
 import { postPullRequestComment } from "./github.js";
 import { initProject } from "./init.js";
 import { renderAgentsRules, renderComparison, renderDoctorMarkdown, renderDoctorPrComment, renderMarkdown, renderPrComment, renderSarif, renderSkill } from "./report.js";
@@ -84,6 +85,22 @@ async function main(): Promise<void> {
     });
     process.stdout.write(`${message}\n`);
     process.exitCode = result.passed ? 0 : 1;
+    return;
+  }
+
+  if (parsed.command === "guard-github-event") {
+    const eventPath = parsed.targets[0] ?? stringFlag(parsed.flags.event) ?? process.env.GITHUB_EVENT_PATH;
+    if (!eventPath) {
+      throw new Error("guard-github-event requires an event JSON path or GITHUB_EVENT_PATH.");
+    }
+
+    const threshold = numberFlag(parsed.flags.threshold) ?? 80;
+    const result = await analyzeGithubEventContext(eventPath);
+    const evalResult = evaluate(result, threshold);
+    const format = String(parsed.flags.format ?? "markdown");
+    const output = format === "json" ? `${JSON.stringify(result, null, 2)}\n` : renderAnalysis(result, "markdown");
+    await writeOutput(output, parsed.flags.output);
+    process.exitCode = evalResult.passed ? 0 : 1;
     return;
   }
 
@@ -264,6 +281,7 @@ Usage:
   trace-to-skill benchmark [--format markdown|json] [--output docs/BENCHMARK.md]
   trace-to-skill scorecard [repo-dir] [--threshold 85] [--format markdown|json] [--output docs/SCORECARD.md]
   trace-to-skill scorecard-comment [repo-dir] [--threshold 85] [--dry-run] [--token $GITHUB_TOKEN]
+  trace-to-skill guard-github-event [event.json] [--threshold 80] [--format markdown|json] [--output report.md]
   trace-to-skill comment <trace-file-or-dir> [--dry-run] [--token $GITHUB_TOKEN]
   trace-to-skill compare --before <old-run> --after <new-run> [--format markdown|json]
   trace-to-skill doctor [repo-dir] [--threshold 85] [--format markdown|json|comment] [--output report.md]
@@ -277,6 +295,7 @@ Examples:
   trace-to-skill benchmark
   trace-to-skill scorecard .
   trace-to-skill scorecard-comment . --threshold 85
+  trace-to-skill guard-github-event "$GITHUB_EVENT_PATH"
   trace-to-skill comment ./runs
   trace-to-skill compare --before ./runs/before --after ./runs/after
   trace-to-skill doctor . --threshold 85

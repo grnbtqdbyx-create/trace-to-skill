@@ -1,9 +1,13 @@
 import { loadTraceInputs } from "./parsers.js";
 import { collectFindings } from "./rules.js";
-import type { AnalysisResult, AnalyzeOptions } from "./types.js";
+import type { AnalysisResult, AnalyzeOptions, TraceInput } from "./types.js";
 
 export async function analyzeTargets(targets: string[], options: AnalyzeOptions = {}): Promise<AnalysisResult> {
   const inputs = await loadTraceInputs(targets);
+  return analyzeInputs(inputs, options);
+}
+
+export function analyzeInputs(inputs: TraceInput[], options: AnalyzeOptions = {}): AnalysisResult {
   const findings = collectFindings(inputs, options.maxFilesChanged);
   const score = calculateScore(findings);
 

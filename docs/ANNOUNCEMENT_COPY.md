@@ -44,6 +44,8 @@ trace-to-skill checks repo readiness and scans agent traces/logs to generate:
 - scorecard JSON schema and Action outputs
 - tag-pinned GitHub Action runtime
 - scorecard PR comments with update-in-place marker
+- a GitHub event context guard for prompt-injection checks before agents read PR/issue/comment text
+- a Codex-native readiness auditor skill
 - an Agent Learning Report
 - suggested AGENTS.md rules
 - suggested SKILL.md content
@@ -58,6 +60,7 @@ npx github:grnbtqdbyx-create/trace-to-skill doctor . --threshold 85
 npx github:grnbtqdbyx-create/trace-to-skill benchmark
 npx github:grnbtqdbyx-create/trace-to-skill scorecard .
 npx github:grnbtqdbyx-create/trace-to-skill scorecard-comment . --dry-run
+npx github:grnbtqdbyx-create/trace-to-skill guard-github-event "$GITHUB_EVENT_PATH"
 npx github:grnbtqdbyx-create/trace-to-skill doctor-comment . --threshold 85 --dry-run
 
 I’m especially looking for anonymized failed agent traces and feedback from OSS maintainers who review AI-generated PRs.

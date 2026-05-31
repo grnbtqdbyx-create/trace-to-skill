@@ -30,6 +30,7 @@ jobs:
           echo "Codex readiness score: ${{ steps.readiness.outputs.doctor-score }}"
           echo "Codex readiness status: ${{ steps.readiness.outputs.doctor-status }}"
           echo "Codex readiness summary: ${{ steps.readiness.outputs.doctor-summary }}"
+          echo "GitHub context status: ${{ steps.readiness.outputs.context-status }}"
           echo "Benchmark status: ${{ steps.readiness.outputs.benchmark-status }}"
           echo "Benchmark cases: ${{ steps.readiness.outputs.benchmark-cases }}"
           echo "Scorecard status: ${{ steps.readiness.outputs.scorecard-status }}"

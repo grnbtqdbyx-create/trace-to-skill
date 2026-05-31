@@ -6,7 +6,7 @@ branding:
   color: green
 inputs:
   mode:
-    description: Run "traces", "doctor", "benchmark", "both", or "all".
+    description: Run "traces", "github-context", "doctor", "benchmark", "both", or "all".
     required: false
     default: traces
   doctor-path:
@@ -33,6 +33,10 @@ inputs:
     description: Minimum passing score.
     required: false
     default: "75"
+  context-threshold:
+    description: Minimum passing score for untrusted GitHub event context.
+    required: false
+    default: "80"
   github-token:
     description: GitHub token used to post or update a pull request comment.
     required: false
@@ -64,6 +68,18 @@ outputs:
   agent-report:
     description: Path to the Markdown agent learning report.
     value: ${{ steps.agent-report.outputs.report }}
+  context-score:
+    description: Untrusted GitHub event context score, from 0 to 100.
+    value: ${{ steps.github-context.outputs.score }}
+  context-status:
+    description: Untrusted GitHub event context status, either pass or fail.
+    value: ${{ steps.github-context.outputs.status }}
+  context-report:
+    description: Path to the Markdown GitHub event context report.
+    value: ${{ steps.github-context.outputs.report }}
+  context-json:
+    description: Path to the JSON GitHub event context report.
+    value: ${{ steps.github-context.outputs.json }}
   benchmark-status:
     description: Built-in fixture benchmark status, either pass or fail.
     value: ${{ steps.benchmark.outputs.status }}
@@ -100,9 +116,52 @@ runs:
       shell: bash
     - run: |
         case "${{ inputs.mode }}" in
-          traces|doctor|benchmark|both|all) ;;
-          *) echo "::error::mode must be one of: traces, doctor, benchmark, both, all"; exit 1 ;;
+          traces|github-context|doctor|benchmark|both|all) ;;
+          *) echo "::error::mode must be one of: traces, github-context, doctor, benchmark, both, all"; exit 1 ;;
         esac
+      shell: bash
+    - id: github-context
+      run: |
+        set -euo pipefail
+        node "$TRACE_TO_SKILL_CLI" guard-github-event "$GITHUB_EVENT_PATH" --threshold "${{ inputs.context-threshold }}" --format json --output github-context-report.json || true
+        node "$TRACE_TO_SKILL_CLI" guard-github-event "$GITHUB_EVENT_PATH" --threshold "${{ inputs.context-threshold }}" --output github-context-report.md || true
+        node --input-type=module <<'NODE'
+        import { appendFileSync, readFileSync } from "node:fs";
+        const report = JSON.parse(readFileSync("github-context-report.json", "utf8"));
+        const thresholdText = "${{ inputs.context-threshold }}";
+        if (!/^[0-9]{1,3}$/.test(thresholdText)) {
+          console.error("::error::context-threshold must be an integer between 1 and 100");
+          process.exit(1);
+        }
+        const threshold = Number(thresholdText);
+        if (!Number.isInteger(threshold) || threshold < 1 || threshold > 100) {
+          console.error("::error::context-threshold must be an integer between 1 and 100");
+          process.exit(1);
+        }
+        const hasCriticalFindings = report.findings.some((finding) => finding.severity === "critical");
+        const status = hasCriticalFindings || report.score < threshold ? "fail" : "pass";
+        const output = [
+          `score=${report.score}`,
+          `status=${status}`,
+          "report=github-context-report.md",
+          "json=github-context-report.json"
+        ].join("\n");
+        appendFileSync(process.env.GITHUB_OUTPUT, `${output}\n`);
+        NODE
+      if: inputs.mode == 'github-context' || inputs.mode == 'all'
+      shell: bash
+    - run: |
+        {
+          echo "## trace-to-skill GitHub Context Guard"
+          echo
+          cat github-context-report.md
+        } >> "$GITHUB_STEP_SUMMARY"
+      if: always() && inputs.job-summary == 'true' && (inputs.mode == 'github-context' || inputs.mode == 'all')
+      shell: bash
+    - run: |
+        echo "::error::untrusted GitHub event context failed with score ${{ steps.github-context.outputs.score }}/${{ inputs.context-threshold }}"
+        exit 1
+      if: steps.github-context.outputs.status == 'fail' && (inputs.mode == 'github-context' || inputs.mode == 'all')
       shell: bash
     - id: doctor
       run: |

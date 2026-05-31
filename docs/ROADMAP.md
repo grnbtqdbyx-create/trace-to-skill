@@ -30,6 +30,7 @@
 - Scorecard PR comments with update-in-place marker
 - Prompt-injection detection for untrusted issue, PR, log, and web text
 - Codex-native `codex-readiness-auditor` skill for repeatable maintainer audits
+- `guard-github-event` for scanning PR, issue, comment, discussion, check-run, and commit text before an agent acts on it
 
 ## v0.2
 
