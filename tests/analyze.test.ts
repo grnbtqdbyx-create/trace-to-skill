@@ -339,7 +339,8 @@ test("guard-github-event does not flag ordinary detector commit messages", async
       { message: "Detect Codex auth connectivity failures" },
       { message: "Detect Codex MCP runtime failures" },
       { message: "Detect Codex session state failures" },
-      { message: "Detect Codex token burn reports" }
+      { message: "Detect Codex token burn reports" },
+      { message: "Detect Codex resource leak reports" }
     ]
   }));
 
@@ -348,6 +349,7 @@ test("guard-github-event does not flag ordinary detector commit messages", async
   assert.equal(result.findings.some((finding) => finding.kind === "codex_mcp_runtime"), false);
   assert.equal(result.findings.some((finding) => finding.kind === "codex_session_state"), false);
   assert.equal(result.findings.some((finding) => finding.kind === "codex_token_burn"), false);
+  assert.equal(result.findings.some((finding) => finding.kind === "codex_resource_leak"), false);
 });
 
 test("compareAnalyses keeps improved runs and renders a decision", async () => {

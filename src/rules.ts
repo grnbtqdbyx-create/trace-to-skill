@@ -309,7 +309,7 @@ const RULES: RuleDefinition[] = [
       /\b(Code Helper \(Renderer\)|Code Helper \(Plugin\)|Codex Helper Renderer|Codex app-server|syspolicyd|zygote|WindowServer).{0,180}\b(9\d|100|1\d\d|2\d\d|3\d\d)%/i,
       /\borphaned\b.{0,160}\b(shell[- ]snapshot|zsh|codex|native process|subprocess|helper|process)\b/i,
       /\b(shell[- ]snapshot|print '# Snapshot file'|\.codex\/shell_snapshots|chat_processes\.json)\b.{0,180}\b(orphan|PPID\s*1|launchd|97%|98%|99%|100%|CPU|spinning|burning)\b/i,
-      /\b(memory leak|RAM leak|renderer growth|GPU memory|IOSurface|IOAccelerator|resource leak|log flood|repeated warning loop|error flood)\b/i,
+      /\b(Codex|app|extension|renderer|GPU|process|helper|log|WindowServer|Code Helper)\b.{0,160}\b(memory leak|RAM leak|renderer growth|GPU memory|IOSurface|IOAccelerator|log flood|repeated warning loop|error flood)\b/i,
       /\b(thread-stream-state-changed|worker_rpc_response_error|open-in-target not supported|local-environments is not supported|stable-metadata)\b.{0,180}\b(loop|repeated|thousands|high CPU|flood|no handler|error=\{\})\b/i,
       /\bthinking\b.{0,120}\b(animation|spinner|shimmer)\b.{0,160}\b(GPU|compositor|VSync|reduce motion|70%|100%|battery|power)\b/i,
       /\b(non[- ]?Git workspace|without \.git|not a Git repository|git repository root)\b.{0,180}\b(high CPU|renderer|Code Helper|runaway|CPU drops|CPU high)\b/i,
