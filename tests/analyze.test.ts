@@ -4,6 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { analyzeTargets } from "../src/analyze.js";
+import { renderBenchmarkMarkdown, runBenchmark } from "../src/benchmark.js";
 import { doctorRepo } from "../src/doctor.js";
 import { compareAnalyses, evaluate } from "../src/eval.js";
 import { postPullRequestComment } from "../src/github.js";
@@ -273,4 +274,17 @@ test("published JSON schemas describe CLI result contracts", async () => {
   assert.deepEqual(doctorSchema.required, ["generatedAt", "root", "score", "summary", "checks", "findings"]);
   assert.ok(doctorSchema.properties.checks);
   assert.ok(doctorSchema.$defs.check);
+});
+
+test("benchmark covers public fixture failure classes", async () => {
+  const benchmark = await runBenchmark();
+  const markdown = renderBenchmarkMarkdown(benchmark);
+
+  assert.equal(benchmark.passed, true);
+  assert.equal(benchmark.cases.length, 5);
+  assert.ok(benchmark.cases.some((item) => item.id === "clean-validated-run" && item.score === 100));
+  assert.ok(benchmark.cases.some((item) => item.id === "failed-workflow" && item.detectedKinds.includes("test_failure")));
+  assert.ok(benchmark.cases.some((item) => item.id === "mcp-risk" && item.detectedKinds.includes("secret_exposure")));
+  assert.match(markdown, /trace-to-skill Benchmark/);
+  assert.match(markdown, /Codex JSONL failed session/);
 });

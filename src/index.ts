@@ -1,4 +1,5 @@
 export { analyzeTargets } from "./analyze.js";
+export { renderBenchmarkMarkdown, runBenchmark } from "./benchmark.js";
 export { doctorRepo } from "./doctor.js";
 export { compareAnalyses, evaluate } from "./eval.js";
 export { postPullRequestComment } from "./github.js";

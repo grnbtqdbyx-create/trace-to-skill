@@ -22,6 +22,7 @@
 - Job Summary output for generated reports
 - `trace-to-skill init` for Codex readiness and agent-learning workflow setup
 - Published JSON schemas for `analyze --format json` and `doctor --format json`
+- `trace-to-skill benchmark` for the public fixture scorecard
 
 ## v0.2
 
@@ -37,7 +38,7 @@
 - `AGENTS.md` / `CLAUDE.md` contradiction detection
 - Before/after rerun harness that can execute commands, not only compare trace artifacts
 - Keep/revert decision report
-- Public benchmark: "Do agent rules actually reduce repeated failures?"
+- Expanded public benchmark: "Do agent rules actually reduce repeated failures?"
 
 ## v1.0
 
