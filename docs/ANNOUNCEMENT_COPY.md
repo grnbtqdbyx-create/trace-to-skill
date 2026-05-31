@@ -31,7 +31,7 @@ The problem: agents often repeat the same workflow failures: claiming success wi
 trace-to-skill checks repo readiness and scans agent traces/logs to generate:
 
 - a Codex Readiness Doctor score
-- a focused AGENTS.md / MCP config linter with JSON/TOML static startup checks
+- a focused AGENTS.md / MCP/Codex config linter with JSON/TOML static startup and drift checks
 - a GitHub Action readiness gate
 - a PR comment with the readiness score and top recommendations
 - a self-dogfooding workflow for its own Codex readiness

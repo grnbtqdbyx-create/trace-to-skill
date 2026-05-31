@@ -22,7 +22,7 @@ Open a pull request with those files first. Keep the first PR small so maintaine
 ## Maintainer Workflow
 
 1. Run `trace-to-skill doctor .` before asking Codex to make repository changes.
-2. Run `trace-to-skill lint-agents .` to check `AGENTS.md`, tool-specific instruction files, MCP capability risk, and JSON/TOML static MCP startup inputs.
+2. Run `trace-to-skill lint-agents .` to check `AGENTS.md`, tool-specific instruction files, MCP capability risk, JSON/TOML static MCP startup inputs, and Codex config drift.
 3. Run `trace-to-skill guard-github-event "$GITHUB_EVENT_PATH"` before feeding issue, PR, comment, discussion, check-run, or commit text into an agent.
 4. Store anonymized failed agent logs in `runs/`.
 5. Run `trace-to-skill analyze runs --format markdown`.

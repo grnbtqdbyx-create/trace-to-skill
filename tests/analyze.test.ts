@@ -436,6 +436,38 @@ test("lintAgents detects project Codex TOML MCP startup problems", async () => {
   assert.match(evidence, /CLAUDE_PLUGIN_ROOT/);
 });
 
+test("lintAgents detects drift-prone Codex config settings", async () => {
+  const cwd = await mkdtemp(path.join(os.tmpdir(), "trace-to-skill-agents-lint-codex-config-"));
+  await mkdir(path.join(cwd, ".codex"), { recursive: true });
+  await writeFile(path.join(cwd, "AGENTS.md"), "Always run npm test before completion.\n", "utf8");
+  await writeFile(path.join(cwd, "package.json"), JSON.stringify({
+    scripts: {
+      test: "node --test"
+    }
+  }), "utf8");
+  await writeFile(path.join(cwd, ".codex/config.toml"), [
+    "default_permissions = \"repo_full\"",
+    "",
+    "[features]",
+    "codex_hooks = true",
+    "",
+    "[projects.\"/Users/example/project\"]",
+    "trusted_level = 'trusted'",
+    ""
+  ].join("\n"), "utf8");
+
+  const result = await lintAgents(cwd);
+  const finding = result.findings.find((item) => item.kind === "ignored_instruction" && /Codex config/.test(item.title));
+  const evidence = finding?.evidence.map((item) => item.excerpt).join("\n") ?? "";
+
+  assert.equal(result.status, "warn");
+  assert.ok(finding);
+  assert.match(evidence, /missing permissions profile/);
+  assert.match(evidence, /codex_hooks/);
+  assert.match(evidence, /trusted_level/);
+  assert.match(evidence, /machine-local path/);
+});
+
 test("composite action exposes Codex readiness doctor mode", async () => {
   const action = await readFile("action.yml", "utf8");
 

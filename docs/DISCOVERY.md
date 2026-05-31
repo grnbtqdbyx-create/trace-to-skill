@@ -23,6 +23,7 @@ This page is written for maintainers, search engines, package indexes, and AI re
 - A workflow wants to feed GitHub issue, PR, comment, discussion, check-run, or commit text into an agent but needs prompt-injection checks first.
 - MCP config gives agents filesystem, shell, browser, network, database, container, or secret-bearing access without a visible trust boundary.
 - MCP config looks valid at a glance but has broken startup inputs, such as missing commands, bad `cwd`, placeholder env vars, unresolved `$VARS`, unresolved plugin placeholders, local stdio commands without explicit `cwd`, or the wrong JSON `mcp_servers` wrapper key.
+- Codex config contains drift-prone settings such as deprecated `codex_hooks`, missing `default_permissions` profiles, or synced `projects.* trusted_level` project metadata.
 - Maintainers want to share failed traces publicly without leaking common tokens, emails, home paths, or hidden Unicode controls.
 
 ## Primary Users

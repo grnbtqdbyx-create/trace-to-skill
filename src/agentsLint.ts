@@ -36,6 +36,7 @@ export async function lintAgents(target = process.cwd()): Promise<AgentsLintResu
   );
   findings.push(...(await detectInstructionFileRisks(root, instructionFiles)));
   findings.push(...(await detectMcpConfigDiagnostics(root, mcpConfigs)));
+  findings.push(...(await detectCodexConfigDiagnostics(root, mcpConfigs)));
   const score = calculateAgentsLintScore(checks, findings);
   const status = statusFrom(score, checks, findings);
 
@@ -395,6 +396,68 @@ async function detectMcpConfigDiagnostics(root: string, mcpConfigs: string[]): P
   }];
 }
 
+async function detectCodexConfigDiagnostics(root: string, configFiles: string[]): Promise<Finding[]> {
+  const evidence: Evidence[] = [];
+
+  for (const file of configFiles.filter((item) => isCodexTomlConfig(item))) {
+    const absolute = path.join(root, file);
+    const content = await fs.readFile(absolute, "utf8");
+    const lines = parseTomlLines(content);
+    const permissions = collectPermissionProfiles(lines);
+    const defaultPermissions = findTomlAssignment(lines, "default_permissions");
+
+    if (defaultPermissions && typeof defaultPermissions.value === "string" && !permissions.has(defaultPermissions.value)) {
+      evidence.push({
+        file,
+        line: defaultPermissions.line,
+        excerpt: `default_permissions references missing permissions profile: ${defaultPermissions.value}`
+      });
+    }
+
+    for (const item of lines) {
+      if (item.section === "features" && item.key === "codex_hooks") {
+        evidence.push({
+          file,
+          line: item.line,
+          excerpt: "deprecated [features].codex_hooks key is present; use [features].hooks instead"
+        });
+      }
+
+      if (item.section?.startsWith("projects.") && item.key === "trusted_level") {
+        evidence.push({
+          file,
+          line: item.line,
+          excerpt: "projects.* trusted_level is stored in config.toml; this can pollute synced dotfiles with machine-specific project metadata"
+        });
+      }
+    }
+
+    for (const section of collectSections(lines)) {
+      if (section.startsWith("projects.") && /\/|\\|:/.test(section)) {
+        evidence.push({
+          file,
+          line: findLine(content, section),
+          excerpt: `project-specific config section appears to contain a machine-local path: [${section}]`
+        });
+      }
+    }
+  }
+
+  if (evidence.length === 0) {
+    return [];
+  }
+
+  return [{
+    kind: "ignored_instruction",
+    severity: "medium",
+    title: "Codex config has drift-prone settings",
+    why: "Codex config.toml issues are hard to debug when deprecated feature flags, missing permission profiles, or machine-local project trust metadata are mixed into repository or dotfiles config.",
+    evidence: evidence.slice(0, 10),
+    suggestedRule:
+      "Keep Codex config portable: migrate [features].codex_hooks to [features].hooks, define every default_permissions profile, and avoid syncing projects.* trusted_level entries."
+  }];
+}
+
 async function inspectMcpServer(root: string, file: string, content: string, name: string, server: Record<string, unknown>): Promise<Evidence[]> {
   const evidence: Evidence[] = [];
   const hasUrl = typeof server.url === "string" || typeof server.httpUrl === "string";
@@ -602,6 +665,10 @@ function isTomlConfig(file: string): boolean {
   return /\.toml$/i.test(file);
 }
 
+function isCodexTomlConfig(file: string): boolean {
+  return /(^|\/)\.codex\/config\.toml$/i.test(file);
+}
+
 function parseMcpToml(content: string): Record<string, unknown> | undefined {
   const mcpServers: Record<string, unknown> = {};
   const lines = content.split(/\r?\n/);
@@ -714,6 +781,73 @@ function stripTomlComment(line: string): string {
     }
   }
   return line;
+}
+
+interface TomlLine {
+  line: number;
+  section?: string;
+  key?: string;
+  value?: unknown;
+}
+
+function parseTomlLines(content: string): TomlLine[] {
+  const result: TomlLine[] = [];
+  let currentSection: string | undefined;
+
+  content.split(/\r?\n/).forEach((rawLine, index) => {
+    const line = stripTomlComment(rawLine).trim();
+    if (!line) {
+      return;
+    }
+
+    const section = /^\[([^\]]+)\]$/.exec(line);
+    if (section) {
+      currentSection = section[1];
+      result.push({ line: index + 1, section: currentSection });
+      return;
+    }
+
+    const assignment = /^([A-Za-z0-9_-]+)\s*=\s*(.+)$/.exec(line);
+    if (assignment) {
+      result.push({
+        line: index + 1,
+        section: currentSection,
+        key: assignment[1],
+        value: parseTomlValue(assignment[2].trim())
+      });
+    }
+  });
+
+  return result;
+}
+
+function collectPermissionProfiles(lines: TomlLine[]): Set<string> {
+  const profiles = new Set<string>();
+  for (const item of lines) {
+    if (!item.section) {
+      continue;
+    }
+    const match = /^permissions\.((?:"[^"]+"|'[^']+'|[^.]+))/.exec(item.section);
+    if (match) {
+      profiles.add(unquoteTomlBarePart(match[1]));
+    }
+  }
+  return profiles;
+}
+
+function findTomlAssignment(lines: TomlLine[], key: string): TomlLine | undefined {
+  return lines.find((item) => item.key === key);
+}
+
+function collectSections(lines: TomlLine[]): string[] {
+  return lines.filter((item) => item.section && !item.key).map((item) => item.section as string);
+}
+
+function unquoteTomlBarePart(value: string): string {
+  if (value.startsWith("\"") || value.startsWith("'")) {
+    return parseTomlString(value);
+  }
+  return value;
 }
 
 function stripJsonComments(content: string): string {

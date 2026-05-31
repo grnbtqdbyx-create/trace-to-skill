@@ -18,7 +18,7 @@ Runtime: Node.js 20+
 - conflicting `AGENTS.md`, `CLAUDE.md`, Cursor, Copilot, or Gemini instructions
 - stale path references and oversized instruction files that can make Codex follow wrong or truncated guidance
 - prompt injection in issue, PR, review, discussion, check-run, commit, log, or web text
-- risky MCP server capabilities, secret-bearing environment variables, broken JSON/TOML startup inputs, unresolved plugin placeholders, missing `cwd`, and `mcp_servers` / `mcpServers` casing mismatches
+- risky MCP server capabilities, secret-bearing environment variables, broken JSON/TOML startup inputs, unresolved plugin placeholders, missing `cwd`, deprecated `codex_hooks`, missing `default_permissions` profiles, synced `projects.* trusted_level` metadata, and `mcp_servers` / `mcpServers` casing mismatches
 - sharing failed agent traces without leaking tokens, emails, local paths, or hidden Unicode controls
 
 The core loop is:
@@ -58,7 +58,7 @@ npx trace-to-skill init --comment --sarif
 ## GitHub Action
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.33
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.34
   with:
     mode: all
     doctor-threshold: "85"

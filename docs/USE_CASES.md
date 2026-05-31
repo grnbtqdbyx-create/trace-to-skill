@@ -21,7 +21,7 @@ What it proves:
 Recommended CI surface:
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.33
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.34
   with:
     mode: all
     doctor-threshold: "85"
@@ -46,6 +46,7 @@ This checks:
 - whether instruction files reference paths that no longer exist or have grown large enough to risk ignored guidance
 - whether MCP config hints at risky capabilities such as filesystem, shell, browser, network, database, container, or secret-bearing environment variables
 - whether JSON or `.codex/config.toml` MCP startup inputs are obviously broken before launch, including wrong JSON `mcp_servers` casing, missing commands, missing `cwd`, placeholder env values, unresolved `$VARS`, unresolved plugin placeholders, or local stdio commands without explicit `cwd`
+- whether Codex config has drift-prone settings such as deprecated `codex_hooks`, missing `default_permissions` profile definitions, or synced `projects.* trusted_level` metadata
 
 The goal is not to ban powerful tools. The goal is to make trust boundaries visible before an agent acts.
 
