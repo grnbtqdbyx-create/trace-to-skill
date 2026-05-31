@@ -42,3 +42,4 @@ Bidirectional or zero-width Unicode control characters appear in agent-visible i
 
 MCP server configuration or tool usage appears without an explicit trust boundary, capability inventory, or approval policy.
 
+`trace-to-skill` also parses common `mcpServers` JSON shapes and reports capability hints such as filesystem, shell, browser, network, database, container, and secret-bearing environment variables.

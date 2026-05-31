@@ -61,3 +61,12 @@ test("postPullRequestComment dry-run resolves pull request event", async () => {
 
   assert.equal(message, "dry-run: would post trace-to-skill report to owner/repo#42");
 });
+
+test("analyzeTargets scores MCP config capabilities and secret env keys", async () => {
+  const result = await analyzeTargets(["fixtures/mcp-risk.json"]);
+  const mcpFinding = result.findings.find((finding) => finding.kind === "mcp_risk");
+
+  assert.ok(mcpFinding);
+  assert.match(mcpFinding.evidence.map((evidence) => evidence.excerpt).join("\n"), /filesystem/);
+  assert.match(mcpFinding.evidence.map((evidence) => evidence.excerpt).join("\n"), /GITHUB_TOKEN/);
+});

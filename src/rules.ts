@@ -144,7 +144,24 @@ export function collectFindings(inputs: TraceInput[], maxFilesChanged = 12): Fin
     });
   }
 
-  if (!hasPositiveValidationEvidence(inputs) && !findings.some((finding) => finding.kind === "tests_not_run")) {
+  const mcpConfigEvidence = detectMcpConfigRisk(inputs);
+  if (mcpConfigEvidence.length > 0 && !findings.some((finding) => finding.kind === "mcp_risk")) {
+    findings.push({
+      kind: "mcp_risk",
+      severity: "high",
+      title: "MCP config exposes high-risk capabilities",
+      why: "MCP servers can grant coding agents filesystem, shell, browser, network, or secret access. Maintainers need a capability inventory before enabling them.",
+      evidence: mcpConfigEvidence,
+      suggestedRule:
+        "Document every MCP server's command, capabilities, required secrets, allowed paths, and approval policy before enabling it for coding agents."
+    });
+  }
+
+  if (
+    !isConfigOnlyScan(inputs) &&
+    !hasPositiveValidationEvidence(inputs) &&
+    !findings.some((finding) => finding.kind === "tests_not_run")
+  ) {
     findings.push({
       kind: "weak_evidence",
       severity: "medium",
@@ -157,6 +174,77 @@ export function collectFindings(inputs: TraceInput[], maxFilesChanged = 12): Fin
   }
 
   return findings.sort((a, b) => severityRank(b.severity) - severityRank(a.severity));
+}
+
+function isConfigOnlyScan(inputs: TraceInput[]): boolean {
+  return inputs.length > 0 && inputs.every((input) => {
+    const extensionLooksLikeConfig = /\.(json|ya?ml|toml)$/i.test(input.path);
+    return extensionLooksLikeConfig && /"mcpServers"\s*:|"servers"\s*:/.test(input.content);
+  });
+}
+
+function detectMcpConfigRisk(inputs: TraceInput[]): Evidence[] {
+  const evidence: Evidence[] = [];
+
+  for (const input of inputs) {
+    if (!/mcp|model-context|model_context/i.test(input.path) && !/"mcpServers"\s*:/.test(input.content)) {
+      continue;
+    }
+
+    const parsed = parseJsonObject(input.content);
+    if (!parsed) {
+      continue;
+    }
+
+    const servers = asObject(parsed.mcpServers) ?? asObject(parsed.servers);
+    if (!servers) {
+      continue;
+    }
+
+    for (const [name, rawServer] of Object.entries(servers)) {
+      const server = asObject(rawServer);
+      if (!server) {
+        continue;
+      }
+
+      const command = stringifyForScan(server.command);
+      const args = stringifyForScan(server.args);
+      const env = asObject(server.env);
+      const joined = `${command} ${args}`.toLowerCase();
+      const capabilities = inferMcpCapabilities(joined);
+      const secretKeys = env ? Object.keys(env).filter((key) => /token|secret|key|password/i.test(key)) : [];
+
+      if (capabilities.length > 0 || secretKeys.length > 0) {
+        evidence.push({
+          file: input.path,
+          line: findLine(input.content, name),
+          excerpt: `server "${name}" capabilities=[${capabilities.join(", ") || "unknown"}] secrets=[${secretKeys.join(", ") || "none"}] command="${command}"`
+        });
+      }
+    }
+  }
+
+  return evidence.slice(0, 8);
+}
+
+function inferMcpCapabilities(value: string): string[] {
+  const capabilities: string[] = [];
+  const checks: Array<[string, RegExp]> = [
+    ["filesystem", /filesystem|file-system|fs|read_file|write_file|\/users|\/home|\.\//],
+    ["shell", /shell|terminal|exec|bash|zsh|powershell|cmd\b/],
+    ["browser", /browser|chrome|playwright|puppeteer|selenium/],
+    ["network", /fetch|http|web|curl|wget|api|slack|github|gitlab/],
+    ["database", /postgres|mysql|sqlite|supabase|redis|mongo/],
+    ["container", /docker|kubernetes|kubectl/]
+  ];
+
+  for (const [name, pattern] of checks) {
+    if (pattern.test(value)) {
+      capabilities.push(name);
+    }
+  }
+
+  return capabilities;
 }
 
 function matchRule(inputs: TraceInput[], rule: RuleDefinition): Evidence[] {
@@ -235,6 +323,36 @@ function severityRank(severity: Severity): number {
     high: 3,
     critical: 4
   }[severity];
+}
+
+function parseJsonObject(value: string): Record<string, unknown> | undefined {
+  try {
+    const parsed = JSON.parse(value) as unknown;
+    return asObject(parsed);
+  } catch {
+    return undefined;
+  }
+}
+
+function stringifyForScan(value: unknown): string {
+  if (Array.isArray(value)) {
+    return value.map((item) => stringifyForScan(item)).join(" ");
+  }
+
+  if (value && typeof value === "object") {
+    return JSON.stringify(value);
+  }
+
+  return typeof value === "string" ? value : "";
+}
+
+function findLine(content: string, needle: string): number {
+  const index = content.split(/\r?\n/).findIndex((line) => line.includes(needle));
+  return index >= 0 ? index + 1 : 1;
+}
+
+function asObject(value: unknown): Record<string, unknown> | undefined {
+  return value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : undefined;
 }
 
 function redact(value: string): string {

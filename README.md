@@ -149,6 +149,8 @@ trace-to-skill comment ./runs --token "$GITHUB_TOKEN"
 
 JSONL traces are normalized by extracting common fields such as `message`, `content`, `text`, `output`, and `error`. Codex-style JSONL traces with `response_item`, `function_call`, `function_call_output`, and `event_msg` payloads are normalized into readable evidence lines.
 
+MCP configs with `mcpServers` are parsed for capability hints such as filesystem, shell, browser, network, database, container, and secret-bearing environment variables.
+
 ## GitHub Action
 
 Add this to `.github/workflows/agent-learning.yml`:
@@ -180,7 +182,7 @@ jobs:
 Composite action usage:
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.1
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.2
   with:
     traces: ./runs
     threshold: "80"
