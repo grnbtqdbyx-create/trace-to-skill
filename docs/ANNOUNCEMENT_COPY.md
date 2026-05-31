@@ -52,6 +52,7 @@ trace-to-skill checks repo readiness and scans agent traces/logs to generate:
 - a redaction command for privacy-preserving failed trace sharing
 - an OpenAI/Codex issue-ready report command for turning redacted traces into concise, evidence-backed issue bodies
 - a zero-setup `demo` command so people can see a real Codex issue report before collecting private traces
+- Codex remote compact failure detection for `/compact`, auto-compaction, `responses/compact`, provider timeout workarounds, and long-thread recovery loss
 - Codex sandbox setup and permission failure detection for setup refresh, ACL, ownership, and approval-mode problems
 - Codex auth/connectivity detection for token exchange, CA certificate, proxy, IPv6, Cloudflare challenge, and stream disconnect evidence
 - Codex mobile/remote-control route health detection for stale listener, stale enrollment, missing helper bundle, and `Waiting for desktop` evidence

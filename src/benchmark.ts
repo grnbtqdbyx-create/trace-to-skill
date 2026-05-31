@@ -53,6 +53,12 @@ const BENCHMARK_CASES: BenchmarkCaseDefinition[] = [
     requireCritical: true
   },
   {
+    id: "codex-remote-compact",
+    title: "Codex remote compact task failure",
+    fixture: "fixtures/codex-remote-compact.md",
+    expectedKinds: ["codex_remote_compact", "context_compaction", "weak_evidence"]
+  },
+  {
     id: "context-compaction",
     title: "Codex context compaction failure",
     fixture: "fixtures/context-compaction.md",

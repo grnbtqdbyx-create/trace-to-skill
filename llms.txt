@@ -14,6 +14,7 @@ Runtime: Node.js 20+
 
 - agents claiming completion without test/build proof
 - failed tests hidden behind optimistic summaries
+- Codex remote compact task failures such as `/compact` or auto-compaction hitting `responses/compact` stream disconnects, child-process timeout messages, provider timeout workarounds, and long-thread recovery loss
 - Codex context compaction failures such as remote compact stream disconnects, `context_length_exceeded`, stuck automatic compaction, and `unknown variant auto`
 - Codex sandbox and permission failures such as setup refresh errors, `os error 740`, `CodexSandboxOffline` ownership drift, ACL denial, and approval-mode downgrades
 - Codex auth and connectivity failures such as `token_exchange_failed`, `auth.openai.com/oauth/token`, missing `ca-certificates`, proxy or MITM TLS behavior, IPv6 fallback problems, Cloudflare challenge responses, and ChatGPT stream disconnects
@@ -74,7 +75,7 @@ npx trace-to-skill init --comment --sarif
 ## GitHub Action
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.41
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.51
   with:
     mode: all
     doctor-threshold: "85"
@@ -107,6 +108,9 @@ npx trace-to-skill init --comment --sarif
 - Windows sandbox permission failure for Codex CLI
 - Codex token_exchange_failed auth.openai.com oauth token
 - Codex stream disconnected before completion chatgpt backend api responses
+- Codex remote compact task timeout responses/compact
+- Codex /compact timeout waiting for child process
+- Codex stream_idle_timeout_ms tcp_user_timeout compact workaround
 - Codex ca-certificates update-ca-certificates Dev Container
 - Codex remote-control stale listener 127.0.0.1:14567
 - Codex mobile Waiting for desktop Directory Unavailable

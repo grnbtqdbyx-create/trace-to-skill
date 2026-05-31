@@ -138,6 +138,25 @@ const RULES: RuleDefinition[] = [
     suggestedSkill: "untrusted-input-review"
   },
   {
+    kind: "codex_remote_compact",
+    severity: "high",
+    title: "Codex remote compact task failure",
+    why: "Remote compaction failures interrupt long Codex sessions, force users to recreate context, and need timeout/provider evidence separated from generic context-window errors.",
+    patterns: [
+      /\bError running remote compact task\b.{0,220}\b(stream disconnected before completion|timeout waiting for child process to exit|high demand|error sending request|request timed out|Transport error)\b/i,
+      /\bremote compact(?:ion)?\b.{0,220}\b(timeout|timed out|stream disconnected|responses\/compact|tcp_user_timeout|stream_idle_timeout_ms|child process|fallback to local|auto[- ]?compact|manual \/compact)\b/i,
+      /\b\/compact\b.{0,220}\b(fails?|failed|timeout|timed out|stream disconnected|responses\/compact|cannot continue|breaks? long(?:-| )running tasks?)\b/i,
+      /\bresponses\/compact\b.{0,220}\b(stream disconnected|timeout|timed out|error sending request|high demand|capacity|provider|Azure|chatgpt\.com\/backend-api)\b/i,
+      /\b(tcp_user_timeout|stream_idle_timeout_ms|reqwest|30s timeout|150s timeout|120s|900000)\b.{0,220}\b(compact|compaction|responses\/compact|Codex)\b/i,
+      /\b(compaction|auto[- ]?compact|remote compact)\b.{0,220}\b(start new sessions?|piece together context|cannot handle complex task|breaks? all long running tasks|unusable|crippling|P0)\b/i,
+      /\bopenai-long-timeout\b.{0,180}\b(provider|threads?|compact|timeout|workaround)\b/i,
+      /\b(model_provider|provider id|openai-long-timeout|Azure Foundry|base_url|api-version)\b.{0,220}\b(compact|compaction|responses\/compact|hidden threads|remote endpoint)\b/i
+    ],
+    suggestedRule:
+      "When reporting Codex remote compact failures, capture app/CLI/extension version, OS, model and reasoning/speed mode, provider config without secrets, exact /compact or auto-compact error, `responses/compact` endpoint shape, timeout values such as tcp_user_timeout or stream_idle_timeout_ms, context/token level before compaction, whether lowering reasoning/speed changes behavior, whether local fallback or a new session recovers, and related thread/feedback ids.",
+    suggestedSkill: "codex-remote-compact-triage"
+  },
+  {
     kind: "context_compaction",
     severity: "high",
     title: "Codex context compaction failure",

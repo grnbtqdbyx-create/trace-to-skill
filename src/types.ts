@@ -12,6 +12,7 @@ export type FindingKind =
   | "sensitive_file_access"
   | "hidden_unicode"
   | "prompt_injection"
+  | "codex_remote_compact"
   | "context_compaction"
   | "codex_latest_turn_drift"
   | "codex_latency_regression"

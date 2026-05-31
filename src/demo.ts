@@ -19,6 +19,12 @@ export interface DemoResult {
 
 const DEMO_SCENARIOS: DemoScenario[] = [
   {
+    id: "remote-compact",
+    title: "Codex remote compact task failure",
+    fixture: "fixtures/codex-remote-compact.md",
+    description: "Long sessions break when `/compact` or auto-compaction times out, disconnects, or fails at `responses/compact`."
+  },
+  {
     id: "approval-friction",
     title: "Codex approval friction",
     fixture: "fixtures/codex-approval-friction.md",
@@ -107,6 +113,7 @@ export function renderDemoMarkdown(result: DemoResult): string {
     "",
     "```bash",
     "trace-to-skill demo --list",
+    "trace-to-skill demo remote-compact",
     "trace-to-skill demo file-tree-ui",
     "trace-to-skill demo usage-reset-drift",
     "```",
@@ -126,6 +133,7 @@ export function renderDemoScenarioList(scenarios = listDemoScenarios()): string 
     "",
     "```bash",
     "trace-to-skill demo",
+    "trace-to-skill demo remote-compact",
     "trace-to-skill demo latency-regression",
     "trace-to-skill demo --list",
     "```",

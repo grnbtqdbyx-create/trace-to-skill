@@ -49,6 +49,7 @@ Use it when you need to:
 - **Protect agent context:** run `trace-to-skill guard-github-event "$GITHUB_EVENT_PATH"` before feeding issue, PR, comment, discussion, check-run, or commit text into an agent.
 - **Share failed traces safely:** run `trace-to-skill redact ./runs --output redacted-runs` before publishing anonymized failure fixtures.
 - **Catch sensitive file access:** run `trace-to-skill analyze ./runs` when an agent trace includes `.env`, private keys, `.npmrc`, cloud credentials, local databases, or production secret manifests.
+- **Report remote compact failures:** run `trace-to-skill codex-report ./runs` when `/compact` or auto-compaction fails with `responses/compact` timeouts, stream disconnects, provider timeout workarounds, or long-thread recovery loss.
 - **Triage stuck Codex sessions:** run `trace-to-skill analyze ./runs` to catch context compaction failures such as compact stream disconnects, `context_length_exceeded`, and schema mismatches.
 - **Catch latest-turn drift:** run `trace-to-skill analyze ./runs` when Codex answers an older prompt, repeats a previous response, forgets recent edits after compaction, or leaks raw tool payload text into chat.
 - **Measure Codex latency regressions:** run `trace-to-skill analyze ./runs` when GPT-5.5 Fast feels like Standard, simple tasks take 10-20+ minutes, thinking stalls, or search/read/compaction delays dominate the session.
@@ -83,6 +84,7 @@ Open-source maintainers do not need more AI-generated noise. They need agents th
 - Did the proposed rule actually improve the next run?
 - Can this be reported in a PR without leaking secrets?
 - Did a long Codex session fail during context compaction?
+- Did `/compact` or auto-compaction fail against the remote `responses/compact` endpoint, forcing a new thread or provider-timeout workaround?
 - Did Codex sandbox setup or workspace permissions block every tool call?
 - Did quota accounting, account switching, or reset timing contradict the runtime usage-limit error?
 - Did an MCP tool appear in `tools/list` but fail at Codex runtime because approval, namespace routing, or stdio lifecycle broke?
@@ -396,7 +398,7 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v5
-      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.50
+      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.51
         with:
           mode: all
           doctor-threshold: "85"
@@ -445,7 +447,7 @@ Composite action usage:
 
 ```yaml
 - id: trace-to-skill
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.50
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.51
   with:
     mode: all
     doctor-threshold: "85"
@@ -487,7 +489,7 @@ Action outputs:
 
 By default, generated reports are also appended to the GitHub Actions Job Summary. Set `job-summary: "false"` to disable that UI output.
 
-Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.50` executes that release's checked-out source instead of pulling the default branch at runtime.
+Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.51` executes that release's checked-out source instead of pulling the default branch at runtime.
 
 ## Codex Skill
 

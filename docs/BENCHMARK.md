@@ -9,7 +9,8 @@ This benchmark runs the public fixture pack that ships with the repository and p
 | Clean validated agent run | `fixtures/safe-run.md` | 100 | 0 | 0 | none | pass |
 | Failed workflow with missing validation | `fixtures/failed-run.md` | 18 | 5 | 1 | `hallucinated_file`, `mcp_risk`, `premature_completion`, `test_failure`, `tests_not_run` | pass |
 | Codex JSONL failed session | `fixtures/codex-session.jsonl` | 50 | 3 | 1 | `premature_completion`, `test_failure`, `weak_evidence` | pass |
-| Codex context compaction failure | `fixtures/context-compaction.md` | 75 | 2 | 0 | `context_compaction`, `weak_evidence` | pass |
+| Codex remote compact task failure | `fixtures/codex-remote-compact.md` | 59 | 3 | 0 | `codex_remote_compact`, `context_compaction`, `weak_evidence` | pass |
+| Codex context compaction failure | `fixtures/context-compaction.md` | 59 | 3 | 0 | `codex_remote_compact`, `context_compaction`, `weak_evidence` | pass |
 | Codex latest-turn drift after compaction | `fixtures/codex-latest-turn-drift.md` | 59 | 3 | 0 | `codex_latest_turn_drift`, `premature_completion`, `weak_evidence` | pass |
 | Codex model and runtime latency regression | `fixtures/codex-latency-regression.md` | 75 | 2 | 0 | `codex_latency_regression`, `weak_evidence` | pass |
 | Codex approval persistence and MCP approval friction | `fixtures/codex-approval-friction.md` | 59 | 3 | 0 | `codex_approval_friction`, `sandbox_permission`, `weak_evidence` | pass |

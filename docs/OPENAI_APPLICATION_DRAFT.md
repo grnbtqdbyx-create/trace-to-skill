@@ -50,6 +50,7 @@ Current proof points:
 - GitHub event context guard for scanning PR, issue, comment, discussion, check-run, and commit text before Codex acts on it.
 - Privacy-preserving `redact` command for sharing failed traces without common tokens, emails, local paths, or hidden Unicode controls.
 - `codex-report` command for turning redacted failed traces into OpenAI/Codex issue-ready Markdown with likely failure class, evidence, diagnostics, and privacy notes.
+- Remote compact failure detection for `/compact` and auto-compaction `responses/compact` timeouts, stream disconnects, provider timeout workarounds, and long-thread recovery loss.
 - Context compaction failure detection for stuck Codex sessions and shareable support traces.
 - Sandbox and permission failure detection for Codex setup refresh, Windows `os error 740`, ACL, workspace ownership, and approval-mode drift reports.
 - Codex file tree and workspace navigation UI detection for missing `View > Toggle File Tree`, stale floating file panels, and file-preview failures.
@@ -64,7 +65,7 @@ Current proof points:
 - SARIF output for GitHub code scanning.
 - Before/after eval comparison with keep/revise/reject decisions.
 - One-command repository setup via `trace-to-skill init`.
-- Public release v0.1.50.
+- Public release v0.1.51.
 - Current GitHub scorecard: 100/100 Codex-ready, benchmark passing.
 
 500-character version:

@@ -1,10 +1,10 @@
 # trace-to-skill Demo
 
-Scenario: **Codex approval friction**
+Scenario: **Codex remote compact task failure**
 
-Repeated approval prompts, Approve for this session misses, and noisy trusted MCP tool approvals.
+Long sessions break when `/compact` or auto-compaction times out, disconnects, or fails at `responses/compact`.
 
-Fixture: `fixtures/codex-approval-friction.md`
+Fixture: `fixtures/codex-remote-compact.md`
 
 This is a packaged public fixture, so you can try the project without collecting a private trace first.
 
@@ -14,7 +14,7 @@ This is a packaged public fixture, so you can try the project without collecting
 
 Score: **59/100**
 
-Likely failure class: **Codex approval persistence or MCP approval friction (codex_approval_friction, high)**
+Likely failure class: **Codex remote compact task failure (codex_remote_compact, high)**
 
 Agent workflow needs clearer verification, instruction, or security hardening before broad reuse.
 
@@ -23,28 +23,32 @@ Agent workflow needs clearer verification, instruction, or security hardening be
 ```md
 ### What happened?
 
-trace-to-skill detected Codex approval persistence or MCP approval friction (codex_approval_friction). Repeated approval prompts can make Codex unusable, push users toward unsafe full-access modes, or hide whether the regression is command approval caching, file-change approval, raw MCP trust, or per-tool configuration scale.
+trace-to-skill detected Codex remote compact task failure (codex_remote_compact). Remote compaction failures interrupt long Codex sessions, force users to recreate context, and need timeout/provider evidence separated from generic context-window errors.
 
 ### Detected failure class
 
-- codex_approval_friction: Codex approval persistence or MCP approval friction (high)
+- codex_remote_compact: Codex remote compact task failure (high)
 
 ### Evidence
 
-#### Codex approval persistence or MCP approval friction
-- fixtures/codex-approval-friction.md:14 - - Users report clicking approve this session again and again, then switching to Full Access because the safer scoped mode is too annoying.
-- fixtures/codex-approval-friction.md:15 - - Some reports include `item/fileChange/requestApproval` and `apply_patch_approval_request`, which may be file-change approval rather than command approval.
-- fixtures/codex-approval-friction.md:24 - - Browser tools such as `browser_click`, `browser_type`, and `browser_navigate` ask for confirmation dozens of times.
-- fixtures/codex-approval-friction.md:25 - - Users want a per-MCP default such as `default_tools_approval_mode = "approve"` instead of hundreds of `mcp_servers.playwright.tools.browser_click.approval_mode = "approve"` entries.
-- fixtures/codex-approval-friction.md:33 - - displayed command, executed command, and normalized command identity
+#### Codex remote compact task failure
+- fixtures/codex-remote-compact.md:23 - Error running remote compact task: timeout waiting for child process to exit
+- fixtures/codex-remote-compact.md:29 - Error running remote compact task: stream disconnected before completion: error sending request for url (https://chatgpt.com/backend-api/codex/responses/compact)
+- fixtures/codex-remote-compact.md:38 - - Some users tried `stream_idle_timeout_ms = 900000` as a provider-level compact workaround.
+- fixtures/codex-remote-compact.md:39 - - A Codex.app compact timeout workaround that changes `model_provider` to `openai-long-timeout` can hide existing threads because old threads are stored under the original provider id.
+- fixtures/codex-remote-compact.md:40 - - Azure Foundry reports mention `responses/compact`, `base_url`, and removing `api-version`, but the issue still needs provider config captured without secrets.
+- fixtures/codex-remote-compact.md:56 - - whether `responses/compact` failed with timeout, high demand, or stream disconnect
 
-#### Codex sandbox or permission failure
-- fixtures/codex-approval-friction.md:23 - - `approval_policy = "never"` does not stop approval prompts for Playwright MCP tool calls.
+#### Codex context compaction failure
+- fixtures/codex-remote-compact.md:23 - Error running remote compact task: timeout waiting for child process to exit
+- fixtures/codex-remote-compact.md:29 - Error running remote compact task: stream disconnected before completion: error sending request for url (https://chatgpt.com/backend-api/codex/responses/compact)
+- fixtures/codex-remote-compact.md:40 - - Azure Foundry reports mention `responses/compact`, `base_url`, and removing `api-version`, but the issue still needs provider config captured without secrets.
+- fixtures/codex-remote-compact.md:56 - - whether `responses/compact` failed with timeout, high demand, or stream disconnect
 
 ### Diagnostics to attach
 
-- When reporting Codex approval friction, capture client/app/extension version, OS and remote/WSL/SSH state, sandbox and approval_policy, exact approval scope selected, displayed command versus executed command, whether the repeat is command, file-change, patch, or MCP tool approval, MCP server name and tool names, visible tool args, persisted config snippets such as default_tools_approval_mode or per-tool approval_mode, repeated prompt count, timestamps, whether Full Access/WSL/downgrade changes behavior, and the smallest safe reproduction.
-- When Codex sandbox or permission setup fails, capture the OS, Codex version, sandbox_mode, approval_policy, exact stderr, workspace ownership/ACL evidence, and whether a clean directory can run a simple command plus apply_patch.
+- When reporting Codex remote compact failures, capture app/CLI/extension version, OS, model and reasoning/speed mode, provider config without secrets, exact /compact or auto-compact error, `responses/compact` endpoint shape, timeout values such as tcp_user_timeout or stream_idle_timeout_ms, context/token level before compaction, whether lowering reasoning/speed changes behavior, whether local fallback or a new session recovers, and related thread/feedback ids.
+- When Codex compaction fails, capture the compact error, model/app version, thread state, and whether the session is recoverable before continuing or reporting success.
 
 ### Privacy
 
@@ -53,35 +57,39 @@ trace-to-skill detected Codex approval persistence or MCP approval friction (cod
 
 ## Findings
 
-### 1. Codex approval persistence or MCP approval friction
+### 1. Codex remote compact task failure
 
 Severity: **high**
 
-Repeated approval prompts can make Codex unusable, push users toward unsafe full-access modes, or hide whether the regression is command approval caching, file-change approval, raw MCP trust, or per-tool configuration scale.
+Remote compaction failures interrupt long Codex sessions, force users to recreate context, and need timeout/provider evidence separated from generic context-window errors.
 
 Evidence:
-- `fixtures/codex-approval-friction.md:14` - Users report clicking approve this session again and again, then switching to Full Access because the safer scoped mode is too annoying.
-- `fixtures/codex-approval-friction.md:15` - Some reports include `item/fileChange/requestApproval` and `apply_patch_approval_request`, which may be file-change approval rather than command approval.
-- `fixtures/codex-approval-friction.md:24` - Browser tools such as `browser_click`, `browser_type`, and `browser_navigate` ask for confirmation dozens of times.
-- `fixtures/codex-approval-friction.md:25` - Users want a per-MCP default such as `default_tools_approval_mode = "approve"` instead of hundreds of `mcp_servers.playwright.tools.browser_click.approval_mode = "approve"` entries.
-- `fixtures/codex-approval-friction.md:33` - displayed command, executed command, and normalized command identity
+- `fixtures/codex-remote-compact.md:23` Error running remote compact task: timeout waiting for child process to exit
+- `fixtures/codex-remote-compact.md:29` Error running remote compact task: stream disconnected before completion: error sending request for url (https://chatgpt.com/backend-api/codex/responses/compact)
+- `fixtures/codex-remote-compact.md:38` - Some users tried `stream_idle_timeout_ms = 900000` as a provider-level compact workaround.
+- `fixtures/codex-remote-compact.md:39` - A Codex.app compact timeout workaround that changes `model_provider` to `openai-long-timeout` can hide existing threads because old threads are stored under the original provider id.
+- `fixtures/codex-remote-compact.md:40` - Azure Foundry reports mention `responses/compact`, `base_url`, and removing `api-version`, but the issue still needs provider config captured without secrets.
+- `fixtures/codex-remote-compact.md:56` - whether `responses/compact` failed with timeout, high demand, or stream disconnect
 
 Suggested rule:
 
-> When reporting Codex approval friction, capture client/app/extension version, OS and remote/WSL/SSH state, sandbox and approval_policy, exact approval scope selected, displayed command versus executed command, whether the repeat is command, file-change, patch, or MCP tool approval, MCP server name and tool names, visible tool args, persisted config snippets such as default_tools_approval_mode or per-tool approval_mode, repeated prompt count, timestamps, whether Full Access/WSL/downgrade changes behavior, and the smallest safe reproduction.
+> When reporting Codex remote compact failures, capture app/CLI/extension version, OS, model and reasoning/speed mode, provider config without secrets, exact /compact or auto-compact error, `responses/compact` endpoint shape, timeout values such as tcp_user_timeout or stream_idle_timeout_ms, context/token level before compaction, whether lowering reasoning/speed changes behavior, whether local fallback or a new session recovers, and related thread/feedback ids.
 
-### 2. Codex sandbox or permission failure
+### 2. Codex context compaction failure
 
 Severity: **high**
 
-Sandbox setup, approval-mode, and workspace permission failures can block every tool call or leave the worktree in a broken ownership state.
+Context compaction failures can strand long coding sessions, burn quota, and make maintainer handoff difficult unless the exact compact error and recovery state are captured.
 
 Evidence:
-- `fixtures/codex-approval-friction.md:23` - `approval_policy = "never"` does not stop approval prompts for Playwright MCP tool calls.
+- `fixtures/codex-remote-compact.md:23` Error running remote compact task: timeout waiting for child process to exit
+- `fixtures/codex-remote-compact.md:29` Error running remote compact task: stream disconnected before completion: error sending request for url (https://chatgpt.com/backend-api/codex/responses/compact)
+- `fixtures/codex-remote-compact.md:40` - Azure Foundry reports mention `responses/compact`, `base_url`, and removing `api-version`, but the issue still needs provider config captured without secrets.
+- `fixtures/codex-remote-compact.md:56` - whether `responses/compact` failed with timeout, high demand, or stream disconnect
 
 Suggested rule:
 
-> When Codex sandbox or permission setup fails, capture the OS, Codex version, sandbox_mode, approval_policy, exact stderr, workspace ownership/ACL evidence, and whether a clean directory can run a simple command plus apply_patch.
+> When Codex compaction fails, capture the compact error, model/app version, thread state, and whether the session is recoverable before continuing or reporting success.
 
 
 ## Reporter Notes
@@ -94,6 +102,7 @@ Suggested rule:
 
 ## Other Demo Scenarios
 
+- `approval-friction`: Repeated approval prompts, Approve for this session misses, and noisy trusted MCP tool approvals.
 - `latency-regression`: Fast mode feels like Standard, with long thinking, search, read, or compaction stalls.
 - `token-burn`: Usage drains from background polling, idle activity, compaction loops, retries, or cached-heavy turns.
 - `sensitive-files`: Secrets, local credentials, production env files, or private databases enter agent context.
@@ -103,6 +112,7 @@ Suggested rule:
 
 ```bash
 trace-to-skill demo --list
+trace-to-skill demo remote-compact
 trace-to-skill demo file-tree-ui
 trace-to-skill demo usage-reset-drift
 ```
