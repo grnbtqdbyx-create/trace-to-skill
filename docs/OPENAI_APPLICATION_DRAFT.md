@@ -14,6 +14,18 @@ Primary maintainer.
 
 `trace-to-skill` helps OSS maintainers safely adopt Codex and other coding agents by turning failed agent runs into evidence-backed `AGENTS.md` rules, `SKILL.md` workflows, and eval gates. It targets real maintainer work: PR review, issue triage, release quality, MCP risk, and repeated agent failure reduction.
 
+Current proof points:
+
+- Public repo with Apache-2.0 license.
+- CI-backed TypeScript CLI.
+- Codex-style JSONL parsing.
+- MCP config capability and secret-risk scoring.
+- `AGENTS.md` / `CLAUDE.md` contradiction detection.
+- Pull request comment reports.
+- SARIF output for GitHub code scanning.
+- Before/after eval comparison with keep/revise/reject decisions.
+- Public release v0.1.5.
+
 500-character version:
 
 > trace-to-skill helps OSS maintainers safely adopt Codex by converting failed agent runs into evidence-backed AGENTS.md rules, SKILL.md workflows, and eval gates. It targets real maintainer work: PR review, issue triage, release quality, MCP risk, and repeated agent failure reduction.
@@ -29,4 +41,3 @@ Credits would power optional trace analysis and before/after eval runs for open-
 ## Anything Else
 
 The project is designed around maintainer control: generated rules are suggestions, evidence is line-linked, secrets are redacted, and eval gates fail closed on critical findings.
-
