@@ -126,6 +126,12 @@ const BENCHMARK_CASES: BenchmarkCaseDefinition[] = [
     expectedKinds: ["codex_plugin_runtime", "weak_evidence"]
   },
   {
+    id: "codex-file-tree-ui",
+    title: "Codex file tree and workspace navigation UI failure",
+    fixture: "fixtures/codex-file-tree-ui.md",
+    expectedKinds: ["codex_file_tree_ui", "weak_evidence"]
+  },
+  {
     id: "codex-session-state",
     title: "Codex session resume and state failure",
     fixture: "fixtures/codex-session-state.md",

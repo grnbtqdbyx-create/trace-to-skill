@@ -47,6 +47,12 @@ const DEMO_SCENARIOS: DemoScenario[] = [
     title: "GitHub prompt injection",
     fixture: "fixtures/prompt-injection.md",
     description: "Untrusted issue, PR, comment, or web text tells the agent to ignore policy or leak secrets."
+  },
+  {
+    id: "file-tree-ui",
+    title: "Codex file tree UI failure",
+    fixture: "fixtures/codex-file-tree-ui.md",
+    description: "Desktop file tree, floating file panel, or file preview disappears, goes stale, or cannot be revealed."
   }
 ];
 
@@ -70,6 +76,10 @@ export async function runDemo(scenarioId = "approval-friction"): Promise<DemoRes
 }
 
 export function renderDemoMarkdown(result: DemoResult): string {
+  const otherScenarios = DEMO_SCENARIOS
+    .filter((scenario) => scenario.id !== result.scenario.id)
+    .map((scenario) => `- \`${scenario.id}\`: ${scenario.description}`);
+
   return [
     "# trace-to-skill Demo",
     "",
@@ -83,7 +93,17 @@ export function renderDemoMarkdown(result: DemoResult): string {
     "",
     "## Generated Codex Issue Report",
     "",
-    renderCodexIssueReport(result.analysis).replace(/^# OpenAI Codex Issue Report\n\n/, "")
+    renderCodexIssueReport(result.analysis).replace(/^# OpenAI Codex Issue Report\n\n/, ""),
+    "",
+    "## Other Demo Scenarios",
+    "",
+    ...otherScenarios,
+    "",
+    "```bash",
+    "trace-to-skill demo --list",
+    "trace-to-skill demo file-tree-ui",
+    "```",
+    ""
   ].join("\n");
 }
 

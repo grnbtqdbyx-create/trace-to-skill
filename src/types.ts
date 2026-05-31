@@ -21,6 +21,7 @@ export type FindingKind =
   | "codex_remote_control"
   | "codex_mcp_runtime"
   | "codex_plugin_runtime"
+  | "codex_file_tree_ui"
   | "codex_session_state"
   | "codex_token_burn"
   | "codex_resource_leak"

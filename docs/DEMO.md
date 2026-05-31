@@ -90,3 +90,17 @@ Suggested rule:
 - Prefer the shortest trace that reproduces the failure.
 - Include exact Codex app/CLI version, OS, model, subscription/workspace, and the command or UI action that failed.
 - Link related OpenAI/Codex issues when you know them, but keep the evidence self-contained.
+
+
+## Other Demo Scenarios
+
+- `latency-regression`: Fast mode feels like Standard, with long thinking, search, read, or compaction stalls.
+- `token-burn`: Usage drains from background polling, idle activity, compaction loops, retries, or cached-heavy turns.
+- `sensitive-files`: Secrets, local credentials, production env files, or private databases enter agent context.
+- `github-prompt-injection`: Untrusted issue, PR, comment, or web text tells the agent to ignore policy or leak secrets.
+- `file-tree-ui`: Desktop file tree, floating file panel, or file preview disappears, goes stale, or cannot be revealed.
+
+```bash
+trace-to-skill demo --list
+trace-to-skill demo file-tree-ui
+```

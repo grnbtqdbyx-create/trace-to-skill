@@ -332,6 +332,24 @@ const RULES: RuleDefinition[] = [
     suggestedSkill: "codex-plugin-runtime-triage"
   },
   {
+    kind: "codex_file_tree_ui",
+    severity: "high",
+    title: "Codex file tree or workspace navigation UI failure",
+    why: "When the Codex Desktop file tree, floating file panel, or file preview disappears, users lose deterministic workspace navigation and cannot inspect project structure or changed files without model-generated links.",
+    patterns: [
+      /\b(View\s*>\s*Toggle File Tree|Toggle File Tree|toggle file tree|toggleFileTreePanel|toggle-file-tree-panel)\b.{0,180}\b(enabled|menu|shortcut|Cmd\+Shift\+E|Shift\+Cmd\+E|Ctrl\+Shift\+E|does nothing|no visible change|not working|does not reveal|fails?)\b/i,
+      /\b(file tree|file-tree|project tree|workspace tree)\b.{0,180}\b(does not appear|does not open|does not reveal|not visible|invisible|missing|gone|hidden|unavailable|unusable|not working|fails? to open)\b/i,
+      /\b(folder icon|file tree icon|upper-right file tree icon|floating file panel)\b.{0,180}\b(gone|missing|does not appear|stale|not refreshed|unclickable|fails?|no visible change)\b/i,
+      /\b(file preview|previewer|built-in file preview)\b.{0,180}\b(fails? to open|stops? opening|blank|stale|restart(?:ing)? fixes|document files?|pdf|ppt|doc)\b/i,
+      /\b(move|rename|delete|add)\b.{0,120}\b(files?)\b.{0,160}\b(floating panel|file tree|file panel)\b.{0,160}\b(stale|not refresh|unclickable|old entries)\b/i,
+      /\b(no reliable|deterministic)\b.{0,120}\b(reveal|open|show|inspect)\b.{0,120}\b(file tree|workspace|project structure|file navigation)\b/i,
+      /\b(app-shell:right-panel-width|right-panel-width)\b.{0,160}\b(file tree|toggle|sidebar|panel|does not fix)\b/i
+    ],
+    suggestedRule:
+      "When reporting Codex file-tree or workspace navigation UI failures, capture app version, OS, workspace attachment state, menu item and shortcut used, whether the file-tree icon or floating file panel is visible, sidebar/panel persisted-state keys changed, file add/rename/delete refresh behavior, file preview failures by extension, screenshots or screen recording, and whether restart, clean profile, or a new workspace changes the result.",
+    suggestedSkill: "codex-file-tree-ui-triage"
+  },
+  {
     kind: "codex_session_state",
     severity: "high",
     title: "Codex session resume or state failure",
