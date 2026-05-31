@@ -130,11 +130,18 @@ test("initProject scaffolds workflow without overwriting existing files", async 
   const first = await initProject({ cwd, comment: true, sarif: true });
   const second = await initProject({ cwd, comment: true, sarif: true });
   const workflow = await readFile(path.join(cwd, ".github/workflows/agent-learning.yml"), "utf8");
+  const doctorWorkflow = await readFile(path.join(cwd, ".github/workflows/codex-readiness.yml"), "utf8");
 
   assert.ok(first.written.includes(".github/workflows/agent-learning.yml"));
+  assert.ok(first.written.includes(".github/workflows/codex-readiness.yml"));
   assert.ok(second.skipped.includes(".github/workflows/agent-learning.yml"));
+  assert.ok(second.skipped.includes(".github/workflows/codex-readiness.yml"));
+  assert.match(doctorWorkflow, /mode: doctor/);
+  assert.match(doctorWorkflow, /doctor-threshold: "85"/);
+  assert.match(doctorWorkflow, /doctor-comment: "true"/);
   assert.match(workflow, /upload-sarif/);
-  assert.match(workflow, /trace-to-skill comment runs/);
+  assert.match(workflow, /mode: traces/);
+  assert.match(workflow, /comment: "true"/);
 });
 
 test("initProject rejects unsafe workflow arguments", async () => {

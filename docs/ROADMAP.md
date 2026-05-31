@@ -19,7 +19,7 @@
 - Doctor PR summary comments with update-in-place marker
 - Marketplace-ready action branding and self-dogfooding workflow
 - Composite Action outputs for downstream workflow steps
-- `trace-to-skill init` for one-command repository setup
+- `trace-to-skill init` for Codex readiness and agent-learning workflow setup
 
 ## v0.2
 

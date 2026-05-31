@@ -143,6 +143,8 @@ Scaffold a repo:
 trace-to-skill init --comment --sarif
 ```
 
+`init` writes `.github/workflows/codex-readiness.yml`, `.github/workflows/agent-learning.yml`, `runs/README.md`, and `runs/.gitkeep`. The generated workflows use the published GitHub Action, expose score/report outputs, and will not overwrite existing files unless `--force` is passed.
+
 Analyze traces:
 
 ```bash
@@ -263,8 +265,6 @@ Code scanning / SARIF upload:
     sarif_file: trace-to-skill.sarif
 ```
 
-`init` writes `.github/workflows/agent-learning.yml`, `runs/README.md`, and `runs/.gitkeep`. It will not overwrite existing files unless `--force` is passed.
-
 Composite action usage:
 
 ```yaml
@@ -319,7 +319,7 @@ The goal is not to let agents autonomously rewrite project policy. The goal is t
 - Doctor PR summary comments
 - Marketplace-ready action branding and self-dogfooding workflow
 - Composite Action outputs for downstream workflow steps
-- `trace-to-skill init` for repository setup
+- `trace-to-skill init` for Codex readiness and agent-learning workflow setup
 - public benchmark of common agent failure classes
 
 See [docs/ROADMAP.md](docs/ROADMAP.md).

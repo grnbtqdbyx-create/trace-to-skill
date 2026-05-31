@@ -113,6 +113,7 @@ async function main(): Promise<void> {
     const result = await initProject({
       traces: stringFlag(parsed.flags.traces),
       threshold: stringFlag(parsed.flags.threshold),
+      doctorThreshold: stringFlag(parsed.flags["doctor-threshold"]),
       comment: Boolean(parsed.flags.comment),
       sarif: Boolean(parsed.flags.sarif),
       force: Boolean(parsed.flags.force),
@@ -225,7 +226,7 @@ Usage:
   trace-to-skill compare --before <old-run> --after <new-run> [--format markdown|json]
   trace-to-skill doctor [repo-dir] [--threshold 85] [--format markdown|json|comment] [--output report.md]
   trace-to-skill doctor-comment [repo-dir] [--threshold 85] [--dry-run] [--token $GITHUB_TOKEN]
-  trace-to-skill init [--traces runs] [--threshold 80] [--comment] [--sarif] [--dry-run]
+  trace-to-skill init [--traces runs] [--threshold 80] [--doctor-threshold 85] [--comment] [--sarif] [--dry-run]
 
 Examples:
   trace-to-skill analyze ./runs

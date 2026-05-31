@@ -24,13 +24,14 @@ Current proof points:
 - Pull request comments for Codex readiness scores and recommendations.
 - Self-dogfooding Codex readiness workflow in the repository.
 - Composite Action outputs for downstream maintainer workflows.
+- One-command setup for Codex readiness and agent-learning workflows.
 - MCP config capability and secret-risk scoring.
 - `AGENTS.md` / `CLAUDE.md` contradiction detection.
 - Pull request comment reports.
 - SARIF output for GitHub code scanning.
 - Before/after eval comparison with keep/revise/reject decisions.
 - One-command repository setup via `trace-to-skill init`.
-- Public release v0.1.11.
+- Public release v0.1.12.
 
 500-character version:
 

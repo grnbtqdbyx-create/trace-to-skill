@@ -5,6 +5,7 @@ export interface InitOptions {
   cwd?: string;
   traces?: string;
   threshold?: string;
+  doctorThreshold?: string;
   comment?: boolean;
   sarif?: boolean;
   force?: boolean;
@@ -21,7 +22,8 @@ export async function initProject(options: InitOptions = {}): Promise<InitResult
   const cwd = path.resolve(options.cwd ?? process.cwd());
   const traces = normalizeTracePath(options.traces ?? "runs");
   const threshold = normalizeThreshold(options.threshold ?? "80");
-  const files = buildInitFiles(traces, threshold, Boolean(options.comment), Boolean(options.sarif));
+  const doctorThreshold = normalizeThreshold(options.doctorThreshold ?? "85");
+  const files = buildInitFiles(traces, threshold, doctorThreshold, Boolean(options.comment), Boolean(options.sarif));
   const written: string[] = [];
   const skipped: string[] = [];
 
@@ -62,11 +64,15 @@ interface InitFile {
   content: string;
 }
 
-function buildInitFiles(traces: string, threshold: string, comment: boolean, sarif: boolean): InitFile[] {
+function buildInitFiles(traces: string, threshold: string, doctorThreshold: string, comment: boolean, sarif: boolean): InitFile[] {
   const files: InitFile[] = [
     {
+      path: ".github/workflows/codex-readiness.yml",
+      content: renderCodexReadinessWorkflow(doctorThreshold, comment)
+    },
+    {
       path: ".github/workflows/agent-learning.yml",
-      content: renderWorkflow(traces, threshold, comment, sarif)
+      content: renderAgentLearningWorkflow(traces, threshold, comment, sarif)
     },
     {
       path: `${traces}/README.md`,
@@ -81,7 +87,41 @@ function buildInitFiles(traces: string, threshold: string, comment: boolean, sar
   return files;
 }
 
-function renderWorkflow(traces: string, threshold: string, comment: boolean, sarif: boolean): string {
+function renderCodexReadinessWorkflow(doctorThreshold: string, comment: boolean): string {
+  const permissions = comment
+    ? [
+      "    permissions:",
+      "      contents: read",
+      "      pull-requests: write",
+      "      issues: write"
+    ].join("\n")
+    : "    permissions:\n      contents: read";
+
+  return `${[
+    "name: Codex Readiness",
+    "",
+    "on:",
+    "  pull_request:",
+    "  workflow_dispatch:",
+    "",
+    "jobs:",
+    "  codex-readiness:",
+    "    runs-on: ubuntu-latest",
+    permissions,
+    "    steps:",
+    "      - uses: actions/checkout@v5",
+    "      - id: trace-to-skill",
+    "        uses: grnbtqdbyx-create/trace-to-skill@v0.1.12",
+    "        with:",
+    "          mode: doctor",
+    `          doctor-threshold: "${doctorThreshold}"`,
+    comment ? '          doctor-comment: "true"' : undefined,
+    comment ? "          github-token: ${{ github.token }}" : undefined,
+    "      - run: echo \"Codex readiness score is ${{ steps.trace-to-skill.outputs.doctor-score }}\""
+  ].filter((line): line is string => Boolean(line)).join("\n")}\n`;
+}
+
+function renderAgentLearningWorkflow(traces: string, threshold: string, comment: boolean, sarif: boolean): string {
   const permissions = comment || sarif
     ? [
       "    permissions:",
@@ -94,16 +134,19 @@ function renderWorkflow(traces: string, threshold: string, comment: boolean, sar
 
   const steps = [
     "      - uses: actions/checkout@v5",
-    "      - uses: actions/setup-node@v5",
+    "      - id: trace-to-skill",
+    "        uses: grnbtqdbyx-create/trace-to-skill@v0.1.12",
     "        with:",
-    "          node-version: 20",
-    `      - run: npx github:grnbtqdbyx-create/trace-to-skill analyze ${traces} --output agent-learning-report.md`,
+    "          mode: traces",
+    `          traces: ${traces}`,
+    `          threshold: "${threshold}"`,
+    comment ? '          comment: "true"' : undefined,
+    comment ? "          github-token: ${{ github.token }}" : undefined,
     sarif ? `      - run: npx github:grnbtqdbyx-create/trace-to-skill analyze ${traces} --format sarif --output trace-to-skill.sarif` : undefined,
     sarif ? "      - uses: github/codeql-action/upload-sarif@v4" : undefined,
     sarif ? "        with:" : undefined,
     sarif ? "          sarif_file: trace-to-skill.sarif" : undefined,
-    comment ? `      - run: npx github:grnbtqdbyx-create/trace-to-skill comment ${traces} --token "\${{ github.token }}"` : undefined,
-    `      - run: npx github:grnbtqdbyx-create/trace-to-skill eval ${traces} --threshold ${threshold}`
+    "      - run: echo \"Agent report is ${{ steps.trace-to-skill.outputs.agent-report }}\""
   ].filter((line): line is string => Boolean(line));
 
   return `${[
@@ -125,7 +168,7 @@ function renderWorkflow(traces: string, threshold: string, comment: boolean, sar
 function renderRunsReadme(): string {
   return `# Agent Run Traces
 
-Store anonymized Codex, Claude Code, Cursor, Copilot, or MCP-enabled agent run traces here.
+Store anonymized Codex, Claude Code, Cursor, Copilot, Gemini CLI, OpenCode, or MCP-enabled agent run traces here.
 
 Recommended files:
 
