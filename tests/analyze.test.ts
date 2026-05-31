@@ -21,6 +21,7 @@ import { redactTargets, redactText } from "../src/redact.js";
 import { renderAgentsRules, renderCodexIssueReport, renderComparison, renderDoctorPrComment, renderPrComment, renderSarif, renderSkill } from "../src/report.js";
 import { renderScorecardMarkdown, renderScorecardPrComment, runScorecard } from "../src/scorecard.js";
 import { auditCodexSessions, renderSessionAuditMarkdown } from "../src/sessionAudit.js";
+import { auditSensitivePaths, renderSensitiveAuditMarkdown } from "../src/sensitiveAudit.js";
 import { buildUsageEvidence, buildUsageEvidenceFromInputs, renderUsageEvidenceMarkdown } from "../src/usageEvidence.js";
 
 test("analyzeTargets detects failed agent workflow signals", async () => {
@@ -751,6 +752,53 @@ test("auditCodexConfig passes a minimal portable config", async () => {
   assert.equal(result.findings.length, 0);
   assert.equal(result.values.sandboxMode, "workspace-write");
   assert.equal(result.summary.globalStateExists, false);
+});
+
+test("auditSensitivePaths reports sensitive paths without reading file contents", async () => {
+  const cwd = await mkdtemp(path.join(os.tmpdir(), "trace-to-skill-sensitive-"));
+  await mkdir(path.join(cwd, ".aws"), { recursive: true });
+  await mkdir(path.join(cwd, ".ssh"), { recursive: true });
+  await mkdir(path.join(cwd, "src"), { recursive: true });
+  await writeFile(path.join(cwd, ".env.local"), "OPENAI_API_KEY=sk-should-not-appear-in-report", "utf8");
+  await writeFile(path.join(cwd, ".npmrc"), "//registry.npmjs.org/:_authToken=npm_should_not_appear", "utf8");
+  await writeFile(path.join(cwd, ".aws", "credentials"), "aws_secret_access_key=should-not-appear", "utf8");
+  await writeFile(path.join(cwd, ".ssh", "id_ed25519"), "PRIVATE KEY should-not-appear", "utf8");
+  await writeFile(path.join(cwd, "local.sqlite"), "private rows", "utf8");
+  await writeFile(path.join(cwd, "src", "index.ts"), "export const ok = true;", "utf8");
+  await symlink(path.join(cwd, ".env.local"), path.join(cwd, "linked-env.key"));
+
+  const result = await auditSensitivePaths(cwd);
+  const markdown = renderSensitiveAuditMarkdown(result);
+  const kinds = result.findings.map((finding) => finding.kind);
+  const serialized = JSON.stringify(result);
+
+  assert.equal(result.status, "fail");
+  assert.ok(result.summary.scannedEntries >= 7);
+  assert.ok(kinds.includes("env_file"));
+  assert.ok(kinds.includes("package_auth_config"));
+  assert.ok(kinds.includes("cloud_credentials"));
+  assert.ok(kinds.includes("ssh_credentials"));
+  assert.ok(kinds.includes("database_file"));
+  assert.ok(kinds.includes("sensitive_symlink"));
+  assert.ok(result.recommendedExcludes.includes("**/.env*"));
+  assert.ok(result.recommendedExcludes.includes("**/.aws/**"));
+  assert.match(markdown, /Sensitive Path Audit/);
+  assert.match(markdown, /does not read file contents/);
+  assert.doesNotMatch(serialized, /sk-should-not-appear|npm_should_not_appear|PRIVATE KEY|private rows/);
+  assert.doesNotMatch(markdown, /sk-should-not-appear|npm_should_not_appear|PRIVATE KEY|private rows/);
+});
+
+test("auditSensitivePaths passes ordinary source trees", async () => {
+  const cwd = await mkdtemp(path.join(os.tmpdir(), "trace-to-skill-sensitive-"));
+  await mkdir(path.join(cwd, "src"), { recursive: true });
+  await writeFile(path.join(cwd, "src", "index.ts"), "export const ok = true;", "utf8");
+  await writeFile(path.join(cwd, "README.md"), "# ok", "utf8");
+
+  const result = await auditSensitivePaths(cwd);
+
+  assert.equal(result.status, "pass");
+  assert.equal(result.findings.length, 0);
+  assert.equal(result.recommendedExcludes.length, 0);
 });
 
 test("auditCodexPlugins reports bundled plugin cache and marketplace drift", async () => {
@@ -1569,6 +1617,11 @@ test("published JSON schemas describe CLI result contracts", async () => {
     properties: Record<string, unknown>;
     $defs: Record<string, unknown>;
   };
+  const sensitiveAuditSchema = JSON.parse(await readFile("schemas/sensitive-audit-result.schema.json", "utf8")) as {
+    required: string[];
+    properties: Record<string, unknown>;
+    $defs: Record<string, unknown>;
+  };
   const redactSchema = JSON.parse(await readFile("schemas/redact-result.schema.json", "utf8")) as {
     required: string[];
     properties: Record<string, unknown>;
@@ -1629,6 +1682,10 @@ test("published JSON schemas describe CLI result contracts", async () => {
   assert.deepEqual(sessionAuditSchema.required, ["generatedAt", "root", "status", "thresholds", "summary", "files", "stateFiles", "findings"]);
   assert.ok(sessionAuditSchema.properties.summary);
   assert.ok(sessionAuditSchema.$defs.file);
+  assert.deepEqual(sensitiveAuditSchema.required, ["generatedAt", "root", "status", "summary", "findings", "recommendedExcludes"]);
+  assert.ok(sensitiveAuditSchema.properties.recommendedExcludes);
+  assert.ok((sensitiveAuditSchema.$defs.finding as { properties: { kind: { enum: string[] } } }).properties.kind.enum.includes("env_file"));
+  assert.ok((sensitiveAuditSchema.$defs.finding as { properties: { kind: { enum: string[] } } }).properties.kind.enum.includes("sensitive_symlink"));
   assert.deepEqual(redactSchema.required, ["generatedAt", "files", "totals"]);
   assert.ok(redactSchema.properties.files);
   assert.ok(redactSchema.$defs.redactedFile);
@@ -1703,7 +1760,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.equal(brief.scorecard.benchmarkStatus, "pass");
   assert.equal(brief.scorecard.benchmarkCases, 33);
   assert.equal(brief.packageName, "trace-to-skill");
-  assert.equal(brief.packageVersion, "0.1.67");
+  assert.equal(brief.packageVersion, "0.1.68");
   assert.equal(brief.license, "Apache-2.0");
   assert.ok(brief.repository?.includes("github.com/grnbtqdbyx-create/trace-to-skill"));
   assert.ok(brief.qualification.max500.length <= 500);
@@ -1711,7 +1768,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.match(markdown, /OpenAI OSS Brief/);
   assert.match(markdown, /Why This Repository Qualifies/);
   assert.match(markdown, /500-Character Version/);
-  assert.match(markdown, /npx trace-to-skill@0\.1\.67/);
+  assert.match(markdown, /npx trace-to-skill@0\.1\.68/);
 });
 
 test("scorecard-comment dry-run resolves pull request event", async () => {

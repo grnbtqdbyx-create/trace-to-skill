@@ -27,6 +27,7 @@ npx trace-to-skill scorecard-comment . --dry-run
 npx trace-to-skill guard-github-event "$GITHUB_EVENT_PATH"
 npx trace-to-skill guard-patch ./change.patch --root .
 npx trace-to-skill session-audit ~/.codex --format json
+npx trace-to-skill sensitive-audit . --format json
 npx trace-to-skill config-audit ~/.codex --format json
 npx trace-to-skill plugin-audit ~/.codex --app /Applications/Codex.app --format json
 npx trace-to-skill diagnostics-bundle ~/.codex --output codex-diagnostics
@@ -55,6 +56,7 @@ Use it when you need to:
 - **Protect agent context:** run `trace-to-skill guard-github-event "$GITHUB_EVENT_PATH"` before feeding issue, PR, comment, discussion, check-run, or commit text into an agent.
 - **Prevent unsafe patch overwrites:** run `trace-to-skill guard-patch ./change.patch --root .` before applying generated patches so `*** Add File` cannot silently replace an existing file or symlink target.
 - **Audit local Codex session history:** run `trace-to-skill session-audit ~/.codex --format json` to summarize rollout JSONL sizes, huge lines, parse errors, state files, and short `session_index.jsonl` evidence without publishing private transcripts.
+- **Preflight sensitive paths before agent runs:** run `trace-to-skill sensitive-audit . --format json` to find `.env`, private keys, package auth files, cloud credentials, local databases, signing files, and secret manifests by filename/path without reading file contents.
 - **Audit Codex config drift:** run `trace-to-skill config-audit ~/.codex --format json` to summarize legacy profile config, model pins, Speed/Fast service-tier persistence drift, sandbox/approval posture, Windows elevated sandbox mode, missing permission profiles, plugin cache drift, and MCP approval sprawl.
 - **Audit bundled plugin drift:** run `trace-to-skill plugin-audit ~/.codex --app /Applications/Codex.app --format json` to check Browser, Chrome, Computer Use, bundled marketplace, plugin cache, manifest, helper app, `CODEX_HOME`, and unsupported feature-flag drift without posting raw logs.
 - **Bundle Codex diagnostics safely:** run `trace-to-skill diagnostics-bundle ~/.codex --output codex-diagnostics` to create a metadata-only support folder with manifest, README, config, plugin, and session audit reports while excluding raw logs, SQLite state, raw config, and transcripts.
@@ -113,6 +115,7 @@ Open-source maintainers do not need more AI-generated noise. They need agents th
 - Which `config.toml` or `.codex-global-state.json` setting explains a sandbox, approval, plugin, model, Speed/Fast, or Preferences save regression?
 - Which bundled plugin/cache/marketplace/helper-app mismatch explains a Browser, Chrome, Computer Use, or MCP runtime failure?
 - Can I attach one safe diagnostics folder to OpenAI without posting raw `config.toml`, SQLite state, local logs, or transcripts?
+- Which files in this repo should be excluded from agent context before Codex, Claude, Cursor, or Gemini reads the workspace?
 - Did Codex sandbox setup or workspace permissions block every tool call?
 - Did quota accounting, account switching, or reset timing contradict the runtime usage-limit error?
 - Did an MCP tool appear in `tools/list` but fail at Codex runtime because approval, namespace routing, or stdio lifecycle broke?
@@ -259,6 +262,7 @@ trace-to-skill demo subagent-lifecycle
 trace-to-skill demo patch-overwrite
 trace-to-skill guard-patch ./change.patch --root .
 trace-to-skill session-audit ~/.codex --format json
+trace-to-skill sensitive-audit . --format json
 trace-to-skill config-audit ~/.codex --format json
 trace-to-skill plugin-audit ~/.codex --app /Applications/Codex.app --format json
 trace-to-skill diagnostics-bundle ~/.codex --output codex-diagnostics
@@ -291,6 +295,7 @@ Redact traces before sharing them:
 trace-to-skill redact ./runs --output redacted-runs
 trace-to-skill redact ./runs/failed-run.md > failed-run.redacted.md
 trace-to-skill redact ./runs --output redacted-runs --format json
+trace-to-skill sensitive-audit . --output sensitive-paths.md
 ```
 
 This removes common API keys, GitHub/npm/Slack tokens, bearer tokens, email addresses, local home paths, and hidden Unicode controls while preserving enough context for maintainer review.
@@ -431,6 +436,7 @@ Stable machine-readable contracts are published with the npm package and release
 - [`schemas/agents-lint-result.schema.json`](schemas/agents-lint-result.schema.json) describes `trace-to-skill lint-agents --format json`.
 - [`schemas/doctor-result.schema.json`](schemas/doctor-result.schema.json) describes `trace-to-skill doctor --format json`.
 - [`schemas/redact-result.schema.json`](schemas/redact-result.schema.json) describes `trace-to-skill redact --format json`.
+- [`schemas/sensitive-audit-result.schema.json`](schemas/sensitive-audit-result.schema.json) describes `trace-to-skill sensitive-audit --format json`.
 - [`schemas/scorecard-result.schema.json`](schemas/scorecard-result.schema.json) describes `trace-to-skill scorecard --format json`.
 - [`schemas/oss-brief-result.schema.json`](schemas/oss-brief-result.schema.json) describes `trace-to-skill oss-brief --format json`.
 - [`schemas/patch-guard-result.schema.json`](schemas/patch-guard-result.schema.json) describes `trace-to-skill guard-patch --format json`.
@@ -470,7 +476,7 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v5
-      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.67
+      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.68
         with:
           mode: all
           doctor-threshold: "85"
@@ -519,7 +525,7 @@ Composite action usage:
 
 ```yaml
 - id: trace-to-skill
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.67
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.68
   with:
     mode: all
     doctor-threshold: "85"
@@ -561,7 +567,7 @@ Action outputs:
 
 By default, generated reports are also appended to the GitHub Actions Job Summary. Set `job-summary: "false"` to disable that UI output.
 
-Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.67` executes that release's checked-out source instead of pulling the default branch at runtime.
+Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.68` executes that release's checked-out source instead of pulling the default branch at runtime.
 
 ## Codex Skill
 

@@ -13,6 +13,7 @@ npx trace-to-skill codex-report redacted-runs --output openai-codex-issue.md
 npx trace-to-skill usage-evidence ./usage-notes.md --output usage-evidence.md
 npx trace-to-skill plugin-audit ~/.codex --app /Applications/Codex.app --format json
 npx trace-to-skill diagnostics-bundle ~/.codex --output codex-diagnostics
+npx trace-to-skill sensitive-audit . --format json
 ```
 
 ## Issue Clusters
@@ -38,7 +39,7 @@ npx trace-to-skill diagnostics-bundle ~/.codex --output codex-diagnostics
 | Bundled plugin cache and marketplace drift | Computer Use unavailable, Browser/Chrome plugin unavailable, generated runtime marketplace omits bundled plugins, missing `.mcp.json` or `plugin.json`, helper app not installed, `CODEX_HOME` points at another runtime | `codex_plugin_runtime`, `codex_mcp_runtime` | `trace-to-skill plugin-audit ~/.codex --app /Applications/Codex.app --format json` |
 | Support diagnostics packaging | maintainers ask for more detail, but raw `config.toml`, `logs_2.sqlite`, `state_5.sqlite`, `session_index.jsonl`, rollout JSONL, or local logs are too private to post | multiple | `trace-to-skill diagnostics-bundle ~/.codex --output codex-diagnostics` |
 | Quota mismatch | `/status` or usage page shows quota left, but runtime says `You've hit your usage limit`; account/workspace reset or cache confusion | `quota_mismatch` | `trace-to-skill usage-evidence ./usage-notes.md` or `trace-to-skill codex-report ./runs` |
-| Sensitive file exclusion | `.env`, private keys, `.npmrc`, cloud credentials, local databases, or production secret manifests entered agent context | `sensitive_file_access` | `trace-to-skill codex-report ./runs` |
+| Sensitive file exclusion | teams need deterministic `.agentignore` / `.aiexclude` / `.codexignore` candidates before agent runs, or traces show `.env`, private keys, `.npmrc`, cloud credentials, local databases, signing files, or secret manifests entering context | `sensitive_file_access` plus sensitive path metadata | `trace-to-skill sensitive-audit . --format json` before runs, `trace-to-skill codex-report ./runs` after incidents |
 | Context compaction failures | `Error running remote compact task`, `context_length_exceeded`, compaction loops, `responses/compact` stream disconnects | `context_compaction` | `trace-to-skill analyze ./runs` |
 | Latest-turn drift | Codex answers an older prompt, repeats a previous response, redoes an already fixed task, forgets recent edits after compaction, or leaks raw tool payload text | `codex_latest_turn_drift` | `trace-to-skill codex-report ./runs` |
 | Session resume and state failures | `codex resume` picker freezes, large rollout JSONL, short `session_index.jsonl`, `Could not load archived chats`, `state_5.sqlite`, `thread_goals` | `codex_session_state` | `trace-to-skill codex-report ./runs` or `trace-to-skill session-audit ~/.codex --format json` |
@@ -80,6 +81,7 @@ npx trace-to-skill diagnostics-bundle ~/.codex --output codex-diagnostics
 - Include line-linked evidence rather than screenshots alone when logs are available.
 - Redact tokens, API keys, emails, local home paths, customer data, and hidden Unicode before posting publicly.
 - For sensitive-file reports, attach only redacted excerpts and the file path/class, not the original credential material.
+- For preflight exclusion reports, attach `sensitive-audit` output and recommended exclude globs; it does not read file contents or follow symlink targets.
 
 ## Related OpenAI/Codex Threads Used For Fixtures
 

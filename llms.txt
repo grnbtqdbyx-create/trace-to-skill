@@ -38,6 +38,7 @@ Runtime: Node.js 20+
 - Codex resource leaks and runaway local processes such as high CPU/GPU, `Code Helper`, `Codex Helper Renderer`, orphaned shell snapshots, log floods, thinking animation GPU loops, and non-Git workspace CPU loops
 - Codex quota and usage-limit mismatches where `/status` or the usage page shows remaining quota, accounts share limits unexpectedly, or 5h and weekly quotas move together
 - sensitive-file access in traces, including `.env`, private keys, package auth files, cloud credentials, local databases, and production secret manifests entering agent context
+- sensitive path preflight before agent runs via `sensitive-audit`, with filename/path-only detection and recommended excludes for `.agentignore`, `.aiexclude`, `.codexignore`, or sandbox profiles
 - hallucinated files and broad over-editing
 - conflicting `AGENTS.md`, `CLAUDE.md`, Cursor, Copilot, or Gemini instructions
 - stale path references, missing `@file.md` includes, nested `AGENTS.md` visibility gaps, invalid UTF-8, and oversized instruction files that can make Codex follow wrong or truncated guidance
@@ -87,6 +88,7 @@ npx trace-to-skill plugin-audit ~/.codex --app /Applications/Codex.app --format 
 npx trace-to-skill diagnostics-bundle ~/.codex --output codex-diagnostics
 npx trace-to-skill usage-evidence ./usage-notes.md --output usage-evidence.md
 npx trace-to-skill redact ./runs --output redacted-runs
+npx trace-to-skill sensitive-audit . --format json
 npx trace-to-skill analyze ./runs
 npx trace-to-skill codex-report ./runs --output openai-codex-issue.md
 npx trace-to-skill suggest ./runs --target agents-md
@@ -99,7 +101,7 @@ npx trace-to-skill init --comment --sarif
 ## GitHub Action
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.67
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.68
   with:
     mode: all
     doctor-threshold: "85"
@@ -115,6 +117,7 @@ npx trace-to-skill init --comment --sarif
 - AGENTS.md linter JSON schema: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/schemas/agents-lint-result.schema.json
 - Doctor JSON schema: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/schemas/doctor-result.schema.json
 - Redaction JSON schema: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/schemas/redact-result.schema.json
+- Sensitive path audit JSON schema: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/schemas/sensitive-audit-result.schema.json
 - Scorecard JSON schema: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/schemas/scorecard-result.schema.json
 - Patch guard JSON schema: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/schemas/patch-guard-result.schema.json
 - Config audit JSON schema: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/schemas/config-audit-result.schema.json

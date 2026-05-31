@@ -20,6 +20,7 @@ npx trace-to-skill demo connector-auth-cache
 npx trace-to-skill demo mcp-discovery-mismatch
 npx trace-to-skill demo terminal-output-integrity
 npx trace-to-skill demo subagent-lifecycle
+npx trace-to-skill sensitive-audit .
 ```
 
 What it proves:
@@ -27,6 +28,7 @@ What it proves:
 - packaged fixtures can produce a real Codex issue report immediately
 - maintainers can inspect the output shape before sharing any private log
 - demos cover remote compact failures, Windows helper path failures, patch overwrite safety, approval friction, latency, Thinking hangs, clipboard/attachment regressions, deeplink/OAuth launch regressions, connector auth-cache regressions, MCP discovery/config-scope mismatches, terminal output/scrollback integrity, subagent lifecycle drift, token burn, sensitive files, and prompt injection
+- `sensitive-audit` scans filenames and paths before an agent run, without reading file contents, so teams can build `.agentignore`, `.aiexclude`, `.codexignore`, or sandbox permission profiles from a concrete repo report
 
 See the generated demo output in [docs/DEMO.md](DEMO.md).
 
@@ -49,7 +51,7 @@ What it proves:
 Recommended CI surface:
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.67
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.68
   with:
     mode: all
     doctor-threshold: "85"
@@ -350,7 +352,20 @@ For a public demo report:
 npx trace-to-skill demo patch-overwrite
 ```
 
-## 25. OpenAI Codex Issue Report
+## 25. Sensitive Path Preflight Before Agent Runs
+
+Use this before giving an AI coding agent a repository.
+
+```bash
+npx trace-to-skill sensitive-audit . --format json
+npx trace-to-skill sensitive-audit . --output sensitive-paths.md
+```
+
+This finds sensitive-looking paths such as `.env`, `.env.*`, `.npmrc`, `.pypirc`, `.aws/**`, `.ssh/**`, `.kube/**`, `.docker/**`, private keys, certificates, local databases, mobile signing files, and secret manifests without reading file contents or following symlink targets.
+
+The output includes a stable JSON schema plus recommended exclude globs that can seed `.agentignore`, `.aiexclude`, `.codexignore`, local sandbox permission profiles, or team security review checklists. It is a preflight report, not a sandbox boundary.
+
+## 26. OpenAI Codex Issue Report
 
 Use this when you want to file or update an OpenAI/Codex issue with a concise, evidence-backed report instead of pasting a full transcript.
 
@@ -363,7 +378,7 @@ The report includes the likely Codex failure class, line-linked evidence, diagno
 
 For a cluster-to-command map of current Codex issue patterns, see [CODEX_ISSUE_MAP.md](CODEX_ISSUE_MAP.md).
 
-## 26. Sensitive File Access Evidence
+## 27. Sensitive File Access Evidence
 
 Use this when a trace suggests an agent read, attached, uploaded, diffed, or indexed credential-bearing files.
 
@@ -376,7 +391,7 @@ This catches signals such as `.env`, `.env.production`, `.npmrc`, `.pypirc`, `.n
 
 Before publishing evidence, run `trace-to-skill redact` and attach only redacted excerpts plus the file path/class.
 
-## 27. GitHub Context Guard
+## 28. GitHub Context Guard
 
 Use this before an agent reads untrusted GitHub text.
 
@@ -393,7 +408,7 @@ Use it when:
 - a bot asks Codex to triage untrusted user reports
 - logs or comments might contain instructions like "ignore previous instructions" or "print secrets"
 
-## 28. Failed Agent Run To Reviewable Rule
+## 29. Failed Agent Run To Reviewable Rule
 
 Use this when a coding agent made a repeated workflow mistake.
 
@@ -411,7 +426,7 @@ Recommended maintainer loop:
 4. Copy only evidence-backed rules into the real policy file.
 5. Run `eval` or `scorecard` in CI so the same failure does not silently return.
 
-## 29. Privacy-Preserving Adoption
+## 30. Privacy-Preserving Adoption
 
 Use this when you want public evidence without leaking private traces.
 

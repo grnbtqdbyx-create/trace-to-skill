@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/grnbtqdbyx-create/trace-to-skill/schemas/sensitive-audit-result.schema.json",
+  "title": "trace-to-skill sensitive path audit result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["generatedAt", "root", "status", "summary", "findings", "recommendedExcludes"],
+  "properties": {
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "root": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["pass", "warn", "fail"]
+    },
+    "summary": {
+      "$ref": "#/$defs/summary"
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/finding"
+      }
+    },
+    "recommendedExcludes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "$defs": {
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["scannedEntries", "sensitiveFindings", "criticalFindings", "recommendedExcludes"],
+      "properties": {
+        "scannedEntries": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sensitiveFindings": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "criticalFindings": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "recommendedExcludes": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "finding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["severity", "kind", "path", "reason", "suggestedExclude"],
+      "properties": {
+        "severity": {
+          "type": "string",
+          "enum": ["medium", "high", "critical"]
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "env_file",
+            "package_auth_config",
+            "cloud_credentials",
+            "ssh_credentials",
+            "kubernetes_credentials",
+            "docker_credentials",
+            "database_file",
+            "private_key_or_certificate",
+            "mobile_signing_secret",
+            "secret_manifest",
+            "sensitive_symlink"
+          ]
+        },
+        "path": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "suggestedExclude": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

@@ -50,6 +50,7 @@ trace-to-skill checks repo readiness and scans agent traces/logs to generate:
 - scorecard PR comments with update-in-place marker
 - a GitHub event context guard for prompt-injection checks before agents read PR/issue/comment text
 - a redaction command for privacy-preserving failed trace sharing
+- a filename/path-only `sensitive-audit` command for building `.agentignore`, `.aiexclude`, `.codexignore`, or sandbox exclude lists before an agent reads the repo
 - an OpenAI/Codex issue-ready report command for turning redacted traces into concise, evidence-backed issue bodies
 - a zero-setup `demo` command so people can see a real Codex issue report before collecting private traces
 - Codex remote compact failure detection for `/compact`, auto-compaction, `responses/compact`, provider timeout workarounds, and long-thread recovery loss
@@ -78,6 +79,7 @@ trace-to-skill checks repo readiness and scans agent traces/logs to generate:
 - Codex resource-leak detection for high CPU/GPU/RAM, orphaned shell snapshots, renderer/helper loops, and thinking-animation GPU reports
 - Codex quota mismatch detection for usage-limit, account-switching, reset-time, and rate-limit evidence
 - sensitive-file access detection for `.env`, private keys, package auth files, cloud credentials, local databases, and production secret manifests entering agent context
+- sensitive path preflight for `.env`, private keys, package auth files, cloud credentials, local databases, signing files, and secret manifests without reading their contents
 - a Codex-native readiness auditor skill
 - an Agent Learning Report
 - suggested AGENTS.md rules
@@ -107,6 +109,7 @@ npx trace-to-skill scorecard .
 npx trace-to-skill scorecard-comment . --dry-run
 npx trace-to-skill guard-github-event "$GITHUB_EVENT_PATH"
 npx trace-to-skill session-audit ~/.codex --format json
+npx trace-to-skill sensitive-audit . --format json
 npx trace-to-skill config-audit ~/.codex --format json
 npx trace-to-skill plugin-audit ~/.codex --app /Applications/Codex.app --format json
 npx trace-to-skill diagnostics-bundle ~/.codex --output codex-diagnostics

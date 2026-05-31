@@ -18,6 +18,7 @@ import { redactTargets } from "./redact.js";
 import { renderAgentsRules, renderCodexIssueReport, renderComparison, renderDoctorMarkdown, renderDoctorPrComment, renderMarkdown, renderPrComment, renderSarif, renderSkill } from "./report.js";
 import { renderScorecardMarkdown, renderScorecardPrComment, runScorecard } from "./scorecard.js";
 import { auditCodexSessions, renderSessionAuditMarkdown } from "./sessionAudit.js";
+import { auditSensitivePaths, renderSensitiveAuditMarkdown } from "./sensitiveAudit.js";
 import { buildUsageEvidence, renderUsageEvidenceMarkdown } from "./usageEvidence.js";
 
 interface ParsedArgs {
@@ -114,6 +115,15 @@ async function main(): Promise<void> {
 
     const replacementCount = Object.values(result.totals).reduce((sum, count) => sum + count, 0);
     process.stdout.write(`redacted ${result.files.length} file(s), ${replacementCount} replacement(s)\n`);
+    return;
+  }
+
+  if (parsed.command === "sensitive-audit") {
+    const result = await auditSensitivePaths(parsed.targets[0] ?? process.cwd());
+    const format = String(parsed.flags.format ?? "markdown");
+    const output = format === "json" ? `${JSON.stringify(result, null, 2)}\n` : renderSensitiveAuditMarkdown(result);
+    await writeOutput(output, parsed.flags.output);
+    process.exitCode = result.status === "fail" ? 1 : 0;
     return;
   }
 
@@ -439,6 +449,7 @@ Usage:
   trace-to-skill suggest <trace-file-or-dir> [--target agents-md|skill] [--output AGENTS.generated.md]
   trace-to-skill lint-agents [repo-dir] [--format markdown|json] [--output report.md]
   trace-to-skill redact <trace-file-or-dir> [--output redacted-runs] [--format text|json]
+  trace-to-skill sensitive-audit [repo-dir] [--format markdown|json] [--output sensitive-paths.md]
   trace-to-skill eval <trace-file-or-dir> [--threshold 75] [--format text|json]
   trace-to-skill benchmark [--format markdown|json] [--output docs/BENCHMARK.md]
   trace-to-skill scorecard [repo-dir] [--threshold 85] [--format markdown|json] [--output docs/SCORECARD.md]
@@ -465,6 +476,7 @@ Examples:
   trace-to-skill suggest ./runs --target skill --output skills/verification-before-completion/SKILL.md
   trace-to-skill lint-agents .
   trace-to-skill redact ./runs --output redacted-runs
+  trace-to-skill sensitive-audit .
   trace-to-skill eval ./runs --threshold 80
   trace-to-skill benchmark
   trace-to-skill scorecard .
