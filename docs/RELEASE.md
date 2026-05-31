@@ -7,10 +7,13 @@ This repository is configured for npm Trusted Publishing so releases do not need
 Preferred CLI setup:
 
 ```bash
-npm trust github trace-to-skill \
+npx npm@11.16.0 trust github trace-to-skill \
   --file npm-publish.yml \
-  --repo grnbtqdbyx-create/trace-to-skill
+  --repo grnbtqdbyx-create/trace-to-skill \
+  --allow-publish
 ```
+
+`npm@11.16.0` or newer is recommended because older npm 11 builds may start the web-auth flow but fail to create the trust record without the publish permission flag.
 
 Or, in the npm package settings for `trace-to-skill`, add a Trusted Publisher:
 
@@ -25,9 +28,10 @@ After this one-time npm trust setting is saved, publishing should happen from Gi
 You can preview the CLI trust command without changing npm state:
 
 ```bash
-npm trust github trace-to-skill \
+npx npm@11.16.0 trust github trace-to-skill \
   --file npm-publish.yml \
   --repo grnbtqdbyx-create/trace-to-skill \
+  --allow-publish \
   --dry-run --json
 ```
 

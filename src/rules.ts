@@ -97,6 +97,21 @@ const RULES: RuleDefinition[] = [
       "Redact secrets in traces and never paste API keys, tokens, or credentials into agent-visible logs or PR comments."
   },
   {
+    kind: "sensitive_file_access",
+    severity: "high",
+    title: "Sensitive file entered agent context",
+    why: "Agents should not read, attach, diff, or index credential files, private keys, package auth files, local databases, or production secrets unless a maintainer explicitly approved a minimal redacted excerpt.",
+    patterns: [
+      /\b(cat|open|read|view|attach|upload|include|index|scan|copy|less|tail|sed\s+-n)\b.{0,120}(?:^|[\s"'`=:/~])(\.env(?:\.[A-Za-z0-9_-]+)?|id_rsa|id_ed25519|\.npmrc|\.pypirc|\.netrc|\.aws\/credentials|\.ssh\/config|\.kube\/config|\.docker\/config\.json|\.pgpass|\.sentryclirc|\.mobileprovision|\.p12|\.pem|\.key|\.sqlite|\.db|production\.json|secrets?\.ya?ml)\b/i,
+      /\bdiff --git a\/(?:\.env(?:\.[A-Za-z0-9_-]+)?|.*(?:secret|credential|private).*\.(?:json|ya?ml|toml|env)|.*\.(?:pem|key|p12|mobileprovision|sqlite|db))\b/i,
+      /\b(BEGIN (?:OPENSSH|RSA|DSA|EC|PRIVATE) PRIVATE KEY|PRIVATE KEY-----)\b/i,
+      /\b(Codex|agent|assistant)\b.{0,160}\b(read|opened|attached|indexed|uploaded)\b.{0,120}\b(sensitive files?|\.env|private keys?|credentials?|secrets?)\b/i
+    ],
+    suggestedRule:
+      "Before running an agent, exclude sensitive files such as .env, private keys, package auth files, cloud credentials, local databases, and production secret manifests; share only minimal redacted excerpts when maintainer-approved.",
+    suggestedSkill: "sensitive-file-triage"
+  },
+  {
     kind: "hidden_unicode",
     severity: "high",
     title: "Hidden Unicode control character",
@@ -546,7 +561,7 @@ function matchRule(inputs: TraceInput[], rule: RuleDefinition): Evidence[] {
   const evidence: Evidence[] = [];
 
   for (const input of inputs) {
-    if (rule.kind === "tests_not_run" && isInstructionFile(input.path)) {
+    if ((rule.kind === "tests_not_run" || rule.kind === "sensitive_file_access") && isInstructionFile(input.path)) {
       continue;
     }
 

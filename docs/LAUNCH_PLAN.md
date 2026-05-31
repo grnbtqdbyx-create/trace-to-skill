@@ -59,12 +59,13 @@ Secondary headline:
 - [x] OpenAI/Codex issue-ready report command with redaction-first workflow
 - [x] Codex token-burn detector for usage drain, background polling, idle app, compaction tax, and cached-token evidence
 - [x] Codex issue map linking active issue clusters to deterministic report commands
+- [x] Sensitive-file access detector for `.env`, private keys, package auth files, cloud credentials, and local databases
 
 ## Current Public Proof
 
 - Repository: https://github.com/grnbtqdbyx-create/trace-to-skill
 - npm: https://www.npmjs.com/package/trace-to-skill
-- Latest release: https://github.com/grnbtqdbyx-create/trace-to-skill/releases/tag/v0.1.38
+- Latest release: https://github.com/grnbtqdbyx-create/trace-to-skill/releases/tag/v0.1.39
 - CI: passing on `main`
 - Codex issue map: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/CODEX_ISSUE_MAP.md
 - Profile README: https://github.com/grnbtqdbyx-create/grnbtqdbyx-create

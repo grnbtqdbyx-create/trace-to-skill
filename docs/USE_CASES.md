@@ -21,7 +21,7 @@ What it proves:
 Recommended CI surface:
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.38
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.39
   with:
     mode: all
     doctor-threshold: "85"
@@ -135,7 +135,20 @@ The report includes the likely Codex failure class, line-linked evidence, diagno
 
 For a cluster-to-command map of current Codex issue patterns, see [CODEX_ISSUE_MAP.md](CODEX_ISSUE_MAP.md).
 
-## 11. GitHub Context Guard
+## 11. Sensitive File Access Evidence
+
+Use this when a trace suggests an agent read, attached, uploaded, diffed, or indexed credential-bearing files.
+
+```bash
+npx trace-to-skill analyze ./runs --format json
+npx trace-to-skill codex-report ./runs --output openai-codex-issue.md
+```
+
+This catches signals such as `.env`, `.env.production`, `.npmrc`, `.pypirc`, `.netrc`, `.aws/credentials`, `.kube/config`, `.docker/config.json`, private-key PEM blocks, `.sqlite`, `.db`, `secrets.yaml`, and production secret manifests entering agent context.
+
+Before publishing evidence, run `trace-to-skill redact` and attach only redacted excerpts plus the file path/class.
+
+## 12. GitHub Context Guard
 
 Use this before an agent reads untrusted GitHub text.
 
@@ -152,7 +165,7 @@ Use it when:
 - a bot asks Codex to triage untrusted user reports
 - logs or comments might contain instructions like "ignore previous instructions" or "print secrets"
 
-## 12. Failed Agent Run To Reviewable Rule
+## 13. Failed Agent Run To Reviewable Rule
 
 Use this when a coding agent made a repeated workflow mistake.
 
@@ -170,7 +183,7 @@ Recommended maintainer loop:
 4. Copy only evidence-backed rules into the real policy file.
 5. Run `eval` or `scorecard` in CI so the same failure does not silently return.
 
-## 13. Privacy-Preserving Adoption
+## 14. Privacy-Preserving Adoption
 
 Use this when you want public evidence without leaking private traces.
 

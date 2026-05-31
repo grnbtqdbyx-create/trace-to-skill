@@ -44,6 +44,7 @@ Use it when you need to:
 - **Harden agent instructions:** run `trace-to-skill lint-agents .` to catch missing `AGENTS.md`, conflicting tool instructions, missing includes, nested instruction drift, encoding issues, and risky MCP config.
 - **Protect agent context:** run `trace-to-skill guard-github-event "$GITHUB_EVENT_PATH"` before feeding issue, PR, comment, discussion, check-run, or commit text into an agent.
 - **Share failed traces safely:** run `trace-to-skill redact ./runs --output redacted-runs` before publishing anonymized failure fixtures.
+- **Catch sensitive file access:** run `trace-to-skill analyze ./runs` when an agent trace includes `.env`, private keys, `.npmrc`, cloud credentials, local databases, or production secret manifests.
 - **Triage stuck Codex sessions:** run `trace-to-skill analyze ./runs` to catch context compaction failures such as compact stream disconnects, `context_length_exceeded`, and schema mismatches.
 - **Diagnose sandbox blockers:** run `trace-to-skill analyze ./runs` on Codex traces that fail with sandbox setup refresh, `os error 740`, ACL, ownership, or approval-mode permission errors.
 - **Debug Codex auth/connectivity:** run `trace-to-skill analyze ./runs` on logs with `token_exchange_failed`, `auth.openai.com/oauth/token`, Cloudflare challenge, proxy/CA, IPv6, or stream disconnect symptoms.
@@ -137,6 +138,7 @@ Trace analysis detects run-level failures:
 | Over-editing | Diff is broader than the task needs |
 | Unsafe command | Destructive shell or remote script execution |
 | Secret exposure | Tokens/API keys in traces or PR comments |
+| Sensitive file access | `.env`, private keys, package auth files, cloud credentials, local databases, or production secret manifests entered agent context |
 | Hidden Unicode | Invisible instruction or code-review manipulation |
 | Prompt injection | Untrusted issue, PR, log, or web text asks the agent to ignore policy or leak secrets |
 | Context compaction | Codex compact task fails, disconnects, loops, or hits `context_length_exceeded` |
@@ -349,7 +351,7 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v5
-      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.38
+      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.39
         with:
           mode: all
           doctor-threshold: "85"
@@ -398,7 +400,7 @@ Composite action usage:
 
 ```yaml
 - id: trace-to-skill
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.38
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.39
   with:
     mode: all
     doctor-threshold: "85"
@@ -440,7 +442,7 @@ Action outputs:
 
 By default, generated reports are also appended to the GitHub Actions Job Summary. Set `job-summary: "false"` to disable that UI output.
 
-Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.38` executes that release's checked-out source instead of pulling the default branch at runtime.
+Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.39` executes that release's checked-out source instead of pulling the default branch at runtime.
 
 ## Codex Skill
 

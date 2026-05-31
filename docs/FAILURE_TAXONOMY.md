@@ -99,6 +99,14 @@ Destructive shell commands, privilege escalation, or remote script execution pat
 
 Credentials, API keys, or tokens appear in traces or reports.
 
+## Sensitive File Access
+
+Credential files, private keys, package auth files, cloud credentials, local databases, or production secret manifests entered agent context through a read, attach, upload, diff, or indexing step.
+
+Common signals include `.env`, `.env.production`, `.npmrc`, `.pypirc`, `.netrc`, `.aws/credentials`, `.kube/config`, `.docker/config.json`, `id_rsa`, `id_ed25519`, `.pem`, `.key`, `.p12`, `.mobileprovision`, `.sqlite`, `.db`, `secrets.yaml`, and private-key PEM blocks.
+
+The fix is to exclude sensitive files before the agent starts, redact public traces, and share only minimal maintainer-approved excerpts.
+
 ## Hidden Unicode
 
 Bidirectional or zero-width Unicode control characters appear in agent-visible instructions or patches.

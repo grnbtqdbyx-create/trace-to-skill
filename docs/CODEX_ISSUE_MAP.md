@@ -18,6 +18,7 @@ npx trace-to-skill codex-report redacted-runs --output openai-codex-issue.md
 | --- | --- | --- | --- |
 | Token burn and usage drain | `tokens burning very fast`, large cached input totals, `write_stdin` empty polls, idle app usage, compaction tax, retry loops | `codex_token_burn` | `trace-to-skill codex-report ./runs` |
 | Quota mismatch | `/status` or usage page shows quota left, but runtime says `You've hit your usage limit`; account/workspace reset or cache confusion | `quota_mismatch` | `trace-to-skill codex-report ./runs` |
+| Sensitive file exclusion | `.env`, private keys, `.npmrc`, cloud credentials, local databases, or production secret manifests entered agent context | `sensitive_file_access` | `trace-to-skill codex-report ./runs` |
 | Context compaction failures | `Error running remote compact task`, `context_length_exceeded`, compaction loops, `responses/compact` stream disconnects | `context_compaction` | `trace-to-skill analyze ./runs` |
 | Session resume and state failures | `codex resume` picker freezes, large rollout JSONL, `Could not load archived chats`, `state_5.sqlite`, `thread_goals` | `codex_session_state` | `trace-to-skill codex-report ./runs` |
 | Sandbox and permission blockers | Windows sandbox setup refresh, `os error 740`, ACL/ownership drift, approval-mode mismatch | `sandbox_permission` | `trace-to-skill analyze ./runs` |
@@ -35,10 +36,12 @@ npx trace-to-skill codex-report redacted-runs --output openai-codex-issue.md
 - Include before/after `/status` and usage dashboard state for quota or token-burn reports.
 - Include line-linked evidence rather than screenshots alone when logs are available.
 - Redact tokens, API keys, emails, local home paths, customer data, and hidden Unicode before posting publicly.
+- For sensitive-file reports, attach only redacted excerpts and the file path/class, not the original credential material.
 
 ## Related OpenAI/Codex Threads Used For Fixtures
 
 - Token burn and usage drain: https://github.com/openai/codex/issues/14593, https://github.com/openai/codex/issues/13733, https://github.com/openai/codex/issues/25420, https://github.com/openai/codex/issues/19585
 - Session state and resume failures: https://github.com/openai/codex/issues/25430, https://github.com/openai/codex/issues/25390, https://github.com/openai/codex/issues/25394, https://github.com/openai/codex/issues/25407
 - MCP runtime failures: https://github.com/openai/codex/issues/16685, https://github.com/openai/codex/issues/18977, https://github.com/openai/codex/issues/24297, https://github.com/openai/codex/issues/23839
+- Sensitive file exclusion: https://github.com/openai/codex/issues/2847
 - Auth/connectivity and remote-control reports are represented by the public fixtures in `fixtures/codex-connectivity.md` and `fixtures/codex-remote-control.md`.

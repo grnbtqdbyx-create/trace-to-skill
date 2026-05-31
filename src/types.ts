@@ -9,6 +9,7 @@ export type FindingKind =
   | "over_editing"
   | "unsafe_command"
   | "secret_exposure"
+  | "sensitive_file_access"
   | "hidden_unicode"
   | "prompt_injection"
   | "context_compaction"

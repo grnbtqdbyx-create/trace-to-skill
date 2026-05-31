@@ -90,6 +90,12 @@ const BENCHMARK_CASES: BenchmarkCaseDefinition[] = [
     requireCritical: true
   },
   {
+    id: "sensitive-file-access",
+    title: "Sensitive file access in agent context",
+    fixture: "fixtures/sensitive-file-access.md",
+    expectedKinds: ["sensitive_file_access", "weak_evidence"]
+  },
+  {
     id: "codex-mcp-runtime",
     title: "Codex MCP runtime failure",
     fixture: "fixtures/codex-mcp-runtime.md",

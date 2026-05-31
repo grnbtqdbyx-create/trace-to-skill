@@ -52,13 +52,14 @@ Current proof points:
 - Sandbox and permission failure detection for Codex setup refresh, Windows `os error 740`, ACL, workspace ownership, and approval-mode drift reports.
 - Token-burn attribution for background polling, idle app activity, compaction/replay overhead, retry loops, cached-token-heavy turns, fast-mode drift, and subagent fan-out.
 - Quota mismatch detection for usage-limit blocks that contradict `/status`, usage dashboard state, account switching, or reset timing.
+- Sensitive-file access detection for `.env`, private keys, package auth files, cloud credentials, local databases, and production secret manifests entering agent context.
 - MCP config capability, secret-risk, JSON/TOML static startup-input diagnostics, and Codex config drift checks.
 - `AGENTS.md` / `CLAUDE.md` contradiction detection.
 - Pull request comment reports.
 - SARIF output for GitHub code scanning.
 - Before/after eval comparison with keep/revise/reject decisions.
 - One-command repository setup via `trace-to-skill init`.
-- Public release v0.1.38.
+- Public release v0.1.39.
 - Current GitHub scorecard: 100/100 Codex-ready, benchmark passing.
 
 500-character version:

@@ -231,6 +231,21 @@ test("analyzeTargets detects Codex quota mismatches", async () => {
   assert.match(finding.suggestedRule, /usage dashboard/);
 });
 
+test("analyzeTargets detects sensitive file access in agent context", async () => {
+  const result = await analyzeTargets(["fixtures/sensitive-file-access.md"]);
+  const finding = result.findings.find((item) => item.kind === "sensitive_file_access");
+  const evidence = finding?.evidence.map((item) => item.excerpt).join("\n") ?? "";
+  const report = renderCodexIssueReport(result);
+
+  assert.ok(finding);
+  assert.equal(finding.severity, "high");
+  assert.match(evidence, /\.env\.production/);
+  assert.match(evidence, /\.aws\/credentials/);
+  assert.match(evidence, /PRIVATE KEY/);
+  assert.match(finding.suggestedRule, /exclude sensitive files/);
+  assert.match(report, /sensitive_file_access/);
+});
+
 test("redactText removes common secrets and private identifiers", () => {
   const raw = [
     "OPENAI_API_KEY=sk-proj-abcdefghijklmnopqrstuvwxyz123456",
@@ -408,6 +423,8 @@ test("package metadata points npm users back to the public project", async () =>
   assert.ok(packageJson.keywords?.includes("codex-token-burn"));
   assert.ok(packageJson.keywords?.includes("codex-usage"));
   assert.ok(packageJson.keywords?.includes("quota-mismatch"));
+  assert.ok(packageJson.keywords?.includes("sensitive-files"));
+  assert.ok(packageJson.keywords?.includes("codex-privacy"));
 });
 
 test("initProject rejects unsafe workflow arguments", async () => {
@@ -756,8 +773,9 @@ test("repository publishes npm through trusted publishing workflow", async () =>
   assert.match(workflow, /GITHUB_REF_NAME/);
   assert.match(workflow, /npm view "trace-to-skill@\$\{PACKAGE_VERSION\}" version/);
   assert.match(workflow, /npm publish --provenance --access public/);
-  assert.match(releaseGuide, /npm trust github trace-to-skill/);
+  assert.match(releaseGuide, /npx npm@11\.16\.0 trust github trace-to-skill/);
   assert.match(releaseGuide, /--repo grnbtqdbyx-create\/trace-to-skill/);
+  assert.match(releaseGuide, /--allow-publish/);
   assert.match(releaseGuide, /Workflow filename: `npm-publish\.yml`/);
   assert.match(releaseGuide, /Allowed action: `npm publish`/);
   assert.ok(doctor.checks.some((check) => check.id === "release-automation" && check.status === "pass"));
@@ -799,6 +817,7 @@ test("published JSON schemas describe CLI result contracts", async () => {
   assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("codex_session_state"));
   assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("codex_token_burn"));
   assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("quota_mismatch"));
+  assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("sensitive_file_access"));
   assert.deepEqual(agentsLintSchema.required, ["generatedAt", "root", "status", "score", "instructionFiles", "mcpConfigs", "checks", "findings", "summary"]);
   assert.ok(agentsLintSchema.properties.instructionFiles);
   assert.ok(agentsLintSchema.properties.mcpConfigs);
@@ -818,7 +837,7 @@ test("benchmark covers public fixture failure classes", async () => {
   const markdown = renderBenchmarkMarkdown(benchmark);
 
   assert.equal(benchmark.passed, true);
-  assert.equal(benchmark.cases.length, 14);
+  assert.equal(benchmark.cases.length, 15);
   assert.ok(benchmark.cases.some((item) => item.id === "clean-validated-run" && item.score === 100));
   assert.ok(benchmark.cases.some((item) => item.id === "failed-workflow" && item.detectedKinds.includes("test_failure")));
   assert.ok(benchmark.cases.some((item) => item.id === "context-compaction" && item.detectedKinds.includes("context_compaction")));
@@ -830,6 +849,7 @@ test("benchmark covers public fixture failure classes", async () => {
   assert.ok(benchmark.cases.some((item) => item.id === "codex-token-burn" && item.detectedKinds.includes("codex_token_burn")));
   assert.ok(benchmark.cases.some((item) => item.id === "quota-mismatch" && item.detectedKinds.includes("quota_mismatch")));
   assert.ok(benchmark.cases.some((item) => item.id === "mcp-risk" && item.detectedKinds.includes("secret_exposure")));
+  assert.ok(benchmark.cases.some((item) => item.id === "sensitive-file-access" && item.detectedKinds.includes("sensitive_file_access")));
   assert.ok(benchmark.cases.some((item) => item.id === "prompt-injection" && item.detectedKinds.includes("prompt_injection")));
   assert.match(markdown, /trace-to-skill Benchmark/);
   assert.match(markdown, /Codex JSONL failed session/);
@@ -845,7 +865,7 @@ test("scorecard combines doctor readiness and benchmark evidence", async () => {
   assert.equal(scorecard.doctor.status, "ready");
   assert.equal(scorecard.doctor.score, 100);
   assert.equal(scorecard.benchmark.status, "pass");
-  assert.equal(scorecard.benchmark.cases, 14);
+  assert.equal(scorecard.benchmark.cases, 15);
   assert.match(markdown, /trace-to-skill Scorecard/);
   assert.match(markdown, /Codex readiness/);
   assert.match(markdown, /Benchmark Summary/);

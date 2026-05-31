@@ -9,7 +9,7 @@ Status: **pass**
 | Failed doctor checks | 0 |
 | Critical findings | 0 |
 | Built-in benchmark | pass |
-| Benchmark cases | 14 |
+| Benchmark cases | 15 |
 
 ## Doctor Summary
 
@@ -32,6 +32,7 @@ This benchmark runs the public fixture pack that ships with the repository and p
 | Codex remote-control route health failure | `fixtures/codex-remote-control.md` | 75 | 2 | 0 | `codex_remote_control`, `weak_evidence` | pass |
 | Codex quota mismatch | `fixtures/quota-mismatch.md` | 75 | 2 | 0 | `quota_mismatch`, `weak_evidence` | pass |
 | MCP config with secret exposure | `fixtures/mcp-risk.json` | 59 | 2 | 1 | `mcp_risk`, `secret_exposure` | pass |
+| Sensitive file access in agent context | `fixtures/sensitive-file-access.md` | 75 | 2 | 0 | `sensitive_file_access`, `weak_evidence` | pass |
 | Codex MCP runtime failure | `fixtures/codex-mcp-runtime.md` | 75 | 2 | 0 | `codex_mcp_runtime`, `weak_evidence` | pass |
 | Codex session resume and state failure | `fixtures/codex-session-state.md` | 75 | 2 | 0 | `codex_session_state`, `weak_evidence` | pass |
 | Codex token burn and usage-drain loop | `fixtures/codex-token-burn.md` | 75 | 2 | 0 | `codex_token_burn`, `weak_evidence` | pass |
