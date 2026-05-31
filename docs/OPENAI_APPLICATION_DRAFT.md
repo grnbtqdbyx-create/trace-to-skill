@@ -35,13 +35,14 @@ Current proof points:
 - Tag-pinned GitHub Action runtime via `$GITHUB_ACTION_PATH`.
 - Scorecard pull request comments with update-in-place marker.
 - Prompt-injection detection for untrusted issue, PR, log, and web text.
+- Codex-native `codex-readiness-auditor` skill for repeatable maintainer audits.
 - MCP config capability and secret-risk scoring.
 - `AGENTS.md` / `CLAUDE.md` contradiction detection.
 - Pull request comment reports.
 - SARIF output for GitHub code scanning.
 - Before/after eval comparison with keep/revise/reject decisions.
 - One-command repository setup via `trace-to-skill init`.
-- Public release v0.1.22.
+- Public release v0.1.23.
 
 500-character version:
 

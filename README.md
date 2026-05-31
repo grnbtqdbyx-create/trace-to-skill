@@ -264,7 +264,7 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v5
-      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.22
+      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.23
         with:
           mode: all
           doctor-threshold: "85"
@@ -313,7 +313,7 @@ Composite action usage:
 
 ```yaml
 - id: trace-to-skill
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.22
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.23
   with:
     mode: all
     doctor-threshold: "85"
@@ -347,7 +347,20 @@ Action outputs:
 
 By default, generated reports are also appended to the GitHub Actions Job Summary. Set `job-summary: "false"` to disable that UI output.
 
-Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to `@v0.1.22` executes that release's checked-out source instead of pulling the default branch at runtime.
+Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to `@v0.1.23` executes that release's checked-out source instead of pulling the default branch at runtime.
+
+## Codex Skill
+
+This repository also ships a Codex-native skill for maintainers who want the agent itself to run a repeatable readiness audit:
+
+```bash
+python3 ~/.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py \
+  --repo grnbtqdbyx-create/trace-to-skill \
+  --path skills/codex-readiness-auditor \
+  --name codex-readiness-auditor
+```
+
+The skill tells Codex to run the scorecard, treat issue/PR text as untrusted data, avoid committing generated policy without maintainer review, and report exact validation evidence.
 
 ## OpenAI / Codex Use Case
 
