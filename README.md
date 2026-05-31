@@ -256,7 +256,7 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v5
-      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.19
+      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.20
         with:
           mode: all
           doctor-threshold: "85"
@@ -304,7 +304,7 @@ Composite action usage:
 
 ```yaml
 - id: trace-to-skill
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.19
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.20
   with:
     mode: all
     doctor-threshold: "85"
@@ -336,6 +336,8 @@ Action outputs:
 | `scorecard-json` | JSON scorecard report path |
 
 By default, generated reports are also appended to the GitHub Actions Job Summary. Set `job-summary: "false"` to disable that UI output.
+
+Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to `@v0.1.20` executes that release's checked-out source instead of pulling the default branch at runtime.
 
 ## OpenAI / Codex Use Case
 
@@ -371,6 +373,7 @@ The goal is not to let agents autonomously rewrite project policy. The goal is t
 - GitHub Action `benchmark` and `all` modes
 - `trace-to-skill scorecard` for combined reviewer proof
 - Scorecard JSON schema and Action outputs
+- Tag-pinned GitHub Action runtime via `$GITHUB_ACTION_PATH`
 - public benchmark of common agent failure classes
 
 See [docs/ROADMAP.md](docs/ROADMAP.md).

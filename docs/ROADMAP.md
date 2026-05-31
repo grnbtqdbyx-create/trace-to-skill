@@ -26,6 +26,7 @@
 - GitHub Action `benchmark` and `all` modes
 - `trace-to-skill scorecard` for combined reviewer proof
 - Scorecard JSON schema and Action outputs
+- Tag-pinned GitHub Action runtime via `$GITHUB_ACTION_PATH`
 
 ## v0.2
 

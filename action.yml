@@ -88,6 +88,13 @@ runs:
       with:
         node-version: 20
     - run: |
+        set -euo pipefail
+        cd "$GITHUB_ACTION_PATH"
+        npm ci
+        npm run build
+        echo "TRACE_TO_SKILL_CLI=$GITHUB_ACTION_PATH/dist/src/cli.js" >> "$GITHUB_ENV"
+      shell: bash
+    - run: |
         case "${{ inputs.mode }}" in
           traces|doctor|benchmark|both|all) ;;
           *) echo "::error::mode must be one of: traces, doctor, benchmark, both, all"; exit 1 ;;
@@ -96,8 +103,8 @@ runs:
     - id: doctor
       run: |
         set -euo pipefail
-        npx github:grnbtqdbyx-create/trace-to-skill doctor "${{ inputs.doctor-path }}" --format json --output codex-readiness-report.json
-        npx github:grnbtqdbyx-create/trace-to-skill doctor "${{ inputs.doctor-path }}" --output codex-readiness-report.md
+        node "$TRACE_TO_SKILL_CLI" doctor "${{ inputs.doctor-path }}" --format json --output codex-readiness-report.json
+        node "$TRACE_TO_SKILL_CLI" doctor "${{ inputs.doctor-path }}" --output codex-readiness-report.md
         node --input-type=module <<'NODE'
         import { readFileSync } from "node:fs";
         const report = JSON.parse(readFileSync("codex-readiness-report.json", "utf8"));
@@ -134,7 +141,7 @@ runs:
         } >> "$GITHUB_STEP_SUMMARY"
       if: always() && inputs.job-summary == 'true' && (inputs.mode == 'doctor' || inputs.mode == 'both' || inputs.mode == 'all')
       shell: bash
-    - run: npx github:grnbtqdbyx-create/trace-to-skill doctor-comment "${{ inputs.doctor-path }}" --threshold "${{ inputs.doctor-threshold }}" --token "${{ inputs.github-token }}"
+    - run: node "$TRACE_TO_SKILL_CLI" doctor-comment "${{ inputs.doctor-path }}" --threshold "${{ inputs.doctor-threshold }}" --token "${{ inputs.github-token }}"
       if: always() && github.event_name == 'pull_request' && inputs.doctor-comment == 'true' && (inputs.mode == 'doctor' || inputs.mode == 'both' || inputs.mode == 'all')
       shell: bash
     - run: |
@@ -144,7 +151,7 @@ runs:
       shell: bash
     - id: agent-report
       run: |
-        npx github:grnbtqdbyx-create/trace-to-skill analyze "${{ inputs.traces }}" --output agent-learning-report.md
+        node "$TRACE_TO_SKILL_CLI" analyze "${{ inputs.traces }}" --output agent-learning-report.md
         echo "report=agent-learning-report.md" >> "$GITHUB_OUTPUT"
       if: inputs.mode == 'traces' || inputs.mode == 'both' || inputs.mode == 'all'
       shell: bash
@@ -156,17 +163,17 @@ runs:
         } >> "$GITHUB_STEP_SUMMARY"
       if: always() && inputs.job-summary == 'true' && (inputs.mode == 'traces' || inputs.mode == 'both' || inputs.mode == 'all')
       shell: bash
-    - run: npx github:grnbtqdbyx-create/trace-to-skill comment "${{ inputs.traces }}" --token "${{ inputs.github-token }}"
+    - run: node "$TRACE_TO_SKILL_CLI" comment "${{ inputs.traces }}" --token "${{ inputs.github-token }}"
       if: github.event_name == 'pull_request' && inputs.comment == 'true' && (inputs.mode == 'traces' || inputs.mode == 'both' || inputs.mode == 'all')
       shell: bash
-    - run: npx github:grnbtqdbyx-create/trace-to-skill eval "${{ inputs.traces }}" --threshold "${{ inputs.threshold }}"
+    - run: node "$TRACE_TO_SKILL_CLI" eval "${{ inputs.traces }}" --threshold "${{ inputs.threshold }}"
       if: inputs.mode == 'traces' || inputs.mode == 'both' || inputs.mode == 'all'
       shell: bash
     - id: benchmark
       run: |
         set -euo pipefail
-        npx github:grnbtqdbyx-create/trace-to-skill benchmark --format json --output trace-to-skill-benchmark.json
-        npx github:grnbtqdbyx-create/trace-to-skill benchmark --output trace-to-skill-benchmark.md
+        node "$TRACE_TO_SKILL_CLI" benchmark --format json --output trace-to-skill-benchmark.json
+        node "$TRACE_TO_SKILL_CLI" benchmark --output trace-to-skill-benchmark.md
         node --input-type=module <<'NODE'
         import { appendFileSync, readFileSync } from "node:fs";
         const report = JSON.parse(readFileSync("trace-to-skill-benchmark.json", "utf8"));
@@ -196,8 +203,8 @@ runs:
     - id: scorecard
       run: |
         set -euo pipefail
-        npx github:grnbtqdbyx-create/trace-to-skill scorecard "${{ inputs.doctor-path }}" --threshold "${{ inputs.doctor-threshold }}" --format json --output trace-to-skill-scorecard.json
-        npx github:grnbtqdbyx-create/trace-to-skill scorecard "${{ inputs.doctor-path }}" --threshold "${{ inputs.doctor-threshold }}" --output trace-to-skill-scorecard.md
+        node "$TRACE_TO_SKILL_CLI" scorecard "${{ inputs.doctor-path }}" --threshold "${{ inputs.doctor-threshold }}" --format json --output trace-to-skill-scorecard.json
+        node "$TRACE_TO_SKILL_CLI" scorecard "${{ inputs.doctor-path }}" --threshold "${{ inputs.doctor-threshold }}" --output trace-to-skill-scorecard.md
         node --input-type=module <<'NODE'
         import { appendFileSync, readFileSync } from "node:fs";
         const report = JSON.parse(readFileSync("trace-to-skill-scorecard.json", "utf8"));

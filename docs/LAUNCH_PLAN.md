@@ -48,13 +48,14 @@ Secondary headline:
 - [x] GitHub Action benchmark and all-in-one modes
 - [x] combined scorecard for reviewer proof
 - [x] scorecard JSON schema and Action outputs
+- [x] tag-pinned GitHub Action runtime via `$GITHUB_ACTION_PATH`
 - [x] discovery PR to awesome-codex-cli: https://github.com/milisp/awesome-codex-cli/pull/35
 - [x] discovery PR to awesome-harness-engineering: https://github.com/ai-boost/awesome-harness-engineering/pull/45
 
 ## Current Public Proof
 
 - Repository: https://github.com/grnbtqdbyx-create/trace-to-skill
-- Latest release: https://github.com/grnbtqdbyx-create/trace-to-skill/releases/tag/v0.1.19
+- Latest release: https://github.com/grnbtqdbyx-create/trace-to-skill/releases/tag/v0.1.20
 - CI: passing on `main`
 - Profile README: https://github.com/grnbtqdbyx-create/grnbtqdbyx-create
 

@@ -32,13 +32,14 @@ Current proof points:
 - GitHub Action benchmark and all-in-one modes for CI proof.
 - Combined scorecard for reviewer-ready Codex readiness and benchmark proof.
 - Scorecard JSON schema and GitHub Action outputs for downstream automation.
+- Tag-pinned GitHub Action runtime via `$GITHUB_ACTION_PATH`.
 - MCP config capability and secret-risk scoring.
 - `AGENTS.md` / `CLAUDE.md` contradiction detection.
 - Pull request comment reports.
 - SARIF output for GitHub code scanning.
 - Before/after eval comparison with keep/revise/reject decisions.
 - One-command repository setup via `trace-to-skill init`.
-- Public release v0.1.19.
+- Public release v0.1.20.
 
 500-character version:
 
