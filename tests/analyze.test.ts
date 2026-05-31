@@ -254,3 +254,23 @@ test("repository dogfoods the local Codex readiness action", async () => {
   assert.match(workflow, /job-summary: "true"/);
   assert.match(workflow, /steps\.readiness\.outputs\.doctor-score/);
 });
+
+test("published JSON schemas describe CLI result contracts", async () => {
+  const analysisSchema = JSON.parse(await readFile("schemas/analysis-result.schema.json", "utf8")) as {
+    required: string[];
+    properties: Record<string, unknown>;
+    $defs: Record<string, unknown>;
+  };
+  const doctorSchema = JSON.parse(await readFile("schemas/doctor-result.schema.json", "utf8")) as {
+    required: string[];
+    properties: Record<string, unknown>;
+    $defs: Record<string, unknown>;
+  };
+
+  assert.deepEqual(analysisSchema.required, ["generatedAt", "inputs", "score", "summary", "findings", "recommendations"]);
+  assert.ok(analysisSchema.properties.score);
+  assert.ok(analysisSchema.$defs.finding);
+  assert.deepEqual(doctorSchema.required, ["generatedAt", "root", "score", "summary", "checks", "findings"]);
+  assert.ok(doctorSchema.properties.checks);
+  assert.ok(doctorSchema.$defs.check);
+});

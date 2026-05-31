@@ -8,6 +8,8 @@ Useful entry points:
 - Roadmap: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/ROADMAP.md
 - Failure taxonomy: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/FAILURE_TAXONOMY.md
 - OpenAI OSS strategy: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/OPENAI_OSS_STRATEGY.md
+- Analysis JSON schema: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/schemas/analysis-result.schema.json
+- Doctor JSON schema: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/schemas/doctor-result.schema.json
 
 Core commands:
 

@@ -21,6 +21,7 @@
 - Composite Action outputs for downstream workflow steps
 - Job Summary output for generated reports
 - `trace-to-skill init` for Codex readiness and agent-learning workflow setup
+- Published JSON schemas for `analyze --format json` and `doctor --format json`
 
 ## v0.2
 
@@ -41,7 +42,7 @@
 ## v1.0
 
 - Stable failure taxonomy
-- Stable JSON schema
+- JSON schema compatibility policy
 - Multi-agent support matrix
 - Maintainer adoption guide
 - Signed release artifacts

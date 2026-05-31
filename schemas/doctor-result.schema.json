@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/grnbtqdbyx-create/trace-to-skill/main/schemas/doctor-result.schema.json",
+  "title": "trace-to-skill DoctorResult",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "generatedAt",
+    "root",
+    "score",
+    "summary",
+    "checks",
+    "findings"
+  ],
+  "properties": {
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "root": {
+      "type": "string"
+    },
+    "score": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "summary": {
+      "type": "string"
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/check"
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "$ref": "analysis-result.schema.json#/$defs/finding"
+      }
+    }
+  },
+  "$defs": {
+    "checkStatus": {
+      "type": "string",
+      "enum": [
+        "pass",
+        "warn",
+        "fail"
+      ]
+    },
+    "check": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "status",
+        "title",
+        "detail"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/$defs/checkStatus"
+        },
+        "title": {
+          "type": "string"
+        },
+        "detail": {
+          "type": "string"
+        },
+        "recommendation": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

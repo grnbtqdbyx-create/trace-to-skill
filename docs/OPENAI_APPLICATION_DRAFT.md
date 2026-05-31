@@ -26,13 +26,14 @@ Current proof points:
 - Composite Action outputs for downstream maintainer workflows.
 - GitHub Actions Job Summary output for generated reports.
 - One-command setup for Codex readiness and agent-learning workflows.
+- Published JSON schemas for deterministic CLI report contracts.
 - MCP config capability and secret-risk scoring.
 - `AGENTS.md` / `CLAUDE.md` contradiction detection.
 - Pull request comment reports.
 - SARIF output for GitHub code scanning.
 - Before/after eval comparison with keep/revise/reject decisions.
 - One-command repository setup via `trace-to-skill init`.
-- Public release v0.1.13.
+- Public release v0.1.14.
 
 500-character version:
 

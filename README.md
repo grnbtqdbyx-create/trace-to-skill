@@ -202,6 +202,15 @@ MCP configs with `mcpServers` are parsed for capability hints such as filesystem
 
 Instruction files such as `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `.cursor/rules`, and `.github/copilot-instructions.md` are checked for obvious contradictions in validation commands, test requirements, and destructive-command approval rules.
 
+## JSON Schemas
+
+Stable machine-readable contracts are published with the npm package and release tarball:
+
+- [`schemas/analysis-result.schema.json`](schemas/analysis-result.schema.json) describes `trace-to-skill analyze --format json`.
+- [`schemas/doctor-result.schema.json`](schemas/doctor-result.schema.json) describes `trace-to-skill doctor --format json`.
+
+These schemas let downstream Codex workflows, dashboards, and CI bots consume reports without scraping Markdown.
+
 ## GitHub Action
 
 Run the Codex readiness doctor as a GitHub Action:
@@ -222,7 +231,7 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v5
-      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.13
+      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.14
         with:
           mode: doctor
           doctor-threshold: "85"
@@ -270,7 +279,7 @@ Composite action usage:
 
 ```yaml
 - id: trace-to-skill
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.13
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.14
   with:
     mode: both
     doctor-threshold: "85"
@@ -325,6 +334,7 @@ The goal is not to let agents autonomously rewrite project policy. The goal is t
 - Composite Action outputs for downstream workflow steps
 - Job Summary output for generated reports
 - `trace-to-skill init` for Codex readiness and agent-learning workflow setup
+- Published JSON schemas for deterministic CLI report contracts
 - public benchmark of common agent failure classes
 
 See [docs/ROADMAP.md](docs/ROADMAP.md).
