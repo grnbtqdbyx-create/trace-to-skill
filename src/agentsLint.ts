@@ -16,6 +16,7 @@ export interface AgentsLintResult {
 }
 
 const SKIP_DIRS = new Set([".git", "node_modules", "dist", "coverage", ".next", "build"]);
+const INSTRUCTION_SIZE_WARN_BYTES = 24000;
 
 export async function lintAgents(target = process.cwd()): Promise<AgentsLintResult> {
   const root = path.resolve(target);
@@ -32,6 +33,7 @@ export async function lintAgents(target = process.cwd()): Promise<AgentsLintResu
     finding.kind === "hidden_unicode" ||
     finding.kind === "prompt_injection"
   );
+  findings.push(...(await detectInstructionFileRisks(root, instructionFiles)));
   const score = calculateAgentsLintScore(checks, findings);
   const status = statusFrom(score, checks, findings);
 
@@ -194,4 +196,122 @@ function isMcpConfigCandidate(file: string): boolean {
 
 function isEvidenceArchive(file: string): boolean {
   return /^(fixtures|examples|runs)\//i.test(file);
+}
+
+async function detectInstructionFileRisks(root: string, instructionFiles: string[]): Promise<Finding[]> {
+  const findings: Finding[] = [];
+  const missingPathEvidence = [];
+  const largeFileEvidence = [];
+
+  for (const file of instructionFiles) {
+    const absolute = path.join(root, file);
+    const content = await fs.readFile(absolute, "utf8");
+    const lines = content.split(/\r?\n/);
+
+    if (Buffer.byteLength(content, "utf8") > INSTRUCTION_SIZE_WARN_BYTES) {
+      largeFileEvidence.push({
+        file,
+        line: 1,
+        excerpt: `${file} is ${Buffer.byteLength(content, "utf8")} bytes; split long instructions into smaller scoped files or keep critical rules near the top.`
+      });
+    }
+
+    for (const reference of collectPathReferences(lines)) {
+      if (!(await pathExists(root, reference.value))) {
+        missingPathEvidence.push({
+          file,
+          line: reference.line,
+          excerpt: `referenced path does not exist: ${reference.value}`
+        });
+      }
+    }
+  }
+
+  if (missingPathEvidence.length > 0) {
+    findings.push({
+      kind: "hallucinated_file",
+      severity: "medium",
+      title: "Agent instruction references missing paths",
+      why: "Codex and other agents lose time or follow stale guidance when AGENTS.md or tool instructions point at files that no longer exist.",
+      evidence: missingPathEvidence.slice(0, 8),
+      suggestedRule:
+        "Keep paths in agent instruction files verified; run trace-to-skill lint-agents after moving or deleting referenced files."
+    });
+  }
+
+  if (largeFileEvidence.length > 0) {
+    findings.push({
+      kind: "ignored_instruction",
+      severity: "medium",
+      title: "Large agent instruction file may be truncated or ignored",
+      why: "Very large instruction files make it harder for agents to preserve high-priority rules and can hide important guidance near the end.",
+      evidence: largeFileEvidence,
+      suggestedRule:
+        "Keep critical repository instructions short, put must-follow validation rules near the top, and split long reference material into linked docs."
+    });
+  }
+
+  return findings;
+}
+
+function collectPathReferences(lines: string[]): Array<{ line: number; value: string }> {
+  const references: Array<{ line: number; value: string }> = [];
+  const seen = new Set<string>();
+
+  lines.forEach((line, index) => {
+    for (const match of line.matchAll(/`([^`\n]+)`/g)) {
+      addPathReference(references, seen, index + 1, match[1]);
+    }
+
+    for (const match of line.matchAll(/\[[^\]]+\]\(([^)]+)\)/g)) {
+      addPathReference(references, seen, index + 1, match[1]);
+    }
+  });
+
+  return references;
+}
+
+function addPathReference(references: Array<{ line: number; value: string }>, seen: Set<string>, line: number, raw: string): void {
+  const value = normalizePathReference(raw);
+  if (!value || seen.has(value)) {
+    return;
+  }
+
+  seen.add(value);
+  references.push({ line, value });
+}
+
+function normalizePathReference(raw: string): string | undefined {
+  const value = raw.trim().replace(/^file:\/\//, "").replace(/[),.;:]+$/, "");
+  if (
+    !value ||
+    value.startsWith("http://") ||
+    value.startsWith("https://") ||
+    value.startsWith("mailto:") ||
+    value.startsWith("#") ||
+    value.includes("*") ||
+    value.includes("$") ||
+    value.includes(" ") ||
+    value.startsWith("@") ||
+    value.startsWith("~") ||
+    path.isAbsolute(value)
+  ) {
+    return undefined;
+  }
+
+  if (!/^[A-Za-z0-9._/@-]+(?:\/[A-Za-z0-9._@-]+)*$/.test(value)) {
+    return undefined;
+  }
+
+  const hasPathSignal = value.includes("/") || /\.[A-Za-z0-9]{1,8}$/.test(value);
+  return hasPathSignal ? value.replace(/^\.\//, "") : undefined;
+}
+
+async function pathExists(root: string, reference: string): Promise<boolean> {
+  try {
+    await fs.access(path.join(root, reference));
+    return true;
+  } catch {
+    return false;
+  }
 }

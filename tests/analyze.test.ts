@@ -355,6 +355,25 @@ test("lintAgents fails missing AGENTS.md and conflicting instruction files", asy
   assert.ok(result.findings.some((finding) => finding.kind === "ignored_instruction"));
 });
 
+test("lintAgents detects missing paths and oversized instruction files", async () => {
+  const cwd = await mkdtemp(path.join(os.tmpdir(), "trace-to-skill-agents-lint-paths-"));
+  const largeInstruction = `${"Review `src/missing.ts` before editing.\n"}${"Keep validation visible.\n".repeat(1300)}`;
+  await writeFile(path.join(cwd, "AGENTS.md"), largeInstruction, "utf8");
+  await writeFile(path.join(cwd, "package.json"), JSON.stringify({
+    scripts: {
+      test: "node --test"
+    }
+  }), "utf8");
+
+  const result = await lintAgents(cwd);
+  const markdown = renderAgentsLintMarkdown(result);
+
+  assert.equal(result.status, "warn");
+  assert.ok(result.findings.some((finding) => finding.kind === "hallucinated_file" && /src\/missing\.ts/.test(finding.evidence[0]?.excerpt ?? "")));
+  assert.ok(result.findings.some((finding) => finding.kind === "ignored_instruction" && /Large agent instruction/.test(finding.title)));
+  assert.match(markdown, /Agent instruction references missing paths/);
+});
+
 test("composite action exposes Codex readiness doctor mode", async () => {
   const action = await readFile("action.yml", "utf8");
 

@@ -111,7 +111,7 @@ function renderCodexReadinessWorkflow(doctorThreshold: string, comment: boolean)
     "    steps:",
     "      - uses: actions/checkout@v5",
     "      - id: trace-to-skill",
-    "        uses: grnbtqdbyx-create/trace-to-skill@v0.1.30",
+    "        uses: grnbtqdbyx-create/trace-to-skill@v0.1.31",
     "        with:",
     "          mode: all",
     `          doctor-threshold: "${doctorThreshold}"`,
@@ -140,7 +140,7 @@ function renderAgentLearningWorkflow(traces: string, threshold: string, comment:
   const steps = [
     "      - uses: actions/checkout@v5",
     "      - id: trace-to-skill",
-    "        uses: grnbtqdbyx-create/trace-to-skill@v0.1.30",
+    "        uses: grnbtqdbyx-create/trace-to-skill@v0.1.31",
     "        with:",
     "          mode: traces",
     `          traces: ${traces}`,

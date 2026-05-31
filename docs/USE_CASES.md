@@ -21,7 +21,7 @@ What it proves:
 Recommended CI surface:
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.30
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.31
   with:
     mode: all
     doctor-threshold: "85"
@@ -43,6 +43,7 @@ This checks:
 
 - whether repository-level agent instructions exist
 - whether `AGENTS.md`, `CLAUDE.md`, Cursor rules, Copilot instructions, or other tool guidance conflict
+- whether instruction files reference paths that no longer exist or have grown large enough to risk ignored guidance
 - whether MCP config hints at risky capabilities such as filesystem, shell, browser, network, database, container, or secret-bearing environment variables
 
 The goal is not to ban powerful tools. The goal is to make trust boundaries visible before an agent acts.

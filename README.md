@@ -163,7 +163,7 @@ trace-to-skill lint-agents .
 trace-to-skill lint-agents . --format json
 ```
 
-This focused linter checks whether `AGENTS.md` exists as the canonical instruction source, whether validation commands are discoverable, whether `AGENTS.md` / `CLAUDE.md` / Cursor / Copilot guidance conflicts, and whether MCP configs expose risky capabilities or secrets.
+This focused linter checks whether `AGENTS.md` exists as the canonical instruction source, whether validation commands are discoverable, whether `AGENTS.md` / `CLAUDE.md` / Cursor / Copilot guidance conflicts, whether instruction files reference missing paths or grow large enough to risk ignored guidance, and whether MCP configs expose risky capabilities or secrets.
 
 Redact traces before sharing them:
 
@@ -309,7 +309,7 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v5
-      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.30
+      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.31
         with:
           mode: all
           doctor-threshold: "85"
@@ -358,7 +358,7 @@ Composite action usage:
 
 ```yaml
 - id: trace-to-skill
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.30
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.31
   with:
     mode: all
     doctor-threshold: "85"
@@ -400,7 +400,7 @@ Action outputs:
 
 By default, generated reports are also appended to the GitHub Actions Job Summary. Set `job-summary: "false"` to disable that UI output.
 
-Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.30` executes that release's checked-out source instead of pulling the default branch at runtime.
+Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.31` executes that release's checked-out source instead of pulling the default branch at runtime.
 
 ## Codex Skill
 
