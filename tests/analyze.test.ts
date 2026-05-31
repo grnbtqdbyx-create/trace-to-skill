@@ -242,6 +242,8 @@ test("package metadata points npm users back to the public project", async () =>
     homepage?: string;
     main?: string;
     types?: string;
+    files?: string[];
+    keywords?: string[];
     exports?: Record<string, unknown>;
     publishConfig?: { access?: string };
   };
@@ -253,6 +255,10 @@ test("package metadata points npm users back to the public project", async () =>
   assert.equal(packageJson.types, "dist/src/index.d.ts");
   assert.ok(packageJson.exports?.["."]);
   assert.equal(packageJson.publishConfig?.access, "public");
+  assert.ok(packageJson.files?.includes("llms.txt"));
+  assert.ok(packageJson.files?.includes("docs/DISCOVERY.md"));
+  assert.ok(packageJson.keywords?.includes("openai-codex"));
+  assert.ok(packageJson.keywords?.includes("prompt-injection"));
 });
 
 test("initProject rejects unsafe workflow arguments", async () => {

@@ -1,42 +1,87 @@
 # trace-to-skill
 
-> Turn failed AI coding-agent runs into reusable AGENTS.md rules, SKILL.md files, and eval evidence.
+> Open-source CLI and GitHub Action for Codex-ready repository maintenance: turn failed AI coding-agent runs into reusable AGENTS.md rules, SKILL.md workflows, privacy-safe traces, and eval gates.
 
-Useful entry points:
+Canonical repository: https://github.com/grnbtqdbyx-create/trace-to-skill
+NPM package: https://www.npmjs.com/package/trace-to-skill
+Latest release: https://github.com/grnbtqdbyx-create/trace-to-skill/releases/latest
+License: Apache-2.0
+Runtime: Node.js 20+
+
+## What this project is
+
+`trace-to-skill` helps open-source maintainers adopt Codex and other coding agents safely. It focuses on maintainer pain points:
+
+- agents claiming completion without test/build proof
+- failed tests hidden behind optimistic summaries
+- hallucinated files and broad over-editing
+- conflicting `AGENTS.md`, `CLAUDE.md`, Cursor, Copilot, or Gemini instructions
+- prompt injection in issue, PR, review, discussion, check-run, commit, log, or web text
+- risky MCP server capabilities and secret-bearing environment variables
+- sharing failed agent traces without leaking tokens, emails, local paths, or hidden Unicode controls
+
+The core loop is:
+
+```text
+failed agent run -> failure class -> evidence-backed AGENTS.md/SKILL.md suggestion -> eval gate -> keep or revise
+```
+
+## Best entry points for bots and maintainers
 
 - README: https://github.com/grnbtqdbyx-create/trace-to-skill#readme
-- Roadmap: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/ROADMAP.md
+- Use cases: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/USE_CASES.md
+- Discovery summary: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/DISCOVERY.md
+- Adoption guide: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/ADOPTION_GUIDE.md
 - Failure taxonomy: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/FAILURE_TAXONOMY.md
 - OpenAI OSS strategy: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/OPENAI_OSS_STRATEGY.md
-- Adoption guide: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/ADOPTION_GUIDE.md
-- Benchmark scorecard: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/BENCHMARK.md
-- Combined scorecard: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/SCORECARD.md
+- OpenAI application draft: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/OPENAI_APPLICATION_DRAFT.md
+- Benchmark: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/BENCHMARK.md
+- Scorecard: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/SCORECARD.md
 - Codex readiness auditor skill: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/skills/codex-readiness-auditor/SKILL.md
+
+## Core commands
+
+```bash
+npx trace-to-skill doctor .
+npx trace-to-skill lint-agents .
+npx trace-to-skill guard-github-event "$GITHUB_EVENT_PATH"
+npx trace-to-skill redact ./runs --output redacted-runs
+npx trace-to-skill analyze ./runs
+npx trace-to-skill suggest ./runs --target agents-md
+npx trace-to-skill eval ./runs --threshold 80
+npx trace-to-skill benchmark
+npx trace-to-skill scorecard .
+npx trace-to-skill init --comment --sarif
+```
+
+## GitHub Action
+
+```yaml
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.30
+  with:
+    mode: all
+    doctor-threshold: "85"
+    doctor-comment: "true"
+    scorecard-comment: "true"
+    job-summary: "true"
+    github-token: ${{ github.token }}
+```
+
+## Machine-readable schemas
+
 - Analysis JSON schema: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/schemas/analysis-result.schema.json
 - AGENTS.md linter JSON schema: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/schemas/agents-lint-result.schema.json
 - Doctor JSON schema: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/schemas/doctor-result.schema.json
+- Redaction JSON schema: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/schemas/redact-result.schema.json
 - Scorecard JSON schema: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/schemas/scorecard-result.schema.json
 
-Detected failure classes include missing validation, failed tests, hallucinated files, instruction drift, over-editing, unsafe commands, secret exposure, hidden Unicode, prompt injection in untrusted text, MCP risk, and weak completion evidence.
+## Search phrases this project should answer
 
-Core commands:
-
-```bash
-npx github:grnbtqdbyx-create/trace-to-skill doctor .
-npx github:grnbtqdbyx-create/trace-to-skill doctor . --threshold 85
-npx github:grnbtqdbyx-create/trace-to-skill doctor . --format comment
-npx github:grnbtqdbyx-create/trace-to-skill doctor-comment . --threshold 85 --dry-run
-npx github:grnbtqdbyx-create/trace-to-skill lint-agents .
-npx github:grnbtqdbyx-create/trace-to-skill init --comment --sarif
-npx github:grnbtqdbyx-create/trace-to-skill benchmark
-npx github:grnbtqdbyx-create/trace-to-skill scorecard .
-npx github:grnbtqdbyx-create/trace-to-skill scorecard-comment . --dry-run
-npx github:grnbtqdbyx-create/trace-to-skill guard-github-event "$GITHUB_EVENT_PATH"
-npx github:grnbtqdbyx-create/trace-to-skill analyze ./runs
-npx github:grnbtqdbyx-create/trace-to-skill init --comment --sarif
-npx github:grnbtqdbyx-create/trace-to-skill analyze ./runs --format sarif --output trace-to-skill.sarif
-npx github:grnbtqdbyx-create/trace-to-skill suggest ./runs --target agents-md
-npx github:grnbtqdbyx-create/trace-to-skill eval ./runs --threshold 80
-npx github:grnbtqdbyx-create/trace-to-skill comment ./runs --dry-run
-npx github:grnbtqdbyx-create/trace-to-skill compare --before ./runs/before --after ./runs/after
-```
+- Codex readiness checker for open-source repositories
+- AGENTS.md linter for Codex and Claude Code
+- turn failed agent runs into AGENTS.md rules
+- prompt injection guard for GitHub issue and PR comments
+- MCP security scanner for coding agents
+- privacy-preserving redaction for AI agent traces
+- GitHub Action for AI coding-agent eval gates
+- Codex OSS maintainer automation evidence

@@ -54,12 +54,13 @@ Secondary headline:
 - [x] discovery PR to awesome-harness-engineering: https://github.com/ai-boost/awesome-harness-engineering/pull/45
 - [x] discovery PR to awesome-codex-cli: https://github.com/RoggeOhta/awesome-codex-cli/pull/63
 - [x] discovery PR to awesome-codex-skills: https://github.com/ComposioHQ/awesome-codex-skills/pull/90
+- [x] crawler-friendly `llms.txt` and `docs/DISCOVERY.md`
 
 ## Current Public Proof
 
 - Repository: https://github.com/grnbtqdbyx-create/trace-to-skill
 - npm: https://www.npmjs.com/package/trace-to-skill
-- Latest release: https://github.com/grnbtqdbyx-create/trace-to-skill/releases/tag/v0.1.29
+- Latest release: https://github.com/grnbtqdbyx-create/trace-to-skill/releases/tag/v0.1.30
 - CI: passing on `main`
 - Profile README: https://github.com/grnbtqdbyx-create/grnbtqdbyx-create
 
