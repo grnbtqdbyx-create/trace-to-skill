@@ -2,12 +2,12 @@
 
 ## Short
 
-I built `trace-to-skill`: an open-source CLI that turns failed Codex / Claude Code / Cursor runs into reusable `AGENTS.md` rules, `SKILL.md` files, and eval evidence.
+I built `trace-to-skill`: an open-source CLI that checks whether a repo is Codex-ready, then turns failed Codex / Claude Code / Cursor runs into reusable `AGENTS.md` rules, `SKILL.md` files, and eval evidence.
 
 The loop is simple:
 
 ```text
-failed agent run -> failure class -> reusable rule/skill -> eval gate
+repo doctor -> failed agent run -> failure class -> reusable rule/skill -> eval gate
 ```
 
 GitHub: https://github.com/grnbtqdbyx-create/trace-to-skill
@@ -17,7 +17,7 @@ GitHub: https://github.com/grnbtqdbyx-create/trace-to-skill
 Title:
 
 ```text
-Show HN: trace-to-skill turns failed AI coding-agent runs into reusable rules
+Show HN: trace-to-skill checks Codex readiness and turns failed agent runs into rules
 ```
 
 Body:
@@ -27,8 +27,9 @@ I built trace-to-skill, a small open-source CLI for maintainers using Codex, Cla
 
 The problem: agents often repeat the same workflow failures: claiming success without tests, inventing files, ignoring repo instructions, leaking secrets into traces, or using risky MCP tools without a trust boundary.
 
-trace-to-skill scans agent traces/logs and generates:
+trace-to-skill checks repo readiness and scans agent traces/logs to generate:
 
+- a Codex Readiness Doctor score
 - an Agent Learning Report
 - suggested AGENTS.md rules
 - suggested SKILL.md content
@@ -38,7 +39,7 @@ It is deterministic and local-first right now; no runtime network calls.
 
 Example:
 
-npx github:grnbtqdbyx-create/trace-to-skill analyze ./runs
+npx github:grnbtqdbyx-create/trace-to-skill doctor .
 
 I’m especially looking for anonymized failed agent traces and feedback from OSS maintainers who review AI-generated PRs.
 
@@ -51,6 +52,7 @@ Repo: https://github.com/grnbtqdbyx-create/trace-to-skill
 I built trace-to-skill:
 
 failed Codex / Claude / Cursor run
+repo doctor
 -> failure class
 -> AGENTS.md rule or SKILL.md
 -> eval gate
@@ -59,4 +61,3 @@ The goal is not autonomous policy rewrites. It is evidence-backed agent improvem
 
 https://github.com/grnbtqdbyx-create/trace-to-skill
 ```
-

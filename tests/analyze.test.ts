@@ -1,9 +1,10 @@
 import assert from "node:assert/strict";
-import { mkdtemp, readFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { analyzeTargets } from "../src/analyze.js";
+import { doctorRepo } from "../src/doctor.js";
 import { compareAnalyses, evaluate } from "../src/eval.js";
 import { postPullRequestComment } from "../src/github.js";
 import { initProject } from "../src/init.js";
@@ -136,4 +137,53 @@ test("initProject rejects unsafe workflow arguments", async () => {
     () => initProject({ threshold: "101" }),
     /between 1 and 100/
   );
+});
+
+test("doctorRepo scores a Codex-ready repository", async () => {
+  const cwd = await mkdtemp(path.join(os.tmpdir(), "trace-to-skill-doctor-ready-"));
+  await mkdir(path.join(cwd, ".github/workflows"), { recursive: true });
+  await mkdir(path.join(cwd, "runs"), { recursive: true });
+  await writeFile(path.join(cwd, "AGENTS.md"), "Always run npm test before completion.\n", "utf8");
+  await writeFile(path.join(cwd, "README.md"), "# Ready Repo\n", "utf8");
+  await writeFile(path.join(cwd, "CONTRIBUTING.md"), "# Contributing\n", "utf8");
+  await writeFile(path.join(cwd, "SECURITY.md"), "# Security\n", "utf8");
+  await writeFile(path.join(cwd, "LICENSE"), "Apache License\nVersion 2.0\n", "utf8");
+  await writeFile(path.join(cwd, "action.yml"), "name: ready\nruns:\n  using: composite\n  steps: []\n", "utf8");
+  await writeFile(path.join(cwd, "runs/README.md"), "# Runs\n", "utf8");
+  await writeFile(path.join(cwd, ".github/workflows/ci.yml"), "name: CI\non: [push]\njobs: {}\n", "utf8");
+  await writeFile(path.join(cwd, "package.json"), JSON.stringify({
+    scripts: {
+      test: "node --test",
+      build: "tsc"
+    }
+  }), "utf8");
+
+  const result = await doctorRepo(cwd);
+
+  assert.ok(result.score >= 85);
+  assert.equal(result.checks.some((check) => check.status === "fail"), false);
+  assert.ok(result.checks.some((check) => check.id === "agent-instructions" && check.status === "pass"));
+});
+
+test("doctorRepo flags missing controls and MCP risk", async () => {
+  const cwd = await mkdtemp(path.join(os.tmpdir(), "trace-to-skill-doctor-risk-"));
+  await writeFile(path.join(cwd, "README.md"), "# Risky Repo\n", "utf8");
+  await writeFile(path.join(cwd, "mcp.json"), JSON.stringify({
+    mcpServers: {
+      local: {
+        command: "npx",
+        args: ["@modelcontextprotocol/server-filesystem", "/Users/example/project"],
+        env: {
+          GITHUB_TOKEN: "ghp_example"
+        }
+      }
+    }
+  }, null, 2), "utf8");
+
+  const result = await doctorRepo(cwd);
+
+  assert.ok(result.score < 70);
+  assert.ok(result.checks.some((check) => check.id === "agent-instructions" && check.status === "fail"));
+  assert.ok(result.checks.some((check) => check.id === "license" && check.status === "fail"));
+  assert.ok(result.findings.some((finding) => finding.kind === "mcp_risk"));
 });

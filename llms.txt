@@ -12,6 +12,7 @@ Useful entry points:
 Core commands:
 
 ```bash
+npx github:grnbtqdbyx-create/trace-to-skill doctor .
 npx github:grnbtqdbyx-create/trace-to-skill analyze ./runs
 npx github:grnbtqdbyx-create/trace-to-skill init --comment --sarif
 npx github:grnbtqdbyx-create/trace-to-skill analyze ./runs --format sarif --output trace-to-skill.sarif

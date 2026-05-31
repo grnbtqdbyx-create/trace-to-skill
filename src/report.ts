@@ -1,4 +1,5 @@
 import type { ComparisonResult } from "./eval.js";
+import type { DoctorResult } from "./doctor.js";
 import type { AnalysisResult, Finding, Severity } from "./types.js";
 
 export function renderMarkdown(result: AnalysisResult): string {
@@ -122,6 +123,43 @@ export function renderComparison(result: ComparisonResult): string {
     "",
     result.message
   ].join("\n")}\n`;
+}
+
+export function renderDoctorMarkdown(result: DoctorResult): string {
+  const lines = [
+    "# Codex Readiness Doctor",
+    "",
+    `Score: **${result.score}/100**`,
+    "",
+    result.summary,
+    "",
+    `Repository: \`${result.root}\``,
+    `Generated: ${result.generatedAt}`,
+    "",
+    "## Checks",
+    ""
+  ];
+
+  result.checks.forEach((check) => {
+    const marker = check.status === "pass" ? "PASS" : check.status === "warn" ? "WARN" : "FAIL";
+    lines.push(`- **${marker}** ${check.title}: ${check.detail}`);
+    if (check.recommendation) {
+      lines.push(`  Recommendation: ${check.recommendation}`);
+    }
+  });
+
+  lines.push("", "## Agent Risk Findings", "");
+  if (result.findings.length === 0) {
+    lines.push("No instruction or MCP risk findings detected.");
+  } else {
+    result.findings.forEach((finding) => {
+      const firstEvidence = finding.evidence[0];
+      const evidence = firstEvidence ? ` Evidence: \`${firstEvidence.file}:${firstEvidence.line}\`.` : "";
+      lines.push(`- **${finding.severity}** ${finding.title}.${evidence}`);
+    });
+  }
+
+  return `${lines.join("\n")}\n`;
 }
 
 export function renderSarif(result: AnalysisResult): string {

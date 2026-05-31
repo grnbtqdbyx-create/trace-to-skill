@@ -8,6 +8,7 @@
 Turn failed AI coding-agent runs into reusable `AGENTS.md` rules, `SKILL.md` files, and eval evidence.
 
 ```bash
+npx github:grnbtqdbyx-create/trace-to-skill doctor .
 npx github:grnbtqdbyx-create/trace-to-skill analyze ./runs
 npx github:grnbtqdbyx-create/trace-to-skill init --comment --sarif
 npx github:grnbtqdbyx-create/trace-to-skill suggest ./runs --target agents-md
@@ -32,6 +33,7 @@ Open-source maintainers do not need more AI-generated noise. They need agents th
 
 `trace-to-skill` helps teams answer:
 
+- Is this repository ready for Codex-driven OSS maintenance?
 - Why did this Codex or Claude run fail?
 - Was the failure caused by missing repo instructions?
 - Should this become an `AGENTS.md` rule?
@@ -74,6 +76,20 @@ Generated `AGENTS.md` snippet:
 
 ## What It Detects
 
+`doctor` checks repo-level readiness:
+
+| Check | Why maintainers care |
+| --- | --- |
+| `AGENTS.md` | Codex needs clear repository instructions |
+| CI workflow | Agent changes need visible validation |
+| Validation scripts | Completion claims need repeatable proof |
+| License | OSS adoption and review need clear terms |
+| Maintainer docs | Contributors and agent PRs need process |
+| Distribution | Users should be able to try the project in one command |
+| Agent learning loop | Failed runs should become evidence, not folklore |
+
+Trace analysis detects run-level failures:
+
 | Finding | Why maintainers care |
 | --- | --- |
 | Premature completion | Agent says "done" without proof |
@@ -110,6 +126,13 @@ npx trace-to-skill analyze ./runs
 Requires Node.js 20+.
 
 ## CLI
+
+Check whether a repository is ready for Codex automation:
+
+```bash
+trace-to-skill doctor .
+trace-to-skill doctor . --format json
+```
 
 Scaffold a repo:
 
@@ -210,7 +233,7 @@ Code scanning / SARIF upload:
 Composite action usage:
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.6
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.7
   with:
     traces: ./runs
     threshold: "80"
@@ -240,6 +263,7 @@ The goal is not to let agents autonomously rewrite project policy. The goal is t
 - GitHub PR comment mode
 - before/after eval runner
 - SARIF output for GitHub code scanning
+- `trace-to-skill doctor` for Codex readiness scoring
 - `trace-to-skill init` for repository setup
 - public benchmark of common agent failure classes
 

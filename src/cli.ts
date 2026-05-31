@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 import { writeFile } from "node:fs/promises";
 import { analyzeTargets } from "./analyze.js";
+import { doctorRepo } from "./doctor.js";
 import { compareAnalyses, evaluate } from "./eval.js";
 import { postPullRequestComment } from "./github.js";
 import { initProject } from "./init.js";
-import { renderAgentsRules, renderComparison, renderMarkdown, renderPrComment, renderSarif, renderSkill } from "./report.js";
+import { renderAgentsRules, renderComparison, renderDoctorMarkdown, renderMarkdown, renderPrComment, renderSarif, renderSkill } from "./report.js";
 
 interface ParsedArgs {
   command: string;
@@ -75,6 +76,15 @@ async function main(): Promise<void> {
     const output = format === "json" ? `${JSON.stringify(comparison, null, 2)}\n` : renderComparison(comparison);
     await writeOutput(output, parsed.flags.output);
     process.exitCode = comparison.decision === "reject" ? 1 : 0;
+    return;
+  }
+
+  if (parsed.command === "doctor") {
+    const result = await doctorRepo(parsed.targets[0] ?? process.cwd());
+    const format = String(parsed.flags.format ?? "markdown");
+    const output = format === "json" ? `${JSON.stringify(result, null, 2)}\n` : renderDoctorMarkdown(result);
+    await writeOutput(output, parsed.flags.output);
+    process.exitCode = result.checks.some((check) => check.status === "fail") || result.findings.some((finding) => finding.severity === "critical") ? 1 : 0;
     return;
   }
 
@@ -163,6 +173,7 @@ Usage:
   trace-to-skill eval <trace-file-or-dir> [--threshold 75] [--format text|json]
   trace-to-skill comment <trace-file-or-dir> [--dry-run] [--token $GITHUB_TOKEN]
   trace-to-skill compare --before <old-run> --after <new-run> [--format markdown|json]
+  trace-to-skill doctor [repo-dir] [--format markdown|json] [--output report.md]
   trace-to-skill init [--traces runs] [--threshold 80] [--comment] [--sarif] [--dry-run]
 
 Examples:
@@ -171,6 +182,7 @@ Examples:
   trace-to-skill eval ./runs --threshold 80
   trace-to-skill comment ./runs
   trace-to-skill compare --before ./runs/before --after ./runs/after
+  trace-to-skill doctor .
   trace-to-skill init --comment --sarif
 `);
 }
