@@ -75,6 +75,8 @@
     "codex-resume",
     "codex-issue-report",
     "openai-triage",
+    "codex-token-burn",
+    "codex-usage",
     "quota-mismatch",
     "codex-rate-limits",
     "usage-limit",

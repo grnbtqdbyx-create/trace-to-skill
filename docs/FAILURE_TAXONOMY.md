@@ -56,6 +56,14 @@ Common signals include `codex resume` interactive picker hangs or freezes, `code
 
 The fix is to capture app and CLI versions, OS, session or thread id, rollout JSONL size, line and record counts, largest line size, image/tool-output counts, `thread/resume` and `thread/goal/get` timings, renderer/app-server CPU and memory, affected SQLite/global-state files and migration versions, whether `codex resume <id>` works, whether a new thread works, and any backup or restore steps before editing local state.
 
+## Codex Token Burn
+
+Codex usage can drain unexpectedly even when users cannot tell whether the cause is useful model work, background process polling, idle app activity, compaction/replay overhead, retry loops, subagent fan-out, fast-mode drift, large context, long `AGENTS.md`, MCP/skill overhead, or cached-token-heavy turns.
+
+Common signals include tokens `burning very fast`, usage dropping by visible percentages after one or two prompts, weekly allowance depletion under normal usage, 5-hour usage reaching 0%, large `input` plus `cached input` totals, `write_stdin` empty polling, background commands repeatedly checking for no new output, Codex using daily usage while idle or only open, compaction tax, retry/tool loops, and requests for usage attribution across normal turns, compaction, retries, subagents, and background polling.
+
+The fix is to capture plan/workspace, client and version, model and reasoning/speed settings, fast-mode/large-context/subagent/review flags, recent `/status` and usage-dashboard deltas, local token totals including cached input/output/reasoning if available, background process ids and `write_stdin` poll cadence, compaction attempts and failures, retry/tool-loop counts, whether the app was idle, and a minimal reproduction with before/after usage percentages.
+
 ## Quota Mismatch
 
 Codex reports a usage-limit block even though another surface shows remaining quota, or quota state appears to be shared across accounts, consumed in parallel across 5h and weekly windows, or reset at an impossible time.

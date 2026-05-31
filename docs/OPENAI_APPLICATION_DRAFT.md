@@ -49,6 +49,7 @@ Current proof points:
 - `codex-report` command for turning redacted failed traces into OpenAI/Codex issue-ready Markdown with likely failure class, evidence, diagnostics, and privacy notes.
 - Context compaction failure detection for stuck Codex sessions and shareable support traces.
 - Sandbox and permission failure detection for Codex setup refresh, Windows `os error 740`, ACL, workspace ownership, and approval-mode drift reports.
+- Token-burn attribution for background polling, idle app activity, compaction/replay overhead, retry loops, cached-token-heavy turns, fast-mode drift, and subagent fan-out.
 - Quota mismatch detection for usage-limit blocks that contradict `/status`, usage dashboard state, account switching, or reset timing.
 - MCP config capability, secret-risk, JSON/TOML static startup-input diagnostics, and Codex config drift checks.
 - `AGENTS.md` / `CLAUDE.md` contradiction detection.

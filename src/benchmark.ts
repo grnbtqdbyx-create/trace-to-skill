@@ -102,6 +102,12 @@ const BENCHMARK_CASES: BenchmarkCaseDefinition[] = [
     expectedKinds: ["codex_session_state", "weak_evidence"]
   },
   {
+    id: "codex-token-burn",
+    title: "Codex token burn and usage-drain loop",
+    fixture: "fixtures/codex-token-burn.md",
+    expectedKinds: ["codex_token_burn", "weak_evidence"]
+  },
+  {
     id: "prompt-injection",
     title: "Untrusted PR comment prompt injection",
     fixture: "fixtures/prompt-injection.md",

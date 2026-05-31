@@ -259,6 +259,31 @@ const RULES: RuleDefinition[] = [
     suggestedSkill: "codex-session-state-triage"
   },
   {
+    kind: "codex_token_burn",
+    severity: "high",
+    title: "Codex token burn or usage-drain loop",
+    why: "Unexpected Codex usage drain can come from background polling, idle app activity, compaction/retry overhead, subagent fan-out, fast-mode drift, or repeated cached-context turns, and reports need attribution evidence instead of only a quota percentage.",
+    patterns: [
+      /\btokens?\b.{0,120}\b(burning|burned|burnt|burn through|burning very fast|draining|drain|usage drop|usage drops)\b/i,
+      /\busage\b.{0,160}\b(burn(?:ing|ed)?|drain(?:ing|ed)?|deplet(?:e|ed|ing)|consum(?:e|ed|ing) (?:very )?fast|drops? by \d{1,3}%|dropped to \d{1,3}%)\b/i,
+      /\bweekly (?:usage|limit|allowance)\b.{0,180}\b(deplet(?:e|ed|ing)|burn(?:ed|ing)?|drain(?:ed|ing)?|exhaust(?:ed|ing)?|almost fully depleted)\b/i,
+      /\b5[- ]?hour\b.{0,160}\b(limit|usage)\b.{0,160}\b(0%|consumed|used all|drain|burn)\b/i,
+      /\b(input|cached input|output|reasoning|total)\s*=\s*[\d,]+\b.{0,160}\b(cached|tokens?|usage|burn|drain)\b/i,
+      /\bwrite_stdin\b.{0,180}\b(empty poll|polling|polls?|full API|full history|complete conversation history|cached tokens?)\b/i,
+      /\bbackground (?:process|task|terminal|command)\b.{0,180}\b(polling|write_stdin|full API|full history|tokens?|usage|wastes?|burns?)\b/i,
+      /\b(no new output|process still running|still waiting)\b.{0,180}\b(model|LLM|API|token|usage|poll|write_stdin|history)\b/i,
+      /\bCodex\b.{0,160}\b(used all|using daily usage|usage even when it is not doing anything|just by being open|idle)\b/i,
+      /\bcompaction\b.{0,180}\b(tax|wastes?|usage|tokens?|drain|loop|failed|restart|re-explain|reconstruct)\b/i,
+      /\b(fast mode|large context window|multi_agent|subagents?|\/review|AGENTS\.md|MCPs?|skills)\b.{0,180}\b(usage|tokens?|burn|drain|higher|expensive)\b/i,
+      /\bcached tokens?\b.{0,160}\b(charg(?:e|ed|ing)|cost|spend|ratio|input|burn|usage)\b/i,
+      /\busage attribution\b.{0,180}\b(normal turns|compaction|retries|tool loops|background polling|subagents?)\b/i,
+      /\btoken (?:growth|consumption|usage)\b.{0,160}\b(quadratic|runaway|anomaly|monitor|budget|ceiling|cost)\b/i
+    ],
+    suggestedRule:
+      "When reporting Codex token burn, capture plan/workspace, client and version, model and reasoning/speed settings, fast-mode/large-context/subagent/review flags, recent /status and usage-dashboard deltas, local token totals including cached input/output/reasoning if available, background process ids and write_stdin poll cadence, compaction attempts and failures, retry/tool-loop counts, whether the app was idle, and a minimal reproduction with before/after usage percentages.",
+    suggestedSkill: "codex-token-burn-triage"
+  },
+  {
     kind: "quota_mismatch",
     severity: "high",
     title: "Codex quota or usage-limit mismatch",

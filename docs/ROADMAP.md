@@ -35,6 +35,7 @@
 - GitHub Action `agents-lint` mode and outputs
 - `redact` for privacy-preserving trace sharing before public issue reports or fixtures
 - `codex-report` for turning redacted traces into OpenAI/Codex issue-ready Markdown with line-linked evidence and diagnostics
+- Codex token-burn attribution for background polling, idle app usage, compaction tax, retry loops, cached-token-heavy turns, and fast-mode/subagent drift
 
 ## v0.2
 

@@ -55,6 +55,7 @@ trace-to-skill checks repo readiness and scans agent traces/logs to generate:
 - Codex mobile/remote-control route health detection for stale listener, stale enrollment, missing helper bundle, and `Waiting for desktop` evidence
 - Codex MCP runtime detection for cancelled approvals, unsupported routed tool calls, dropped namespace/serverName metadata, and closed stdio transports
 - Codex resume/session-state detection for large JSONL histories, sluggish Desktop thread rendering, dropped recent context, archived chat failures, and SQLite migration drift
+- Codex token-burn attribution for background polling, idle app usage, compaction tax, retry loops, cached-token-heavy turns, and fast-mode/subagent drift
 - Codex quota mismatch detection for usage-limit, account-switching, reset-time, and rate-limit evidence
 - a Codex-native readiness auditor skill
 - an Agent Learning Report

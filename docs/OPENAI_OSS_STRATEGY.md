@@ -31,6 +31,7 @@ Maintainers can use the tool to:
 - explain why an AI-generated PR needs more evidence
 - improve Codex workflows without locking into one provider
 - file better OpenAI/Codex issues with redacted evidence and diagnostics
+- attribute unexpected usage drain to background polling, compaction tax, retry loops, idle app activity, or other orchestration overhead
 
 ## Current Wedge
 

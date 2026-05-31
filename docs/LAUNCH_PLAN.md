@@ -57,6 +57,7 @@ Secondary headline:
 - [x] crawler-friendly `llms.txt` and `docs/DISCOVERY.md`
 - [x] npm Trusted Publishing workflow prepared for release automation without repeated local web auth
 - [x] OpenAI/Codex issue-ready report command with redaction-first workflow
+- [x] Codex token-burn detector for usage drain, background polling, idle app, compaction tax, and cached-token evidence
 
 ## Current Public Proof
 
