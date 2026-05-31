@@ -65,6 +65,12 @@ const BENCHMARK_CASES: BenchmarkCaseDefinition[] = [
     expectedKinds: ["codex_latest_turn_drift", "weak_evidence"]
   },
   {
+    id: "codex-latency-regression",
+    title: "Codex model and runtime latency regression",
+    fixture: "fixtures/codex-latency-regression.md",
+    expectedKinds: ["codex_latency_regression", "weak_evidence"]
+  },
+  {
     id: "sandbox-permission",
     title: "Codex sandbox permission failure",
     fixture: "fixtures/sandbox-permission.md",

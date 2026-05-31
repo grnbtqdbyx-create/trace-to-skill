@@ -176,6 +176,26 @@ const RULES: RuleDefinition[] = [
     suggestedSkill: "codex-latest-turn-drift-triage"
   },
   {
+    kind: "codex_latency_regression",
+    severity: "high",
+    title: "Codex model or runtime latency regression",
+    why: "Fast/Standard routing, thinking stalls, compaction/search/read latency, and long-running simple tasks need timing evidence separated from token burn or local CPU leaks.",
+    patterns: [
+      /\bGPT-?5\.5 Fast\b.{0,180}\b(slow|slower|Standard|regression|stall|stalls|10[-–]20\+? minutes|minutes|thinking)\b/i,
+      /\bFast\b.{0,120}\b(feels|felt)\b.{0,80}\b(Standard|slower|slow|8x slower)\b/i,
+      /\b(simple tasks?|small module|small change)\b.{0,120}\b(10[-–]20\+? minutes|more than an hour|hour|2 hours|two hours|longer)\b/i,
+      /\bthinking\b.{0,120}\b(stuck|stall|stalls|40\+? seconds|minute|hour|long)\b/i,
+      /\b(context compression|automatic context compression|compaction|reading|searching|search\/read)\b.{0,160}\b(slow|stall|stalls|long|minutes|very slow|delay)\b/i,
+      /\b(performance regression|routing change|capacity issue|backend\/client issue|backend issue|client issue)\b.{0,160}\b(Codex|GPT-5\.5|Fast|slow|latency)\b/i,
+      /\b(\d+\s*hours?|two hours|1hr\s*58\s*minutes|10[-–]20\+?\s*minutes)\b.{0,180}\b(\d+\s*lines|simple|small|Codex|GPT-5\.5|Fast)\b/i,
+      /\b(slowdown|latency|performance)\b.{0,100}\b8x slower\b/i,
+      /\b(api|API)\b.{0,120}\b(works fine|faster|not happening)\b.{0,120}\b(chatgpt codex|Codex)\b/i
+    ],
+    suggestedRule:
+      "When reporting Codex latency regressions, capture app/CLI/extension version, model and speed/reasoning settings, subscription/workspace, timestamps and per-step latency such as pre-first-token, thinking, tool, search, read, and compaction delays, task size and lines changed, local CPU/network evidence, feedback ids, before/after comparison, and whether the API path differs.",
+    suggestedSkill: "codex-latency-regression-triage"
+  },
+  {
     kind: "sandbox_permission",
     severity: "high",
     title: "Codex sandbox or permission failure",

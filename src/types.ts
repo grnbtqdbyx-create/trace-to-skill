@@ -14,6 +14,7 @@ export type FindingKind =
   | "prompt_injection"
   | "context_compaction"
   | "codex_latest_turn_drift"
+  | "codex_latency_regression"
   | "sandbox_permission"
   | "codex_connectivity"
   | "codex_remote_control"

@@ -32,6 +32,14 @@ Common signals include `responds to an earlier message`, `ignoring my latest mes
 
 The fix is to capture app/CLI/extension version, model and reasoning effort, context-window percent or token counts, compaction timing, the exact latest user request, the stale earlier request or response it answered instead, thread or feedback id, whether resending the same message fixes it, and any raw internal tool payload leaked into the chat UI.
 
+## Codex Latency Regression
+
+Codex can regress from fast interactive work into long pre-first-token stalls, extended thinking, slow read/search orchestration, compaction delays, or model routing that makes a fast mode feel like a standard or higher-reasoning mode.
+
+Common signals include `GPT-5.5 Fast` feeling as slow as `Standard`, simple tasks taking `10-20+ minutes`, thinking stuck for `40+ seconds` or minutes, automatic context compression becoming very slow, search/read delays dominating the session, hours spent for a small number of changed lines, and users reporting that the same prompt is faster through the API than through ChatGPT Codex.
+
+The fix is to capture app/CLI/extension version, model and speed/reasoning settings, subscription or workspace, timestamps for pre-first-token, thinking, tool execution, search, read, and compaction phases, task size and lines changed, local CPU/memory/network/VPN/proxy evidence, feedback ids, before/after latency comparison, and whether API and Codex paths differ.
+
 ## Codex Connectivity
 
 Codex login, device auth, API-key auth, ChatGPT response streaming, or remote transport fails because of token exchange errors, missing CA certificates, proxy or MITM behavior, Cloudflare challenges, IPv6 routing, DNS, VPN, or WebSocket/HTTPS fallback problems.

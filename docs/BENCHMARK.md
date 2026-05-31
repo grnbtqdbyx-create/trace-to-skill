@@ -11,6 +11,7 @@ This benchmark runs the public fixture pack that ships with the repository and p
 | Codex JSONL failed session | `fixtures/codex-session.jsonl` | 50 | 3 | 1 | `premature_completion`, `test_failure`, `weak_evidence` | pass |
 | Codex context compaction failure | `fixtures/context-compaction.md` | 75 | 2 | 0 | `context_compaction`, `weak_evidence` | pass |
 | Codex latest-turn drift after compaction | `fixtures/codex-latest-turn-drift.md` | 59 | 3 | 0 | `codex_latest_turn_drift`, `premature_completion`, `weak_evidence` | pass |
+| Codex model and runtime latency regression | `fixtures/codex-latency-regression.md` | 75 | 2 | 0 | `codex_latency_regression`, `weak_evidence` | pass |
 | Codex sandbox permission failure | `fixtures/sandbox-permission.md` | 75 | 2 | 0 | `sandbox_permission`, `weak_evidence` | pass |
 | Codex auth and connectivity failure | `fixtures/codex-connectivity.md` | 75 | 2 | 0 | `codex_connectivity`, `weak_evidence` | pass |
 | Codex remote-control route health failure | `fixtures/codex-remote-control.md` | 75 | 2 | 0 | `codex_remote_control`, `weak_evidence` | pass |
