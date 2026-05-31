@@ -114,6 +114,19 @@ test("analyzeTargets detects prompt injection in untrusted agent inputs", async 
   assert.ok(finding.evidence.length >= 2);
 });
 
+test("analyzeTargets detects Codex context compaction failures", async () => {
+  const result = await analyzeTargets(["fixtures/context-compaction.md"]);
+  const finding = result.findings.find((item) => item.kind === "context_compaction");
+  const evidence = finding?.evidence.map((item) => item.excerpt).join("\n") ?? "";
+
+  assert.ok(finding);
+  assert.equal(finding.severity, "high");
+  assert.match(evidence, /remote compact task/);
+  assert.match(evidence, /context_length_exceeded/);
+  assert.match(evidence, /unknown variant auto/);
+  assert.match(finding.suggestedRule, /compact error/);
+});
+
 test("redactText removes common secrets and private identifiers", () => {
   const raw = [
     "OPENAI_API_KEY=sk-proj-abcdefghijklmnopqrstuvwxyz123456",
@@ -259,6 +272,7 @@ test("package metadata points npm users back to the public project", async () =>
   assert.ok(packageJson.files?.includes("docs/DISCOVERY.md"));
   assert.ok(packageJson.keywords?.includes("openai-codex"));
   assert.ok(packageJson.keywords?.includes("prompt-injection"));
+  assert.ok(packageJson.keywords?.includes("context-compaction"));
 });
 
 test("initProject rejects unsafe workflow arguments", async () => {
@@ -638,9 +652,10 @@ test("benchmark covers public fixture failure classes", async () => {
   const markdown = renderBenchmarkMarkdown(benchmark);
 
   assert.equal(benchmark.passed, true);
-  assert.equal(benchmark.cases.length, 6);
+  assert.equal(benchmark.cases.length, 7);
   assert.ok(benchmark.cases.some((item) => item.id === "clean-validated-run" && item.score === 100));
   assert.ok(benchmark.cases.some((item) => item.id === "failed-workflow" && item.detectedKinds.includes("test_failure")));
+  assert.ok(benchmark.cases.some((item) => item.id === "context-compaction" && item.detectedKinds.includes("context_compaction")));
   assert.ok(benchmark.cases.some((item) => item.id === "mcp-risk" && item.detectedKinds.includes("secret_exposure")));
   assert.ok(benchmark.cases.some((item) => item.id === "prompt-injection" && item.detectedKinds.includes("prompt_injection")));
   assert.match(markdown, /trace-to-skill Benchmark/);
@@ -657,7 +672,7 @@ test("scorecard combines doctor readiness and benchmark evidence", async () => {
   assert.equal(scorecard.doctor.status, "ready");
   assert.equal(scorecard.doctor.score, 100);
   assert.equal(scorecard.benchmark.status, "pass");
-  assert.equal(scorecard.benchmark.cases, 6);
+  assert.equal(scorecard.benchmark.cases, 7);
   assert.match(markdown, /trace-to-skill Scorecard/);
   assert.match(markdown, /Codex readiness/);
   assert.match(markdown, /Benchmark Summary/);

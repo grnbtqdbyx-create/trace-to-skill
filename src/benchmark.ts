@@ -53,6 +53,12 @@ const BENCHMARK_CASES: BenchmarkCaseDefinition[] = [
     requireCritical: true
   },
   {
+    id: "context-compaction",
+    title: "Codex context compaction failure",
+    fixture: "fixtures/context-compaction.md",
+    expectedKinds: ["context_compaction", "weak_evidence"]
+  },
+  {
     id: "mcp-risk",
     title: "MCP config with secret exposure",
     fixture: "fixtures/mcp-risk.json",

@@ -123,6 +123,23 @@ const RULES: RuleDefinition[] = [
     suggestedSkill: "untrusted-input-review"
   },
   {
+    kind: "context_compaction",
+    severity: "high",
+    title: "Codex context compaction failure",
+    why: "Context compaction failures can strand long coding sessions, burn quota, and make maintainer handoff difficult unless the exact compact error and recovery state are captured.",
+    patterns: [
+      /\bError running remote compact task\b/i,
+      /\bcontext[_ ]length[_ ]exceeded\b/i,
+      /\bremote compact\b.{0,120}\b(stream disconnected|504|failed|error)\b/i,
+      /\bunknown variant auto\b.{0,80}\bexpected\b.{0,40}\b(high|original)\b/i,
+      /\bAutomatically compacting context\b.{0,120}\b(stuck|hang|failed|loop|indefinitely)\b/i,
+      /\bcontext compaction\b.{0,120}\b(stuck|hang|failed|loop|disconnected|cannot be cancelled|quota)\b/i,
+      /\bresponses\/compact\b/i
+    ],
+    suggestedRule:
+      "When Codex compaction fails, capture the compact error, model/app version, thread state, and whether the session is recoverable before continuing or reporting success."
+  },
+  {
     kind: "mcp_risk",
     severity: "high",
     title: "MCP permission or tool-risk signal",

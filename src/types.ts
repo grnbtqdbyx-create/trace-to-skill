@@ -11,6 +11,7 @@ export type FindingKind =
   | "secret_exposure"
   | "hidden_unicode"
   | "prompt_injection"
+  | "context_compaction"
   | "mcp_risk"
   | "weak_evidence";
 

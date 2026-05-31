@@ -14,6 +14,10 @@ The agent changes code but skips validation, usually with language like "change 
 
 A test, build, typecheck, lint, or smoke command failed. The agent should continue the fix loop or report a precise blocker.
 
+## Context Compaction
+
+Codex context compaction failed, disconnected, looped, or hit `context_length_exceeded`. The fix is to capture the compact error, model/app version, thread state, and recovery state before continuing or reporting the session as healthy.
+
 ## Hallucinated File
 
 The trace references a missing path, missing module, or nonexistent file. The fix is usually a repository navigation rule.

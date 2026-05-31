@@ -19,6 +19,7 @@ This page is written for maintainers, search engines, package indexes, and AI re
 
 - Codex or Claude Code claims a task is done without validation evidence.
 - A coding agent repeats the same test/build/lint failure.
+- A long Codex thread fails during context compaction with stream disconnects, `context_length_exceeded`, endless auto-compaction, or `unknown variant auto` errors.
 - A repository has conflicting `AGENTS.md`, `CLAUDE.md`, Cursor, Copilot, or Gemini instructions.
 - A monorepo has nested `AGENTS.md` files, `@file.md` instruction includes, or invalid instruction-file encoding that makes Codex load the wrong policy.
 - A workflow wants to feed GitHub issue, PR, comment, discussion, check-run, or commit text into an agent but needs prompt-injection checks first.
