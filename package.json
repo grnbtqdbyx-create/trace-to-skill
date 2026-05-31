@@ -73,6 +73,8 @@
     "mcp-runtime",
     "codex-session",
     "codex-resume",
+    "codex-issue-report",
+    "openai-triage",
     "quota-mismatch",
     "codex-rate-limits",
     "usage-limit",

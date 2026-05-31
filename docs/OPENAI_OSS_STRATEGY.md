@@ -17,6 +17,8 @@ Codex gets more useful when maintainers can repeatedly improve repository-specif
 
 The first public release already supports Codex-style JSONL normalization and pull request comment reports, so maintainers can connect real agent runs to GitHub review workflows.
 
+The `codex-report` command now turns redacted traces into OpenAI/Codex issue-ready Markdown, which helps users file concise reports with line-linked evidence instead of pasting entire private transcripts.
+
 SARIF output also lets maintainers surface agent workflow risks inside GitHub code scanning, which makes MCP and instruction-risk findings visible in existing security review surfaces.
 
 ## OSS Maintainer Value
@@ -28,6 +30,7 @@ Maintainers can use the tool to:
 - block risky agent runs in CI
 - explain why an AI-generated PR needs more evidence
 - improve Codex workflows without locking into one provider
+- file better OpenAI/Codex issues with redacted evidence and diagnostics
 
 ## Current Wedge
 

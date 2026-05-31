@@ -110,6 +110,85 @@ export function renderPrComment(result: AnalysisResult): string {
   return `${lines.join("\n")}\n`;
 }
 
+export function renderCodexIssueReport(result: AnalysisResult): string {
+  const relevantFindings = result.findings.filter(isCodexIssueFinding);
+  const topFindings = (relevantFindings.length > 0 ? relevantFindings : result.findings).slice(0, 4);
+  const primary = topFindings[0];
+  const status = primary ? `${primary.title} (${primary.kind}, ${primary.severity})` : "No Codex-specific failure class detected";
+  const issueSummary = primary ?
+    `trace-to-skill detected ${primary.title} (${primary.kind}). ${primary.why}` :
+    result.summary;
+  const lines = [
+    "# OpenAI Codex Issue Triage Report",
+    "",
+    `Score: **${result.score}/100**`,
+    "",
+    `Likely failure class: **${status}**`,
+    "",
+    result.summary,
+    "",
+    "## Copy-Paste Issue Body",
+    "",
+    "```md",
+    "### What happened?",
+    "",
+    issueSummary,
+    "",
+    "### Detected failure class",
+    "",
+    primary ? `- ${primary.kind}: ${primary.title} (${primary.severity})` : "- None detected",
+    "",
+    "### Evidence",
+    ""
+  ];
+
+  if (topFindings.length === 0) {
+    lines.push("- No findings detected.");
+  } else {
+    topFindings.forEach((finding) => {
+      lines.push(`#### ${finding.title}`);
+      finding.evidence.slice(0, 6).forEach((evidence) => {
+        lines.push(`- ${evidence.file}:${evidence.line} - ${evidence.excerpt}`);
+      });
+      lines.push("");
+    });
+  }
+
+  lines.push(
+    "### Diagnostics to attach",
+    "",
+    ...buildDiagnosticChecklist(topFindings),
+    "",
+    "### Privacy",
+    "",
+    "- I redacted tokens, API keys, private paths, customer data, and hidden Unicode controls before sharing this trace.",
+    "```",
+    "",
+    "## Findings",
+    ""
+  );
+
+  if (topFindings.length === 0) {
+    lines.push("No findings detected.");
+  } else {
+    topFindings.forEach((finding, index) => {
+      lines.push(renderFinding(finding, index + 1));
+    });
+  }
+
+  lines.push(
+    "",
+    "## Reporter Notes",
+    "",
+    "- Run `trace-to-skill redact <trace> --output redacted-runs` before attaching logs publicly.",
+    "- Prefer the shortest trace that reproduces the failure.",
+    "- Include exact Codex app/CLI version, OS, model, subscription/workspace, and the command or UI action that failed.",
+    "- Link related OpenAI/Codex issues when you know them, but keep the evidence self-contained."
+  );
+
+  return `${lines.join("\n")}\n`;
+}
+
 export function renderComparison(result: ComparisonResult): string {
   return `${[
     "# Agent Improvement Comparison",
@@ -123,6 +202,28 @@ export function renderComparison(result: ComparisonResult): string {
     "",
     result.message
   ].join("\n")}\n`;
+}
+
+function isCodexIssueFinding(finding: Finding): boolean {
+  return finding.kind.startsWith("codex_") ||
+    finding.kind === "context_compaction" ||
+    finding.kind === "sandbox_permission" ||
+    finding.kind === "quota_mismatch" ||
+    finding.kind === "mcp_risk";
+}
+
+function buildDiagnosticChecklist(findings: Finding[]): string[] {
+  const checklist = new Set<string>();
+
+  findings.forEach((finding) => {
+    checklist.add(`- ${finding.suggestedRule}`);
+  });
+
+  if (checklist.size === 0) {
+    checklist.add("- Attach the exact command, UI action, error text, app/CLI version, OS, and whether the issue reproduces in a clean workspace.");
+  }
+
+  return Array.from(checklist).slice(0, 6);
 }
 
 export function renderDoctorMarkdown(result: DoctorResult): string {

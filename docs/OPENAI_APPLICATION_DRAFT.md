@@ -46,6 +46,7 @@ Current proof points:
 - Codex-native `codex-readiness-auditor` skill for repeatable maintainer audits.
 - GitHub event context guard for scanning PR, issue, comment, discussion, check-run, and commit text before Codex acts on it.
 - Privacy-preserving `redact` command for sharing failed traces without common tokens, emails, local paths, or hidden Unicode controls.
+- `codex-report` command for turning redacted failed traces into OpenAI/Codex issue-ready Markdown with likely failure class, evidence, diagnostics, and privacy notes.
 - Context compaction failure detection for stuck Codex sessions and shareable support traces.
 - Sandbox and permission failure detection for Codex setup refresh, Windows `os error 740`, ACL, workspace ownership, and approval-mode drift reports.
 - Quota mismatch detection for usage-limit blocks that contradict `/status`, usage dashboard state, account switching, or reset timing.

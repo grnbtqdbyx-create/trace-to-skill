@@ -49,6 +49,7 @@ trace-to-skill checks repo readiness and scans agent traces/logs to generate:
 - scorecard PR comments with update-in-place marker
 - a GitHub event context guard for prompt-injection checks before agents read PR/issue/comment text
 - a redaction command for privacy-preserving failed trace sharing
+- an OpenAI/Codex issue-ready report command for turning redacted traces into concise, evidence-backed issue bodies
 - Codex sandbox setup and permission failure detection for setup refresh, ACL, ownership, and approval-mode problems
 - Codex auth/connectivity detection for token exchange, CA certificate, proxy, IPv6, Cloudflare challenge, and stream disconnect evidence
 - Codex mobile/remote-control route health detection for stale listener, stale enrollment, missing helper bundle, and `Waiting for desktop` evidence
@@ -69,6 +70,7 @@ npx trace-to-skill init --comment --sarif
 npx trace-to-skill doctor .
 npx trace-to-skill lint-agents .
 npx trace-to-skill redact ./runs --output redacted-runs
+npx trace-to-skill codex-report redacted-runs --output openai-codex-issue.md
 npx trace-to-skill doctor . --threshold 85
 npx trace-to-skill benchmark
 npx trace-to-skill scorecard .

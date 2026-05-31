@@ -9,7 +9,7 @@ import { analyzeGithubEventContext } from "./githubContext.js";
 import { postPullRequestComment } from "./github.js";
 import { initProject } from "./init.js";
 import { redactTargets } from "./redact.js";
-import { renderAgentsRules, renderComparison, renderDoctorMarkdown, renderDoctorPrComment, renderMarkdown, renderPrComment, renderSarif, renderSkill } from "./report.js";
+import { renderAgentsRules, renderCodexIssueReport, renderComparison, renderDoctorMarkdown, renderDoctorPrComment, renderMarkdown, renderPrComment, renderSarif, renderSkill } from "./report.js";
 import { renderScorecardMarkdown, renderScorecardPrComment, runScorecard } from "./scorecard.js";
 
 interface ParsedArgs {
@@ -39,6 +39,12 @@ async function main(): Promise<void> {
     const target = String(parsed.flags.target ?? "agents-md");
     const output = target === "skill" ? renderSkill(result) : renderAgentsRules(result);
     await writeOutput(output, parsed.flags.output);
+    return;
+  }
+
+  if (parsed.command === "codex-report") {
+    const result = await analyzeTargets(parsed.targets);
+    await writeOutput(renderCodexIssueReport(result), parsed.flags.output);
     return;
   }
 
@@ -305,6 +311,7 @@ Turn failed AI coding-agent runs into reusable rules, skills, and eval evidence.
 
 Usage:
   trace-to-skill analyze <trace-file-or-dir> [--format markdown|json|sarif] [--output report.md]
+  trace-to-skill codex-report <trace-file-or-dir> [--output openai-codex-issue.md]
   trace-to-skill suggest <trace-file-or-dir> [--target agents-md|skill] [--output AGENTS.generated.md]
   trace-to-skill lint-agents [repo-dir] [--format markdown|json] [--output report.md]
   trace-to-skill redact <trace-file-or-dir> [--output redacted-runs] [--format text|json]
@@ -321,6 +328,7 @@ Usage:
 
 Examples:
   trace-to-skill analyze ./runs
+  trace-to-skill codex-report ./runs --output openai-codex-issue.md
   trace-to-skill suggest ./runs --target skill --output skills/verification-before-completion/SKILL.md
   trace-to-skill lint-agents .
   trace-to-skill redact ./runs --output redacted-runs

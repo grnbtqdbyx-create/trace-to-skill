@@ -56,6 +56,7 @@ Secondary headline:
 - [x] discovery PR to awesome-codex-skills: https://github.com/ComposioHQ/awesome-codex-skills/pull/90
 - [x] crawler-friendly `llms.txt` and `docs/DISCOVERY.md`
 - [x] npm Trusted Publishing workflow prepared for release automation without repeated local web auth
+- [x] OpenAI/Codex issue-ready report command with redaction-first workflow
 
 ## Current Public Proof
 

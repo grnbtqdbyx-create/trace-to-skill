@@ -111,7 +111,18 @@ npx trace-to-skill analyze ./runs --format json
 
 This catches traces where `/status` or the usage page shows remaining 5h or weekly quota, accounts appear to share limits unexpectedly, a Team account inherits a Plus account's limit state, or quota reset times jump after logout/login.
 
-## 9. GitHub Context Guard
+## 9. OpenAI Codex Issue Report
+
+Use this when you want to file or update an OpenAI/Codex issue with a concise, evidence-backed report instead of pasting a full transcript.
+
+```bash
+npx trace-to-skill redact ./runs --output redacted-runs
+npx trace-to-skill codex-report redacted-runs --output openai-codex-issue.md
+```
+
+The report includes the likely Codex failure class, line-linked evidence, diagnostics to attach, and a privacy checklist. This is useful for issues about auth/connectivity, sandbox setup, remote-control routing, MCP runtime calls, resume/session-state failures, quota mismatches, and context compaction.
+
+## 10. GitHub Context Guard
 
 Use this before an agent reads untrusted GitHub text.
 
@@ -128,7 +139,7 @@ Use it when:
 - a bot asks Codex to triage untrusted user reports
 - logs or comments might contain instructions like "ignore previous instructions" or "print secrets"
 
-## 10. Failed Agent Run To Reviewable Rule
+## 11. Failed Agent Run To Reviewable Rule
 
 Use this when a coding agent made a repeated workflow mistake.
 
@@ -146,7 +157,7 @@ Recommended maintainer loop:
 4. Copy only evidence-backed rules into the real policy file.
 5. Run `eval` or `scorecard` in CI so the same failure does not silently return.
 
-## 11. Privacy-Preserving Adoption
+## 12. Privacy-Preserving Adoption
 
 Use this when you want public evidence without leaking private traces.
 

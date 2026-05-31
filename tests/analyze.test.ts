@@ -12,7 +12,7 @@ import { analyzeGithubEventContext, extractGithubContextInputs } from "../src/gi
 import { postPullRequestComment } from "../src/github.js";
 import { initProject } from "../src/init.js";
 import { redactTargets, redactText } from "../src/redact.js";
-import { renderAgentsRules, renderComparison, renderDoctorPrComment, renderPrComment, renderSarif, renderSkill } from "../src/report.js";
+import { renderAgentsRules, renderCodexIssueReport, renderComparison, renderDoctorPrComment, renderPrComment, renderSarif, renderSkill } from "../src/report.js";
 import { renderScorecardMarkdown, renderScorecardPrComment, runScorecard } from "../src/scorecard.js";
 
 test("analyzeTargets detects failed agent workflow signals", async () => {
@@ -59,6 +59,18 @@ test("renderPrComment includes marker for update-in-place behavior", async () =>
 
   assert.match(comment, /trace-to-skill-report/);
   assert.match(comment, /Top Findings/);
+});
+
+test("renderCodexIssueReport creates an OpenAI issue-ready triage body", async () => {
+  const result = await analyzeTargets(["fixtures/codex-session-state.md"]);
+  const report = renderCodexIssueReport(result);
+
+  assert.match(report, /OpenAI Codex Issue Triage Report/);
+  assert.match(report, /Copy-Paste Issue Body/);
+  assert.match(report, /codex_session_state/);
+  assert.match(report, /thread\/resume took 7,760 ms/);
+  assert.match(report, /Diagnostics to attach/);
+  assert.match(report, /trace-to-skill redact/);
 });
 
 test("postPullRequestComment dry-run resolves pull request event", async () => {
@@ -374,6 +386,8 @@ test("package metadata points npm users back to the public project", async () =>
   assert.ok(packageJson.keywords?.includes("mcp-runtime"));
   assert.ok(packageJson.keywords?.includes("codex-session"));
   assert.ok(packageJson.keywords?.includes("codex-resume"));
+  assert.ok(packageJson.keywords?.includes("codex-issue-report"));
+  assert.ok(packageJson.keywords?.includes("openai-triage"));
   assert.ok(packageJson.keywords?.includes("quota-mismatch"));
 });
 

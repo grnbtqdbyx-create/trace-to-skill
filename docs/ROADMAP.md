@@ -34,6 +34,7 @@
 - `lint-agents` for focused AGENTS.md, tool-instruction composition, MCP capability, JSON/TOML static MCP startup-input linting, and Codex config drift checks
 - GitHub Action `agents-lint` mode and outputs
 - `redact` for privacy-preserving trace sharing before public issue reports or fixtures
+- `codex-report` for turning redacted traces into OpenAI/Codex issue-ready Markdown with line-linked evidence and diagnostics
 
 ## v0.2
 

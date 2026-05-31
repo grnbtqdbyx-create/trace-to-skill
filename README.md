@@ -14,6 +14,7 @@ Turn failed AI coding-agent runs into reusable `AGENTS.md` rules, `SKILL.md` fil
 npx trace-to-skill doctor .
 npx trace-to-skill lint-agents .
 npx trace-to-skill analyze ./runs
+npx trace-to-skill codex-report ./runs
 npx trace-to-skill init --comment --sarif
 npx trace-to-skill suggest ./runs --target agents-md
 npx trace-to-skill eval ./runs --threshold 80
@@ -49,6 +50,7 @@ Use it when you need to:
 - **Prove remote-control route health:** run `trace-to-skill analyze ./runs` when Codex mobile/remote sessions show `Waiting for desktop`, `Directory Unavailable`, stale listener/cache, missing helper bundle, or stale enrollment symptoms.
 - **Triage Codex MCP runtime failures:** run `trace-to-skill analyze ./runs` when MCP tools are listed but Codex cancels approval, drops namespace/serverName metadata, routes to `unsupported call`, or closes stdio transport.
 - **Debug Codex resume/session state:** run `trace-to-skill analyze ./runs` when `codex resume` freezes, large JSONL histories make Desktop sluggish, recent context disappears after resume, or SQLite migration/state errors break goals.
+- **File better OpenAI/Codex issues:** run `trace-to-skill codex-report ./runs` to turn a failed trace into a redaction-aware, copy-paste-ready issue body with evidence and diagnostics.
 - **Package quota bugs cleanly:** run `trace-to-skill analyze ./runs` on Codex traces where `/status` or the usage page shows remaining quota but the client returns `You've hit your usage limit`.
 
 For copy-paste workflows, see [docs/USE_CASES.md](https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/USE_CASES.md). For crawler-friendly metadata, see [docs/DISCOVERY.md](https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/DISCOVERY.md) and [llms.txt](https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/llms.txt).
@@ -71,6 +73,7 @@ Open-source maintainers do not need more AI-generated noise. They need agents th
 - Did quota accounting, account switching, or reset timing contradict the runtime usage-limit error?
 - Did an MCP tool appear in `tools/list` but fail at Codex runtime because approval, namespace routing, or stdio lifecycle broke?
 - Did a long local Codex session become impossible to resume because history size, context compression, archived chat loading, or state migration broke?
+- Can the failure be reported to OpenAI with line-linked evidence, redaction notes, and the exact diagnostics maintainers need?
 
 ## Example Output
 
@@ -210,6 +213,14 @@ trace-to-skill analyze ./runs --format markdown --output agent-learning-report.m
 trace-to-skill analyze ./runs --format json
 trace-to-skill analyze ./runs --format sarif --output trace-to-skill.sarif
 ```
+
+Create an OpenAI Codex issue-ready report:
+
+```bash
+trace-to-skill codex-report ./runs --output openai-codex-issue.md
+```
+
+This renders a copy-paste issue body with the likely Codex failure class, evidence lines, diagnostics to attach, and privacy/redaction reminders. It is designed for high-signal reports in `openai/codex` issues without forcing maintainers to read full private transcripts.
 
 Generate reusable rules:
 

@@ -50,6 +50,7 @@ npx trace-to-skill lint-agents .
 npx trace-to-skill guard-github-event "$GITHUB_EVENT_PATH"
 npx trace-to-skill redact ./runs --output redacted-runs
 npx trace-to-skill analyze ./runs --format json
+npx trace-to-skill codex-report ./runs --output openai-codex-issue.md
 npx trace-to-skill suggest ./runs --target agents-md
 ```
 
@@ -61,6 +62,7 @@ npx trace-to-skill suggest ./runs --target agents-md
 - `trace-to-skill redact --format json`
 - `trace-to-skill scorecard --format json`
 - SARIF from `trace-to-skill analyze --format sarif`
+- OpenAI/Codex issue-ready Markdown from `trace-to-skill codex-report`
 - GitHub Action outputs for doctor, AGENTS lint, GitHub context guard, benchmark, and scorecard modes
 
 ## Schema Contracts
@@ -73,7 +75,7 @@ npx trace-to-skill suggest ./runs --target agents-md
 
 ## Related Keywords
 
-Codex, OpenAI Codex, Codex CLI, Codex sandbox, Windows sandbox, Codex auth, token_exchange_failed, Codex connectivity, stream disconnected, Codex remote control, Codex mobile, Waiting for desktop, Directory Unavailable, stale listener, Codex MCP runtime, MCP unsupported call, mcp__node_repl__js, MCP namespace serverName, MCP Transport closed, StdioServerTransport, Codex resume, Codex session state, rollout JSONL, thread_goals, state_5.sqlite, goals_1.sqlite, archived chats, Codex quota, usage limit, rate limits, AGENTS.md, SKILL.md, Claude Code, Cursor, Copilot coding agent, Gemini CLI, MCP, Model Context Protocol, prompt injection, agent evals, AI code review, open-source maintainers, trace redaction, SARIF, GitHub Actions.
+Codex, OpenAI Codex, Codex issue report, OpenAI triage, Codex CLI, Codex sandbox, Windows sandbox, Codex auth, token_exchange_failed, Codex connectivity, stream disconnected, Codex remote control, Codex mobile, Waiting for desktop, Directory Unavailable, stale listener, Codex MCP runtime, MCP unsupported call, mcp__node_repl__js, MCP namespace serverName, MCP Transport closed, StdioServerTransport, Codex resume, Codex session state, rollout JSONL, thread_goals, state_5.sqlite, goals_1.sqlite, archived chats, Codex quota, usage limit, rate limits, AGENTS.md, SKILL.md, Claude Code, Cursor, Copilot coding agent, Gemini CLI, MCP, Model Context Protocol, prompt injection, agent evals, AI code review, open-source maintainers, trace redaction, SARIF, GitHub Actions.
 
 ## Non-Goals
 

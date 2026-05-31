@@ -55,6 +55,7 @@ npx trace-to-skill lint-agents .
 npx trace-to-skill guard-github-event "$GITHUB_EVENT_PATH"
 npx trace-to-skill redact ./runs --output redacted-runs
 npx trace-to-skill analyze ./runs
+npx trace-to-skill codex-report ./runs --output openai-codex-issue.md
 npx trace-to-skill suggest ./runs --target agents-md
 npx trace-to-skill eval ./runs --threshold 80
 npx trace-to-skill benchmark
@@ -106,5 +107,7 @@ npx trace-to-skill init --comment --sarif
 - Codex resume picker hangs with large session files
 - Codex Desktop sluggish opening large rollout JSONL thread
 - Codex state_5.sqlite no such table thread_goals
+- OpenAI Codex issue report from failed trace
+- Codex bug report evidence checklist
 - Codex usage limit despite remaining quota
 - Codex quota mismatch and rate limit debugging
