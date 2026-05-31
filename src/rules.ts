@@ -185,6 +185,29 @@ const RULES: RuleDefinition[] = [
     suggestedSkill: "codex-connectivity-triage"
   },
   {
+    kind: "codex_remote_control",
+    severity: "high",
+    title: "Codex remote-control route health failure",
+    why: "Codex mobile, SSH remote, and desktop remote-control failures can look connected while commands route through stale listeners, stale enrollments, missing helper bundles, or mismatched workspace/session state.",
+    patterns: [
+      /\bremote[- ]control\b.{0,180}\b(stale|listener|server_name|enrollment|connected|route|14567|websocket|waiting for desktop|Directory Unavailable)\b/i,
+      /\bWaiting for desktop\b/i,
+      /\bDirectory:\s*Unavailable\b/i,
+      /\b127\.0\.0\.1:14567\b/i,
+      /\bstale\b.{0,120}\b(server_name|listener|remote-control|enrollment|cached binary|cache directory|helper path)\b/i,
+      /\b(cache directory|cached binary|bundle_complete|helper-file completeness)\b.{0,180}\b(codex\.exe|codex-windows-sandbox-setup\.exe|codex-command-runner\.exe|missing|incomplete)\b/i,
+      /\bcodex-windows-sandbox-setup\.exe\b.{0,120}\b(missing|not found|cannot spawn|spawn)\b/i,
+      /\bremoteControl\/status\/read\b/i,
+      /\bbackend environments\b.{0,120}\b(empty|returns empty|unavailable)\b/i,
+      /\bAndroid\b.{0,180}\b(Codex Mobile|Directory Unavailable|does not show|fails to open|re-pairing|revoking)\b/i,
+      /\bmobile\b.{0,180}\b(pairing|fails to connect|waiting for desktop|command id|listener|remote route|session list stays stale)\b/i,
+      /\bapp-server-control\.sock\b.{0,160}\b(remote|SSH|mobile|sshd-session|nc -U)\b/i
+    ],
+    suggestedRule:
+      "When Codex remote-control or mobile routing fails, capture desktop/app/CLI versions, mobile OS/app version, host id, remote-control status, listener pid/executable path, bound port, cache directory id, helper bundle completeness, active server_name/enrollment, workspace root, last mobile command id, and whether re-pairing or restarting the listener changes the route.",
+    suggestedSkill: "codex-remote-control-triage"
+  },
+  {
     kind: "quota_mismatch",
     severity: "high",
     title: "Codex quota or usage-limit mismatch",

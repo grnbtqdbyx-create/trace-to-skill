@@ -32,6 +32,14 @@ Common signals include `token_exchange_failed`, `auth.openai.com/oauth/token`, `
 
 The fix is to capture the client or app version, OS/container image, proxy or VPN state, endpoint URL, exact error, DNS IPv4/IPv6 results, `curl -4` / `curl -6` checks, CA variables, certificate package status, and whether browser login, device auth, and API-key paths fail differently.
 
+## Codex Remote Control
+
+Codex mobile, SSH remote, or desktop remote-control appears connected but the next command does not reach the intended host, workspace, or app-server. Common causes include stale remote-control listeners, stale enrollment or `server_name` state, missing helper files in a cached runtime bundle, mixed mobile/desktop session state, or Android/iOS surfaces showing stale project/session data.
+
+Common signals include `Waiting for desktop`, `Directory: Unavailable`, `remote-control`, `remoteControl/status/read`, `127.0.0.1:14567`, stale listener or cached binary evidence, missing `codex-windows-sandbox-setup.exe`, missing `codex-command-runner.exe`, backend environments returning empty, and re-pairing temporarily restoring access.
+
+The fix is to capture desktop/app/CLI versions, mobile OS/app version, host id, remote-control status, listener pid and executable path, bound port, cache directory id, helper bundle completeness, active `server_name` or enrollment id, workspace root, last mobile command id, and whether restarting the listener or re-pairing changes the route.
+
 ## Quota Mismatch
 
 Codex reports a usage-limit block even though another surface shows remaining quota, or quota state appears to be shared across accounts, consumed in parallel across 5h and weekly windows, or reset at an impossible time.

@@ -71,6 +71,12 @@ const BENCHMARK_CASES: BenchmarkCaseDefinition[] = [
     expectedKinds: ["codex_connectivity", "weak_evidence"]
   },
   {
+    id: "codex-remote-control",
+    title: "Codex remote-control route health failure",
+    fixture: "fixtures/codex-remote-control.md",
+    expectedKinds: ["codex_remote_control", "weak_evidence"]
+  },
+  {
     id: "quota-mismatch",
     title: "Codex quota mismatch",
     fixture: "fixtures/quota-mismatch.md",

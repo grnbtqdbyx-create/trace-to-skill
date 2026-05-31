@@ -67,6 +67,8 @@
     "codex-connectivity",
     "codex-auth",
     "token-exchange-failed",
+    "codex-remote-control",
+    "codex-mobile",
     "quota-mismatch",
     "codex-rate-limits",
     "usage-limit",

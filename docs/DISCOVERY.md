@@ -22,6 +22,7 @@ This page is written for maintainers, search engines, package indexes, and AI re
 - A long Codex thread fails during context compaction with stream disconnects, `context_length_exceeded`, endless auto-compaction, or `unknown variant auto` errors.
 - Codex cannot start tools because sandbox setup refresh, Windows `os error 740`, ACL, ownership, or approval-mode permission failures block execution.
 - Codex login or response streaming fails because of `token_exchange_failed`, `auth.openai.com/oauth/token`, missing CA certificates, proxy/MITM, IPv6 fallback, Cloudflare challenge, or `stream disconnected before completion`.
+- Codex mobile or remote-control appears connected but routes through stale listeners, stale enrollment, incomplete helper bundles, empty backend environments, or stale Android/iOS session state.
 - Codex reports `You've hit your usage limit` even though `/status` or the usage dashboard shows quota left, or quota appears shared across accounts.
 - A repository has conflicting `AGENTS.md`, `CLAUDE.md`, Cursor, Copilot, or Gemini instructions.
 - A monorepo has nested `AGENTS.md` files, `@file.md` instruction includes, or invalid instruction-file encoding that makes Codex load the wrong policy.
@@ -70,7 +71,7 @@ npx trace-to-skill suggest ./runs --target agents-md
 
 ## Related Keywords
 
-Codex, OpenAI Codex, Codex CLI, Codex sandbox, Windows sandbox, Codex auth, token_exchange_failed, Codex connectivity, stream disconnected, Codex quota, usage limit, rate limits, AGENTS.md, SKILL.md, Claude Code, Cursor, Copilot coding agent, Gemini CLI, MCP, Model Context Protocol, prompt injection, agent evals, AI code review, open-source maintainers, trace redaction, SARIF, GitHub Actions.
+Codex, OpenAI Codex, Codex CLI, Codex sandbox, Windows sandbox, Codex auth, token_exchange_failed, Codex connectivity, stream disconnected, Codex remote control, Codex mobile, Waiting for desktop, Directory Unavailable, stale listener, Codex quota, usage limit, rate limits, AGENTS.md, SKILL.md, Claude Code, Cursor, Copilot coding agent, Gemini CLI, MCP, Model Context Protocol, prompt injection, agent evals, AI code review, open-source maintainers, trace redaction, SARIF, GitHub Actions.
 
 ## Non-Goals
 
