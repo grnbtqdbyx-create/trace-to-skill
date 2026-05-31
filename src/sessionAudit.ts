@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { createReadStream } from "node:fs";
 import { readdir, stat } from "node:fs/promises";
 import os from "node:os";
@@ -20,6 +21,17 @@ export interface SessionAuditFile {
   jsonParseErrors: number;
   recordTypes: Record<string, number>;
   signalCounts: Record<string, number>;
+  session?: SessionAuditThreadMetadata;
+}
+
+export interface SessionAuditThreadMetadata {
+  id: string;
+  createdAt?: string;
+  cwdBasename?: string;
+  cwdHash?: string;
+  originator?: string;
+  cliVersion?: string;
+  sourceKind?: string;
 }
 
 export interface SessionAuditStateFile {
@@ -30,9 +42,24 @@ export interface SessionAuditStateFile {
 
 export interface SessionAuditFinding {
   severity: SessionAuditSeverity;
-  kind: "large_rollout" | "huge_jsonl_line" | "json_parse_error" | "short_session_index" | "state_file_present";
+  kind: "large_rollout" | "huge_jsonl_line" | "json_parse_error" | "short_session_index" | "unindexed_rollout_thread" | "state_file_present";
   path?: string;
   message: string;
+}
+
+export interface SessionAuditThread {
+  id: string;
+  path: string;
+  indexed: boolean;
+  indexTitle?: string;
+  indexUpdatedAt?: string;
+  createdAt?: string;
+  cwdBasename?: string;
+  cwdHash?: string;
+  originator?: string;
+  cliVersion?: string;
+  sourceKind?: string;
+  recoverCommand: string;
 }
 
 export interface SessionAuditResult {
@@ -51,8 +78,13 @@ export interface SessionAuditResult {
     parseErrorFiles: number;
     sessionIndexLines?: number;
     rolloutFiles?: number;
+    rolloutThreads: number;
+    indexedThreads: number;
+    unindexedRolloutThreads: number;
+    projectRoots: number;
   };
   files: SessionAuditFile[];
+  threads: SessionAuditThread[];
   stateFiles: SessionAuditStateFile[];
   findings: SessionAuditFinding[];
 }
@@ -74,10 +106,13 @@ export async function auditCodexSessions(target = defaultCodexHome(), options: S
     files.push(await analyzeJsonlFile(file, root));
   }
 
-  const stateFiles = await Promise.all(discovered.stateFiles.map((file) => stateFileInfo(file, root)));
-  const findings = buildFindings(files, stateFiles, thresholds);
   const sessionIndex = files.find((file) => path.basename(file.path) === "session_index.jsonl");
+  const indexEntries = sessionIndex ? await readSessionIndex(path.join(root, sessionIndex.path)) : new Map<string, SessionIndexEntry>();
+  const threads = buildThreads(files, indexEntries);
+  const stateFiles = await Promise.all(discovered.stateFiles.map((file) => stateFileInfo(file, root)));
+  const findings = buildFindings(files, threads, stateFiles, thresholds);
   const rolloutFiles = files.filter((file) => path.basename(file.path).startsWith("rollout-")).length;
+  const projectKeys = new Set(threads.map((thread) => thread.cwdHash).filter(Boolean));
   const summary = {
     jsonlFiles: files.length,
     totalBytes: files.reduce((sum, file) => sum + file.sizeBytes, 0),
@@ -85,7 +120,11 @@ export async function auditCodexSessions(target = defaultCodexHome(), options: S
     hugeLineFiles: files.filter((file) => file.largestLineBytes >= thresholds.hugeLineBytes).length,
     parseErrorFiles: files.filter((file) => file.jsonParseErrors > 0).length,
     sessionIndexLines: sessionIndex?.lineCount,
-    rolloutFiles
+    rolloutFiles,
+    rolloutThreads: threads.length,
+    indexedThreads: threads.filter((thread) => thread.indexed).length,
+    unindexedRolloutThreads: threads.filter((thread) => !thread.indexed).length,
+    projectRoots: projectKeys.size
   };
 
   return {
@@ -95,6 +134,7 @@ export async function auditCodexSessions(target = defaultCodexHome(), options: S
     thresholds,
     summary,
     files: files.sort((a, b) => b.sizeBytes - a.sizeBytes),
+    threads,
     stateFiles,
     findings
   };
@@ -113,6 +153,9 @@ export function renderSessionAuditMarkdown(result: SessionAuditResult): string {
     `Large files: ${result.summary.largeFiles}`,
     `Huge-line files: ${result.summary.hugeLineFiles}`,
     `Parse-error files: ${result.summary.parseErrorFiles}`,
+    `Rollout threads: ${result.summary.rolloutThreads}`,
+    `Indexed threads: ${result.summary.indexedThreads}`,
+    `Unindexed rollout threads: ${result.summary.unindexedRolloutThreads}`,
     ""
   ];
 
@@ -123,6 +166,27 @@ export function renderSessionAuditMarkdown(result: SessionAuditResult): string {
       lines.push(`- **${finding.severity}** ${finding.kind}${location}: ${finding.message}`);
     }
     lines.push("");
+  }
+
+  lines.push("## Recoverable Thread Index", "");
+  if (result.threads.length === 0) {
+    lines.push("No rollout session metadata found.", "");
+  } else {
+    lines.push("| Indexed | Thread id | Project | Created | Index title | Resume |");
+    lines.push("| --- | --- | --- | --- | --- | --- |");
+    for (const thread of result.threads.slice(0, 25)) {
+      const project = [thread.cwdBasename, thread.cwdHash].filter(Boolean).join(" ");
+      lines.push([
+        String(thread.indexed),
+        `\`${thread.id}\``,
+        project || "",
+        thread.createdAt ?? "",
+        thread.indexTitle ?? "",
+        `\`${thread.recoverCommand}\``
+      ].map(escapeCell).join(" | ").replace(/^/, "| ").replace(/$/, " |"));
+    }
+    lines.push("");
+    lines.push("This table intentionally avoids printing full workspace paths. `cwdHash` is a short hash of the original path so related threads can be grouped without exposing local directories.", "");
   }
 
   lines.push("## Largest JSONL Files", "");
@@ -161,6 +225,7 @@ export function renderSessionAuditMarkdown(result: SessionAuditResult): string {
     "",
     "- If this report shows large rollout files or parse errors, attach this JSON/Markdown summary to the Codex issue instead of publishing private transcripts.",
     "- If `codex resume <id>` works but the picker freezes, include the largest file sizes and line counts from this report.",
+    "- If project history/search is empty but this report lists unindexed rollout threads, try `codex resume <thread_id>` locally and include the unindexed count plus affected hashed project group in the issue.",
     ""
   );
 
@@ -209,6 +274,7 @@ async function analyzeJsonlFile(filePath: string, root: string): Promise<Session
   let lineCount = 0;
   let largestLineBytes = 0;
   let jsonParseErrors = 0;
+  let session: SessionAuditThreadMetadata | undefined;
 
   const input = createReadStream(filePath, { encoding: "utf8" });
   const reader = readline.createInterface({ input, crlfDelay: Infinity });
@@ -225,6 +291,7 @@ async function analyzeJsonlFile(filePath: string, root: string): Promise<Session
     try {
       const parsed = JSON.parse(line) as unknown;
       countParsedRecord(parsed, recordTypes, signalCounts);
+      session ??= extractSessionMetadata(parsed);
     } catch {
       jsonParseErrors += 1;
     }
@@ -237,7 +304,8 @@ async function analyzeJsonlFile(filePath: string, root: string): Promise<Session
     largestLineBytes,
     jsonParseErrors,
     recordTypes,
-    signalCounts
+    signalCounts,
+    session
   };
 }
 
@@ -252,6 +320,7 @@ async function stateFileInfo(filePath: string, root: string): Promise<SessionAud
 
 function buildFindings(
   files: SessionAuditFile[],
+  threads: SessionAuditThread[],
   stateFiles: SessionAuditStateFile[],
   thresholds: { largeFileBytes: number; hugeLineBytes: number }
 ): SessionAuditFinding[] {
@@ -297,6 +366,17 @@ function buildFindings(
     });
   }
 
+  if (sessionIndex) {
+    for (const thread of threads.filter((item) => !item.indexed).slice(0, 10)) {
+      findings.push({
+        severity: "warning",
+        kind: "unindexed_rollout_thread",
+        path: thread.path,
+        message: `Rollout thread ${thread.id} has session metadata but no matching session_index.jsonl row; project/search UI may hide it while direct resume can still work.`
+      });
+    }
+  }
+
   for (const stateFile of stateFiles.filter((file) => file.path.endsWith(".sqlite"))) {
     findings.push({
       severity: "warning",
@@ -307,6 +387,94 @@ function buildFindings(
   }
 
   return findings;
+}
+
+interface SessionIndexEntry {
+  id: string;
+  title?: string;
+  updatedAt?: string;
+}
+
+async function readSessionIndex(filePath: string): Promise<Map<string, SessionIndexEntry>> {
+  const entries = new Map<string, SessionIndexEntry>();
+  const input = createReadStream(filePath, { encoding: "utf8" });
+  const reader = readline.createInterface({ input, crlfDelay: Infinity });
+
+  for await (const line of reader) {
+    if (!line.trim()) {
+      continue;
+    }
+
+    try {
+      const parsed = JSON.parse(line) as Record<string, unknown>;
+      const id = typeof parsed.id === "string" ? parsed.id : undefined;
+      if (!id) {
+        continue;
+      }
+
+      entries.set(id, {
+        id,
+        title: firstString(parsed.thread_name, parsed.title, parsed.name),
+        updatedAt: firstString(parsed.updated_at, parsed.updatedAt)
+      });
+    } catch {
+      continue;
+    }
+  }
+
+  return entries;
+}
+
+function buildThreads(files: SessionAuditFile[], indexEntries: Map<string, SessionIndexEntry>): SessionAuditThread[] {
+  return files
+    .filter((file) => path.basename(file.path).startsWith("rollout-") && file.session)
+    .map((file) => {
+      const session = file.session as SessionAuditThreadMetadata;
+      const indexed = indexEntries.get(session.id);
+      return {
+        id: session.id,
+        path: file.path,
+        indexed: indexed !== undefined,
+        indexTitle: indexed?.title,
+        indexUpdatedAt: indexed?.updatedAt,
+        createdAt: session.createdAt,
+        cwdBasename: session.cwdBasename,
+        cwdHash: session.cwdHash,
+        originator: session.originator,
+        cliVersion: session.cliVersion,
+        sourceKind: session.sourceKind,
+        recoverCommand: `codex resume ${session.id}`
+      };
+    })
+    .sort((a, b) => (b.createdAt ?? "").localeCompare(a.createdAt ?? ""));
+}
+
+function extractSessionMetadata(parsed: unknown): SessionAuditThreadMetadata | undefined {
+  if (!parsed || typeof parsed !== "object") {
+    return undefined;
+  }
+
+  const record = parsed as Record<string, unknown>;
+  if (record.type !== "session_meta") {
+    return undefined;
+  }
+
+  const payload = record.payload && typeof record.payload === "object" ? record.payload as Record<string, unknown> : undefined;
+  const id = typeof payload?.id === "string" ? payload.id : undefined;
+  if (!id) {
+    return undefined;
+  }
+
+  const cwd = typeof payload?.cwd === "string" ? payload.cwd : undefined;
+  return {
+    id,
+    createdAt: firstString(payload?.timestamp, record.timestamp),
+    cwdBasename: cwd ? path.basename(cwd) : undefined,
+    cwdHash: cwd ? createHash("sha256").update(cwd).digest("hex").slice(0, 12) : undefined,
+    originator: firstString(payload?.originator),
+    cliVersion: firstString(payload?.cli_version),
+    sourceKind: sourceKind(payload?.source)
+  };
 }
 
 function countRawSignals(line: string, signalCounts: Record<string, number>): void {
@@ -356,6 +524,31 @@ function formatSignals(signals: Record<string, number>): string {
   }
 
   return entries.map(([key, count]) => `${key}:${count}`).join(", ");
+}
+
+function firstString(...values: unknown[]): string | undefined {
+  return values.find((value): value is string => typeof value === "string" && value.length > 0);
+}
+
+function sourceKind(source: unknown): string | undefined {
+  if (typeof source === "string") {
+    return source;
+  }
+
+  if (source && typeof source === "object") {
+    const object = source as Record<string, unknown>;
+    if (object.subagent) {
+      return "subagent";
+    }
+
+    return "object";
+  }
+
+  return undefined;
+}
+
+function escapeCell(value: string): string {
+  return value.replace(/\|/g, "\\|").replace(/\n/g, " ");
 }
 
 function defaultCodexHome(): string {

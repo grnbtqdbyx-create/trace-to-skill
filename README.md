@@ -57,7 +57,7 @@ Use it when you need to:
 - **Harden agent instructions:** run `trace-to-skill lint-agents .` to catch missing `AGENTS.md`, conflicting tool instructions, missing includes, nested instruction drift, encoding issues, and risky MCP config.
 - **Protect agent context:** run `trace-to-skill guard-github-event "$GITHUB_EVENT_PATH"` before feeding issue, PR, comment, discussion, check-run, or commit text into an agent.
 - **Prevent unsafe patch overwrites:** run `trace-to-skill guard-patch ./change.patch --root .` before applying generated patches so `*** Add File` cannot silently replace an existing file or symlink target.
-- **Audit local Codex session history:** run `trace-to-skill session-audit ~/.codex --format json` to summarize rollout JSONL sizes, huge lines, parse errors, state files, and short `session_index.jsonl` evidence without publishing private transcripts.
+- **Audit local Codex session history:** run `trace-to-skill session-audit ~/.codex --format json` to summarize rollout JSONL sizes, huge lines, parse errors, state files, short `session_index.jsonl` evidence, and recoverable unindexed thread ids without publishing private transcripts.
 - **Preflight sensitive paths before agent runs:** run `trace-to-skill sensitive-audit . --format json` to find `.env`, private keys, package auth files, cloud credentials, local databases, signing files, and secret manifests by filename/path without reading file contents.
 - **Preflight language-server readiness:** run `trace-to-skill lsp-audit . --format json` to detect repo languages, missing LSP commands, install hints, and evidence files before asking Codex for symbol-aware edits.
 - **Audit Codex config drift:** run `trace-to-skill config-audit ~/.codex --format json` to summarize legacy profile config, model pins, Speed/Fast service-tier persistence drift, sandbox/approval posture, Windows elevated sandbox mode, missing permission profiles, plugin cache drift, and MCP approval sprawl.
@@ -115,10 +115,11 @@ Open-source maintainers do not need more AI-generated noise. They need agents th
 - Did Codex Desktop on Windows expose `rg`, `node_repl`, Browser, Chrome, or Computer Use helper paths that were discoverable but not executable?
 - Did an `apply_patch` create operation actually overwrite an existing file or symlink target?
 - Can a generated patch be guarded before it touches the workspace?
-- Which local Codex rollout JSONL or `session_index.jsonl` files make `codex resume` or Desktop history sluggish?
+- Which local Codex rollout JSONL or `session_index.jsonl` files make `codex resume`, project history, search, or Desktop history sluggish/incomplete?
 - Which `config.toml` or `.codex-global-state.json` setting explains a sandbox, approval, plugin, model, Speed/Fast, or Preferences save regression?
 - Which bundled plugin/cache/marketplace/helper-app mismatch explains a Browser, Chrome, Computer Use, or MCP runtime failure?
 - Can I attach one safe diagnostics folder to OpenAI without posting raw `config.toml`, SQLite state, local logs, or transcripts?
+- Can I prove a project thread still exists on disk and get the `codex resume <id>` command when Desktop search/sidebar hides it?
 - Can I create a local checkpoint before an agent run so untracked dirty files are not lost if I need a manual rewind?
 - Which files in this repo should be excluded from agent context before Codex, Claude, Cursor, or Gemini reads the workspace?
 - Which language servers should be installed before Codex attempts symbol-aware navigation, diagnostics, rename, or go-to-definition work?
@@ -495,7 +496,7 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v5
-      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.71
+      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.72
         with:
           mode: all
           doctor-threshold: "85"
@@ -544,7 +545,7 @@ Composite action usage:
 
 ```yaml
 - id: trace-to-skill
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.71
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.72
   with:
     mode: all
     doctor-threshold: "85"
@@ -586,7 +587,7 @@ Action outputs:
 
 By default, generated reports are also appended to the GitHub Actions Job Summary. Set `job-summary: "false"` to disable that UI output.
 
-Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.71` executes that release's checked-out source instead of pulling the default branch at runtime.
+Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.72` executes that release's checked-out source instead of pulling the default branch at runtime.
 
 ## Codex Skill
 

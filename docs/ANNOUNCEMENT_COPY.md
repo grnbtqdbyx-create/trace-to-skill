@@ -57,7 +57,7 @@ trace-to-skill checks repo readiness and scans agent traces/logs to generate:
 - Codex remote compact failure detection for `/compact`, auto-compaction, `responses/compact`, provider timeout workarounds, and long-thread recovery loss
 - Codex Windows helper path detection for bundled `rg.exe`, `node_repl`, Browser, Chrome, and Computer Use failures involving WindowsApps/MSIX paths, missing LocalCache bins, ACLs, and EFS/copyfile errors
 - a `guard-patch` command that fails generated patches when `*** Add File` would overwrite an existing file or symlink target
-- a local `session-audit` command that summarizes Codex rollout JSONL size, huge lines, parse errors, session-index shortness, and state-file presence without publishing transcripts
+- a local `session-audit` command that summarizes Codex rollout JSONL size, huge lines, parse errors, session-index shortness, recoverable unindexed thread ids, and state-file presence without publishing transcripts
 - a local `config-audit` command that summarizes Codex legacy profile config, model pins, Speed/Fast persistence drift, sandbox/approval posture, Windows elevated sandbox mode, plugin cache drift, and MCP approval sprawl without posting raw config
 - a local `plugin-audit` command that summarizes Codex bundled plugin cache, manifest, runtime marketplace, optional app-bundle marketplace, Computer Use helper app, `CODEX_HOME`, and unsupported feature-flag drift without posting raw logs
 - a local `diagnostics-bundle` command that writes a metadata-only OpenAI support folder with manifest, README, config audit, plugin audit, and session audit reports while excluding raw config, logs, SQLite state, and transcripts

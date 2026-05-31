@@ -4,7 +4,7 @@
   "title": "trace-to-skill Codex session audit result",
   "type": "object",
   "additionalProperties": false,
-  "required": ["generatedAt", "root", "status", "thresholds", "summary", "files", "stateFiles", "findings"],
+  "required": ["generatedAt", "root", "status", "thresholds", "summary", "files", "threads", "stateFiles", "findings"],
   "properties": {
     "generatedAt": {
       "type": "string",
@@ -27,6 +27,12 @@
       "type": "array",
       "items": {
         "$ref": "#/$defs/file"
+      }
+    },
+    "threads": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/thread"
       }
     },
     "stateFiles": {
@@ -61,7 +67,7 @@
     "summary": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["jsonlFiles", "totalBytes", "largeFiles", "hugeLineFiles", "parseErrorFiles"],
+      "required": ["jsonlFiles", "totalBytes", "largeFiles", "hugeLineFiles", "parseErrorFiles", "rolloutThreads", "indexedThreads", "unindexedRolloutThreads", "projectRoots"],
       "properties": {
         "jsonlFiles": {
           "type": "integer",
@@ -88,6 +94,22 @@
           "minimum": 0
         },
         "rolloutFiles": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "rolloutThreads": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "indexedThreads": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unindexedRolloutThreads": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "projectRoots": {
           "type": "integer",
           "minimum": 0
         }
@@ -130,6 +152,80 @@
             "type": "integer",
             "minimum": 0
           }
+        },
+        "session": {
+          "$ref": "#/$defs/threadMetadata"
+        }
+      }
+    },
+    "threadMetadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id"],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string"
+        },
+        "cwdBasename": {
+          "type": "string"
+        },
+        "cwdHash": {
+          "type": "string"
+        },
+        "originator": {
+          "type": "string"
+        },
+        "cliVersion": {
+          "type": "string"
+        },
+        "sourceKind": {
+          "type": "string"
+        }
+      }
+    },
+    "thread": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "path", "indexed", "recoverCommand"],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "indexed": {
+          "type": "boolean"
+        },
+        "indexTitle": {
+          "type": "string"
+        },
+        "indexUpdatedAt": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string"
+        },
+        "cwdBasename": {
+          "type": "string"
+        },
+        "cwdHash": {
+          "type": "string"
+        },
+        "originator": {
+          "type": "string"
+        },
+        "cliVersion": {
+          "type": "string"
+        },
+        "sourceKind": {
+          "type": "string"
+        },
+        "recoverCommand": {
+          "type": "string"
         }
       }
     },
@@ -161,7 +257,7 @@
         },
         "kind": {
           "type": "string",
-          "enum": ["large_rollout", "huge_jsonl_line", "json_parse_error", "short_session_index", "state_file_present"]
+          "enum": ["large_rollout", "huge_jsonl_line", "json_parse_error", "short_session_index", "unindexed_rollout_thread", "state_file_present"]
         },
         "path": {
           "type": "string"
