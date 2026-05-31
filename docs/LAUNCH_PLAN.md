@@ -46,13 +46,14 @@ Secondary headline:
 - [x] maintainer adoption guide with copy-paste PR template
 - [x] built-in fixture benchmark and public scorecard
 - [x] GitHub Action benchmark and all-in-one modes
+- [x] combined scorecard for reviewer proof
 - [x] discovery PR to awesome-codex-cli: https://github.com/milisp/awesome-codex-cli/pull/35
 - [x] discovery PR to awesome-harness-engineering: https://github.com/ai-boost/awesome-harness-engineering/pull/45
 
 ## Current Public Proof
 
 - Repository: https://github.com/grnbtqdbyx-create/trace-to-skill
-- Latest release: https://github.com/grnbtqdbyx-create/trace-to-skill/releases/tag/v0.1.17
+- Latest release: https://github.com/grnbtqdbyx-create/trace-to-skill/releases/tag/v0.1.18
 - CI: passing on `main`
 - Profile README: https://github.com/grnbtqdbyx-create/grnbtqdbyx-create
 

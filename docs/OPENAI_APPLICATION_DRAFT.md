@@ -30,13 +30,14 @@ Current proof points:
 - Maintainer adoption guide with privacy checklist and PR template.
 - Built-in fixture benchmark with public scorecard.
 - GitHub Action benchmark and all-in-one modes for CI proof.
+- Combined scorecard for reviewer-ready Codex readiness and benchmark proof.
 - MCP config capability and secret-risk scoring.
 - `AGENTS.md` / `CLAUDE.md` contradiction detection.
 - Pull request comment reports.
 - SARIF output for GitHub code scanning.
 - Before/after eval comparison with keep/revise/reject decisions.
 - One-command repository setup via `trace-to-skill init`.
-- Public release v0.1.17.
+- Public release v0.1.18.
 
 500-character version:
 

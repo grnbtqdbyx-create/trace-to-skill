@@ -10,6 +10,7 @@ import { compareAnalyses, evaluate } from "../src/eval.js";
 import { postPullRequestComment } from "../src/github.js";
 import { initProject } from "../src/init.js";
 import { renderAgentsRules, renderComparison, renderDoctorPrComment, renderPrComment, renderSarif, renderSkill } from "../src/report.js";
+import { renderScorecardMarkdown, runScorecard } from "../src/scorecard.js";
 
 test("analyzeTargets detects failed agent workflow signals", async () => {
   const result = await analyzeTargets(["fixtures/failed-run.md"]);
@@ -298,4 +299,18 @@ test("benchmark covers public fixture failure classes", async () => {
   assert.ok(benchmark.cases.some((item) => item.id === "mcp-risk" && item.detectedKinds.includes("secret_exposure")));
   assert.match(markdown, /trace-to-skill Benchmark/);
   assert.match(markdown, /Codex JSONL failed session/);
+});
+
+test("scorecard combines doctor readiness and benchmark evidence", async () => {
+  const scorecard = await runScorecard(".", 95);
+  const markdown = renderScorecardMarkdown(scorecard);
+
+  assert.equal(scorecard.passed, true);
+  assert.equal(scorecard.doctor.status, "ready");
+  assert.equal(scorecard.doctor.score, 100);
+  assert.equal(scorecard.benchmark.status, "pass");
+  assert.equal(scorecard.benchmark.cases, 5);
+  assert.match(markdown, /trace-to-skill Scorecard/);
+  assert.match(markdown, /Codex readiness/);
+  assert.match(markdown, /Benchmark Summary/);
 });

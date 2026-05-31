@@ -7,6 +7,7 @@ import { compareAnalyses, evaluate } from "./eval.js";
 import { postPullRequestComment } from "./github.js";
 import { initProject } from "./init.js";
 import { renderAgentsRules, renderComparison, renderDoctorMarkdown, renderDoctorPrComment, renderMarkdown, renderPrComment, renderSarif, renderSkill } from "./report.js";
+import { renderScorecardMarkdown, runScorecard } from "./scorecard.js";
 
 interface ParsedArgs {
   command: string;
@@ -53,6 +54,16 @@ async function main(): Promise<void> {
     const result = await runBenchmark();
     const format = String(parsed.flags.format ?? "markdown");
     const output = format === "json" ? `${JSON.stringify(result, null, 2)}\n` : renderBenchmarkMarkdown(result);
+    await writeOutput(output, parsed.flags.output);
+    process.exitCode = result.passed ? 0 : 1;
+    return;
+  }
+
+  if (parsed.command === "scorecard") {
+    const threshold = numberFlag(parsed.flags.threshold) ?? 85;
+    const result = await runScorecard(parsed.targets[0] ?? process.cwd(), threshold);
+    const format = String(parsed.flags.format ?? "markdown");
+    const output = format === "json" ? `${JSON.stringify(result, null, 2)}\n` : renderScorecardMarkdown(result);
     await writeOutput(output, parsed.flags.output);
     process.exitCode = result.passed ? 0 : 1;
     return;
@@ -233,6 +244,7 @@ Usage:
   trace-to-skill suggest <trace-file-or-dir> [--target agents-md|skill] [--output AGENTS.generated.md]
   trace-to-skill eval <trace-file-or-dir> [--threshold 75] [--format text|json]
   trace-to-skill benchmark [--format markdown|json] [--output docs/BENCHMARK.md]
+  trace-to-skill scorecard [repo-dir] [--threshold 85] [--format markdown|json] [--output docs/SCORECARD.md]
   trace-to-skill comment <trace-file-or-dir> [--dry-run] [--token $GITHUB_TOKEN]
   trace-to-skill compare --before <old-run> --after <new-run> [--format markdown|json]
   trace-to-skill doctor [repo-dir] [--threshold 85] [--format markdown|json|comment] [--output report.md]
@@ -244,6 +256,7 @@ Examples:
   trace-to-skill suggest ./runs --target skill --output skills/verification-before-completion/SKILL.md
   trace-to-skill eval ./runs --threshold 80
   trace-to-skill benchmark
+  trace-to-skill scorecard .
   trace-to-skill comment ./runs
   trace-to-skill compare --before ./runs/before --after ./runs/after
   trace-to-skill doctor . --threshold 85

@@ -10,6 +10,7 @@ Useful entry points:
 - OpenAI OSS strategy: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/OPENAI_OSS_STRATEGY.md
 - Adoption guide: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/ADOPTION_GUIDE.md
 - Benchmark scorecard: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/BENCHMARK.md
+- Combined scorecard: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/SCORECARD.md
 - Analysis JSON schema: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/schemas/analysis-result.schema.json
 - Doctor JSON schema: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/schemas/doctor-result.schema.json
 
@@ -22,6 +23,7 @@ npx github:grnbtqdbyx-create/trace-to-skill doctor . --format comment
 npx github:grnbtqdbyx-create/trace-to-skill doctor-comment . --threshold 85 --dry-run
 npx github:grnbtqdbyx-create/trace-to-skill init --comment --sarif
 npx github:grnbtqdbyx-create/trace-to-skill benchmark
+npx github:grnbtqdbyx-create/trace-to-skill scorecard .
 npx github:grnbtqdbyx-create/trace-to-skill analyze ./runs
 npx github:grnbtqdbyx-create/trace-to-skill init --comment --sarif
 npx github:grnbtqdbyx-create/trace-to-skill analyze ./runs --format sarif --output trace-to-skill.sarif

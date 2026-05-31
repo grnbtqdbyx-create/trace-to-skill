@@ -15,6 +15,7 @@ npx github:grnbtqdbyx-create/trace-to-skill init --comment --sarif
 npx github:grnbtqdbyx-create/trace-to-skill suggest ./runs --target agents-md
 npx github:grnbtqdbyx-create/trace-to-skill eval ./runs --threshold 80
 npx github:grnbtqdbyx-create/trace-to-skill benchmark
+npx github:grnbtqdbyx-create/trace-to-skill scorecard .
 npx github:grnbtqdbyx-create/trace-to-skill comment ./runs --dry-run
 npx github:grnbtqdbyx-create/trace-to-skill compare --before ./runs/before --after ./runs/after
 ```
@@ -178,6 +179,15 @@ trace-to-skill benchmark --format json
 
 See the current public scorecard in [docs/BENCHMARK.md](docs/BENCHMARK.md).
 
+Generate a combined Codex readiness and benchmark scorecard:
+
+```bash
+trace-to-skill scorecard .
+trace-to-skill scorecard . --format json
+```
+
+See this repository's current public scorecard in [docs/SCORECARD.md](docs/SCORECARD.md).
+
 Post or update a GitHub pull request comment:
 
 ```bash
@@ -245,7 +255,7 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v5
-      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.17
+      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.18
         with:
           mode: all
           doctor-threshold: "85"
@@ -293,7 +303,7 @@ Composite action usage:
 
 ```yaml
 - id: trace-to-skill
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.17
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.18
   with:
     mode: all
     doctor-threshold: "85"
@@ -355,6 +365,7 @@ The goal is not to let agents autonomously rewrite project policy. The goal is t
 - Published JSON schemas for deterministic CLI report contracts
 - `trace-to-skill benchmark` for public fixture scorecards
 - GitHub Action `benchmark` and `all` modes
+- `trace-to-skill scorecard` for combined reviewer proof
 - public benchmark of common agent failure classes
 
 See [docs/ROADMAP.md](docs/ROADMAP.md).

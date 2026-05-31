@@ -24,6 +24,7 @@
 - Published JSON schemas for `analyze --format json` and `doctor --format json`
 - `trace-to-skill benchmark` for the public fixture scorecard
 - GitHub Action `benchmark` and `all` modes
+- `trace-to-skill scorecard` for combined reviewer proof
 
 ## v0.2
 
