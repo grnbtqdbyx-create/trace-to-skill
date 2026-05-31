@@ -61,6 +61,7 @@ trace-to-skill checks repo readiness and scans agent traces/logs to generate:
 - a local `config-audit` command that summarizes Codex legacy profile config, model pins, Speed/Fast persistence drift, sandbox/approval posture, Windows elevated sandbox mode, plugin cache drift, and MCP approval sprawl without posting raw config
 - a local `plugin-audit` command that summarizes Codex bundled plugin cache, manifest, runtime marketplace, optional app-bundle marketplace, Computer Use helper app, `CODEX_HOME`, and unsupported feature-flag drift without posting raw logs
 - a local `diagnostics-bundle` command that writes a metadata-only OpenAI support folder with manifest, README, config audit, plugin audit, and session audit reports while excluding raw config, logs, SQLite state, and transcripts
+- a local `checkpoint` command that creates a pre-agent workspace bundle with git diffs plus copied changed/untracked files before Codex or another agent touches a dirty repo
 - Codex sandbox setup and permission failure detection for setup refresh, ACL, ownership, and approval-mode problems
 - Codex auth/connectivity detection for token exchange, CA certificate, proxy, IPv6, Cloudflare challenge, and stream disconnect evidence
 - Codex mobile/remote-control route health detection for stale listener, stale enrollment, missing helper bundle, and `Waiting for desktop` evidence
@@ -116,6 +117,7 @@ npx trace-to-skill config-audit ~/.codex --format json
 npx trace-to-skill plugin-audit ~/.codex --app /Applications/Codex.app --format json
 npx trace-to-skill diagnostics-bundle ~/.codex --output codex-diagnostics
 npx trace-to-skill usage-evidence ./usage-notes.md --output usage-evidence.md
+npx trace-to-skill checkpoint . --output .trace-to-skill/checkpoints/before-codex
 npx trace-to-skill doctor-comment . --threshold 85 --dry-run
 
 I’m especially looking for anonymized failed agent traces and feedback from OSS maintainers who review AI-generated PRs.

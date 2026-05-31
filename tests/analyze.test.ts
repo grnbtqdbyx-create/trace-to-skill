@@ -1,11 +1,14 @@
 import assert from "node:assert/strict";
+import { execFile } from "node:child_process";
 import { chmod, mkdir, mkdtemp, readFile, symlink, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
+import { promisify } from "node:util";
 import { lintAgents, renderAgentsLintMarkdown } from "../src/agentsLint.js";
 import { analyzeInputs, analyzeTargets } from "../src/analyze.js";
 import { renderBenchmarkMarkdown, runBenchmark } from "../src/benchmark.js";
+import { createWorkspaceCheckpoint, renderWorkspaceCheckpointMarkdown } from "../src/checkpoint.js";
 import { auditCodexConfig, renderConfigAuditMarkdown } from "../src/configAudit.js";
 import { listDemoScenarios, renderDemoMarkdown, renderDemoScenarioList, runDemo } from "../src/demo.js";
 import { createDiagnosticsBundle, renderDiagnosticsBundleMarkdown } from "../src/diagnosticsBundle.js";
@@ -24,6 +27,8 @@ import { renderScorecardMarkdown, renderScorecardPrComment, runScorecard } from 
 import { auditCodexSessions, renderSessionAuditMarkdown } from "../src/sessionAudit.js";
 import { auditSensitivePaths, renderSensitiveAuditMarkdown } from "../src/sensitiveAudit.js";
 import { buildUsageEvidence, buildUsageEvidenceFromInputs, renderUsageEvidenceMarkdown } from "../src/usageEvidence.js";
+
+const execFileAsync = promisify(execFile);
 
 test("analyzeTargets detects failed agent workflow signals", async () => {
   const result = await analyzeTargets(["fixtures/failed-run.md"]);
@@ -1227,6 +1232,45 @@ test("initProject scaffolds workflow without overwriting existing files", async 
   assert.equal(workflow.includes("npx github:grnbtqdbyx-create/trace-to-skill"), false);
 });
 
+test("createWorkspaceCheckpoint captures tracked, untracked, and requested ignored files", async () => {
+  const cwd = await mkdtemp(path.join(os.tmpdir(), "trace-to-skill-checkpoint-"));
+  await execFileAsync("git", ["init"], { cwd });
+  await execFileAsync("git", ["config", "user.email", "test@example.com"], { cwd });
+  await execFileAsync("git", ["config", "user.name", "Test User"], { cwd });
+  await writeFile(path.join(cwd, "tracked.txt"), "base\n", "utf8");
+  await execFileAsync("git", ["add", "tracked.txt"], { cwd });
+  await execFileAsync("git", ["commit", "-m", "base"], { cwd });
+  await writeFile(path.join(cwd, "tracked.txt"), "changed\n", "utf8");
+  await writeFile(path.join(cwd, "note.txt"), "untracked\n", "utf8");
+  await writeFile(path.join(cwd, ".gitignore"), ".env\nnode_modules/\n", "utf8");
+  await writeFile(path.join(cwd, ".env"), "SECRET=local\n", "utf8");
+  await mkdir(path.join(cwd, "node_modules/pkg"), { recursive: true });
+  await writeFile(path.join(cwd, "node_modules/pkg/index.js"), "module.exports = 1;\n", "utf8");
+
+  const result = await createWorkspaceCheckpoint(cwd, { output: path.join(cwd, "checkpoint") });
+  const markdown = renderWorkspaceCheckpointMarkdown(result);
+  const paths = result.files.map((file) => file.path);
+
+  assert.equal(result.includeUntracked, true);
+  assert.equal(result.includeIgnored, false);
+  assert.ok(paths.includes("tracked.txt"));
+  assert.ok(paths.includes("note.txt"));
+  assert.equal(paths.includes(".env"), false);
+  assert.ok(result.files.every((file) => file.sha256 === undefined || /^[a-f0-9]{64}$/.test(file.sha256)));
+  assert.match(await readFile(result.artifacts.status, "utf8"), /tracked\.txt/);
+  assert.match(await readFile(result.artifacts.unstagedDiff, "utf8"), /changed/);
+  assert.match(markdown, /does not automatically restore files or run destructive commands/);
+
+  const ignored = await createWorkspaceCheckpoint(cwd, {
+    output: path.join(cwd, "checkpoint-with-ignored"),
+    includeIgnored: true
+  });
+  const ignoredPaths = ignored.files.map((file) => file.path);
+
+  assert.ok(ignoredPaths.includes(".env"));
+  assert.equal(ignoredPaths.some((file) => file.startsWith("node_modules/")), false);
+});
+
 test("package metadata points npm users back to the public project", async () => {
   const packageJson = JSON.parse(await readFile("package.json", "utf8")) as {
     repository?: { url?: string };
@@ -1282,6 +1326,9 @@ test("package metadata points npm users back to the public project", async () =>
   assert.ok(packageJson.keywords?.includes("quota-mismatch"));
   assert.ok(packageJson.keywords?.includes("sensitive-files"));
   assert.ok(packageJson.keywords?.includes("codex-privacy"));
+  assert.ok(packageJson.keywords?.includes("codex-rewind"));
+  assert.ok(packageJson.keywords?.includes("codex-undo"));
+  assert.ok(packageJson.keywords?.includes("workspace-checkpoint"));
 });
 
 test("initProject rejects unsafe workflow arguments", async () => {
@@ -1692,6 +1739,11 @@ test("published JSON schemas describe CLI result contracts", async () => {
     properties: Record<string, unknown>;
     $defs: Record<string, unknown>;
   };
+  const checkpointSchema = JSON.parse(await readFile("schemas/workspace-checkpoint-result.schema.json", "utf8")) as {
+    required: string[];
+    properties: Record<string, unknown>;
+    $defs: Record<string, unknown>;
+  };
   const sensitiveAuditSchema = JSON.parse(await readFile("schemas/sensitive-audit-result.schema.json", "utf8")) as {
     required: string[];
     properties: Record<string, unknown>;
@@ -1767,6 +1819,9 @@ test("published JSON schemas describe CLI result contracts", async () => {
   assert.ok(usageEvidenceSchema.$defs.receipt);
   assert.ok(usageEvidenceSchema.$defs.overheadSignal);
   assert.ok((usageEvidenceSchema.$defs.finding as { properties: { kind: { enum: string[] } } }).properties.kind.enum.includes("orchestration_overhead_signal"));
+  assert.deepEqual(checkpointSchema.required, ["generatedAt", "root", "outputDir", "includeUntracked", "includeIgnored", "summary", "files", "artifacts"]);
+  assert.ok(checkpointSchema.properties.artifacts);
+  assert.ok(checkpointSchema.$defs.file);
   assert.deepEqual(sensitiveAuditSchema.required, ["generatedAt", "root", "status", "summary", "findings", "recommendedExcludes"]);
   assert.ok(sensitiveAuditSchema.properties.recommendedExcludes);
   assert.ok((sensitiveAuditSchema.$defs.finding as { properties: { kind: { enum: string[] } } }).properties.kind.enum.includes("env_file"));
@@ -1849,7 +1904,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.equal(brief.scorecard.benchmarkStatus, "pass");
   assert.equal(brief.scorecard.benchmarkCases, 33);
   assert.equal(brief.packageName, "trace-to-skill");
-  assert.equal(brief.packageVersion, "0.1.70");
+  assert.equal(brief.packageVersion, "0.1.71");
   assert.equal(brief.license, "Apache-2.0");
   assert.ok(brief.repository?.includes("github.com/grnbtqdbyx-create/trace-to-skill"));
   assert.ok(brief.qualification.max500.length <= 500);
@@ -1857,7 +1912,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.match(markdown, /OpenAI OSS Brief/);
   assert.match(markdown, /Why This Repository Qualifies/);
   assert.match(markdown, /500-Character Version/);
-  assert.match(markdown, /npx trace-to-skill@0\.1\.70/);
+  assert.match(markdown, /npx trace-to-skill@0\.1\.71/);
 });
 
 test("scorecard-comment dry-run resolves pull request event", async () => {

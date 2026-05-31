@@ -36,6 +36,7 @@ Runtime: Node.js 20+
 - Codex usage reset schedule drift such as weekly reset dates moving, `reset_at` jumping, saved usage disappearing, outage compensation resets changing the anchor, and `/status` disagreeing with enforcement
 - Codex usage evidence packaging for scattered `/status`, reset-table, usage-limit, token-total, cached-input, and orchestration-overhead snippets
 - Codex usage receipts that separate backend quota-window percentages, local token totals, and overhead signals such as background polling, compaction loops, retry/tool loops, subagent fan-out, or idle drain
+- Codex undo/rewind support workflows where maintainers need a local pre-agent workspace checkpoint with git diffs plus copied changed/untracked files before agent edits
 - Codex resource leaks and runaway local processes such as high CPU/GPU, `Code Helper`, `Codex Helper Renderer`, orphaned shell snapshots, log floods, thinking animation GPU loops, and non-Git workspace CPU loops
 - Codex quota and usage-limit mismatches where `/status` or the usage page shows remaining quota, accounts share limits unexpectedly, or 5h and weekly quotas move together
 - sensitive-file access in traces, including `.env`, private keys, package auth files, cloud credentials, local databases, and production secret manifests entering agent context
@@ -89,6 +90,7 @@ npx trace-to-skill config-audit ~/.codex --format json
 npx trace-to-skill plugin-audit ~/.codex --app /Applications/Codex.app --format json
 npx trace-to-skill diagnostics-bundle ~/.codex --output codex-diagnostics
 npx trace-to-skill usage-evidence ./usage-notes.md --output usage-evidence.md
+npx trace-to-skill checkpoint . --output .trace-to-skill/checkpoints/before-codex
 npx trace-to-skill redact ./runs --output redacted-runs
 npx trace-to-skill sensitive-audit . --format json
 npx trace-to-skill lsp-audit . --format json
@@ -104,7 +106,7 @@ npx trace-to-skill init --comment --sarif
 ## GitHub Action
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.70
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.71
   with:
     mode: all
     doctor-threshold: "85"
@@ -129,6 +131,7 @@ npx trace-to-skill init --comment --sarif
 - Plugin audit JSON schema: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/schemas/plugin-audit-result.schema.json
 - Session audit JSON schema: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/schemas/session-audit-result.schema.json
 - Usage evidence JSON schema: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/schemas/usage-evidence-result.schema.json
+- Workspace checkpoint JSON schema: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/schemas/workspace-checkpoint-result.schema.json
 
 ## Search phrases this project should answer
 
@@ -157,6 +160,8 @@ npx trace-to-skill init --comment --sarif
 - Codex apply_patch Add File overwrites existing file
 - Codex patch guard for generated patches
 - trace-to-skill guard-patch Add File symlink
+- Codex pre-agent workspace checkpoint
+- Codex undo rewind checkpoint for untracked files
 - Codex config-audit for config.toml diagnostics
 - Codex diagnostics bundle for OpenAI support
 - privacy-preserving Codex support bundle logs_2.sqlite config.toml

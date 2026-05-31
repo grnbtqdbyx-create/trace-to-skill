@@ -95,6 +95,7 @@ For dashboards, bots, or custom CI:
 - `schemas/doctor-result.schema.json` describes `trace-to-skill doctor --format json`.
 - `schemas/redact-result.schema.json` describes `trace-to-skill redact --format json`.
 - `schemas/scorecard-result.schema.json` describes `trace-to-skill scorecard --format json`.
+- `schemas/workspace-checkpoint-result.schema.json` describes `trace-to-skill checkpoint --format json`.
 
 Use the schemas instead of scraping Markdown reports.
 

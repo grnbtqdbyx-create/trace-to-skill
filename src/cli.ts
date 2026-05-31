@@ -3,6 +3,7 @@ import { writeFile } from "node:fs/promises";
 import { lintAgents, renderAgentsLintMarkdown } from "./agentsLint.js";
 import { analyzeTargets } from "./analyze.js";
 import { renderBenchmarkMarkdown, runBenchmark } from "./benchmark.js";
+import { createWorkspaceCheckpoint, renderWorkspaceCheckpointMarkdown } from "./checkpoint.js";
 import { auditCodexConfig, renderConfigAuditMarkdown } from "./configAudit.js";
 import { listDemoScenarios, renderDemoMarkdown, renderDemoScenarioList, runDemo } from "./demo.js";
 import { createDiagnosticsBundle, renderDiagnosticsBundleMarkdown } from "./diagnosticsBundle.js";
@@ -78,6 +79,18 @@ async function main(): Promise<void> {
     const format = String(parsed.flags.format ?? "markdown");
     const output = format === "json" ? `${JSON.stringify(result, null, 2)}\n` : renderUsageEvidenceMarkdown(result);
     await writeOutput(output, parsed.flags.output);
+    return;
+  }
+
+  if (parsed.command === "checkpoint") {
+    const result = await createWorkspaceCheckpoint(parsed.targets[0] ?? process.cwd(), {
+      output: stringFlag(parsed.flags.output),
+      includeUntracked: parsed.flags["no-untracked"] !== true,
+      includeIgnored: Boolean(parsed.flags["include-ignored"])
+    });
+    const format = String(parsed.flags.format ?? "markdown");
+    const output = format === "json" ? `${JSON.stringify(result, null, 2)}\n` : renderWorkspaceCheckpointMarkdown(result);
+    process.stdout.write(output);
     return;
   }
 
@@ -456,6 +469,7 @@ Usage:
   trace-to-skill analyze <trace-file-or-dir> [--format markdown|json|sarif] [--output report.md]
   trace-to-skill codex-report <trace-file-or-dir> [--output openai-codex-issue.md]
   trace-to-skill usage-evidence <usage-log-file-or-dir> [--format markdown|json] [--output usage-evidence.md]
+  trace-to-skill checkpoint [repo-dir] [--output checkpoint-dir] [--format markdown|json] [--no-untracked] [--include-ignored]
   trace-to-skill suggest <trace-file-or-dir> [--target agents-md|skill] [--output AGENTS.generated.md]
   trace-to-skill lint-agents [repo-dir] [--format markdown|json] [--output report.md]
   trace-to-skill redact <trace-file-or-dir> [--output redacted-runs] [--format text|json]
@@ -484,6 +498,7 @@ Examples:
   trace-to-skill analyze ./runs
   trace-to-skill codex-report ./runs --output openai-codex-issue.md
   trace-to-skill usage-evidence ./usage-notes.md --output usage-evidence.md
+  trace-to-skill checkpoint . --output .trace-to-skill/checkpoints/before-codex
   trace-to-skill suggest ./runs --target skill --output skills/verification-before-completion/SKILL.md
   trace-to-skill lint-agents .
   trace-to-skill redact ./runs --output redacted-runs

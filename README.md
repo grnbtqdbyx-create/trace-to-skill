@@ -17,6 +17,7 @@ npx trace-to-skill lint-agents .
 npx trace-to-skill analyze ./runs
 npx trace-to-skill codex-report ./runs
 npx trace-to-skill usage-evidence ./usage-notes.md --output usage-evidence.md
+npx trace-to-skill checkpoint . --output .trace-to-skill/checkpoints/before-codex
 npx trace-to-skill init --comment --sarif
 npx trace-to-skill suggest ./runs --target agents-md
 npx trace-to-skill eval ./runs --threshold 80
@@ -63,6 +64,7 @@ Use it when you need to:
 - **Audit bundled plugin drift:** run `trace-to-skill plugin-audit ~/.codex --app /Applications/Codex.app --format json` to check Browser, Chrome, Computer Use, bundled marketplace, plugin cache, manifest, helper app, `CODEX_HOME`, and unsupported feature-flag drift without posting raw logs.
 - **Bundle Codex diagnostics safely:** run `trace-to-skill diagnostics-bundle ~/.codex --output codex-diagnostics` to create a metadata-only support folder with manifest, README, config, plugin, and session audit reports while excluding raw logs, SQLite state, raw config, and transcripts.
 - **Package Codex usage evidence:** run `trace-to-skill usage-evidence ./usage-notes.md --output usage-evidence.md` to turn `/status`, reset tables, usage-limit errors, token totals, cached-input spikes, and orchestration-overhead clues into a redaction-aware usage receipt.
+- **Bookmark a workspace before agent edits:** run `trace-to-skill checkpoint . --output .trace-to-skill/checkpoints/before-codex` to store git diffs plus copied changed/untracked files before Codex, Claude, Cursor, or another agent touches a dirty repo. It does not auto-restore or run destructive commands.
 - **Share failed traces safely:** run `trace-to-skill redact ./runs --output redacted-runs` before publishing anonymized failure fixtures.
 - **Catch sensitive file access:** run `trace-to-skill analyze ./runs` when an agent trace includes `.env`, private keys, `.npmrc`, cloud credentials, local databases, or production secret manifests.
 - **Report remote compact failures:** run `trace-to-skill codex-report ./runs` when `/compact` or auto-compaction fails with `responses/compact` timeouts, stream disconnects, provider timeout workarounds, or long-thread recovery loss.
@@ -117,6 +119,7 @@ Open-source maintainers do not need more AI-generated noise. They need agents th
 - Which `config.toml` or `.codex-global-state.json` setting explains a sandbox, approval, plugin, model, Speed/Fast, or Preferences save regression?
 - Which bundled plugin/cache/marketplace/helper-app mismatch explains a Browser, Chrome, Computer Use, or MCP runtime failure?
 - Can I attach one safe diagnostics folder to OpenAI without posting raw `config.toml`, SQLite state, local logs, or transcripts?
+- Can I create a local checkpoint before an agent run so untracked dirty files are not lost if I need a manual rewind?
 - Which files in this repo should be excluded from agent context before Codex, Claude, Cursor, or Gemini reads the workspace?
 - Which language servers should be installed before Codex attempts symbol-aware navigation, diagnostics, rename, or go-to-definition work?
 - Did Codex sandbox setup or workspace permissions block every tool call?
@@ -383,6 +386,15 @@ See this repository's current brief in [docs/OPENAI_OSS_BRIEF.md](docs/OPENAI_OS
 
 To map a Codex problem to the right failure class and report command, see [docs/CODEX_ISSUE_MAP.md](docs/CODEX_ISSUE_MAP.md).
 
+Create a local pre-agent workspace checkpoint:
+
+```bash
+trace-to-skill checkpoint . --output .trace-to-skill/checkpoints/before-codex
+trace-to-skill checkpoint . --format json
+```
+
+The checkpoint stores `git status`, staged and unstaged binary diffs, and local copies of changed or untracked files. Gitignored files are excluded unless `--include-ignored` is passed; keep those bundles local because they can contain secrets.
+
 Post or update a pull request comment with the combined scorecard:
 
 ```bash
@@ -451,6 +463,7 @@ Stable machine-readable contracts are published with the npm package and release
 - [`schemas/plugin-audit-result.schema.json`](schemas/plugin-audit-result.schema.json) describes `trace-to-skill plugin-audit --format json`.
 - [`schemas/session-audit-result.schema.json`](schemas/session-audit-result.schema.json) describes `trace-to-skill session-audit --format json`.
 - [`schemas/usage-evidence-result.schema.json`](schemas/usage-evidence-result.schema.json) describes `trace-to-skill usage-evidence --format json`.
+- [`schemas/workspace-checkpoint-result.schema.json`](schemas/workspace-checkpoint-result.schema.json) describes `trace-to-skill checkpoint --format json`.
 
 These schemas let downstream Codex workflows, dashboards, and CI bots consume reports without scraping Markdown.
 
@@ -482,7 +495,7 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v5
-      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.70
+      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.71
         with:
           mode: all
           doctor-threshold: "85"
@@ -531,7 +544,7 @@ Composite action usage:
 
 ```yaml
 - id: trace-to-skill
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.70
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.71
   with:
     mode: all
     doctor-threshold: "85"
@@ -573,7 +586,7 @@ Action outputs:
 
 By default, generated reports are also appended to the GitHub Actions Job Summary. Set `job-summary: "false"` to disable that UI output.
 
-Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.70` executes that release's checked-out source instead of pulling the default branch at runtime.
+Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.71` executes that release's checked-out source instead of pulling the default branch at runtime.
 
 ## Codex Skill
 

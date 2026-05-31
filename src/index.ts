@@ -1,6 +1,8 @@
 export { lintAgents, renderAgentsLintMarkdown } from "./agentsLint.js";
 export { analyzeInputs, analyzeTargets } from "./analyze.js";
 export { renderBenchmarkMarkdown, runBenchmark } from "./benchmark.js";
+export { createWorkspaceCheckpoint, renderWorkspaceCheckpointMarkdown } from "./checkpoint.js";
+export type { WorkspaceCheckpointFile, WorkspaceCheckpointOptions, WorkspaceCheckpointResult } from "./checkpoint.js";
 export { auditCodexConfig, renderConfigAuditMarkdown } from "./configAudit.js";
 export type { ConfigAuditFinding, ConfigAuditResult, ConfigAuditSeverity, ConfigAuditStatus } from "./configAudit.js";
 export { listDemoScenarios, renderDemoMarkdown, renderDemoScenarioList, runDemo } from "./demo.js";

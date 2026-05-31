@@ -53,7 +53,7 @@ What it proves:
 Recommended CI surface:
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.70
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.71
   with:
     mode: all
     doctor-threshold: "85"
@@ -394,7 +394,20 @@ This finds sensitive-looking paths such as `.env`, `.env.*`, `.npmrc`, `.pypirc`
 
 The output includes a stable JSON schema plus recommended exclude globs that can seed `.agentignore`, `.aiexclude`, `.codexignore`, local sandbox permission profiles, or team security review checklists. It is a preflight report, not a sandbox boundary.
 
-## 27. OpenAI Codex Issue Report
+## 27. Workspace Checkpoint Before Agent Runs
+
+Use this before giving Codex, Claude, Cursor, or another coding agent a dirty repository where untracked local work matters.
+
+```bash
+npx trace-to-skill checkpoint . --output .trace-to-skill/checkpoints/before-codex
+npx trace-to-skill checkpoint . --format json
+```
+
+This writes a local checkpoint bundle with `status.txt`, staged and unstaged binary diffs, a `manifest.json`, restore notes, and copied blobs for changed or untracked files. It is intentionally conservative: it does not auto-restore files and does not run destructive commands. Gitignored files are excluded by default; use `--include-ignored` only when you intentionally need local-only files such as `.env`, and keep that bundle private.
+
+This is useful for OpenAI/Codex `/undo` and `/rewind` discussions where users need workspace protection beyond conversation rewind, especially when untracked files are outside normal commit history.
+
+## 28. OpenAI Codex Issue Report
 
 Use this when you want to file or update an OpenAI/Codex issue with a concise, evidence-backed report instead of pasting a full transcript.
 
@@ -407,7 +420,7 @@ The report includes the likely Codex failure class, line-linked evidence, diagno
 
 For a cluster-to-command map of current Codex issue patterns, see [CODEX_ISSUE_MAP.md](CODEX_ISSUE_MAP.md).
 
-## 28. Sensitive File Access Evidence
+## 29. Sensitive File Access Evidence
 
 Use this when a trace suggests an agent read, attached, uploaded, diffed, or indexed credential-bearing files.
 
@@ -420,7 +433,7 @@ This catches signals such as `.env`, `.env.production`, `.npmrc`, `.pypirc`, `.n
 
 Before publishing evidence, run `trace-to-skill redact` and attach only redacted excerpts plus the file path/class.
 
-## 29. GitHub Context Guard
+## 30. GitHub Context Guard
 
 Use this before an agent reads untrusted GitHub text.
 

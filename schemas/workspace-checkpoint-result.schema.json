@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/grnbtqdbyx-create/trace-to-skill/schemas/workspace-checkpoint-result.schema.json",
+  "title": "trace-to-skill workspace checkpoint result",
+  "type": "object",
+  "required": ["generatedAt", "root", "outputDir", "includeUntracked", "includeIgnored", "summary", "files", "artifacts"],
+  "additionalProperties": false,
+  "properties": {
+    "generatedAt": {
+      "type": "string"
+    },
+    "root": {
+      "type": "string"
+    },
+    "outputDir": {
+      "type": "string"
+    },
+    "gitHead": {
+      "type": "string"
+    },
+    "includeUntracked": {
+      "type": "boolean"
+    },
+    "includeIgnored": {
+      "type": "boolean"
+    },
+    "summary": {
+      "type": "object",
+      "required": ["statusEntries", "copiedFiles", "deletedFiles", "symlinks"],
+      "additionalProperties": false,
+      "properties": {
+        "statusEntries": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "copiedFiles": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "deletedFiles": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "symlinks": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "files": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/file"
+      }
+    },
+    "artifacts": {
+      "type": "object",
+      "required": ["manifest", "status", "unstagedDiff", "stagedDiff", "notes"],
+      "additionalProperties": false,
+      "properties": {
+        "manifest": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "unstagedDiff": {
+          "type": "string"
+        },
+        "stagedDiff": {
+          "type": "string"
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "file": {
+      "type": "object",
+      "required": ["path", "status", "copied", "deleted"],
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "copied": {
+          "type": "boolean"
+        },
+        "deleted": {
+          "type": "boolean"
+        },
+        "symlinkTarget": {
+          "type": "string"
+        },
+        "blob": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      }
+    }
+  }
+}
