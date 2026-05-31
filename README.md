@@ -1,5 +1,10 @@
 # trace-to-skill
 
+[![CI](https://github.com/grnbtqdbyx-create/trace-to-skill/actions/workflows/ci.yml/badge.svg)](https://github.com/grnbtqdbyx-create/trace-to-skill/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/grnbtqdbyx-create/trace-to-skill)](https://github.com/grnbtqdbyx-create/trace-to-skill/releases)
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+[![Node](https://img.shields.io/badge/node-%3E%3D20-339933.svg)](package.json)
+
 Turn failed AI coding-agent runs into reusable `AGENTS.md` rules, `SKILL.md` files, and eval evidence.
 
 ```bash
