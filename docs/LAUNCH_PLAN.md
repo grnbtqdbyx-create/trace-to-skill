@@ -35,13 +35,14 @@ Secondary headline:
 - [x] first issue labels and roadmap issues
 - [x] first release tag
 - [x] SARIF output for GitHub code scanning
+- [x] one-command repository setup with `trace-to-skill init`
 - [x] discovery PR to awesome-codex-cli: https://github.com/milisp/awesome-codex-cli/pull/35
 - [x] discovery PR to awesome-harness-engineering: https://github.com/ai-boost/awesome-harness-engineering/pull/45
 
 ## Current Public Proof
 
 - Repository: https://github.com/grnbtqdbyx-create/trace-to-skill
-- Latest release: https://github.com/grnbtqdbyx-create/trace-to-skill/releases/tag/v0.1.5
+- Latest release: https://github.com/grnbtqdbyx-create/trace-to-skill/releases/tag/v0.1.6
 - CI: passing on `main`
 - Profile README: https://github.com/grnbtqdbyx-create/grnbtqdbyx-create
 

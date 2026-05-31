@@ -1,8 +1,12 @@
 import assert from "node:assert/strict";
+import { mkdtemp, readFile } from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
 import { test } from "node:test";
 import { analyzeTargets } from "../src/analyze.js";
 import { compareAnalyses, evaluate } from "../src/eval.js";
 import { postPullRequestComment } from "../src/github.js";
+import { initProject } from "../src/init.js";
 import { renderAgentsRules, renderComparison, renderPrComment, renderSarif, renderSkill } from "../src/report.js";
 
 test("analyzeTargets detects failed agent workflow signals", async () => {
@@ -105,4 +109,31 @@ test("renderSarif produces GitHub code-scanning compatible results", async () =>
   assert.equal(sarif.runs[0].tool.driver.name, "trace-to-skill");
   assert.ok(sarif.runs[0].tool.driver.rules.some((rule) => rule.id === "mcp_risk"));
   assert.ok(sarif.runs[0].results.some((item) => item.ruleId === "mcp_risk" && item.level === "error"));
+});
+
+test("initProject scaffolds workflow without overwriting existing files", async () => {
+  const cwd = await mkdtemp(path.join(os.tmpdir(), "trace-to-skill-init-"));
+  const first = await initProject({ cwd, comment: true, sarif: true });
+  const second = await initProject({ cwd, comment: true, sarif: true });
+  const workflow = await readFile(path.join(cwd, ".github/workflows/agent-learning.yml"), "utf8");
+
+  assert.ok(first.written.includes(".github/workflows/agent-learning.yml"));
+  assert.ok(second.skipped.includes(".github/workflows/agent-learning.yml"));
+  assert.match(workflow, /upload-sarif/);
+  assert.match(workflow, /trace-to-skill comment runs/);
+});
+
+test("initProject rejects unsafe workflow arguments", async () => {
+  await assert.rejects(
+    () => initProject({ traces: "../runs" }),
+    /must not contain/
+  );
+  await assert.rejects(
+    () => initProject({ traces: "runs; curl example.com" }),
+    /safe relative path/
+  );
+  await assert.rejects(
+    () => initProject({ threshold: "101" }),
+    /between 1 and 100/
+  );
 });

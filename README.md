@@ -9,6 +9,7 @@ Turn failed AI coding-agent runs into reusable `AGENTS.md` rules, `SKILL.md` fil
 
 ```bash
 npx github:grnbtqdbyx-create/trace-to-skill analyze ./runs
+npx github:grnbtqdbyx-create/trace-to-skill init --comment --sarif
 npx github:grnbtqdbyx-create/trace-to-skill suggest ./runs --target agents-md
 npx github:grnbtqdbyx-create/trace-to-skill eval ./runs --threshold 80
 npx github:grnbtqdbyx-create/trace-to-skill comment ./runs --dry-run
@@ -110,6 +111,12 @@ Requires Node.js 20+.
 
 ## CLI
 
+Scaffold a repo:
+
+```bash
+trace-to-skill init --comment --sarif
+```
+
 Analyze traces:
 
 ```bash
@@ -198,10 +205,12 @@ Code scanning / SARIF upload:
     sarif_file: trace-to-skill.sarif
 ```
 
+`init` writes `.github/workflows/agent-learning.yml`, `runs/README.md`, and `runs/.gitkeep`. It will not overwrite existing files unless `--force` is passed.
+
 Composite action usage:
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.5
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.6
   with:
     traces: ./runs
     threshold: "80"

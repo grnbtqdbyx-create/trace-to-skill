@@ -24,7 +24,8 @@ Current proof points:
 - Pull request comment reports.
 - SARIF output for GitHub code scanning.
 - Before/after eval comparison with keep/revise/reject decisions.
-- Public release v0.1.5.
+- One-command repository setup via `trace-to-skill init`.
+- Public release v0.1.6.
 
 500-character version:
 

@@ -13,6 +13,7 @@ Core commands:
 
 ```bash
 npx github:grnbtqdbyx-create/trace-to-skill analyze ./runs
+npx github:grnbtqdbyx-create/trace-to-skill init --comment --sarif
 npx github:grnbtqdbyx-create/trace-to-skill analyze ./runs --format sarif --output trace-to-skill.sarif
 npx github:grnbtqdbyx-create/trace-to-skill suggest ./runs --target agents-md
 npx github:grnbtqdbyx-create/trace-to-skill eval ./runs --threshold 80

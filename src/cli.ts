@@ -3,6 +3,7 @@ import { writeFile } from "node:fs/promises";
 import { analyzeTargets } from "./analyze.js";
 import { compareAnalyses, evaluate } from "./eval.js";
 import { postPullRequestComment } from "./github.js";
+import { initProject } from "./init.js";
 import { renderAgentsRules, renderComparison, renderMarkdown, renderPrComment, renderSarif, renderSkill } from "./report.js";
 
 interface ParsedArgs {
@@ -77,6 +78,21 @@ async function main(): Promise<void> {
     return;
   }
 
+  if (parsed.command === "init") {
+    const result = await initProject({
+      traces: stringFlag(parsed.flags.traces),
+      threshold: stringFlag(parsed.flags.threshold),
+      comment: Boolean(parsed.flags.comment),
+      sarif: Boolean(parsed.flags.sarif),
+      force: Boolean(parsed.flags.force),
+      dryRun: Boolean(parsed.flags["dry-run"])
+    });
+    process.stdout.write(`${result.message}\n`);
+    result.written.forEach((file) => process.stdout.write(`write ${file}\n`));
+    result.skipped.forEach((file) => process.stdout.write(`skip ${file}\n`));
+    return;
+  }
+
   printHelp();
   process.exitCode = 1;
 }
@@ -147,6 +163,7 @@ Usage:
   trace-to-skill eval <trace-file-or-dir> [--threshold 75] [--format text|json]
   trace-to-skill comment <trace-file-or-dir> [--dry-run] [--token $GITHUB_TOKEN]
   trace-to-skill compare --before <old-run> --after <new-run> [--format markdown|json]
+  trace-to-skill init [--traces runs] [--threshold 80] [--comment] [--sarif] [--dry-run]
 
 Examples:
   trace-to-skill analyze ./runs
@@ -154,6 +171,7 @@ Examples:
   trace-to-skill eval ./runs --threshold 80
   trace-to-skill comment ./runs
   trace-to-skill compare --before ./runs/before --after ./runs/after
+  trace-to-skill init --comment --sarif
 `);
 }
 
