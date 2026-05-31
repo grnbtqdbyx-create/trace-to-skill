@@ -215,6 +215,28 @@ const RULES: RuleDefinition[] = [
     suggestedSkill: "codex-latency-regression-triage"
   },
   {
+    kind: "codex_thinking_hang",
+    severity: "high",
+    title: "Codex thinking or stream hang",
+    why: "Codex can accept a turn, finish local tool calls, or keep a Responses request open while the UI/CLI remains on Thinking or Working with no streamed follow-up, making users interrupt healthy runs or lose long-session context.",
+    patterns: [
+      /\b(remain|remains|stays?|stuck|hangs?|hung)\b.{0,140}\b(Thinking|Working|running|spinner)\b.{0,220}\b(successful tool calls?|tool returned|no streamed follow-up|no follow-up|no response|responses request|\/responses request|post-tool|continuation)\b/i,
+      /\b(successful tool calls?|tool returned|tools? returned instantly|pwd|rg --files|function_call_output)\b.{0,220}\b(Thinking|Working|stuck|hangs?|hung|no next assistant action|no streamed follow-up|no visible output|silent)\b/i,
+      /\bpre[- ]?first[- ]?(?:token|output|event|response)\b.{0,180}\b(stall|hang|gap|silent|no visible|no streamed|many minutes|30 minutes|1,?838(?:\.5)? seconds)\b/i,
+      /\b(first response_item|first assistant|first reasoning|first visible assistant output)\b.{0,180}\b(after|gap|later|minutes|seconds)\b.{0,80}\b(30|1,?838|380|671|984|many)\b/i,
+      /\btask_started\b.{0,120}\bturn_context\b.{0,180}\b(first response_item|first assistant|reasoning)\b/i,
+      /\bmodel_client\.stream_responses_api\b.{0,220}\btime\.busy=\d+(?:\.\d+)?ms\b.{0,80}\btime\.idle=\d{3,}s\b/i,
+      /\bresponses_(?:http|websocket)\b.{0,220}\b(close time\.busy|time\.idle|stream remains silent|reconnecting|stream disconnected before completion|broken pipe)\b/i,
+      /\b(turn\/start|response_routed|captured turn route)\b.{0,220}\b(no assistant|no reasoning|no output|first response_item|stuck|Thinking)\b/i,
+      /\b(stop button|Ctrl\+C|interrupt|esc to interrupt|cannot stop|stop doesn't work|does not respond)\b.{0,180}\b(Thinking|Working|stuck|hang|turn|session)\b/i,
+      /\b(subagent|child thread|child lifecycle|waiting_on_child|child_requires_input|child_cleanup_pending)\b.{0,180}\b(Thinking|spinner|stuck|hang|parent|main thread)\b/i,
+      /\b(MCP|config\.toml|broken MCP|not responding)\b.{0,180}\b(Thinking|stuck|hang|minimal config|without any MCPs)\b/i
+    ],
+    suggestedRule:
+      "When reporting Codex thinking hangs, capture app/CLI/extension version, OS, model and reasoning/speed settings, turn/thread id, prompt timestamp, `turn/start` or `task_started` timestamp, last successful tool-call output, first `response_item` or assistant timestamp if it eventually appears, transport (`responses_http` or websocket), `time.busy`/`time.idle` close metrics, reconnect or stream-disconnect lines, MCP/subagent state, whether stop/interrupt works, and whether a new thread or minimal config without MCPs recovers.",
+    suggestedSkill: "codex-thinking-hang-triage"
+  },
+  {
     kind: "codex_approval_friction",
     severity: "high",
     title: "Codex approval persistence or MCP approval friction",
@@ -457,7 +479,7 @@ const RULES: RuleDefinition[] = [
       /\b(thread-stream-state-changed|worker_rpc_response_error|open-in-target not supported|local-environments is not supported|stable-metadata)\b.{0,180}\b(loop|repeated|thousands|high CPU|flood|no handler|error=\{\})\b/i,
       /\bthinking\b.{0,120}\b(animation|spinner|shimmer)\b.{0,160}\b(GPU|compositor|VSync|reduce motion|70%|100%|battery|power)\b/i,
       /\b(non[- ]?Git workspace|without \.git|not a Git repository|git repository root)\b.{0,180}\b(high CPU|renderer|Code Helper|runaway|CPU drops|CPU high)\b/i,
-      /\b(close_agent|subagent|child thread)\b.{0,180}\b(hang forever|never terminates|runaway|leak|stuck|CPU|process)\b/i
+      /\b(close_agent|subagent|child thread)\b.{0,180}\b(hang forever|never terminates|runaway|leak|CPU|process)\b/i
     ],
     suggestedRule:
       "When reporting Codex resource leaks, capture app/extension/CLI version, OS, IDE, thread type, exact process names and PIDs, CPU/GPU/RSS samples over time, whether the process is orphaned or PPID 1, log-loop signatures, workspace git-root state, visible animations/reduce-motion state, reproduction steps, and whether closing the panel/app, killing specific PIDs, git init, rollback, or restart clears the leak.",
@@ -475,7 +497,7 @@ const RULES: RuleDefinition[] = [
       /\binsufficient tool messages following tool_calls message\b/i,
       /\btool_call_id\b.{0,160}\b(missing|unmatched|not followed|protocol|invalid_request_error|tool messages?)\b/i,
       /\bclose_agent\b.{0,180}\b(hang forever|waits? forever|never returns|thread never terminates|agent thread limit reached|registry slot|already closed)\b/i,
-      /\b(subagent|child thread|durable spawn edge|thread_spawn_edges)\b.{0,180}\b(closed|interrupted|terminated|registry slot|thread limit|hang|timeout)\b/i,
+      /\b(subagent|child thread|durable spawn edge|thread_spawn_edges)\b.{0,180}\b(closed|interrupted|terminated|registry slot|thread limit|hang forever|timeout)\b/i,
       /\b(failed to revert changes|revert changes failed|undo button stopped working|could not undo|rollback failed)\b/i,
       /\b(Codex|agent|extension)\b.{0,180}\b(deleted|truncated|overwrote|destroyed|lost)\b.{0,160}\b(uncommitted code|existing file|codebase|file contents)\b/i,
       /\b(IDE-integrated diff|presenting changes|proposed changes|diff approval|show a diff|apply changes)\b.{0,180}\b(fail|missing|unsafe|rollback|revert|approval)\b/i

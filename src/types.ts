@@ -16,6 +16,7 @@ export type FindingKind =
   | "context_compaction"
   | "codex_latest_turn_drift"
   | "codex_latency_regression"
+  | "codex_thinking_hang"
   | "codex_approval_friction"
   | "sandbox_permission"
   | "codex_windows_helper_path"

@@ -197,6 +197,24 @@ test("analyzeTargets detects Codex latency regressions", async () => {
   assert.match(report, /Codex model or runtime latency regression/);
 });
 
+test("analyzeTargets detects Codex thinking and stream hangs", async () => {
+  const result = await analyzeTargets(["fixtures/codex-thinking-hang.md"]);
+  const finding = result.findings.find((item) => item.kind === "codex_thinking_hang");
+  const evidence = finding?.evidence.map((item) => item.excerpt).join("\n") ?? "";
+  const report = renderCodexIssueReport(result);
+
+  assert.ok(finding);
+  assert.equal(finding.severity, "high");
+  assert.match(evidence, /remain in Thinking after successful tool calls/);
+  assert.match(evidence, /no next assistant action/);
+  assert.match(evidence, /first response_item type=reasoning/);
+  assert.match(evidence, /time\.busy=51\.5ms time\.idle=380s/);
+  assert.match(evidence, /minimal `config\.toml` without MCPs/);
+  assert.match(finding.suggestedRule, /last successful tool-call output/);
+  assert.match(finding.suggestedRule, /time\.busy/);
+  assert.match(report, /codex_thinking_hang/);
+});
+
 test("analyzeTargets detects Codex approval friction", async () => {
   const result = await analyzeTargets(["fixtures/codex-approval-friction.md"]);
   const finding = result.findings.find((item) => item.kind === "codex_approval_friction");
@@ -225,6 +243,7 @@ test("demo command runs packaged scenarios without private traces", async () => 
   assert.ok(scenarios.some((scenario) => scenario.id === "remote-compact"));
   assert.ok(scenarios.some((scenario) => scenario.id === "windows-helper-path"));
   assert.ok(scenarios.some((scenario) => scenario.id === "latency-regression"));
+  assert.ok(scenarios.some((scenario) => scenario.id === "thinking-hang"));
   assert.ok(scenarios.some((scenario) => scenario.id === "file-tree-ui"));
   assert.ok(scenarios.some((scenario) => scenario.id === "usage-reset-drift"));
   assert.equal(result.scenario.id, "approval-friction");
@@ -233,6 +252,7 @@ test("demo command runs packaged scenarios without private traces", async () => 
   assert.match(markdown, /Generated Codex Issue Report/);
   assert.match(markdown, /codex_approval_friction/);
   assert.match(list, /latency-regression/);
+  assert.match(list, /thinking-hang/);
   assert.match(list, /remote-compact/);
   assert.match(list, /windows-helper-path/);
   assert.match(list, /file-tree-ui/);
@@ -1425,6 +1445,7 @@ test("published JSON schemas describe CLI result contracts", async () => {
   assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("context_compaction"));
   assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("codex_latest_turn_drift"));
   assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("codex_latency_regression"));
+  assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("codex_thinking_hang"));
   assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("codex_approval_friction"));
   assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("sandbox_permission"));
   assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("codex_connectivity"));
@@ -1476,13 +1497,14 @@ test("benchmark covers public fixture failure classes", async () => {
   const markdown = renderBenchmarkMarkdown(benchmark);
 
   assert.equal(benchmark.passed, true);
-  assert.equal(benchmark.cases.length, 26);
+  assert.equal(benchmark.cases.length, 27);
   assert.ok(benchmark.cases.some((item) => item.id === "clean-validated-run" && item.score === 100));
   assert.ok(benchmark.cases.some((item) => item.id === "failed-workflow" && item.detectedKinds.includes("test_failure")));
   assert.ok(benchmark.cases.some((item) => item.id === "context-compaction" && item.detectedKinds.includes("context_compaction")));
   assert.ok(benchmark.cases.some((item) => item.id === "codex-remote-compact" && item.detectedKinds.includes("codex_remote_compact")));
   assert.ok(benchmark.cases.some((item) => item.id === "codex-latest-turn-drift" && item.detectedKinds.includes("codex_latest_turn_drift")));
   assert.ok(benchmark.cases.some((item) => item.id === "codex-latency-regression" && item.detectedKinds.includes("codex_latency_regression")));
+  assert.ok(benchmark.cases.some((item) => item.id === "codex-thinking-hang" && item.detectedKinds.includes("codex_thinking_hang")));
   assert.ok(benchmark.cases.some((item) => item.id === "codex-approval-friction" && item.detectedKinds.includes("codex_approval_friction")));
   assert.ok(benchmark.cases.some((item) => item.id === "sandbox-permission" && item.detectedKinds.includes("sandbox_permission")));
   assert.ok(benchmark.cases.some((item) => item.id === "codex-windows-helper-path" && item.detectedKinds.includes("codex_windows_helper_path")));
@@ -1515,7 +1537,7 @@ test("scorecard combines doctor readiness and benchmark evidence", async () => {
   assert.equal(scorecard.doctor.status, "ready");
   assert.equal(scorecard.doctor.score, 100);
   assert.equal(scorecard.benchmark.status, "pass");
-  assert.equal(scorecard.benchmark.cases, 26);
+  assert.equal(scorecard.benchmark.cases, 27);
   assert.match(markdown, /trace-to-skill Scorecard/);
   assert.match(markdown, /Codex readiness/);
   assert.match(markdown, /Benchmark Summary/);
@@ -1531,9 +1553,9 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.equal(brief.scorecard.doctorStatus, "ready");
   assert.equal(brief.scorecard.doctorScore, 100);
   assert.equal(brief.scorecard.benchmarkStatus, "pass");
-  assert.equal(brief.scorecard.benchmarkCases, 26);
+  assert.equal(brief.scorecard.benchmarkCases, 27);
   assert.equal(brief.packageName, "trace-to-skill");
-  assert.equal(brief.packageVersion, "0.1.59");
+  assert.equal(brief.packageVersion, "0.1.60");
   assert.equal(brief.license, "Apache-2.0");
   assert.ok(brief.repository?.includes("github.com/grnbtqdbyx-create/trace-to-skill"));
   assert.ok(brief.qualification.max500.length <= 500);
@@ -1541,7 +1563,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.match(markdown, /OpenAI OSS Brief/);
   assert.match(markdown, /Why This Repository Qualifies/);
   assert.match(markdown, /500-Character Version/);
-  assert.match(markdown, /npx trace-to-skill@0\.1\.59/);
+  assert.match(markdown, /npx trace-to-skill@0\.1\.60/);
 });
 
 test("scorecard-comment dry-run resolves pull request event", async () => {

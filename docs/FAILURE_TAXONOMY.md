@@ -40,6 +40,14 @@ Common signals include `GPT-5.5 Fast` feeling as slow as `Standard`, simple task
 
 The fix is to capture app/CLI/extension version, model and speed/reasoning settings, subscription or workspace, timestamps for pre-first-token, thinking, tool execution, search, read, and compaction phases, task size and lines changed, local CPU/memory/network/VPN/proxy evidence, feedback ids, before/after latency comparison, and whether API and Codex paths differ.
 
+## Codex Thinking Hang
+
+Codex can accept a turn, finish a local tool call, or keep a Responses request open while the UI or CLI remains on Thinking/Working with no streamed assistant follow-up. This is more specific than general latency: the session appears structurally accepted but the next visible assistant event never arrives or arrives after a very long gap.
+
+Common signals include `turn/start`, `task_started`, a successful tool output followed by no next assistant action, a long gap before the first `response_item`, `model_client.stream_responses_api` close lines where `time.busy` is milliseconds but `time.idle` is hundreds of seconds, `responses_http` or websocket reconnects, Stop/Ctrl+C not interrupting the stuck turn, a subagent parent thread waiting while a child remains active, and minimal `config.toml` without MCPs changing the behavior.
+
+The fix is to capture Codex version, OS, model and speed/reasoning settings, turn or thread id, prompt timestamp, last successful tool output, first `response_item` timestamp, transport evidence, `time.busy` / `time.idle`, reconnect or stream-close lines, MCP/subagent lifecycle state, stop/interrupt behavior, and whether a new thread or minimal config recovers.
+
 ## Codex Approval Friction
 
 Codex approval UX can fail even when the sandbox itself works. The common pattern is that a user chooses `Approve for this session`, `Always`, or an MCP/tool trust setting, but Codex keeps asking for approval, makes the user babysit every step, or pushes them toward `Full Access` just to get useful work done.

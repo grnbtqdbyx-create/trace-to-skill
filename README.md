@@ -66,6 +66,7 @@ Use it when you need to:
 - **Triage stuck Codex sessions:** run `trace-to-skill analyze ./runs` to catch context compaction failures such as compact stream disconnects, `context_length_exceeded`, and schema mismatches.
 - **Catch latest-turn drift:** run `trace-to-skill analyze ./runs` when Codex answers an older prompt, repeats a previous response, forgets recent edits after compaction, or leaks raw tool payload text into chat.
 - **Measure Codex latency regressions:** run `trace-to-skill analyze ./runs` when GPT-5.5 Fast feels like Standard, simple tasks take 10-20+ minutes, thinking stalls, or search/read/compaction delays dominate the session.
+- **Report Thinking hangs:** run `trace-to-skill codex-report ./runs` when Codex accepts a turn or finishes local tools but stays on Thinking/Working with no streamed follow-up.
 - **Reduce approval friction:** run `trace-to-skill analyze ./runs` when `Approve for this session` is not remembered, repeated prompts push users toward Full Access, or trusted MCP tools like Playwright require dozens of approvals.
 - **Diagnose sandbox blockers:** run `trace-to-skill analyze ./runs` on Codex traces that fail with sandbox setup refresh, `os error 740`, ACL, ownership, or approval-mode permission errors.
 - **Debug Codex auth/connectivity:** run `trace-to-skill analyze ./runs` on logs with `token_exchange_failed`, `auth.openai.com/oauth/token`, Cloudflare challenge, proxy/CA, IPv6, or stream disconnect symptoms.
@@ -112,6 +113,7 @@ Open-source maintainers do not need more AI-generated noise. They need agents th
 - Did a long local Codex session become impossible to resume because history size, context compression, archived chat loading, or state migration broke?
 - Did usage burn come from useful model work, background polling, compaction/replay, retry loops, subagents, or idle app activity?
 - Did a model/runtime latency regression make Fast behave like Standard, stall before first output, or spend minutes in thinking, search, read, or compaction phases?
+- Did Codex accept a turn, finish local tools, or keep a Responses request open while the UI/CLI stayed on Thinking with no streamed follow-up?
 - Did repeated approval prompts make a safer scoped mode unusable or require huge per-tool MCP approval configs?
 - Can the failure be reported to OpenAI with line-linked evidence, redaction notes, and the exact diagnostics maintainers need?
 - Can we produce an application-ready OpenAI OSS brief from the repo's actual license, distribution, readiness, and benchmark state?
@@ -182,6 +184,7 @@ Trace analysis detects run-level failures:
 | Context compaction | Codex compact task fails, disconnects, loops, or hits `context_length_exceeded` |
 | Codex latest-turn drift | Long or compacted conversations answer stale prompts, redo old tasks, forget recent edits, or expose raw tool payloads |
 | Codex latency regression | Model/runtime routing, thinking stalls, search/read, or compaction latency makes simple tasks take minutes or hours |
+| Codex thinking hang | A turn, tool call, or Responses stream appears accepted but no assistant follow-up arrives while the UI stays on Thinking/Working |
 | Codex approval friction | Session approvals are not remembered, MCP tools reprompt repeatedly, or users fall back to unsafe full access |
 | Sandbox permission | Codex sandbox setup, approval mode, ACL, or workspace ownership blocks tool execution |
 | Codex connectivity | Auth token exchange, proxy/CA, IPv6, Cloudflare challenge, or ChatGPT transport errors block Codex |
@@ -227,6 +230,7 @@ Try a packaged public demo before collecting private traces:
 trace-to-skill demo
 trace-to-skill demo --list
 trace-to-skill demo latency-regression
+trace-to-skill demo thinking-hang
 trace-to-skill demo patch-overwrite
 trace-to-skill guard-patch ./change.patch --root .
 trace-to-skill session-audit ~/.codex --format json
@@ -441,7 +445,7 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v5
-      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.59
+      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.60
         with:
           mode: all
           doctor-threshold: "85"
@@ -490,7 +494,7 @@ Composite action usage:
 
 ```yaml
 - id: trace-to-skill
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.59
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.60
   with:
     mode: all
     doctor-threshold: "85"
@@ -532,7 +536,7 @@ Action outputs:
 
 By default, generated reports are also appended to the GitHub Actions Job Summary. Set `job-summary: "false"` to disable that UI output.
 
-Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.59` executes that release's checked-out source instead of pulling the default branch at runtime.
+Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.60` executes that release's checked-out source instead of pulling the default branch at runtime.
 
 ## Codex Skill
 

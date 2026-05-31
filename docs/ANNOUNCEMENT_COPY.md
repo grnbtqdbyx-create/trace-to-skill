@@ -65,6 +65,7 @@ trace-to-skill checks repo readiness and scans agent traces/logs to generate:
 - Codex MCP runtime detection for cancelled approvals, unsupported routed tool calls, dropped namespace/serverName metadata, and closed stdio transports
 - Codex file tree and workspace navigation UI failure detection for missing `View > Toggle File Tree`, stale floating panels, and file-preview failures
 - Codex resume/session-state detection for large JSONL histories, sluggish Desktop thread rendering, dropped recent context, archived chat failures, and SQLite migration drift
+- Codex Thinking/Working hang detection for accepted turns, completed local tools, delayed first `response_item`, `responses_http` `time.busy` / `time.idle`, stop/interrupt failures, MCP state, and subagent parent/child lifecycle evidence
 - Codex token-burn attribution for background polling, idle app usage, compaction tax, retry loops, cached-token-heavy turns, and fast-mode/subagent drift
 - Codex usage reset drift detection for moving weekly reset anchors, lost saved usage, and `/status` versus dashboard reset discrepancies
 - a `usage-evidence` command that turns scattered `/status`, reset-table, usage-limit, and token-total snippets into a single Codex rate-limit report
@@ -82,6 +83,7 @@ It is deterministic and local-first right now; no runtime network calls.
 Example:
 
 npx trace-to-skill demo
+npx trace-to-skill demo thinking-hang
 npx trace-to-skill init --comment --sarif
 npx trace-to-skill doctor .
 npx trace-to-skill lint-agents .

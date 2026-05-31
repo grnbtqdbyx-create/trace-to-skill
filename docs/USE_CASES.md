@@ -13,13 +13,14 @@ npx trace-to-skill demo remote-compact
 npx trace-to-skill demo windows-helper-path
 npx trace-to-skill demo patch-overwrite
 npx trace-to-skill demo latency-regression
+npx trace-to-skill demo thinking-hang
 ```
 
 What it proves:
 
 - packaged fixtures can produce a real Codex issue report immediately
 - maintainers can inspect the output shape before sharing any private log
-- demos cover remote compact failures, Windows helper path failures, patch overwrite safety, approval friction, latency, token burn, sensitive files, and prompt injection
+- demos cover remote compact failures, Windows helper path failures, patch overwrite safety, approval friction, latency, Thinking hangs, token burn, sensitive files, and prompt injection
 
 See the generated demo output in [docs/DEMO.md](DEMO.md).
 
@@ -42,7 +43,7 @@ What it proves:
 Recommended CI surface:
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.59
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.60
   with:
     mode: all
     doctor-threshold: "85"
@@ -226,7 +227,21 @@ This catches signals such as high `Code Helper (Renderer)` or `Code Helper (Plug
 
 Include process names/PIDs, CPU/GPU/RSS samples over time, log-loop snippets, workspace Git-root state, animation/reduce-motion state, and whether closing the panel/app, killing exact PIDs, `git init`, rollback, or restart clears the leak.
 
-## 16. Patch Overwrite Guard
+## 16. Codex Thinking Hang Evidence
+
+Use this when Codex accepts a prompt, finishes a local tool call, or keeps a Responses stream open but the UI/CLI remains on Thinking or Working with no visible assistant follow-up.
+
+```bash
+npx trace-to-skill demo thinking-hang
+npx trace-to-skill analyze ./runs --format json
+npx trace-to-skill codex-report ./runs --output openai-codex-thinking-hang.md
+```
+
+This catches signals such as `turn/start`, `task_started`, a completed local tool result, a long gap before the first `response_item`, `model_client.stream_responses_api` close lines where `time.busy` is only milliseconds but `time.idle` is hundreds of seconds, Stop/Ctrl+C failing to interrupt, subagent parent threads staying stuck while a child is active, and minimal `config.toml` without MCPs changing the behavior.
+
+Include the Codex version, OS, model and reasoning/speed settings, turn or thread id, prompt timestamp, last successful tool output, first `response_item` timestamp, `responses_http` or websocket transport evidence, `time.busy` / `time.idle`, MCP/subagent state, stop/interrupt behavior, and whether a new thread or minimal config recovers.
+
+## 17. Patch Overwrite Guard
 
 Use this before applying a generated patch when you want create/update/delete semantics checked against the actual workspace.
 
@@ -243,7 +258,7 @@ For a public demo report:
 npx trace-to-skill demo patch-overwrite
 ```
 
-## 17. OpenAI Codex Issue Report
+## 18. OpenAI Codex Issue Report
 
 Use this when you want to file or update an OpenAI/Codex issue with a concise, evidence-backed report instead of pasting a full transcript.
 
@@ -256,7 +271,7 @@ The report includes the likely Codex failure class, line-linked evidence, diagno
 
 For a cluster-to-command map of current Codex issue patterns, see [CODEX_ISSUE_MAP.md](CODEX_ISSUE_MAP.md).
 
-## 18. Sensitive File Access Evidence
+## 19. Sensitive File Access Evidence
 
 Use this when a trace suggests an agent read, attached, uploaded, diffed, or indexed credential-bearing files.
 
@@ -269,7 +284,7 @@ This catches signals such as `.env`, `.env.production`, `.npmrc`, `.pypirc`, `.n
 
 Before publishing evidence, run `trace-to-skill redact` and attach only redacted excerpts plus the file path/class.
 
-## 19. GitHub Context Guard
+## 20. GitHub Context Guard
 
 Use this before an agent reads untrusted GitHub text.
 
@@ -286,7 +301,7 @@ Use it when:
 - a bot asks Codex to triage untrusted user reports
 - logs or comments might contain instructions like "ignore previous instructions" or "print secrets"
 
-## 20. Failed Agent Run To Reviewable Rule
+## 21. Failed Agent Run To Reviewable Rule
 
 Use this when a coding agent made a repeated workflow mistake.
 
@@ -304,7 +319,7 @@ Recommended maintainer loop:
 4. Copy only evidence-backed rules into the real policy file.
 5. Run `eval` or `scorecard` in CI so the same failure does not silently return.
 
-## 21. Privacy-Preserving Adoption
+## 22. Privacy-Preserving Adoption
 
 Use this when you want public evidence without leaking private traces.
 

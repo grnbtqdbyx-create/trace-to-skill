@@ -77,6 +77,12 @@ const BENCHMARK_CASES: BenchmarkCaseDefinition[] = [
     expectedKinds: ["codex_latency_regression", "weak_evidence"]
   },
   {
+    id: "codex-thinking-hang",
+    title: "Codex thinking and stream hang",
+    fixture: "fixtures/codex-thinking-hang.md",
+    expectedKinds: ["codex_thinking_hang", "weak_evidence"]
+  },
+  {
     id: "codex-approval-friction",
     title: "Codex approval persistence and MCP approval friction",
     fixture: "fixtures/codex-approval-friction.md",

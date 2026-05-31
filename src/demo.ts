@@ -43,6 +43,12 @@ const DEMO_SCENARIOS: DemoScenario[] = [
     description: "Fast mode feels like Standard, with long thinking, search, read, or compaction stalls."
   },
   {
+    id: "thinking-hang",
+    title: "Codex thinking and stream hang",
+    fixture: "fixtures/codex-thinking-hang.md",
+    description: "A turn or tool call completes, but the session stays on Thinking or Working with no streamed follow-up."
+  },
+  {
     id: "token-burn",
     title: "Codex token burn",
     fixture: "fixtures/codex-token-burn.md",
@@ -128,6 +134,7 @@ export function renderDemoMarkdown(result: DemoResult): string {
     "trace-to-skill demo remote-compact",
     "trace-to-skill demo windows-helper-path",
     "trace-to-skill demo patch-overwrite",
+    "trace-to-skill demo thinking-hang",
     "trace-to-skill demo file-tree-ui",
     "trace-to-skill demo usage-reset-drift",
     "```",
@@ -151,6 +158,7 @@ export function renderDemoScenarioList(scenarios = listDemoScenarios()): string 
     "trace-to-skill demo windows-helper-path",
     "trace-to-skill demo patch-overwrite",
     "trace-to-skill demo latency-regression",
+    "trace-to-skill demo thinking-hang",
     "trace-to-skill demo --list",
     "```",
     ""
