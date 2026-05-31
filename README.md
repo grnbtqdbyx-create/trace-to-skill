@@ -35,6 +35,16 @@ failed agent run -> failure class -> reusable rule/skill -> eval gate -> keep or
 
 It is built for maintainers using Codex, Claude Code, Cursor, Copilot coding agent, Gemini CLI, OpenCode, or MCP-enabled workflows.
 
+## Fast Use Cases
+
+Use it when you need to:
+
+- **Gate Codex-ready PRs:** run `trace-to-skill scorecard .` in CI and post a reviewer-friendly readiness comment.
+- **Harden agent instructions:** run `trace-to-skill lint-agents .` to catch missing `AGENTS.md`, conflicting tool instructions, and risky MCP config.
+- **Protect agent context:** run `trace-to-skill guard-github-event "$GITHUB_EVENT_PATH"` before feeding issue, PR, comment, discussion, check-run, or commit text into an agent.
+
+For copy-paste workflows, see [docs/USE_CASES.md](https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/USE_CASES.md).
+
 ## Why This Exists
 
 Open-source maintainers do not need more AI-generated noise. They need agents that learn from concrete failures and produce reviewable evidence.
@@ -287,7 +297,7 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v5
-      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.27
+      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.28
         with:
           mode: all
           doctor-threshold: "85"
@@ -336,7 +346,7 @@ Composite action usage:
 
 ```yaml
 - id: trace-to-skill
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.27
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.28
   with:
     mode: all
     doctor-threshold: "85"
@@ -378,7 +388,7 @@ Action outputs:
 
 By default, generated reports are also appended to the GitHub Actions Job Summary. Set `job-summary: "false"` to disable that UI output.
 
-Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.27` executes that release's checked-out source instead of pulling the default branch at runtime.
+Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.28` executes that release's checked-out source instead of pulling the default branch at runtime.
 
 ## Codex Skill
 

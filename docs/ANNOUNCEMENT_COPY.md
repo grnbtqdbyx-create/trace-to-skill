@@ -11,6 +11,7 @@ repo doctor -> failed agent run -> failure class -> reusable rule/skill -> eval 
 ```
 
 GitHub: https://github.com/grnbtqdbyx-create/trace-to-skill
+npm: https://www.npmjs.com/package/trace-to-skill
 
 ## Reddit / Hacker News
 
@@ -56,6 +57,7 @@ It is deterministic and local-first right now; no runtime network calls.
 
 Example:
 
+npx trace-to-skill init --comment --sarif
 npx trace-to-skill doctor .
 npx trace-to-skill lint-agents .
 npx trace-to-skill doctor . --threshold 85
@@ -85,4 +87,5 @@ repo doctor
 The goal is not autonomous policy rewrites. It is evidence-backed agent improvement for OSS maintainers.
 
 https://github.com/grnbtqdbyx-create/trace-to-skill
+https://www.npmjs.com/package/trace-to-skill
 ```

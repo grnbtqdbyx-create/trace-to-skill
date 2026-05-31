@@ -29,6 +29,16 @@ Maintainers can use the tool to:
 - explain why an AI-generated PR needs more evidence
 - improve Codex workflows without locking into one provider
 
+## Current Wedge
+
+GitHub discovery research points to three active categories where maintainers are already paying attention:
+
+- `AGENTS.md` playbooks and rule packs
+- MCP and prompt-injection security tooling
+- coding-agent evals and reviewer proof
+
+`trace-to-skill` sits at the intersection: it does not try to replace those tools, it gives maintainers a deterministic loop for turning real agent failures into reviewable rules and CI evidence.
+
 ## What We Should Measure
 
 - number of public repos using the GitHub Action

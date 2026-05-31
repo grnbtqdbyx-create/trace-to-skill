@@ -1,6 +1,6 @@
 {
   "name": "trace-to-skill",
-  "version": "0.1.27",
+  "version": "0.1.28",
   "description": "Turn failed AI coding-agent runs into reusable AGENTS.md rules, SKILL.md files, and eval evidence.",
   "type": "module",
   "main": "dist/src/index.js",
