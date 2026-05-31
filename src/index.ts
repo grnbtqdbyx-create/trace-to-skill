@@ -6,6 +6,7 @@ export { compareAnalyses, evaluate } from "./eval.js";
 export { analyzeGithubEventContext, extractGithubContextInputs } from "./githubContext.js";
 export { postPullRequestComment } from "./github.js";
 export { initProject } from "./init.js";
+export { redactTargets, redactText } from "./redact.js";
 export { renderAgentsRules, renderComparison, renderDoctorMarkdown, renderDoctorPrComment, renderMarkdown, renderPrComment, renderSarif, renderSkill } from "./report.js";
 export { renderScorecardMarkdown, renderScorecardPrComment, runScorecard } from "./scorecard.js";
 export type { AnalysisResult, Finding, FindingKind, Severity } from "./types.js";

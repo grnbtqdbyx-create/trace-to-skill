@@ -11,6 +11,7 @@ import { compareAnalyses, evaluate } from "../src/eval.js";
 import { analyzeGithubEventContext, extractGithubContextInputs } from "../src/githubContext.js";
 import { postPullRequestComment } from "../src/github.js";
 import { initProject } from "../src/init.js";
+import { redactTargets, redactText } from "../src/redact.js";
 import { renderAgentsRules, renderComparison, renderDoctorPrComment, renderPrComment, renderSarif, renderSkill } from "../src/report.js";
 import { renderScorecardMarkdown, renderScorecardPrComment, runScorecard } from "../src/scorecard.js";
 
@@ -111,6 +112,51 @@ test("analyzeTargets detects prompt injection in untrusted agent inputs", async 
   assert.equal(finding.severity, "critical");
   assert.match(finding.suggestedRule, /untrusted data/);
   assert.ok(finding.evidence.length >= 2);
+});
+
+test("redactText removes common secrets and private identifiers", () => {
+  const raw = [
+    "OPENAI_API_KEY=sk-proj-abcdefghijklmnopqrstuvwxyz123456",
+    "Authorization: Bearer abcdefghijklmnopqrstuvwxyz.1234567890",
+    "github token ghp_abcdefghijklmnopqrstuvwxyz123456",
+    "email maintainer@example.com",
+    "path /Users/ogun/private-repo"
+  ].join("\n");
+
+  const result = redactText(raw);
+
+  assert.doesNotMatch(result.content, /sk-proj-/);
+  assert.doesNotMatch(result.content, /ghp_/);
+  assert.doesNotMatch(result.content, /maintainer@example\.com/);
+  assert.doesNotMatch(result.content, /\/Users\/ogun/);
+  assert.match(result.content, /\[REDACTED_OPENAI_KEY\]|\[REDACTED\]/);
+  assert.match(result.content, /Bearer \[REDACTED_BEARER_TOKEN\]/);
+  assert.equal(result.replacements.email, 1);
+  assert.equal(result.replacements.mac_home_path, 1);
+});
+
+test("redactTargets writes redacted directory copies", async () => {
+  const cwd = await mkdtemp(path.join(os.tmpdir(), "trace-to-skill-redact-"));
+  const runs = path.join(cwd, "runs");
+  const output = path.join(cwd, "redacted");
+  await mkdir(runs, { recursive: true });
+  await writeFile(path.join(runs, "failed.md"), "token=ghp_abcdefghijklmnopqrstuvwxyz123456\n/Users/ogun/project\n", "utf8");
+
+  const previousCwd = process.cwd();
+  process.chdir(cwd);
+  try {
+    const { result } = await redactTargets(["runs"], "redacted");
+    const redacted = await readFile(path.join(output, "runs/failed.md"), "utf8");
+
+    assert.equal(result.files.length, 1);
+    assert.equal(result.files[0].outputPath, "redacted/runs/failed.md");
+    assert.doesNotMatch(redacted, /ghp_/);
+    assert.doesNotMatch(redacted, /\/Users\/ogun/);
+    assert.equal(result.totals.github_token, 1);
+    assert.equal(result.totals.mac_home_path, 1);
+  } finally {
+    process.chdir(previousCwd);
+  }
 });
 
 test("guard-github-event extracts untrusted PR text and detects prompt injection", async () => {
@@ -414,6 +460,11 @@ test("published JSON schemas describe CLI result contracts", async () => {
     required: string[];
     properties: Record<string, unknown>;
   };
+  const redactSchema = JSON.parse(await readFile("schemas/redact-result.schema.json", "utf8")) as {
+    required: string[];
+    properties: Record<string, unknown>;
+    $defs: Record<string, unknown>;
+  };
 
   assert.deepEqual(analysisSchema.required, ["generatedAt", "inputs", "score", "summary", "findings", "recommendations"]);
   assert.ok(analysisSchema.properties.score);
@@ -427,6 +478,9 @@ test("published JSON schemas describe CLI result contracts", async () => {
   assert.deepEqual(scorecardSchema.required, ["generatedAt", "passed", "threshold", "doctor", "benchmark", "reports"]);
   assert.ok(scorecardSchema.properties.doctor);
   assert.ok(scorecardSchema.properties.benchmark);
+  assert.deepEqual(redactSchema.required, ["generatedAt", "files", "totals"]);
+  assert.ok(redactSchema.properties.files);
+  assert.ok(redactSchema.$defs.redactedFile);
 });
 
 test("benchmark covers public fixture failure classes", async () => {

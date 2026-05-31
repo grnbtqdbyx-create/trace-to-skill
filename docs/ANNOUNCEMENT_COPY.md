@@ -47,6 +47,7 @@ trace-to-skill checks repo readiness and scans agent traces/logs to generate:
 - tag-pinned GitHub Action runtime
 - scorecard PR comments with update-in-place marker
 - a GitHub event context guard for prompt-injection checks before agents read PR/issue/comment text
+- a redaction command for privacy-preserving failed trace sharing
 - a Codex-native readiness auditor skill
 - an Agent Learning Report
 - suggested AGENTS.md rules
@@ -60,6 +61,7 @@ Example:
 npx trace-to-skill init --comment --sarif
 npx trace-to-skill doctor .
 npx trace-to-skill lint-agents .
+npx trace-to-skill redact ./runs --output redacted-runs
 npx trace-to-skill doctor . --threshold 85
 npx trace-to-skill benchmark
 npx trace-to-skill scorecard .

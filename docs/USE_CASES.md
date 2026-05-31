@@ -21,7 +21,7 @@ What it proves:
 Recommended CI surface:
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.28
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.29
   with:
     mode: all
     doctor-threshold: "85"
@@ -87,6 +87,7 @@ Recommended maintainer loop:
 Use this when you want public evidence without leaking private traces.
 
 ```bash
+npx trace-to-skill redact ./runs --output redacted-runs
 npx trace-to-skill analyze ./runs --format json
 npx trace-to-skill analyze ./runs --format sarif --output trace-to-skill.sarif
 ```

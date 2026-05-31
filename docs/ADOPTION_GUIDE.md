@@ -63,9 +63,10 @@ Before committing a trace:
 - Replace private file paths with stable placeholders.
 - Keep only the failure evidence needed for the report.
 - Prefer short excerpts over full transcripts.
+- Run `trace-to-skill redact ./runs --output redacted-runs` before publishing anonymized traces.
 - Run `trace-to-skill analyze` again after redaction.
 
-`trace-to-skill` redacts common token patterns, but maintainers are still responsible for deciding what is safe to publish.
+`trace-to-skill` redacts common token, email, path, and hidden-Unicode patterns, but maintainers are still responsible for deciding what is safe to publish.
 
 ## Pull Request Template
 
@@ -92,6 +93,7 @@ For dashboards, bots, or custom CI:
 - `schemas/analysis-result.schema.json` describes `trace-to-skill analyze --format json`.
 - `schemas/agents-lint-result.schema.json` describes `trace-to-skill lint-agents --format json`.
 - `schemas/doctor-result.schema.json` describes `trace-to-skill doctor --format json`.
+- `schemas/redact-result.schema.json` describes `trace-to-skill redact --format json`.
 - `schemas/scorecard-result.schema.json` describes `trace-to-skill scorecard --format json`.
 
 Use the schemas instead of scraping Markdown reports.

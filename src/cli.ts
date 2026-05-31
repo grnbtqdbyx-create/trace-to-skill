@@ -8,6 +8,7 @@ import { compareAnalyses, evaluate } from "./eval.js";
 import { analyzeGithubEventContext } from "./githubContext.js";
 import { postPullRequestComment } from "./github.js";
 import { initProject } from "./init.js";
+import { redactTargets } from "./redact.js";
 import { renderAgentsRules, renderComparison, renderDoctorMarkdown, renderDoctorPrComment, renderMarkdown, renderPrComment, renderSarif, renderSkill } from "./report.js";
 import { renderScorecardMarkdown, renderScorecardPrComment, runScorecard } from "./scorecard.js";
 
@@ -58,6 +59,24 @@ async function main(): Promise<void> {
     const output = format === "json" ? `${JSON.stringify(evalResult, null, 2)}\n` : `${evalResult.message}\n`;
     await writeOutput(output, parsed.flags.output);
     process.exitCode = evalResult.passed ? 0 : 1;
+    return;
+  }
+
+  if (parsed.command === "redact") {
+    const { result, content } = await redactTargets(parsed.targets, stringFlag(parsed.flags.output));
+    const format = String(parsed.flags.format ?? "text");
+    if (format === "json") {
+      await writeOutput(`${JSON.stringify(result, null, 2)}\n`, undefined);
+      return;
+    }
+
+    if (content !== undefined) {
+      process.stdout.write(content);
+      return;
+    }
+
+    const replacementCount = Object.values(result.totals).reduce((sum, count) => sum + count, 0);
+    process.stdout.write(`redacted ${result.files.length} file(s), ${replacementCount} replacement(s)\n`);
     return;
   }
 
@@ -288,6 +307,7 @@ Usage:
   trace-to-skill analyze <trace-file-or-dir> [--format markdown|json|sarif] [--output report.md]
   trace-to-skill suggest <trace-file-or-dir> [--target agents-md|skill] [--output AGENTS.generated.md]
   trace-to-skill lint-agents [repo-dir] [--format markdown|json] [--output report.md]
+  trace-to-skill redact <trace-file-or-dir> [--output redacted-runs] [--format text|json]
   trace-to-skill eval <trace-file-or-dir> [--threshold 75] [--format text|json]
   trace-to-skill benchmark [--format markdown|json] [--output docs/BENCHMARK.md]
   trace-to-skill scorecard [repo-dir] [--threshold 85] [--format markdown|json] [--output docs/SCORECARD.md]
@@ -303,6 +323,7 @@ Examples:
   trace-to-skill analyze ./runs
   trace-to-skill suggest ./runs --target skill --output skills/verification-before-completion/SKILL.md
   trace-to-skill lint-agents .
+  trace-to-skill redact ./runs --output redacted-runs
   trace-to-skill eval ./runs --threshold 80
   trace-to-skill benchmark
   trace-to-skill scorecard .

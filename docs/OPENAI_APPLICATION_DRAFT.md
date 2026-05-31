@@ -42,13 +42,14 @@ Current proof points:
 - Prompt-injection detection for untrusted issue, PR, log, and web text.
 - Codex-native `codex-readiness-auditor` skill for repeatable maintainer audits.
 - GitHub event context guard for scanning PR, issue, comment, discussion, check-run, and commit text before Codex acts on it.
+- Privacy-preserving `redact` command for sharing failed traces without common tokens, emails, local paths, or hidden Unicode controls.
 - MCP config capability and secret-risk scoring.
 - `AGENTS.md` / `CLAUDE.md` contradiction detection.
 - Pull request comment reports.
 - SARIF output for GitHub code scanning.
 - Before/after eval comparison with keep/revise/reject decisions.
 - One-command repository setup via `trace-to-skill init`.
-- Public release v0.1.28.
+- Public release v0.1.29.
 - Current GitHub scorecard: 100/100 Codex-ready, benchmark passing.
 
 500-character version:

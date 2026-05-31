@@ -42,6 +42,7 @@ Use it when you need to:
 - **Gate Codex-ready PRs:** run `trace-to-skill scorecard .` in CI and post a reviewer-friendly readiness comment.
 - **Harden agent instructions:** run `trace-to-skill lint-agents .` to catch missing `AGENTS.md`, conflicting tool instructions, and risky MCP config.
 - **Protect agent context:** run `trace-to-skill guard-github-event "$GITHUB_EVENT_PATH"` before feeding issue, PR, comment, discussion, check-run, or commit text into an agent.
+- **Share failed traces safely:** run `trace-to-skill redact ./runs --output redacted-runs` before publishing anonymized failure fixtures.
 
 For copy-paste workflows, see [docs/USE_CASES.md](https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/USE_CASES.md).
 
@@ -164,6 +165,16 @@ trace-to-skill lint-agents . --format json
 
 This focused linter checks whether `AGENTS.md` exists as the canonical instruction source, whether validation commands are discoverable, whether `AGENTS.md` / `CLAUDE.md` / Cursor / Copilot guidance conflicts, and whether MCP configs expose risky capabilities or secrets.
 
+Redact traces before sharing them:
+
+```bash
+trace-to-skill redact ./runs --output redacted-runs
+trace-to-skill redact ./runs/failed-run.md > failed-run.redacted.md
+trace-to-skill redact ./runs --output redacted-runs --format json
+```
+
+This removes common API keys, GitHub/npm/Slack tokens, bearer tokens, email addresses, local home paths, and hidden Unicode controls while preserving enough context for maintainer review.
+
 Scaffold a repo:
 
 ```bash
@@ -269,6 +280,7 @@ Stable machine-readable contracts are published with the npm package and release
 - [`schemas/analysis-result.schema.json`](schemas/analysis-result.schema.json) describes `trace-to-skill analyze --format json`.
 - [`schemas/agents-lint-result.schema.json`](schemas/agents-lint-result.schema.json) describes `trace-to-skill lint-agents --format json`.
 - [`schemas/doctor-result.schema.json`](schemas/doctor-result.schema.json) describes `trace-to-skill doctor --format json`.
+- [`schemas/redact-result.schema.json`](schemas/redact-result.schema.json) describes `trace-to-skill redact --format json`.
 - [`schemas/scorecard-result.schema.json`](schemas/scorecard-result.schema.json) describes `trace-to-skill scorecard --format json`.
 
 These schemas let downstream Codex workflows, dashboards, and CI bots consume reports without scraping Markdown.
@@ -297,7 +309,7 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v5
-      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.28
+      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.29
         with:
           mode: all
           doctor-threshold: "85"
@@ -346,7 +358,7 @@ Composite action usage:
 
 ```yaml
 - id: trace-to-skill
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.28
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.29
   with:
     mode: all
     doctor-threshold: "85"
@@ -388,7 +400,7 @@ Action outputs:
 
 By default, generated reports are also appended to the GitHub Actions Job Summary. Set `job-summary: "false"` to disable that UI output.
 
-Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.28` executes that release's checked-out source instead of pulling the default branch at runtime.
+Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.29` executes that release's checked-out source instead of pulling the default branch at runtime.
 
 ## Codex Skill
 

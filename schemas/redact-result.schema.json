@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/grnbtqdbyx-create/trace-to-skill/main/schemas/redact-result.schema.json",
+  "title": "trace-to-skill RedactResult",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "generatedAt",
+    "files",
+    "totals"
+  ],
+  "properties": {
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "files": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/redactedFile"
+      }
+    },
+    "totals": {
+      "$ref": "#/$defs/replacementCounts"
+    }
+  },
+  "$defs": {
+    "replacementCounts": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "integer",
+        "minimum": 0
+      }
+    },
+    "redactedFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "inputPath",
+        "bytesBefore",
+        "bytesAfter",
+        "replacements"
+      ],
+      "properties": {
+        "inputPath": {
+          "type": "string"
+        },
+        "outputPath": {
+          "type": "string"
+        },
+        "bytesBefore": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "bytesAfter": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "replacements": {
+          "$ref": "#/$defs/replacementCounts"
+        }
+      }
+    }
+  }
+}
