@@ -48,6 +48,14 @@ Common signals include `turn/start`, `task_started`, a successful tool output fo
 
 The fix is to capture Codex version, OS, model and speed/reasoning settings, turn or thread id, prompt timestamp, last successful tool output, first `response_item` timestamp, transport evidence, `time.busy` / `time.idle`, reconnect or stream-close lines, MCP/subagent lifecycle state, stop/interrupt behavior, and whether a new thread or minimal config recovers.
 
+## Codex Clipboard Attachment
+
+Codex copy/export, paste, and generated attachment workflows can regress in ways that break both prompt execution and support reporting. The common failure is that user-visible content exists somewhere in the UI or filesystem, but the actual command path, clipboard payload, or issue-report workflow cannot use it correctly.
+
+Common signals include `Copy as Markdown` disappearing, Copy menus that only expose working directory/session ID/deeplink metadata, long structured prompts silently becoming `Pasted text.txt`, generated pasted-text attachments that cannot be previewed, edited, expanded, or reverted inside Codex, and `/goal` deriving its objective only from visible editor text while ignoring non-empty `fileAttachments`.
+
+The fix is to capture app version, OS, surface, exact Copy menu items or paste action, source text size, generated attachment name/path/size, visible editor text before submit, `pasted-text-attachments.json` or fileAttachments metadata, command path such as `/goal`, whether promptRaw/composer text differs from attached content, preview/edit/revert actions tried, clipboard payload format, and whether paste-as-text, opt-out, explicit file reference, new thread, or downgrade changes behavior.
+
 ## Codex Approval Friction
 
 Codex approval UX can fail even when the sandbox itself works. The common pattern is that a user chooses `Approve for this session`, `Always`, or an MCP/tool trust setting, but Codex keeps asking for approval, makes the user babysit every step, or pushes them toward `Full Access` just to get useful work done.

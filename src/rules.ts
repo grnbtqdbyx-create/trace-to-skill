@@ -237,6 +237,29 @@ const RULES: RuleDefinition[] = [
     suggestedSkill: "codex-thinking-hang-triage"
   },
   {
+    kind: "codex_clipboard_attachment",
+    severity: "high",
+    title: "Codex clipboard, paste, or attachment workflow regression",
+    why: "Copy/export, long-paste conversion, and generated `Pasted text.txt` attachment regressions break the handoff loop maintainers use to preserve Codex context, file high-signal issues, and turn large prompts into direct instructions.",
+    patterns: [
+      /\bCopy as Markdown\b.{0,220}\b(disappeared|missing|removed|gone|no longer available|not available|regression|bring this back)\b/i,
+      /\bCopy\b.{0,80}\bsubmenu\b.{0,220}\b(Copy working directory|Copy session ID|Copy deeplink)\b.{0,220}\b(Markdown|transcript|session content|chat content|metadata only|not the actual)\b/i,
+      /\b(export|copy)\b.{0,140}\b(Codex session|chat transcript|session output|assistant responses?)\b.{0,180}\b(Markdown|code blocks|formatting|support report|GitHub issue)\b/i,
+      /\b(auto(?:matic(?:ally)?)?[- ]?convert|converted|turns?|turned)\b.{0,180}\b(long pasted|large pasted|pasted text|long prompt|structured prompt)\b.{0,160}\b(\.txt attachment|text attachment|Pasted text\.txt|attachment)\b/i,
+      /\b(long pasted|large pasted|pasted text|long prompt|structured implementation prompts?)\b.{0,180}\b(auto(?:matic(?:ally)?)?[- ]?convert|converted|turns?|turned)\b.{0,160}\b(\.txt attachment|text attachment|Pasted text\.txt|attachment)\b/i,
+      /\bPasted text\.txt\b.{0,220}\b(cannot|can't|does not|doesn'?t|no obvious|not)\b.{0,140}\b(preview|edit|expand|revert|inline|inspect|modify|convert back|in-app)\b/i,
+      /\battachment\b.{0,120}\b(cannot|can't|does not|doesn'?t|no obvious|not)\b.{0,160}\b(previewed|preview|edited|edit|expanded|expand|reverted|revert|inline prompt text|replaced|in-app)\b/i,
+      /\b(paste as text|paste as attachment|convert back to text|convert back to prompt|revert to inline|auto-convert long pasted text)\b/i,
+      /\b\/goal\b.{0,220}\b(Pasted text\.txt|fileAttachments|pasted-text attachment|visible editor text|promptRaw|composer\.getText)\b.{0,220}\b(empty|missing|ignored|not read|does not read|treats? the goal as empty)\b/i,
+      /\b(Pasted text\.txt|pasted-text\.txt|pasted-text-attachments\.json)\b.{0,220}\b(non-empty|bytes|attachmentPaths|fileAttachments|exists on disk|UTF-8|generated attachment)\b/i,
+      /\b(clicking|right-clicking|context menu)\b.{0,160}\b(Pasted text\.txt|generated attachment|attachment)\b.{0,180}\b(Finder|external IDE|Look Up|Search with Google|Copy|no Codex-specific actions)\b/i,
+      /\b(long pasted prompts?|structured implementation prompts?|manager-to-agent handoffs?)\b.{0,200}\b(actual instruction|direct instruction|not background context|not equivalent|hidden in an attachment|session history)\b/i
+    ],
+    suggestedRule:
+      "When reporting Codex clipboard, paste, or attachment regressions, capture app/CLI/extension version, OS, surface (Desktop, VS Code, TUI, mobile), exact copy menu items or paste action, source text size and whether it crossed an auto-attachment threshold, visible editor text before submit, generated attachment name/path/size, `pasted-text-attachments.json` or fileAttachments metadata if available, command path such as `/goal`, whether promptRaw/composer text differs from attachments, preview/edit/revert actions tried, clipboard payload format, screenshots or short screen recording, and whether paste-as-text, opt-out, new thread, downgrade, or explicit file reference changes behavior.",
+    suggestedSkill: "codex-clipboard-attachment-triage"
+  },
+  {
     kind: "codex_approval_friction",
     severity: "high",
     title: "Codex approval persistence or MCP approval friction",

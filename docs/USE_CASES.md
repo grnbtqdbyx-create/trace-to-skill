@@ -14,13 +14,14 @@ npx trace-to-skill demo windows-helper-path
 npx trace-to-skill demo patch-overwrite
 npx trace-to-skill demo latency-regression
 npx trace-to-skill demo thinking-hang
+npx trace-to-skill demo clipboard-attachment
 ```
 
 What it proves:
 
 - packaged fixtures can produce a real Codex issue report immediately
 - maintainers can inspect the output shape before sharing any private log
-- demos cover remote compact failures, Windows helper path failures, patch overwrite safety, approval friction, latency, Thinking hangs, token burn, sensitive files, and prompt injection
+- demos cover remote compact failures, Windows helper path failures, patch overwrite safety, approval friction, latency, Thinking hangs, clipboard/attachment regressions, token burn, sensitive files, and prompt injection
 
 See the generated demo output in [docs/DEMO.md](DEMO.md).
 
@@ -43,7 +44,7 @@ What it proves:
 Recommended CI surface:
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.60
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.61
   with:
     mode: all
     doctor-threshold: "85"
@@ -241,7 +242,21 @@ This catches signals such as `turn/start`, `task_started`, a completed local too
 
 Include the Codex version, OS, model and reasoning/speed settings, turn or thread id, prompt timestamp, last successful tool output, first `response_item` timestamp, `responses_http` or websocket transport evidence, `time.busy` / `time.idle`, MCP/subagent state, stop/interrupt behavior, and whether a new thread or minimal config recovers.
 
-## 17. Patch Overwrite Guard
+## 17. Codex Clipboard And Pasted-Text Attachment Evidence
+
+Use this when copy/export, long pasted prompts, or generated `Pasted text.txt` attachments break Codex prompt, `/goal`, or support-report workflows.
+
+```bash
+npx trace-to-skill demo clipboard-attachment
+npx trace-to-skill analyze ./runs --format json
+npx trace-to-skill codex-report ./runs --output openai-codex-clipboard-attachment.md
+```
+
+This catches signals such as `Copy as Markdown` disappearing from the Copy menu, long structured prompts being auto-converted into `.txt` attachments, `Pasted text.txt` not previewing or editing inside Codex, `/goal` reading only visible editor text while ignoring fileAttachments, and generated pasted-text files existing on disk with non-zero sizes.
+
+Include app version, OS, surface, exact copy menu items, source text size, paste action, visible editor text, generated attachment name/path/size, `pasted-text-attachments.json` or fileAttachments metadata, command path such as `/goal`, preview/edit/revert actions tried, clipboard payload format, and whether paste-as-text, opt-out, explicit file reference, or downgrade changes behavior.
+
+## 18. Patch Overwrite Guard
 
 Use this before applying a generated patch when you want create/update/delete semantics checked against the actual workspace.
 
@@ -258,7 +273,7 @@ For a public demo report:
 npx trace-to-skill demo patch-overwrite
 ```
 
-## 18. OpenAI Codex Issue Report
+## 19. OpenAI Codex Issue Report
 
 Use this when you want to file or update an OpenAI/Codex issue with a concise, evidence-backed report instead of pasting a full transcript.
 
@@ -271,7 +286,7 @@ The report includes the likely Codex failure class, line-linked evidence, diagno
 
 For a cluster-to-command map of current Codex issue patterns, see [CODEX_ISSUE_MAP.md](CODEX_ISSUE_MAP.md).
 
-## 19. Sensitive File Access Evidence
+## 20. Sensitive File Access Evidence
 
 Use this when a trace suggests an agent read, attached, uploaded, diffed, or indexed credential-bearing files.
 
@@ -284,7 +299,7 @@ This catches signals such as `.env`, `.env.production`, `.npmrc`, `.pypirc`, `.n
 
 Before publishing evidence, run `trace-to-skill redact` and attach only redacted excerpts plus the file path/class.
 
-## 20. GitHub Context Guard
+## 21. GitHub Context Guard
 
 Use this before an agent reads untrusted GitHub text.
 
@@ -301,7 +316,7 @@ Use it when:
 - a bot asks Codex to triage untrusted user reports
 - logs or comments might contain instructions like "ignore previous instructions" or "print secrets"
 
-## 21. Failed Agent Run To Reviewable Rule
+## 22. Failed Agent Run To Reviewable Rule
 
 Use this when a coding agent made a repeated workflow mistake.
 
@@ -319,7 +334,7 @@ Recommended maintainer loop:
 4. Copy only evidence-backed rules into the real policy file.
 5. Run `eval` or `scorecard` in CI so the same failure does not silently return.
 
-## 22. Privacy-Preserving Adoption
+## 23. Privacy-Preserving Adoption
 
 Use this when you want public evidence without leaking private traces.
 

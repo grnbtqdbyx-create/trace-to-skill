@@ -1,10 +1,10 @@
 # trace-to-skill Demo
 
-Scenario: **Codex thinking and stream hang**
+Scenario: **Codex clipboard and pasted-text attachment regression**
 
-A turn or tool call completes, but the session stays on Thinking or Working with no streamed follow-up.
+Copy as Markdown, long-paste conversion, or generated Pasted text.txt attachments break prompt and report workflows.
 
-Fixture: `fixtures/codex-thinking-hang.md`
+Fixture: `fixtures/codex-clipboard-attachment.md`
 
 This is a packaged public fixture, so you can try the project without collecting a private trace first.
 
@@ -14,7 +14,7 @@ This is a packaged public fixture, so you can try the project without collecting
 
 Score: **75/100**
 
-Likely failure class: **Codex thinking or stream hang (codex_thinking_hang, high)**
+Likely failure class: **Codex clipboard, paste, or attachment workflow regression (codex_clipboard_attachment, high)**
 
 Agent workflow needs clearer verification, instruction, or security hardening before broad reuse.
 
@@ -23,25 +23,25 @@ Agent workflow needs clearer verification, instruction, or security hardening be
 ```md
 ### What happened?
 
-trace-to-skill detected Codex thinking or stream hang (codex_thinking_hang). Codex can accept a turn, finish local tool calls, or keep a Responses request open while the UI/CLI remains on Thinking or Working with no streamed follow-up, making users interrupt healthy runs or lose long-session context.
+trace-to-skill detected Codex clipboard, paste, or attachment workflow regression (codex_clipboard_attachment). Copy/export, long-paste conversion, and generated `Pasted text.txt` attachment regressions break the handoff loop maintainers use to preserve Codex context, file high-signal issues, and turn large prompts into direct instructions.
 
 ### Detected failure class
 
-- codex_thinking_hang: Codex thinking or stream hang (high)
+- codex_clipboard_attachment: Codex clipboard, paste, or attachment workflow regression (high)
 
 ### Evidence
 
-#### Codex thinking or stream hang
-- fixtures/codex-thinking-hang.md:12 - - Codex Desktop can remain in Thinking after successful tool calls with no streamed follow-up or a hung /responses request.
-- fixtures/codex-thinking-hang.md:13 - - The tools returned instantly (`pwd` and `rg --files`), then the app sat for minutes with no next assistant action until interrupt.
-- fixtures/codex-thinking-hang.md:16 - - The first response_item type=reasoning appeared only after a 1,838.5 second gap.
-- fixtures/codex-thinking-hang.md:17 - - Another report showed `model_client.stream_responses_api{transport="responses_http" api.path="responses"}: close time.busy=51.5ms time.idle=380s`.
-- fixtures/codex-thinking-hang.md:20 - - In subagent runs, the parent main thread stays stuck thinking while a child thread remains active, so the UI needs `waiting_on_child`, `child_requires_input`, or `child_cleanup_pending`.
-- fixtures/codex-thinking-hang.md:21 - - One workaround was a minimal `config.toml` without MCPs because a broken MCP that was not responding kept the session stuck on Thinking.
+#### Codex clipboard, paste, or attachment workflow regression
+- fixtures/codex-clipboard-attachment.md:12 - - After updating to Codex Desktop 26.527, `Copy as Markdown` disappeared from the Copy submenu.
+- fixtures/codex-clipboard-attachment.md:13 - - The Copy submenu only shows `Copy working directory`, `Copy session ID`, and `Copy deeplink`, which copies metadata instead of the actual Codex session or chat transcript in Markdown.
+- fixtures/codex-clipboard-attachment.md:14 - - Long pasted structured implementation prompts are automatically converted into `.txt` attachments named `Pasted text.txt`.
+- fixtures/codex-clipboard-attachment.md:15 - - Users need options such as `Paste as text`, `Paste as attachment`, `Convert back to prompt text`, or `Auto-convert long pasted text to attachments: Off`.
+- fixtures/codex-clipboard-attachment.md:17 - - A `/goal` submit path ignored a non-empty `Pasted text.txt` attachment and treated the goal objective as empty because the visible editor text / `promptRaw` / `composer.getText()` did not include `fileAttachments`.
+- fixtures/codex-clipboard-attachment.md:18 - - The generated pasted-text attachment existed on disk under `%USERPROFILE%\.codex\attachments\pasted-text-attachments.json`, with non-empty `pasted-text.txt` files such as 14963 bytes and 28029 bytes.
 
 ### Diagnostics to attach
 
-- When reporting Codex thinking hangs, capture app/CLI/extension version, OS, model and reasoning/speed settings, turn/thread id, prompt timestamp, `turn/start` or `task_started` timestamp, last successful tool-call output, first `response_item` or assistant timestamp if it eventually appears, transport (`responses_http` or websocket), `time.busy`/`time.idle` close metrics, reconnect or stream-disconnect lines, MCP/subagent state, whether stop/interrupt works, and whether a new thread or minimal config without MCPs recovers.
+- When reporting Codex clipboard, paste, or attachment regressions, capture app/CLI/extension version, OS, surface (Desktop, VS Code, TUI, mobile), exact copy menu items or paste action, source text size and whether it crossed an auto-attachment threshold, visible editor text before submit, generated attachment name/path/size, `pasted-text-attachments.json` or fileAttachments metadata if available, command path such as `/goal`, whether promptRaw/composer text differs from attachments, preview/edit/revert actions tried, clipboard payload format, screenshots or short screen recording, and whether paste-as-text, opt-out, new thread, downgrade, or explicit file reference changes behavior.
 
 ### Privacy
 
@@ -50,24 +50,25 @@ trace-to-skill detected Codex thinking or stream hang (codex_thinking_hang). Cod
 
 ## Findings
 
-### 1. Codex thinking or stream hang
+### 1. Codex clipboard, paste, or attachment workflow regression
 
 Severity: **high**
 
-Codex can accept a turn, finish local tool calls, or keep a Responses request open while the UI/CLI remains on Thinking or Working with no streamed follow-up, making users interrupt healthy runs or lose long-session context.
+Copy/export, long-paste conversion, and generated `Pasted text.txt` attachment regressions break the handoff loop maintainers use to preserve Codex context, file high-signal issues, and turn large prompts into direct instructions.
 
 Evidence:
-- `fixtures/codex-thinking-hang.md:12` - Codex Desktop can remain in Thinking after successful tool calls with no streamed follow-up or a hung /responses request.
-- `fixtures/codex-thinking-hang.md:13` - The tools returned instantly (`pwd` and `rg --files`), then the app sat for minutes with no next assistant action until interrupt.
-- `fixtures/codex-thinking-hang.md:16` - The first response_item type=reasoning appeared only after a 1,838.5 second gap.
-- `fixtures/codex-thinking-hang.md:17` - Another report showed `model_client.stream_responses_api{transport="responses_http" api.path="responses"}: close time.busy=51.5ms time.idle=380s`.
-- `fixtures/codex-thinking-hang.md:20` - In subagent runs, the parent main thread stays stuck thinking while a child thread remains active, so the UI needs `waiting_on_child`, `child_requires_input`, or `child_cleanup_pending`.
-- `fixtures/codex-thinking-hang.md:21` - One workaround was a minimal `config.toml` without MCPs because a broken MCP that was not responding kept the session stuck on Thinking.
-- `fixtures/codex-thinking-hang.md:32` - MCP and subagent state, especially whether a minimal config without MCPs fixes the hang
+- `fixtures/codex-clipboard-attachment.md:12` - After updating to Codex Desktop 26.527, `Copy as Markdown` disappeared from the Copy submenu.
+- `fixtures/codex-clipboard-attachment.md:13` - The Copy submenu only shows `Copy working directory`, `Copy session ID`, and `Copy deeplink`, which copies metadata instead of the actual Codex session or chat transcript in Markdown.
+- `fixtures/codex-clipboard-attachment.md:14` - Long pasted structured implementation prompts are automatically converted into `.txt` attachments named `Pasted text.txt`.
+- `fixtures/codex-clipboard-attachment.md:15` - Users need options such as `Paste as text`, `Paste as attachment`, `Convert back to prompt text`, or `Auto-convert long pasted text to attachments: Off`.
+- `fixtures/codex-clipboard-attachment.md:17` - A `/goal` submit path ignored a non-empty `Pasted text.txt` attachment and treated the goal objective as empty because the visible editor text / `promptRaw` / `composer.getText()` did not include `fileAttachments`.
+- `fixtures/codex-clipboard-attachment.md:18` - The generated pasted-text attachment existed on disk under `%USERPROFILE%\.codex\attachments\pasted-text-attachments.json`, with non-empty `pasted-text.txt` files such as 14963 bytes and 28029 bytes.
+- `fixtures/codex-clipboard-attachment.md:19` - Clicking or right-clicking `Pasted text.txt` opens Finder or an external IDE, or only generic context menu items such as `Look Up`, `Search with Google`, and `Copy`.
+- `fixtures/codex-clipboard-attachment.md:20` - The attachment cannot be previewed, edited, expanded, reverted to inline prompt text, or replaced inside Codex before sending.
 
 Suggested rule:
 
-> When reporting Codex thinking hangs, capture app/CLI/extension version, OS, model and reasoning/speed settings, turn/thread id, prompt timestamp, `turn/start` or `task_started` timestamp, last successful tool-call output, first `response_item` or assistant timestamp if it eventually appears, transport (`responses_http` or websocket), `time.busy`/`time.idle` close metrics, reconnect or stream-disconnect lines, MCP/subagent state, whether stop/interrupt works, and whether a new thread or minimal config without MCPs recovers.
+> When reporting Codex clipboard, paste, or attachment regressions, capture app/CLI/extension version, OS, surface (Desktop, VS Code, TUI, mobile), exact copy menu items or paste action, source text size and whether it crossed an auto-attachment threshold, visible editor text before submit, generated attachment name/path/size, `pasted-text-attachments.json` or fileAttachments metadata if available, command path such as `/goal`, whether promptRaw/composer text differs from attachments, preview/edit/revert actions tried, clipboard payload format, screenshots or short screen recording, and whether paste-as-text, opt-out, new thread, downgrade, or explicit file reference changes behavior.
 
 
 ## Reporter Notes
@@ -84,6 +85,7 @@ Suggested rule:
 - `windows-helper-path`: Windows Desktop exposes bundled rg/node/plugin helpers from WindowsApps or missing LocalCache paths that cannot execute.
 - `approval-friction`: Repeated approval prompts, Approve for this session misses, and noisy trusted MCP tool approvals.
 - `latency-regression`: Fast mode feels like Standard, with long thinking, search, read, or compaction stalls.
+- `thinking-hang`: A turn or tool call completes, but the session stays on Thinking or Working with no streamed follow-up.
 - `token-burn`: Usage drains from background polling, idle activity, compaction loops, retries, or cached-heavy turns.
 - `patch-overwrite`: `apply_patch` accepts `*** Add File` for an existing path, turning a create operation into a silent overwrite.
 - `sensitive-files`: Secrets, local credentials, production env files, or private databases enter agent context.
@@ -97,6 +99,7 @@ trace-to-skill demo remote-compact
 trace-to-skill demo windows-helper-path
 trace-to-skill demo patch-overwrite
 trace-to-skill demo thinking-hang
+trace-to-skill demo clipboard-attachment
 trace-to-skill demo file-tree-ui
 trace-to-skill demo usage-reset-drift
 ```

@@ -83,6 +83,12 @@ const BENCHMARK_CASES: BenchmarkCaseDefinition[] = [
     expectedKinds: ["codex_thinking_hang", "weak_evidence"]
   },
   {
+    id: "codex-clipboard-attachment",
+    title: "Codex clipboard, paste, and attachment workflow regression",
+    fixture: "fixtures/codex-clipboard-attachment.md",
+    expectedKinds: ["codex_clipboard_attachment", "weak_evidence"]
+  },
+  {
     id: "codex-approval-friction",
     title: "Codex approval persistence and MCP approval friction",
     fixture: "fixtures/codex-approval-friction.md",

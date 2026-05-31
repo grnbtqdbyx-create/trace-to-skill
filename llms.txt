@@ -26,6 +26,7 @@ Runtime: Node.js 20+
 - Codex resume and session-state failures such as frozen resume pickers, large rollout JSONL histories, short `session_index.jsonl`, sluggish Desktop thread rendering, dropped recent context after resume, archived chat loading failures, and `state_5.sqlite` / `goals_1.sqlite` migration drift
 - Codex file tree and workspace navigation UI failures such as `View > Toggle File Tree` doing nothing, missing folder icons, stale floating file panels, and built-in preview failures
 - Codex Thinking or Working hangs after accepted turns, successful local tools, or open Responses streams with no streamed assistant follow-up
+- Codex clipboard, copy/export, long paste, and generated `Pasted text.txt` attachment regressions that break prompt, `/goal`, preview/edit, or support-report workflows
 - Codex token-burn and usage-drain failures such as background `write_stdin` polling, idle app usage, compaction tax, retry/tool loops, cached-token-heavy turns, fast-mode drift, subagent fan-out, and unclear usage attribution
 - Codex usage reset schedule drift such as weekly reset dates moving, `reset_at` jumping, saved usage disappearing, outage compensation resets changing the anchor, and `/status` disagreeing with enforcement
 - Codex usage evidence packaging for scattered `/status`, reset-table, usage-limit, and token-total snippets
@@ -66,6 +67,7 @@ failed agent run -> failure class -> evidence-backed AGENTS.md/SKILL.md suggesti
 npx trace-to-skill doctor .
 npx trace-to-skill demo
 npx trace-to-skill demo thinking-hang
+npx trace-to-skill demo clipboard-attachment
 npx trace-to-skill lint-agents .
 npx trace-to-skill guard-github-event "$GITHUB_EVENT_PATH"
 npx trace-to-skill guard-patch ./change.patch --root .
@@ -87,7 +89,7 @@ npx trace-to-skill init --comment --sarif
 ## GitHub Action
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.60
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.61
   with:
     mode: all
     doctor-threshold: "85"
@@ -163,6 +165,10 @@ npx trace-to-skill init --comment --sarif
 - Codex stuck Thinking no streamed follow-up
 - Codex responses_http time.idle hundreds seconds
 - Codex first response_item delayed after turn/start task_started
+- Codex Copy as Markdown missing
+- Codex Pasted text.txt attachment preview edit
+- Codex long pasted prompt auto attachment
+- Codex /goal ignores Pasted text.txt fileAttachments
 - OpenAI Codex issue report from failed trace
 - Codex bug report evidence checklist
 - Codex token burn write_stdin background polling

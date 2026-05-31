@@ -63,6 +63,7 @@ Current proof points:
 - Codex file tree and workspace navigation UI detection for missing `View > Toggle File Tree`, stale floating file panels, and file-preview failures.
 - Token-burn attribution for background polling, idle app activity, compaction/replay overhead, retry loops, cached-token-heavy turns, fast-mode drift, and subagent fan-out.
 - Thinking-hang detection for accepted turns, successful local tool calls, delayed first `response_item`, `responses_http` `time.busy` / `time.idle`, stop/interrupt failures, MCP state, and subagent parent/child lifecycle evidence.
+- Clipboard/pasted-text attachment detection for `Copy as Markdown` regressions, long pasted prompts becoming `Pasted text.txt`, `/goal` ignoring non-empty fileAttachments, and generated attachments lacking in-app preview/edit/revert actions.
 - Usage reset schedule drift detection for moving weekly reset anchors, saved usage loss, outage compensation resets, and `/status` versus dashboard reset discrepancies.
 - `usage-evidence` reports for scattered `/status`, reset-table, usage-limit, and token-total snippets.
 - Resource-leak detection for Codex Desktop, VS Code extension, renderer, GPU, shell snapshot, and helper processes that keep burning CPU/GPU/RAM after the useful work should be idle.
@@ -74,7 +75,7 @@ Current proof points:
 - SARIF output for GitHub code scanning.
 - Before/after eval comparison with keep/revise/reject decisions.
 - One-command repository setup via `trace-to-skill init`.
-- Public release v0.1.60.
+- Public release v0.1.61.
 - Current GitHub scorecard: 100/100 Codex-ready, benchmark passing.
 
 500-character version:
