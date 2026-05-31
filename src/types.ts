@@ -13,6 +13,7 @@ export type FindingKind =
   | "hidden_unicode"
   | "prompt_injection"
   | "context_compaction"
+  | "codex_latest_turn_drift"
   | "sandbox_permission"
   | "codex_connectivity"
   | "codex_remote_control"

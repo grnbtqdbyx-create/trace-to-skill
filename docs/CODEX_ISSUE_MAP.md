@@ -22,6 +22,7 @@ npx trace-to-skill codex-report redacted-runs --output openai-codex-issue.md
 | Quota mismatch | `/status` or usage page shows quota left, but runtime says `You've hit your usage limit`; account/workspace reset or cache confusion | `quota_mismatch` | `trace-to-skill codex-report ./runs` |
 | Sensitive file exclusion | `.env`, private keys, `.npmrc`, cloud credentials, local databases, or production secret manifests entered agent context | `sensitive_file_access` | `trace-to-skill codex-report ./runs` |
 | Context compaction failures | `Error running remote compact task`, `context_length_exceeded`, compaction loops, `responses/compact` stream disconnects | `context_compaction` | `trace-to-skill analyze ./runs` |
+| Latest-turn drift | Codex answers an older prompt, repeats a previous response, redoes an already fixed task, forgets recent edits after compaction, or leaks raw tool payload text | `codex_latest_turn_drift` | `trace-to-skill codex-report ./runs` |
 | Session resume and state failures | `codex resume` picker freezes, large rollout JSONL, `Could not load archived chats`, `state_5.sqlite`, `thread_goals` | `codex_session_state` | `trace-to-skill codex-report ./runs` |
 | Sandbox and permission blockers | Windows sandbox setup refresh, `os error 740`, ACL/ownership drift, approval-mode mismatch | `sandbox_permission` | `trace-to-skill analyze ./runs` |
 | Auth and connectivity failures | `token_exchange_failed`, `auth.openai.com/oauth/token`, missing CA certificates, proxy/TLS, IPv6, Cloudflare, stream disconnects | `codex_connectivity` | `trace-to-skill codex-report ./runs` |
@@ -40,6 +41,7 @@ npx trace-to-skill codex-report redacted-runs --output openai-codex-issue.md
 - Include process names/PIDs, CPU/GPU/RSS samples, log-loop signatures, and whether killing exact PIDs or closing the app clears resource leaks.
 - Include exact tool input/output, `tool_call_id` order, affected path state, and rollback evidence for tool-call integrity failures.
 - Include plugin name/version, cache path, helper path, native pipe env vars, settings/plugin-list errors, and restart behavior for plugin runtime failures.
+- Include the latest user request, stale earlier prompt/response, compaction timing, context size, and feedback/thread id for latest-turn drift.
 - Include line-linked evidence rather than screenshots alone when logs are available.
 - Redact tokens, API keys, emails, local home paths, customer data, and hidden Unicode before posting publicly.
 - For sensitive-file reports, attach only redacted excerpts and the file path/class, not the original credential material.
@@ -49,6 +51,7 @@ npx trace-to-skill codex-report redacted-runs --output openai-codex-issue.md
 - Token burn and usage drain: https://github.com/openai/codex/issues/14593, https://github.com/openai/codex/issues/13733, https://github.com/openai/codex/issues/25420, https://github.com/openai/codex/issues/19585
 - Resource leaks and runaway processes: https://github.com/openai/codex/issues/16231, https://github.com/openai/codex/issues/11981, https://github.com/openai/codex/issues/16857, https://github.com/openai/codex/issues/25388
 - Tool-call integrity and rollback failures: https://github.com/openai/codex/issues/25399, https://github.com/openai/codex/issues/25380, https://github.com/openai/codex/issues/25426, https://github.com/openai/codex/issues/7291
+- Latest-turn drift and compaction memory loss: https://github.com/openai/codex/issues/8648, https://github.com/openai/codex/issues/5957, https://github.com/openai/codex/issues/10823, https://github.com/openai/codex/issues/11626
 - Session state and resume failures: https://github.com/openai/codex/issues/25430, https://github.com/openai/codex/issues/25390, https://github.com/openai/codex/issues/25394, https://github.com/openai/codex/issues/25407
 - MCP runtime failures: https://github.com/openai/codex/issues/16685, https://github.com/openai/codex/issues/18977, https://github.com/openai/codex/issues/24297, https://github.com/openai/codex/issues/23839
 - Plugin runtime and bundled capability failures: https://github.com/openai/codex/issues/25391, https://github.com/openai/codex/issues/25418, https://github.com/openai/codex/issues/25406, https://github.com/openai/codex/issues/18258

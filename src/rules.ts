@@ -155,6 +155,27 @@ const RULES: RuleDefinition[] = [
       "When Codex compaction fails, capture the compact error, model/app version, thread state, and whether the session is recoverable before continuing or reporting success."
   },
   {
+    kind: "codex_latest_turn_drift",
+    severity: "high",
+    title: "Codex responded to an older turn instead of the latest request",
+    why: "Long Codex sessions can drift after compaction or high-context turns, answering a previous prompt, repeating an old response, or continuing the wrong task while ignoring the user's latest instruction.",
+    patterns: [
+      /\bresponds? to an earlier message instead of the (?:most recent|latest|current) (?:one|message|request)\b/i,
+      /\b(answer(?:ed|ing)?|repl(?:y|ied|ies)|respond(?:ed|ing)?)\b.{0,180}\b(previous|earlier|old|third|first|prior) (?:message|prompt|request|question|task|response)\b.{0,180}\b(instead of|not|rather than|ignoring)\b.{0,80}\b(latest|current|new|sixth|actual)\b/i,
+      /\bignoring my (?:actual )?(?:latest|last|current) (?:message|prompt|request|question|instruction)\b/i,
+      /\bkeeps? (?:answering|replying to|responding to|working on|fixing)\b.{0,140}\b(previous|earlier|old|already fixed|already completed)\b/i,
+      /\bjumps? (?:back )?to (?:a )?(previous|earlier|old) (?:tasks?|messages?|prompts?|requests?|context|answers?|responses?)\b/i,
+      /\bafter (?:context )?(?:compact|compaction|summarization|summary)\b.{0,180}\b(loses? context|loses? the plot|wrong message|previous task|old task|ignores? (?:the )?(?:latest|last|current)|repeats? previous)\b/i,
+      /\b(auto[- ]?compaction|compaction)\b.{0,180}\b(forget(?:s|ting)? it (?:is|was) mid[- ]?task|forgets? (?:the )?file edits|denied making edits|stops? mid[- ]?task)\b/i,
+      /\bworked on\b.{0,120}\bprevious prompt\b|\breplying about the previous prompt\b/i,
+      /\b\/review\b.{0,80}\bpr\d+\b.{0,180}\bpr\d+\b.{0,180}\bpr\d+\b.{0,180}\bpr1 review\b/i,
+      /\bwrite_stdin\b.{0,80}\bsession_id\b.{0,80}\byield_time_ms\b.{0,80}\bmax_output_tokens\b/i
+    ],
+    suggestedRule:
+      "When reporting Codex latest-turn drift, capture app/CLI/extension version, model and reasoning effort, context-window percent or token counts, whether compaction happened, the exact latest user request, the stale earlier request or response it answered instead, thread or feedback id, whether resending the same message fixes it, and any raw tool payload leaked into the chat UI.",
+    suggestedSkill: "codex-latest-turn-drift-triage"
+  },
+  {
     kind: "sandbox_permission",
     severity: "high",
     title: "Codex sandbox or permission failure",

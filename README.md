@@ -46,6 +46,7 @@ Use it when you need to:
 - **Share failed traces safely:** run `trace-to-skill redact ./runs --output redacted-runs` before publishing anonymized failure fixtures.
 - **Catch sensitive file access:** run `trace-to-skill analyze ./runs` when an agent trace includes `.env`, private keys, `.npmrc`, cloud credentials, local databases, or production secret manifests.
 - **Triage stuck Codex sessions:** run `trace-to-skill analyze ./runs` to catch context compaction failures such as compact stream disconnects, `context_length_exceeded`, and schema mismatches.
+- **Catch latest-turn drift:** run `trace-to-skill analyze ./runs` when Codex answers an older prompt, repeats a previous response, forgets recent edits after compaction, or leaks raw tool payload text into chat.
 - **Diagnose sandbox blockers:** run `trace-to-skill analyze ./runs` on Codex traces that fail with sandbox setup refresh, `os error 740`, ACL, ownership, or approval-mode permission errors.
 - **Debug Codex auth/connectivity:** run `trace-to-skill analyze ./runs` on logs with `token_exchange_failed`, `auth.openai.com/oauth/token`, Cloudflare challenge, proxy/CA, IPv6, or stream disconnect symptoms.
 - **Prove remote-control route health:** run `trace-to-skill analyze ./runs` when Codex mobile/remote sessions show `Waiting for desktop`, `Directory Unavailable`, stale listener/cache, missing helper bundle, or stale enrollment symptoms.
@@ -145,6 +146,7 @@ Trace analysis detects run-level failures:
 | Hidden Unicode | Invisible instruction or code-review manipulation |
 | Prompt injection | Untrusted issue, PR, log, or web text asks the agent to ignore policy or leak secrets |
 | Context compaction | Codex compact task fails, disconnects, loops, or hits `context_length_exceeded` |
+| Codex latest-turn drift | Long or compacted conversations answer stale prompts, redo old tasks, forget recent edits, or expose raw tool payloads |
 | Sandbox permission | Codex sandbox setup, approval mode, ACL, or workspace ownership blocks tool execution |
 | Codex connectivity | Auth token exchange, proxy/CA, IPv6, Cloudflare challenge, or ChatGPT transport errors block Codex |
 | Codex remote control | Mobile or remote sessions route through stale listeners, stale enrollment, or incomplete helper bundles |
@@ -357,7 +359,7 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v5
-      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.43
+      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.44
         with:
           mode: all
           doctor-threshold: "85"
@@ -406,7 +408,7 @@ Composite action usage:
 
 ```yaml
 - id: trace-to-skill
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.43
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.44
   with:
     mode: all
     doctor-threshold: "85"
@@ -448,7 +450,7 @@ Action outputs:
 
 By default, generated reports are also appended to the GitHub Actions Job Summary. Set `job-summary: "false"` to disable that UI output.
 
-Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.43` executes that release's checked-out source instead of pulling the default branch at runtime.
+Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.44` executes that release's checked-out source instead of pulling the default branch at runtime.
 
 ## Codex Skill
 

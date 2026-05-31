@@ -59,6 +59,12 @@ const BENCHMARK_CASES: BenchmarkCaseDefinition[] = [
     expectedKinds: ["context_compaction", "weak_evidence"]
   },
   {
+    id: "codex-latest-turn-drift",
+    title: "Codex latest-turn drift after compaction",
+    fixture: "fixtures/codex-latest-turn-drift.md",
+    expectedKinds: ["codex_latest_turn_drift", "weak_evidence"]
+  },
+  {
     id: "sandbox-permission",
     title: "Codex sandbox permission failure",
     fixture: "fixtures/sandbox-permission.md",

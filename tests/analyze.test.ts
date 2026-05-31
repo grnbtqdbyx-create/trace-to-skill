@@ -139,6 +139,23 @@ test("analyzeTargets detects Codex context compaction failures", async () => {
   assert.match(finding.suggestedRule, /compact error/);
 });
 
+test("analyzeTargets detects Codex latest-turn drift", async () => {
+  const result = await analyzeTargets(["fixtures/codex-latest-turn-drift.md"]);
+  const finding = result.findings.find((item) => item.kind === "codex_latest_turn_drift");
+  const evidence = finding?.evidence.map((item) => item.excerpt).join("\n") ?? "";
+  const report = renderCodexIssueReport(result);
+
+  assert.ok(finding);
+  assert.equal(finding.severity, "high");
+  assert.match(evidence, /responds to an earlier message instead of the latest request/);
+  assert.match(evidence, /ignoring my actual latest message/);
+  assert.match(evidence, /jumps to previous tasks/);
+  assert.match(evidence, /auto compaction caused it to forget it was mid-task/);
+  assert.match(evidence, /write_stdin session_id/);
+  assert.match(finding.suggestedRule, /exact latest user request/);
+  assert.match(report, /Codex responded to an older turn instead of the latest request/);
+});
+
 test("analyzeTargets detects Codex sandbox permission failures", async () => {
   const result = await analyzeTargets(["fixtures/sandbox-permission.md"]);
   const finding = result.findings.find((item) => item.kind === "sandbox_permission");
@@ -862,6 +879,7 @@ test("published JSON schemas describe CLI result contracts", async () => {
   assert.ok(analysisSchema.properties.score);
   assert.ok(analysisSchema.$defs.finding);
   assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("context_compaction"));
+  assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("codex_latest_turn_drift"));
   assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("sandbox_permission"));
   assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("codex_connectivity"));
   assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("codex_remote_control"));
@@ -892,10 +910,11 @@ test("benchmark covers public fixture failure classes", async () => {
   const markdown = renderBenchmarkMarkdown(benchmark);
 
   assert.equal(benchmark.passed, true);
-  assert.equal(benchmark.cases.length, 18);
+  assert.equal(benchmark.cases.length, 19);
   assert.ok(benchmark.cases.some((item) => item.id === "clean-validated-run" && item.score === 100));
   assert.ok(benchmark.cases.some((item) => item.id === "failed-workflow" && item.detectedKinds.includes("test_failure")));
   assert.ok(benchmark.cases.some((item) => item.id === "context-compaction" && item.detectedKinds.includes("context_compaction")));
+  assert.ok(benchmark.cases.some((item) => item.id === "codex-latest-turn-drift" && item.detectedKinds.includes("codex_latest_turn_drift")));
   assert.ok(benchmark.cases.some((item) => item.id === "sandbox-permission" && item.detectedKinds.includes("sandbox_permission")));
   assert.ok(benchmark.cases.some((item) => item.id === "codex-connectivity" && item.detectedKinds.includes("codex_connectivity")));
   assert.ok(benchmark.cases.some((item) => item.id === "codex-remote-control" && item.detectedKinds.includes("codex_remote_control")));
@@ -923,7 +942,7 @@ test("scorecard combines doctor readiness and benchmark evidence", async () => {
   assert.equal(scorecard.doctor.status, "ready");
   assert.equal(scorecard.doctor.score, 100);
   assert.equal(scorecard.benchmark.status, "pass");
-  assert.equal(scorecard.benchmark.cases, 18);
+  assert.equal(scorecard.benchmark.cases, 19);
   assert.match(markdown, /trace-to-skill Scorecard/);
   assert.match(markdown, /Codex readiness/);
   assert.match(markdown, /Benchmark Summary/);

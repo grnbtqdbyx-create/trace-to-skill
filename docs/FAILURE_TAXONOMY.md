@@ -24,6 +24,14 @@ Codex sandbox setup, approval mode, ACL, or workspace ownership failed before to
 
 The fix is to capture the OS, Codex version, `sandbox_mode`, `approval_policy`, exact stderr, workspace ownership/ACL evidence, and whether a clean directory can run a simple command plus `apply_patch`.
 
+## Codex Latest-Turn Drift
+
+Codex can answer an older message instead of the user's latest request, especially in long conversations, after compaction, or at high context-window usage. This looks like the assistant is still working on question A after the user moved to question B, repeating a previous response, redoing already fixed work, or denying recent edits it made before compaction.
+
+Common signals include `responds to an earlier message`, `ignoring my latest message`, `replying about the previous prompt`, `jumps to previous tasks`, `fixes previously fixed bugs`, `after summarization`, `after context compact`, `/review pr3` returning a `pr1` review, post-compaction denial of recent file edits, and raw tool payload text such as `write_stdin`, `session_id`, `yield_time_ms`, or `max_output_tokens` rendered in chat.
+
+The fix is to capture app/CLI/extension version, model and reasoning effort, context-window percent or token counts, compaction timing, the exact latest user request, the stale earlier request or response it answered instead, thread or feedback id, whether resending the same message fixes it, and any raw internal tool payload leaked into the chat UI.
+
 ## Codex Connectivity
 
 Codex login, device auth, API-key auth, ChatGPT response streaming, or remote transport fails because of token exchange errors, missing CA certificates, proxy or MITM behavior, Cloudflare challenges, IPv6 routing, DNS, VPN, or WebSocket/HTTPS fallback problems.
