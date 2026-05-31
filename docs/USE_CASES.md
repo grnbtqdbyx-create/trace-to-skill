@@ -21,7 +21,7 @@ What it proves:
 Recommended CI surface:
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.36
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.37
   with:
     mode: all
     doctor-threshold: "85"
@@ -51,7 +51,17 @@ This checks:
 
 The goal is not to ban powerful tools. The goal is to make trust boundaries visible before an agent acts.
 
-## 3. GitHub Context Guard
+## 3. Sandbox And Permission Failure Triage
+
+Use this when Codex cannot start tools, apply patches, or write to the workspace because sandbox setup or permissions fail.
+
+```bash
+npx trace-to-skill analyze ./runs --format json
+```
+
+This catches signals such as Windows sandbox setup refresh failures, `os error 740`, `CodexSandboxOffline` ownership drift, ACL denial, approval-policy mismatch, and Full Access sessions behaving like workspace-write or on-request mode.
+
+## 4. GitHub Context Guard
 
 Use this before an agent reads untrusted GitHub text.
 
@@ -68,7 +78,7 @@ Use it when:
 - a bot asks Codex to triage untrusted user reports
 - logs or comments might contain instructions like "ignore previous instructions" or "print secrets"
 
-## 4. Failed Agent Run To Reviewable Rule
+## 5. Failed Agent Run To Reviewable Rule
 
 Use this when a coding agent made a repeated workflow mistake.
 
@@ -86,7 +96,7 @@ Recommended maintainer loop:
 4. Copy only evidence-backed rules into the real policy file.
 5. Run `eval` or `scorecard` in CI so the same failure does not silently return.
 
-## 5. Privacy-Preserving Adoption
+## 6. Privacy-Preserving Adoption
 
 Use this when you want public evidence without leaking private traces.
 

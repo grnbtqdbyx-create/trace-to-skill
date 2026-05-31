@@ -59,6 +59,12 @@ const BENCHMARK_CASES: BenchmarkCaseDefinition[] = [
     expectedKinds: ["context_compaction", "weak_evidence"]
   },
   {
+    id: "sandbox-permission",
+    title: "Codex sandbox permission failure",
+    fixture: "fixtures/sandbox-permission.md",
+    expectedKinds: ["sandbox_permission", "weak_evidence"]
+  },
+  {
     id: "mcp-risk",
     title: "MCP config with secret exposure",
     fixture: "fixtures/mcp-risk.json",

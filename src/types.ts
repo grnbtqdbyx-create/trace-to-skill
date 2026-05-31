@@ -12,6 +12,7 @@ export type FindingKind =
   | "hidden_unicode"
   | "prompt_injection"
   | "context_compaction"
+  | "sandbox_permission"
   | "mcp_risk"
   | "weak_evidence";
 

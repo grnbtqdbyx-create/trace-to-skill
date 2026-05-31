@@ -18,6 +18,12 @@ A test, build, typecheck, lint, or smoke command failed. The agent should contin
 
 Codex context compaction failed, disconnected, looped, or hit `context_length_exceeded`. The fix is to capture the compact error, model/app version, thread state, and recovery state before continuing or reporting the session as healthy.
 
+## Sandbox Permission
+
+Codex sandbox setup, approval mode, ACL, or workspace ownership failed before tools could run reliably. Common signals include Windows sandbox setup refresh errors, `os error 740`, `CodexSandboxOffline` ownership drift, access denied, and Full Access sessions downgraded to workspace-write or on-request behavior.
+
+The fix is to capture the OS, Codex version, `sandbox_mode`, `approval_policy`, exact stderr, workspace ownership/ACL evidence, and whether a clean directory can run a simple command plus `apply_patch`.
+
 ## Hallucinated File
 
 The trace references a missing path, missing module, or nonexistent file. The fix is usually a repository navigation rule.

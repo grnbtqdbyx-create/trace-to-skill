@@ -140,6 +140,28 @@ const RULES: RuleDefinition[] = [
       "When Codex compaction fails, capture the compact error, model/app version, thread state, and whether the session is recoverable before continuing or reporting success."
   },
   {
+    kind: "sandbox_permission",
+    severity: "high",
+    title: "Codex sandbox or permission failure",
+    why: "Sandbox setup, approval-mode, and workspace permission failures can block every tool call or leave the worktree in a broken ownership state.",
+    patterns: [
+      /\bwindows sandbox\b.{0,140}\b(setup refresh|spawn setup refresh|failed|error)\b/i,
+      /\bsandbox setup refresh failed\b/i,
+      /\bsetup refresh failed with status exit code:\s*1\b/i,
+      /\bos error 740\b/i,
+      /\bCreateProcess(?:AsUserW|WithLogonW)? failed\b/i,
+      /\bCreateRestrictedToken failed\b/i,
+      /\bCodexSandbox(?:Offline|Online)\b/i,
+      /\b(SetNamedSecurityInfoW failed|ACL|access denied)\b/i,
+      /\bworkspace-write\b.{0,140}\b(permission|ownership|ACL|write failures|read-only|on-request|downgraded)\b/i,
+      /\bapproval_policy\b.{0,80}\b(never|on-request)\b.{0,140}\b(still asks|requires approvals|approval|denied)\b/i,
+      /\bFull Access\b.{0,140}\b(downgraded|on-request|workspace-write|read-only)\b/i,
+      /\bsandbox_mode\b.{0,80}\b(danger-full-access|workspace-write)\b.{0,140}\b(approval|denied|read-only|permission)\b/i
+    ],
+    suggestedRule:
+      "When Codex sandbox or permission setup fails, capture the OS, Codex version, sandbox_mode, approval_policy, exact stderr, workspace ownership/ACL evidence, and whether a clean directory can run a simple command plus apply_patch."
+  },
+  {
     kind: "mcp_risk",
     severity: "high",
     title: "MCP permission or tool-risk signal",
