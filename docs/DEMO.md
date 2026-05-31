@@ -1,10 +1,10 @@
 # trace-to-skill Demo
 
-Scenario: **Codex terminal output integrity**
+Scenario: **Codex subagent lifecycle**
 
-Terminal scrollback, streamed output, or transcript rendering drops, overwrites, truncates, or makes lines inaccessible.
+Completed, closed, stale, or interrupted subagents diverge between UI, live registry, persisted state, quota, and parent discoverability.
 
-Fixture: `fixtures/codex-terminal-output-integrity.md`
+Fixture: `fixtures/codex-subagent-lifecycle.md`
 
 This is a packaged public fixture, so you can try the project without collecting a private trace first.
 
@@ -14,7 +14,7 @@ This is a packaged public fixture, so you can try the project without collecting
 
 Score: **75/100**
 
-Likely failure class: **Codex terminal output or scrollback integrity failure (codex_terminal_output_integrity, high)**
+Likely failure class: **Codex subagent lifecycle or state reconciliation failure (codex_subagent_lifecycle, high)**
 
 Agent workflow needs clearer verification, instruction, or security hardening before broad reuse.
 
@@ -23,25 +23,25 @@ Agent workflow needs clearer verification, instruction, or security hardening be
 ```md
 ### What happened?
 
-trace-to-skill detected Codex terminal output or scrollback integrity failure (codex_terminal_output_integrity). When Codex TUI or terminal rendering drops, overwrites, truncates, or makes transcript lines inaccessible, users lose the evidence needed to review work, copy results, and file reliable bug reports even if the underlying log still contains the data.
+trace-to-skill detected Codex subagent lifecycle or state reconciliation failure (codex_subagent_lifecycle). When completed, closed, stale, or interrupted subagents remain visible, keep quota slots, lose parent discoverability, or diverge between UI, live registry, and persisted spawn-edge state, long-running Codex sessions become hard to trust or recover.
 
 ### Detected failure class
 
-- codex_terminal_output_integrity: Codex terminal output or scrollback integrity failure (high)
+- codex_subagent_lifecycle: Codex subagent lifecycle or state reconciliation failure (high)
 
 ### Evidence
 
-#### Codex terminal output or scrollback integrity failure
-- fixtures/codex-terminal-output-integrity.md:3 - This fixture uses public, token-free examples of Codex terminal output, scrollback, or transcript rendering losing evidence even when logs or transaction views still contain the missing lines.
-- fixtures/codex-terminal-output-integrity.md:16 - Scrollback does not work correctly; older output disappears or cannot be accessed.
-- fixtures/codex-terminal-output-integrity.md:17 - Output is sometimes overwritten or re-rendered incorrectly.
-- fixtures/codex-terminal-output-integrity.md:19 - Scrolling during streaming output can cause content to be cut or misaligned.
-- fixtures/codex-terminal-output-integrity.md:46 - ./repro/tmux_scrollback_repro.sh
-- fixtures/codex-terminal-output-integrity.md:57 - ./repro/tmux_scrollback_repro.sh --plain
+#### Codex subagent lifecycle or state reconciliation failure
+- fixtures/codex-subagent-lifecycle.md:16 - Completed or closed subagents remain visible in the Subagents panel.
+- fixtures/codex-subagent-lifecycle.md:17 - The app shows stale subagent cards after close/readback reports no live agent handle.
+- fixtures/codex-subagent-lifecycle.md:18 - The visible subagent count grows very large; the panel can show Show 67 more or 100+ stale entries.
+- fixtures/codex-subagent-lifecycle.md:20 - It is unclear which subagents are active versus stale UI/cache entries.
+- fixtures/codex-subagent-lifecycle.md:27 - thread_spawn_edges status count: closed=549, open=0
+- fixtures/codex-subagent-lifecycle.md:28 - After restarting Codex Desktop multiple times, the Subagents panel still visually shows stale subagent cards.
 
 ### Diagnostics to attach
 
-- When reporting Codex terminal output or scrollback integrity failures, capture Codex CLI/app/extension version, OS, shell, terminal emulator and version, remote/WSL/SSH/tmux/Zellij state, model, whether streaming was active, exact scroll action, whether the viewport snapped to bottom, first missing or duplicated line id, raw log/transcript/transaction evidence showing the line still exists, terminal capture such as tmux capture-pane or Windows Terminal screenshot/video, reproduction script or numbered-line harness output, control run without Codex-specific escape/history insertion, terminal dimensions and scrollback settings, whether /resume or transcript mode recovers the content, and whether downgrade or another terminal changes behavior.
+- When reporting Codex subagent lifecycle failures, capture Codex app/CLI/extension version, OS, surface, model, subscription/workspace, root thread id, subagent ids/nicknames/roles, spawn/close/list commands or UI actions, close_agent results, list_agents or /agents output, thread_spawn_edges status counts, agent registry or max_threads/quota evidence, recent-list/sidebar behavior, whether child threads are archived or shown as top-level conversations, last-progress/heartbeat or halt reason, MCP server state for subagents, compaction/resume timing, screenshot or redacted UI state, whether restart/reload/new thread clears it, and whether stale agents are UI-only or still block new spawns.
 
 ### Privacy
 
@@ -50,25 +50,25 @@ trace-to-skill detected Codex terminal output or scrollback integrity failure (c
 
 ## Findings
 
-### 1. Codex terminal output or scrollback integrity failure
+### 1. Codex subagent lifecycle or state reconciliation failure
 
 Severity: **high**
 
-When Codex TUI or terminal rendering drops, overwrites, truncates, or makes transcript lines inaccessible, users lose the evidence needed to review work, copy results, and file reliable bug reports even if the underlying log still contains the data.
+When completed, closed, stale, or interrupted subagents remain visible, keep quota slots, lose parent discoverability, or diverge between UI, live registry, and persisted spawn-edge state, long-running Codex sessions become hard to trust or recover.
 
 Evidence:
-- `fixtures/codex-terminal-output-integrity.md:3` This fixture uses public, token-free examples of Codex terminal output, scrollback, or transcript rendering losing evidence even when logs or transaction views still contain the missing lines.
-- `fixtures/codex-terminal-output-integrity.md:16` Scrollback does not work correctly; older output disappears or cannot be accessed.
-- `fixtures/codex-terminal-output-integrity.md:17` Output is sometimes overwritten or re-rendered incorrectly.
-- `fixtures/codex-terminal-output-integrity.md:19` Scrolling during streaming output can cause content to be cut or misaligned.
-- `fixtures/codex-terminal-output-integrity.md:46` ./repro/tmux_scrollback_repro.sh
-- `fixtures/codex-terminal-output-integrity.md:57` ./repro/tmux_scrollback_repro.sh --plain
-- `fixtures/codex-terminal-output-integrity.md:64` repro/tmux_scrollback_repro.sh
-- `fixtures/codex-terminal-output-integrity.md:65` repro/line_truncation_repro.md
+- `fixtures/codex-subagent-lifecycle.md:16` Completed or closed subagents remain visible in the Subagents panel.
+- `fixtures/codex-subagent-lifecycle.md:17` The app shows stale subagent cards after close/readback reports no live agent handle.
+- `fixtures/codex-subagent-lifecycle.md:18` The visible subagent count grows very large; the panel can show Show 67 more or 100+ stale entries.
+- `fixtures/codex-subagent-lifecycle.md:20` It is unclear which subagents are active versus stale UI/cache entries.
+- `fixtures/codex-subagent-lifecycle.md:27` thread_spawn_edges status count: closed=549, open=0
+- `fixtures/codex-subagent-lifecycle.md:28` After restarting Codex Desktop multiple times, the Subagents panel still visually shows stale subagent cards.
+- `fixtures/codex-subagent-lifecycle.md:36` Codex subagents have been going stale and refusing to close for the past week.
+- `fixtures/codex-subagent-lifecycle.md:47` Long sessions with stale subagents may hold MCP connections or leave connection lifecycle state unclear.
 
 Suggested rule:
 
-> When reporting Codex terminal output or scrollback integrity failures, capture Codex CLI/app/extension version, OS, shell, terminal emulator and version, remote/WSL/SSH/tmux/Zellij state, model, whether streaming was active, exact scroll action, whether the viewport snapped to bottom, first missing or duplicated line id, raw log/transcript/transaction evidence showing the line still exists, terminal capture such as tmux capture-pane or Windows Terminal screenshot/video, reproduction script or numbered-line harness output, control run without Codex-specific escape/history insertion, terminal dimensions and scrollback settings, whether /resume or transcript mode recovers the content, and whether downgrade or another terminal changes behavior.
+> When reporting Codex subagent lifecycle failures, capture Codex app/CLI/extension version, OS, surface, model, subscription/workspace, root thread id, subagent ids/nicknames/roles, spawn/close/list commands or UI actions, close_agent results, list_agents or /agents output, thread_spawn_edges status counts, agent registry or max_threads/quota evidence, recent-list/sidebar behavior, whether child threads are archived or shown as top-level conversations, last-progress/heartbeat or halt reason, MCP server state for subagents, compaction/resume timing, screenshot or redacted UI state, whether restart/reload/new thread clears it, and whether stale agents are UI-only or still block new spawns.
 
 
 ## Reporter Notes
@@ -90,6 +90,7 @@ Suggested rule:
 - `deeplink-launch`: OAuth callbacks, notification clicks, mobile links, or `codex app <path>` external activation fail to route into Codex.
 - `connector-auth-cache`: App connectors keep stale `link_*` auth or discovery metadata after reauth-required responses.
 - `mcp-discovery-mismatch`: MCP servers work in CLI or one config scope but are absent in Desktop, VS Code, WSL, or project-local sessions.
+- `terminal-output-integrity`: Terminal scrollback, streamed output, or transcript rendering drops, overwrites, truncates, or makes lines inaccessible.
 - `token-burn`: Usage drains from background polling, idle activity, compaction loops, retries, or cached-heavy turns.
 - `patch-overwrite`: `apply_patch` accepts `*** Add File` for an existing path, turning a create operation into a silent overwrite.
 - `sensitive-files`: Secrets, local credentials, production env files, or private databases enter agent context.
@@ -108,6 +109,7 @@ trace-to-skill demo deeplink-launch
 trace-to-skill demo connector-auth-cache
 trace-to-skill demo mcp-discovery-mismatch
 trace-to-skill demo terminal-output-integrity
+trace-to-skill demo subagent-lifecycle
 trace-to-skill demo file-tree-ui
 trace-to-skill demo usage-reset-drift
 ```

@@ -104,6 +104,14 @@ Common signals include Windows Terminal scrollback losing older output, PowerShe
 
 The fix is to capture Codex CLI/app/extension version, OS, shell, terminal emulator and version, WSL/SSH/tmux/Zellij state, model, whether streaming was active, exact scroll action, viewport snap behavior, first missing or duplicated line id, raw log/transcript/transaction evidence showing the line still exists, terminal capture such as `tmux capture-pane` or a screenshot/video, numbered-line harness output, control run without Codex-specific rendering, terminal dimensions and scrollback settings, `/resume` or transcript recovery behavior, and whether downgrade or another terminal changes the result.
 
+## Codex Subagent Lifecycle
+
+Codex subagents can diverge across the Desktop UI, live close/readback routes, persisted SQLite spawn edges, recent-conversation listing, and active spawn quota. The result is a session where users cannot tell whether a helper is active, closed, stale, consuming a slot, or merely rendered from old cache.
+
+Common signals include completed or closed subagent cards staying visible, `Show 67 more` or 100+ stale subagent entries, `close_agent` returning `shutdown`, `completed`, `not_found`, or `pending_init` while the panel still lists the agent, `thread_spawn_edges` rows stuck `open`, `state_5.sqlite` showing stale child threads, `collab spawn failed: agent thread limit reached`, child subagent threads appearing as top-level recent conversations, compaction losing prior subagent IDs, and the parent forking the main session when it should resume an unbiased reviewer.
+
+The fix is to capture Codex app/CLI/extension version, OS, surface, model, subscription/workspace, root thread id, subagent ids/nicknames/roles, spawn/close/list commands or UI actions, `close_agent` results, `list_agents` or `/agents` output, `thread_spawn_edges` status counts, registry or `agents.max_threads` evidence, recent-list/sidebar behavior, whether child threads are archived or shown top-level, last-progress or halt reason, MCP server state for subagents, compaction/resume timing, redacted screenshot or UI state, whether restart/reload/new thread clears it, and whether stale agents are UI-only or still block new spawns.
+
 ## Codex MCP Runtime
 
 Codex MCP tools can be configured and discoverable but still fail at runtime. Common causes include non-interactive approval paths cancelling the call, elicitation not being supported in exec mode, deferred discovery replaying a call without namespace or `serverName`, routed callable names such as `mcp__node_repl__js` becoming unsupported, or stdio transports closing before a second tool call.

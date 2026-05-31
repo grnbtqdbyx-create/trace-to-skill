@@ -79,6 +79,12 @@ const DEMO_SCENARIOS: DemoScenario[] = [
     description: "Terminal scrollback, streamed output, or transcript rendering drops, overwrites, truncates, or makes lines inaccessible."
   },
   {
+    id: "subagent-lifecycle",
+    title: "Codex subagent lifecycle",
+    fixture: "fixtures/codex-subagent-lifecycle.md",
+    description: "Completed, closed, stale, or interrupted subagents diverge between UI, live registry, persisted state, quota, and parent discoverability."
+  },
+  {
     id: "token-burn",
     title: "Codex token burn",
     fixture: "fixtures/codex-token-burn.md",
@@ -170,6 +176,7 @@ export function renderDemoMarkdown(result: DemoResult): string {
     "trace-to-skill demo connector-auth-cache",
     "trace-to-skill demo mcp-discovery-mismatch",
     "trace-to-skill demo terminal-output-integrity",
+    "trace-to-skill demo subagent-lifecycle",
     "trace-to-skill demo file-tree-ui",
     "trace-to-skill demo usage-reset-drift",
     "```",
@@ -199,6 +206,7 @@ export function renderDemoScenarioList(scenarios = listDemoScenarios()): string 
     "trace-to-skill demo connector-auth-cache",
     "trace-to-skill demo mcp-discovery-mismatch",
     "trace-to-skill demo terminal-output-integrity",
+    "trace-to-skill demo subagent-lifecycle",
     "trace-to-skill demo --list",
     "```",
     ""

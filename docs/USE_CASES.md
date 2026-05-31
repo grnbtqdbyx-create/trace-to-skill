@@ -19,13 +19,14 @@ npx trace-to-skill demo deeplink-launch
 npx trace-to-skill demo connector-auth-cache
 npx trace-to-skill demo mcp-discovery-mismatch
 npx trace-to-skill demo terminal-output-integrity
+npx trace-to-skill demo subagent-lifecycle
 ```
 
 What it proves:
 
 - packaged fixtures can produce a real Codex issue report immediately
 - maintainers can inspect the output shape before sharing any private log
-- demos cover remote compact failures, Windows helper path failures, patch overwrite safety, approval friction, latency, Thinking hangs, clipboard/attachment regressions, deeplink/OAuth launch regressions, connector auth-cache regressions, MCP discovery/config-scope mismatches, terminal output/scrollback integrity, token burn, sensitive files, and prompt injection
+- demos cover remote compact failures, Windows helper path failures, patch overwrite safety, approval friction, latency, Thinking hangs, clipboard/attachment regressions, deeplink/OAuth launch regressions, connector auth-cache regressions, MCP discovery/config-scope mismatches, terminal output/scrollback integrity, subagent lifecycle drift, token burn, sensitive files, and prompt injection
 
 See the generated demo output in [docs/DEMO.md](DEMO.md).
 
@@ -48,7 +49,7 @@ What it proves:
 Recommended CI surface:
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.65
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.66
   with:
     mode: all
     doctor-threshold: "85"
@@ -162,7 +163,21 @@ This catches signals such as Windows Terminal scrollback lines disappearing, str
 
 Include the Codex CLI/app/extension version, OS, shell, terminal emulator and version, WSL/SSH/tmux/Zellij state, model, whether streaming was active, exact scroll action, terminal dimensions and scrollback settings, first missing or duplicated line id, raw log/transcript proof, terminal capture, numbered-line harness output, control run, `/resume` or transcript recovery behavior, and whether another terminal or downgrade changes the result.
 
-## 11. Codex MCP Runtime Triage
+## 11. Codex Subagent Lifecycle And State Reconciliation
+
+Use this when subagents appear completed, closed, stale, or interrupted but Codex cannot reconcile UI state, live handles, persisted spawn edges, parent discoverability, and active spawn quota.
+
+```bash
+npx trace-to-skill demo subagent-lifecycle
+npx trace-to-skill analyze ./runs --format json
+npx trace-to-skill codex-report ./runs --output openai-codex-subagents.md
+```
+
+This catches signals such as completed subagents remaining visible in the Subagents panel, `close_agent` returning `not_found` or hanging, `thread_spawn_edges` rows staying open, `agent thread limit reached`, child subagent threads showing as top-level recent conversations, and compaction losing the prior subagent id so the parent forks the main session instead of resuming an unbiased reviewer.
+
+Include Codex app/CLI/extension version, OS, surface, model, subscription/workspace, root thread id, subagent ids/nicknames/roles, spawn/close/list commands, `close_agent` results, `list_agents` or `/agents` output, `thread_spawn_edges` status counts, `agents.max_threads` or registry quota evidence, recent-list/sidebar behavior, child-thread archive/top-level status, last-progress or halt reason, MCP server state, compaction/resume timing, redacted UI evidence, restart/reload behavior, and whether stale agents are UI-only or still block spawns.
+
+## 12. Codex MCP Runtime Triage
 
 Use this when MCP tools are configured and visible, but Codex cannot actually call them at runtime.
 
@@ -173,7 +188,7 @@ npx trace-to-skill config-audit ~/.codex --format json
 
 This catches signals such as `user cancelled MCP tool call`, `request_user_input is not supported in exec mode`, `Approve app tool call?`, `tool_call_mcp_elicitation`, routed callable names like `mcp__node_repl__js` becoming `unsupported call`, deferred discovery dropping namespace or `serverName`, `tools/list` succeeding while Codex routing fails, and stdio transport lifecycle failures such as `Transport closed`, `stdin_end`, `stdin_close`, `transport_close`, or stderr backpressure.
 
-## 12. Codex Resume And Session State Triage
+## 13. Codex Resume And Session State Triage
 
 Use this when long Codex sessions become difficult to resume, Desktop history rendering gets sluggish, or local state migrations break goals/projects/history.
 
@@ -190,7 +205,7 @@ This catches signals such as `codex resume` picker hangs, `codex resume <id>` wo
 
 For mixed resume, crash, config, plugin, or history issues, `diagnostics-bundle` writes the session, config, and plugin reports together with a checklist of files not to attach publicly.
 
-## 13. Codex File Tree UI Evidence
+## 14. Codex File Tree UI Evidence
 
 Use this when Codex Desktop cannot reveal project files through the native file tree, folder icon, floating file panel, or built-in preview.
 
@@ -201,7 +216,7 @@ npx trace-to-skill codex-report ./runs --output openai-codex-issue.md
 
 This catches signals such as `View > Toggle File Tree` doing nothing, `Cmd+Shift+E` or `Ctrl+Shift+E` having no visible effect, the folder icon disappearing, the floating file panel showing stale or unclickable entries after add/rename/delete operations, and `.doc`, `.pdf`, or `.ppt` previews failing until restart.
 
-## 14. Codex Token Burn Attribution
+## 15. Codex Token Burn Attribution
 
 Use this when Codex usage drains faster than expected and the trace needs to separate useful model work from orchestration overhead.
 
@@ -212,7 +227,7 @@ npx trace-to-skill codex-report ./runs --output openai-codex-issue.md
 
 This catches signals such as tokens `burning very fast`, usage dropping by visible percentages after one or two prompts, weekly allowance depletion, 5-hour usage reaching 0%, large `input` plus `cached input` totals, `write_stdin` empty polling, background commands repeatedly reporting no new output, idle app usage, compaction tax, retry/tool loops, and missing attribution between normal turns, compaction, background polling, subagents, and retries.
 
-## 15. Usage Reset Drift Evidence
+## 16. Usage Reset Drift Evidence
 
 Use this when Codex reset timing changes unexpectedly or users lose the ability to plan paid usage.
 
@@ -223,7 +238,7 @@ npx trace-to-skill codex-report ./runs --output openai-codex-issue.md
 
 This catches signals such as weekly reset dates moving from one date to another, `reset_at` jumping after the first prompt, saved weekly usage being wiped or pushed into the next window, outage compensation resets changing the anchor, `/status` and dashboard disagreement, and requests for deterministic reset schedules or rollover of unused prior-window usage.
 
-## 16. Quota And Usage-Limit Evidence
+## 17. Quota And Usage-Limit Evidence
 
 Use this when Codex blocks a prompt with a usage-limit message but another surface still shows remaining quota.
 
@@ -233,7 +248,7 @@ npx trace-to-skill analyze ./runs --format json
 
 This catches traces where `/status` or the usage page shows remaining 5h or weekly quota, accounts appear to share limits unexpectedly, a Team account inherits a Plus account's limit state, or quota reset times jump after logout/login.
 
-## 17. Codex Resource Leak Evidence
+## 18. Codex Resource Leak Evidence
 
 Use this when Codex Desktop, the VS Code extension, renderer, app-server, GPU process, shell snapshot, or helper process keeps burning local resources after the useful work should be idle.
 
@@ -246,7 +261,7 @@ This catches signals such as high `Code Helper (Renderer)` or `Code Helper (Plug
 
 Include process names/PIDs, CPU/GPU/RSS samples over time, log-loop snippets, workspace Git-root state, animation/reduce-motion state, and whether closing the panel/app, killing exact PIDs, `git init`, rollback, or restart clears the leak.
 
-## 18. Codex Thinking Hang Evidence
+## 19. Codex Thinking Hang Evidence
 
 Use this when Codex accepts a prompt, finishes a local tool call, or keeps a Responses stream open but the UI/CLI remains on Thinking or Working with no visible assistant follow-up.
 
@@ -260,7 +275,7 @@ This catches signals such as `turn/start`, `task_started`, a completed local too
 
 Include the Codex version, OS, model and reasoning/speed settings, turn or thread id, prompt timestamp, last successful tool output, first `response_item` timestamp, `responses_http` or websocket transport evidence, `time.busy` / `time.idle`, MCP/subagent state, stop/interrupt behavior, and whether a new thread or minimal config recovers.
 
-## 19. Codex Clipboard And Pasted-Text Attachment Evidence
+## 20. Codex Clipboard And Pasted-Text Attachment Evidence
 
 Use this when copy/export, long pasted prompts, or generated `Pasted text.txt` attachments break Codex prompt, `/goal`, or support-report workflows.
 
@@ -274,7 +289,7 @@ This catches signals such as `Copy as Markdown` disappearing from the Copy menu,
 
 Include app version, OS, surface, exact copy menu items, source text size, paste action, visible editor text, generated attachment name/path/size, `pasted-text-attachments.json` or fileAttachments metadata, command path such as `/goal`, preview/edit/revert actions tried, clipboard payload format, and whether paste-as-text, opt-out, explicit file reference, or downgrade changes behavior.
 
-## 20. Codex Deeplink And External Launch Evidence
+## 21. Codex Deeplink And External Launch Evidence
 
 Use this when OAuth callbacks, notification clicks, browser extension activation, mobile pairing, or CLI app-open commands fail to route back into Codex.
 
@@ -288,7 +303,7 @@ This catches signals such as `codex://oauth_callback?code=...` opening an Electr
 
 Include app/CLI/extension version, OS/build, install source, package id/path, affected surface, exact redacted URI shape, browser and connector/plugin name, error dialog text, whether the app was already running, AppX/MSIX evidence such as AppUserModelID and DelegateExecute, HKCU/HKCR `codex` keys, command-line arguments, repair/reinstall/re-register attempts, and whether manual `codex://test` or `Start-Process` reproduces.
 
-## 21. Codex App Connector Auth Cache Evidence
+## 22. Codex App Connector Auth Cache Evidence
 
 Use this when Codex app connectors appear installed but keep stale auth or discovery metadata after a reauth-required response.
 
@@ -302,7 +317,7 @@ This catches signals such as `401: "Server returned 401: 'Reauthentication requi
 
 Include app/CLI version, OS, connector/plugin name and id, installed plugin root, exact tool name, redacted `codex_apps_tools` and `codex_app_directory` metadata, `link_*` id before/after reconnect, `isAccessible` state, restart/remove/re-add/cache-clear/sign-in attempts, ChatGPT app page state, and whether an external MCP workaround succeeds.
 
-## 22. Codex MCP Discovery And Config Scope Evidence
+## 23. Codex MCP Discovery And Config Scope Evidence
 
 Use this when MCP servers work in Codex CLI or one config scope but are missing in VS Code, Desktop, WSL, remote sessions, project-local config, or an older conversation.
 
@@ -316,7 +331,7 @@ This catches signals such as `MCP servers not detected in Codex VS Code extensio
 
 Include app/CLI/extension version, OS, IDE, remote/WSL/SSH state, workspace root, effective `CODEX_HOME`, all config files considered (`~/.codex/config.toml`, project `.codex/config.toml`, `.vscode/mcp.json`, `.mcp.json`), redacted MCP sections, trust/profile/default-permissions state, `codex mcp list`, `codex mcp get <server>`, CLI-versus-Desktop/VS Code comparison, loaded config path/log lines, whether moving the same server to user-global config fixes it, and whether the current session exposes `mcp__*` tools.
 
-## 23. Patch Overwrite Guard
+## 24. Patch Overwrite Guard
 
 Use this before applying a generated patch when you want create/update/delete semantics checked against the actual workspace.
 
@@ -333,7 +348,7 @@ For a public demo report:
 npx trace-to-skill demo patch-overwrite
 ```
 
-## 24. OpenAI Codex Issue Report
+## 25. OpenAI Codex Issue Report
 
 Use this when you want to file or update an OpenAI/Codex issue with a concise, evidence-backed report instead of pasting a full transcript.
 
@@ -346,7 +361,7 @@ The report includes the likely Codex failure class, line-linked evidence, diagno
 
 For a cluster-to-command map of current Codex issue patterns, see [CODEX_ISSUE_MAP.md](CODEX_ISSUE_MAP.md).
 
-## 25. Sensitive File Access Evidence
+## 26. Sensitive File Access Evidence
 
 Use this when a trace suggests an agent read, attached, uploaded, diffed, or indexed credential-bearing files.
 
@@ -359,7 +374,7 @@ This catches signals such as `.env`, `.env.production`, `.npmrc`, `.pypirc`, `.n
 
 Before publishing evidence, run `trace-to-skill redact` and attach only redacted excerpts plus the file path/class.
 
-## 26. GitHub Context Guard
+## 27. GitHub Context Guard
 
 Use this before an agent reads untrusted GitHub text.
 
@@ -376,7 +391,7 @@ Use it when:
 - a bot asks Codex to triage untrusted user reports
 - logs or comments might contain instructions like "ignore previous instructions" or "print secrets"
 
-## 27. Failed Agent Run To Reviewable Rule
+## 28. Failed Agent Run To Reviewable Rule
 
 Use this when a coding agent made a repeated workflow mistake.
 
@@ -394,7 +409,7 @@ Recommended maintainer loop:
 4. Copy only evidence-backed rules into the real policy file.
 5. Run `eval` or `scorecard` in CI so the same failure does not silently return.
 
-## 28. Privacy-Preserving Adoption
+## 29. Privacy-Preserving Adoption
 
 Use this when you want public evidence without leaking private traces.
 

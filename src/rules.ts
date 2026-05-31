@@ -438,6 +438,30 @@ const RULES: RuleDefinition[] = [
     suggestedSkill: "codex-terminal-output-triage"
   },
   {
+    kind: "codex_subagent_lifecycle",
+    severity: "high",
+    title: "Codex subagent lifecycle or state reconciliation failure",
+    why: "When completed, closed, stale, or interrupted subagents remain visible, keep quota slots, lose parent discoverability, or diverge between UI, live registry, and persisted spawn-edge state, long-running Codex sessions become hard to trust or recover.",
+    patterns: [
+      /\bsubagents?\b.{0,220}\b(stale|zombie|orphan(?:ed)?|refus(?:e|ing) to close|cannot be closed|can't be closed|accumulat(?:e|es|ing)|remain visible|still listed|visible count|Show \d+ more)\b/i,
+      /\b(completed|closed|shutdown|not_found|not found|already[- ]closed|terminal|inactive)\b.{0,220}\bsubagents?\b.{0,220}\b(still visible|remain(?:s)? listed|active list|Subagents panel|side panel|cache|UI|right rail|stale)\b/i,
+      /\b(close_agent|close route|readback|live close|agent controls)\b.{0,220}\b(not_found|not found|shutdown|completed|closed|pending_init|no live handle|no live agent|still visible|still listed|stale|UI|cache)\b/i,
+      /\b(thread_spawn_edges|spawn edges?|child_thread_id|parent_thread_id)\b.{0,220}\b(open|closed|stale|status|persisted|SQLite|state_5\.sqlite|spawn-edge)\b/i,
+      /\b(agent thread limit reached|agents\.max_threads|max_threads|spawn quota|quota slot|active spawn quota|counted against|per-session agent thread limit)\b/i,
+      /\b(completed|final|TurnComplete|terminal)\b.{0,220}\b(subagents?|agents?)\b.{0,220}\b(count(?:s|ed|ing)? against|consume|block|release|quota|thread limit|spawn)\b/i,
+      /\bsubagent child threads?\b.{0,220}\b(top-level recent conversations|recent conversation|sidebar|archived\s*=\s*0|unarchived|consume.*slots|page limit|recent-list)\b/i,
+      /\b(list_agents|\/agents|loaded\/list|thread\/loaded\/list)\b.{0,220}\b(live agents|closed agents|prior spawned|previously spawned|not available|cannot retrieve|no way to list|discoverable)\b/i,
+      /\bsubagents?\b.{0,220}\b(context compact(?:ed|ion)?|auto compact(?:ed|ion)?|compaction)\b.{0,220}\b(not aware|forgot|id was not available|cannot list|created a new subagent|forked the main session)\b/i,
+      /\bfork_context\b.{0,220}\b(unbiased review|forked our conversation|full conversation history|main session|bad call|do not fork|biased reviewer)\b/i,
+      /\b(main agent|parent thread|parent agent|root thread)\b.{0,220}\b(subagents?|child threads?|spawned sessions?)\b.{0,220}\b(no way to list|not aware|resume|discover|stale|closed|open edges?)\b/i,
+      /\bsubagents?\b.{0,220}\b(MCP startup interrupted|codex_apps|connection lifecycle|MCP connections?|connection pool|file descriptor|SSE connection|long session|5\+ hours)\b/i,
+      /\b(background work|background task|parallel-first|Down panel|task panel)\b.{0,220}\b(subagents?|terminals|nonblocking|lastProgressAt|halt_reason|stop_reason|budget_slice|worker id|receipt)\b/i
+    ],
+    suggestedRule:
+      "When reporting Codex subagent lifecycle failures, capture Codex app/CLI/extension version, OS, surface, model, subscription/workspace, root thread id, subagent ids/nicknames/roles, spawn/close/list commands or UI actions, close_agent results, list_agents or /agents output, thread_spawn_edges status counts, agent registry or max_threads/quota evidence, recent-list/sidebar behavior, whether child threads are archived or shown as top-level conversations, last-progress/heartbeat or halt reason, MCP server state for subagents, compaction/resume timing, screenshot or redacted UI state, whether restart/reload/new thread clears it, and whether stale agents are UI-only or still block new spawns.",
+    suggestedSkill: "codex-subagent-lifecycle-triage"
+  },
+  {
     kind: "codex_mcp_discovery_mismatch",
     severity: "high",
     title: "Codex MCP discovery or config-scope mismatch",
@@ -610,7 +634,7 @@ const RULES: RuleDefinition[] = [
       /\binsufficient tool messages following tool_calls message\b/i,
       /\btool_call_id\b.{0,160}\b(missing|unmatched|not followed|protocol|invalid_request_error|tool messages?)\b/i,
       /\bclose_agent\b.{0,180}\b(hang forever|waits? forever|never returns|thread never terminates|agent thread limit reached|registry slot|already closed)\b/i,
-      /\b(subagent|child thread|durable spawn edge|thread_spawn_edges)\b.{0,180}\b(closed|interrupted|terminated|registry slot|thread limit|hang forever|timeout)\b/i,
+      /\b(subagent|child thread|durable spawn edge|thread_spawn_edges)\b.{0,180}\b(registry slot|thread limit|agent thread limit reached|hang forever|never returns|timeout)\b/i,
       /\b(failed to revert changes|revert changes failed|undo button stopped working|could not undo|rollback failed)\b/i,
       /\b(Codex|agent|extension)\b.{0,180}\b(deleted|truncated|overwrote|destroyed|lost)\b.{0,160}\b(uncommitted code|existing file|codebase|file contents)\b/i,
       /\b(IDE-integrated diff|presenting changes|proposed changes|diff approval|show a diff|apply changes)\b.{0,180}\b(fail|missing|unsafe|rollback|revert|approval)\b/i

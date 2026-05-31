@@ -9,7 +9,7 @@ Status: **pass**
 | Failed doctor checks | 0 |
 | Critical findings | 0 |
 | Built-in benchmark | pass |
-| Benchmark cases | 32 |
+| Benchmark cases | 33 |
 
 ## Doctor Summary
 
@@ -40,6 +40,7 @@ This benchmark runs the public fixture pack that ships with the repository and p
 | Codex auth and connectivity failure | `fixtures/codex-connectivity.md` | 75 | 2 | 0 | `codex_connectivity`, `weak_evidence` | pass |
 | Codex remote-control route health failure | `fixtures/codex-remote-control.md` | 75 | 2 | 0 | `codex_remote_control`, `weak_evidence` | pass |
 | Codex terminal output and scrollback integrity failure | `fixtures/codex-terminal-output-integrity.md` | 75 | 2 | 0 | `codex_terminal_output_integrity`, `weak_evidence` | pass |
+| Codex subagent lifecycle and state reconciliation failure | `fixtures/codex-subagent-lifecycle.md` | 75 | 2 | 0 | `codex_subagent_lifecycle`, `weak_evidence` | pass |
 | Codex quota mismatch | `fixtures/quota-mismatch.md` | 59 | 3 | 0 | `codex_usage_reset_drift`, `quota_mismatch`, `weak_evidence` | pass |
 | MCP config with secret exposure | `fixtures/mcp-risk.json` | 59 | 2 | 1 | `mcp_risk`, `secret_exposure` | pass |
 | Sensitive file access in agent context | `fixtures/sensitive-file-access.md` | 75 | 2 | 0 | `sensitive_file_access`, `weak_evidence` | pass |
@@ -50,7 +51,7 @@ This benchmark runs the public fixture pack that ships with the repository and p
 | Codex session resume and state failure | `fixtures/codex-session-state.md` | 59 | 3 | 0 | `codex_resource_leak`, `codex_session_state`, `weak_evidence` | pass |
 | Codex token burn and usage-drain loop | `fixtures/codex-token-burn.md` | 59 | 3 | 0 | `codex_resource_leak`, `codex_token_burn`, `weak_evidence` | pass |
 | Codex resource leak and runaway process | `fixtures/codex-resource-leak.md` | 75 | 2 | 0 | `codex_resource_leak`, `weak_evidence` | pass |
-| Codex tool-call integrity and rollback failure | `fixtures/codex-tool-call-integrity.md` | 59 | 3 | 0 | `codex_resource_leak`, `codex_tool_call_integrity`, `weak_evidence` | pass |
+| Codex tool-call integrity and rollback failure | `fixtures/codex-tool-call-integrity.md` | 43 | 4 | 0 | `codex_resource_leak`, `codex_subagent_lifecycle`, `codex_tool_call_integrity`, `weak_evidence` | pass |
 | Codex apply_patch Add File overwrite safety | `fixtures/codex-apply-patch-overwrite.md` | 75 | 2 | 0 | `codex_tool_call_integrity`, `weak_evidence` | pass |
 | Codex usage reset schedule drift | `fixtures/codex-usage-reset-drift.md` | 75 | 2 | 0 | `codex_usage_reset_drift`, `weak_evidence` | pass |
 | Untrusted PR comment prompt injection | `fixtures/prompt-injection.md` | 50 | 3 | 1 | `premature_completion`, `prompt_injection`, `weak_evidence` | pass |

@@ -65,6 +65,7 @@ trace-to-skill checks repo readiness and scans agent traces/logs to generate:
 - Codex MCP runtime detection for cancelled approvals, unsupported routed tool calls, dropped namespace/serverName metadata, and closed stdio transports
 - Codex MCP discovery/config-scope detection for CLI-versus-VS Code/Desktop gaps, ignored project `.codex/config.toml`, WSL config path mismatch, `CODEX_HOME` drift, and missing `mcp__*` tools
 - Codex terminal output/scrollback integrity detection for missing, overwritten, truncated, duplicated, or inaccessible streamed lines that raw logs or transcripts still contain
+- Codex subagent lifecycle detection for stale visible agents, close/readback drift, `thread_spawn_edges`, quota slots, recent-list child threads, and compaction-lost subagent IDs
 - Codex file tree and workspace navigation UI failure detection for missing `View > Toggle File Tree`, stale floating panels, and file-preview failures
 - Codex resume/session-state detection for large JSONL histories, sluggish Desktop thread rendering, dropped recent context, archived chat failures, and SQLite migration drift
 - Codex Thinking/Working hang detection for accepted turns, completed local tools, delayed first `response_item`, `responses_http` `time.busy` / `time.idle`, stop/interrupt failures, MCP state, and subagent parent/child lifecycle evidence
@@ -94,6 +95,7 @@ npx trace-to-skill demo deeplink-launch
 npx trace-to-skill demo connector-auth-cache
 npx trace-to-skill demo mcp-discovery-mismatch
 npx trace-to-skill demo terminal-output-integrity
+npx trace-to-skill demo subagent-lifecycle
 npx trace-to-skill init --comment --sarif
 npx trace-to-skill doctor .
 npx trace-to-skill lint-agents .

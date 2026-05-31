@@ -137,6 +137,12 @@ const BENCHMARK_CASES: BenchmarkCaseDefinition[] = [
     expectedKinds: ["codex_terminal_output_integrity", "weak_evidence"]
   },
   {
+    id: "codex-subagent-lifecycle",
+    title: "Codex subagent lifecycle and state reconciliation failure",
+    fixture: "fixtures/codex-subagent-lifecycle.md",
+    expectedKinds: ["codex_subagent_lifecycle", "weak_evidence"]
+  },
+  {
     id: "quota-mismatch",
     title: "Codex quota mismatch",
     fixture: "fixtures/quota-mismatch.md",
