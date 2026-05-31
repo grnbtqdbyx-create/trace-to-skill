@@ -222,11 +222,12 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v5
-      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.11
+      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.13
         with:
           mode: doctor
           doctor-threshold: "85"
           doctor-comment: "true"
+          job-summary: "true"
           github-token: ${{ github.token }}
 ```
 
@@ -269,11 +270,12 @@ Composite action usage:
 
 ```yaml
 - id: trace-to-skill
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.11
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.13
   with:
     mode: both
     doctor-threshold: "85"
     doctor-comment: "true"
+    job-summary: "true"
     traces: ./runs
     threshold: "80"
     comment: "true"
@@ -291,6 +293,8 @@ Action outputs:
 | `doctor-report` | Markdown report path |
 | `doctor-json` | JSON report path |
 | `agent-report` | Agent learning report path |
+
+By default, generated reports are also appended to the GitHub Actions Job Summary. Set `job-summary: "false"` to disable that UI output.
 
 ## OpenAI / Codex Use Case
 
@@ -319,6 +323,7 @@ The goal is not to let agents autonomously rewrite project policy. The goal is t
 - Doctor PR summary comments
 - Marketplace-ready action branding and self-dogfooding workflow
 - Composite Action outputs for downstream workflow steps
+- Job Summary output for generated reports
 - `trace-to-skill init` for Codex readiness and agent-learning workflow setup
 - public benchmark of common agent failure classes
 

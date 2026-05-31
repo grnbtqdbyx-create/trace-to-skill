@@ -37,6 +37,10 @@ inputs:
     description: Post or update a pull request comment with the report.
     required: false
     default: "false"
+  job-summary:
+    description: Append generated reports to the GitHub Actions job summary.
+    required: false
+    default: "true"
 outputs:
   doctor-score:
     description: Codex readiness doctor score, from 0 to 100.
@@ -98,21 +102,38 @@ runs:
           "json=codex-readiness-report.json"
         ].join("\n");
         await import("node:fs").then(({ appendFileSync }) => appendFileSync(process.env.GITHUB_OUTPUT, `${output}\n`));
-        if (status !== "ready") {
-          console.error(`::error::Codex readiness doctor status is ${status} with score ${report.score}/${threshold}`);
-          process.exit(1);
-        }
         NODE
       if: inputs.mode == 'doctor' || inputs.mode == 'both'
       shell: bash
+    - run: |
+        {
+          echo "## trace-to-skill Codex Readiness"
+          echo
+          cat codex-readiness-report.md
+        } >> "$GITHUB_STEP_SUMMARY"
+      if: always() && inputs.job-summary == 'true' && (inputs.mode == 'doctor' || inputs.mode == 'both')
+      shell: bash
     - run: npx github:grnbtqdbyx-create/trace-to-skill doctor-comment "${{ inputs.doctor-path }}" --threshold "${{ inputs.doctor-threshold }}" --token "${{ inputs.github-token }}"
       if: always() && github.event_name == 'pull_request' && inputs.doctor-comment == 'true' && (inputs.mode == 'doctor' || inputs.mode == 'both')
+      shell: bash
+    - run: |
+        echo "::error::Codex readiness doctor status is ${{ steps.doctor.outputs.status }} with score ${{ steps.doctor.outputs.score }}/${{ inputs.doctor-threshold }}"
+        exit 1
+      if: steps.doctor.outputs.status == 'needs-attention' && (inputs.mode == 'doctor' || inputs.mode == 'both')
       shell: bash
     - id: agent-report
       run: |
         npx github:grnbtqdbyx-create/trace-to-skill analyze "${{ inputs.traces }}" --output agent-learning-report.md
         echo "report=agent-learning-report.md" >> "$GITHUB_OUTPUT"
       if: inputs.mode == 'traces' || inputs.mode == 'both'
+      shell: bash
+    - run: |
+        {
+          echo "## trace-to-skill Agent Learning"
+          echo
+          cat agent-learning-report.md
+        } >> "$GITHUB_STEP_SUMMARY"
+      if: always() && inputs.job-summary == 'true' && (inputs.mode == 'traces' || inputs.mode == 'both')
       shell: bash
     - run: npx github:grnbtqdbyx-create/trace-to-skill comment "${{ inputs.traces }}" --token "${{ inputs.github-token }}"
       if: github.event_name == 'pull_request' && inputs.comment == 'true' && (inputs.mode == 'traces' || inputs.mode == 'both')

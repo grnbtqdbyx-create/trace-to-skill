@@ -111,11 +111,12 @@ function renderCodexReadinessWorkflow(doctorThreshold: string, comment: boolean)
     "    steps:",
     "      - uses: actions/checkout@v5",
     "      - id: trace-to-skill",
-    "        uses: grnbtqdbyx-create/trace-to-skill@v0.1.12",
+    "        uses: grnbtqdbyx-create/trace-to-skill@v0.1.13",
     "        with:",
     "          mode: doctor",
     `          doctor-threshold: "${doctorThreshold}"`,
     comment ? '          doctor-comment: "true"' : undefined,
+    '          job-summary: "true"',
     comment ? "          github-token: ${{ github.token }}" : undefined,
     "      - run: echo \"Codex readiness score is ${{ steps.trace-to-skill.outputs.doctor-score }}\""
   ].filter((line): line is string => Boolean(line)).join("\n")}\n`;
@@ -135,12 +136,13 @@ function renderAgentLearningWorkflow(traces: string, threshold: string, comment:
   const steps = [
     "      - uses: actions/checkout@v5",
     "      - id: trace-to-skill",
-    "        uses: grnbtqdbyx-create/trace-to-skill@v0.1.12",
+    "        uses: grnbtqdbyx-create/trace-to-skill@v0.1.13",
     "        with:",
     "          mode: traces",
     `          traces: ${traces}`,
     `          threshold: "${threshold}"`,
     comment ? '          comment: "true"' : undefined,
+    '          job-summary: "true"',
     comment ? "          github-token: ${{ github.token }}" : undefined,
     sarif ? `      - run: npx github:grnbtqdbyx-create/trace-to-skill analyze ${traces} --format sarif --output trace-to-skill.sarif` : undefined,
     sarif ? "      - uses: github/codeql-action/upload-sarif@v4" : undefined,

@@ -139,9 +139,11 @@ test("initProject scaffolds workflow without overwriting existing files", async 
   assert.match(doctorWorkflow, /mode: doctor/);
   assert.match(doctorWorkflow, /doctor-threshold: "85"/);
   assert.match(doctorWorkflow, /doctor-comment: "true"/);
+  assert.match(doctorWorkflow, /job-summary: "true"/);
   assert.match(workflow, /upload-sarif/);
   assert.match(workflow, /mode: traces/);
   assert.match(workflow, /comment: "true"/);
+  assert.match(workflow, /job-summary: "true"/);
 });
 
 test("initProject rejects unsafe workflow arguments", async () => {
@@ -228,6 +230,10 @@ test("composite action exposes Codex readiness doctor mode", async () => {
   assert.match(action, /mode:/);
   assert.match(action, /doctor-threshold:/);
   assert.match(action, /doctor-comment:/);
+  assert.match(action, /job-summary:/);
+  assert.match(action, /GITHUB_STEP_SUMMARY/);
+  assert.match(action, /trace-to-skill Codex Readiness/);
+  assert.match(action, /trace-to-skill Agent Learning/);
   assert.match(action, /trace-to-skill doctor/);
   assert.match(action, /trace-to-skill doctor-comment/);
   assert.match(action, /inputs\.mode == 'doctor' \|\| inputs\.mode == 'both'/);
@@ -245,5 +251,6 @@ test("repository dogfoods the local Codex readiness action", async () => {
   assert.match(workflow, /mode: doctor/);
   assert.match(workflow, /doctor-threshold: "95"/);
   assert.match(workflow, /doctor-comment: "true"/);
+  assert.match(workflow, /job-summary: "true"/);
   assert.match(workflow, /steps\.readiness\.outputs\.doctor-score/);
 });

@@ -40,6 +40,7 @@ Secondary headline:
 - [x] Doctor PR summary comments
 - [x] Action metadata branding and self-dogfooding Codex readiness workflow
 - [x] Composite Action outputs for score, status, summary, and report paths
+- [x] GitHub Actions Job Summary output for generated reports
 - [x] one-command Codex readiness and agent-learning setup with `trace-to-skill init`
 - [x] discovery PR to awesome-codex-cli: https://github.com/milisp/awesome-codex-cli/pull/35
 - [x] discovery PR to awesome-harness-engineering: https://github.com/ai-boost/awesome-harness-engineering/pull/45
@@ -47,7 +48,7 @@ Secondary headline:
 ## Current Public Proof
 
 - Repository: https://github.com/grnbtqdbyx-create/trace-to-skill
-- Latest release: https://github.com/grnbtqdbyx-create/trace-to-skill/releases/tag/v0.1.12
+- Latest release: https://github.com/grnbtqdbyx-create/trace-to-skill/releases/tag/v0.1.13
 - CI: passing on `main`
 - Profile README: https://github.com/grnbtqdbyx-create/grnbtqdbyx-create
 
