@@ -3,6 +3,8 @@
 [![CI](https://github.com/grnbtqdbyx-create/trace-to-skill/actions/workflows/ci.yml/badge.svg)](https://github.com/grnbtqdbyx-create/trace-to-skill/actions/workflows/ci.yml)
 [![Codex Readiness](https://github.com/grnbtqdbyx-create/trace-to-skill/actions/workflows/codex-readiness.yml/badge.svg)](https://github.com/grnbtqdbyx-create/trace-to-skill/actions/workflows/codex-readiness.yml)
 [![Release](https://img.shields.io/github/v/release/grnbtqdbyx-create/trace-to-skill)](https://github.com/grnbtqdbyx-create/trace-to-skill/releases)
+[![npm](https://img.shields.io/npm/v/trace-to-skill)](https://www.npmjs.com/package/trace-to-skill)
+[![npm downloads](https://img.shields.io/npm/dm/trace-to-skill)](https://www.npmjs.com/package/trace-to-skill)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Node](https://img.shields.io/badge/node-%3E%3D20-339933.svg)](package.json)
 
@@ -285,7 +287,7 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v5
-      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.26
+      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.27
         with:
           mode: all
           doctor-threshold: "85"
@@ -334,7 +336,7 @@ Composite action usage:
 
 ```yaml
 - id: trace-to-skill
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.26
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.27
   with:
     mode: all
     doctor-threshold: "85"
@@ -376,7 +378,7 @@ Action outputs:
 
 By default, generated reports are also appended to the GitHub Actions Job Summary. Set `job-summary: "false"` to disable that UI output.
 
-Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to `@v0.1.26` executes that release's checked-out source instead of pulling the default branch at runtime.
+Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.27` executes that release's checked-out source instead of pulling the default branch at runtime.
 
 ## Codex Skill
 

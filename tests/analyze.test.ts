@@ -185,6 +185,28 @@ test("initProject scaffolds workflow without overwriting existing files", async 
   assert.match(workflow, /mode: traces/);
   assert.match(workflow, /comment: "true"/);
   assert.match(workflow, /job-summary: "true"/);
+  assert.match(workflow, /npx trace-to-skill analyze runs --format sarif/);
+  assert.equal(workflow.includes("npx github:grnbtqdbyx-create/trace-to-skill"), false);
+});
+
+test("package metadata points npm users back to the public project", async () => {
+  const packageJson = JSON.parse(await readFile("package.json", "utf8")) as {
+    repository?: { url?: string };
+    bugs?: { url?: string };
+    homepage?: string;
+    main?: string;
+    types?: string;
+    exports?: Record<string, unknown>;
+    publishConfig?: { access?: string };
+  };
+
+  assert.equal(packageJson.repository?.url, "git+https://github.com/grnbtqdbyx-create/trace-to-skill.git");
+  assert.equal(packageJson.bugs?.url, "https://github.com/grnbtqdbyx-create/trace-to-skill/issues");
+  assert.equal(packageJson.homepage, "https://github.com/grnbtqdbyx-create/trace-to-skill#readme");
+  assert.equal(packageJson.main, "dist/src/index.js");
+  assert.equal(packageJson.types, "dist/src/index.d.ts");
+  assert.ok(packageJson.exports?.["."]);
+  assert.equal(packageJson.publishConfig?.access, "public");
 });
 
 test("initProject rejects unsafe workflow arguments", async () => {
