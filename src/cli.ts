@@ -7,7 +7,7 @@ import { compareAnalyses, evaluate } from "./eval.js";
 import { postPullRequestComment } from "./github.js";
 import { initProject } from "./init.js";
 import { renderAgentsRules, renderComparison, renderDoctorMarkdown, renderDoctorPrComment, renderMarkdown, renderPrComment, renderSarif, renderSkill } from "./report.js";
-import { renderScorecardMarkdown, runScorecard } from "./scorecard.js";
+import { renderScorecardMarkdown, renderScorecardPrComment, runScorecard } from "./scorecard.js";
 
 interface ParsedArgs {
   command: string;
@@ -65,6 +65,24 @@ async function main(): Promise<void> {
     const format = String(parsed.flags.format ?? "markdown");
     const output = format === "json" ? `${JSON.stringify(result, null, 2)}\n` : renderScorecardMarkdown(result);
     await writeOutput(output, parsed.flags.output);
+    process.exitCode = result.passed ? 0 : 1;
+    return;
+  }
+
+  if (parsed.command === "scorecard-comment") {
+    const threshold = numberFlag(parsed.flags.threshold) ?? 85;
+    const result = await runScorecard(parsed.targets[0] ?? process.cwd(), threshold);
+    const body = renderScorecardPrComment(result);
+    const message = await postPullRequestComment({
+      body,
+      token: stringFlag(parsed.flags.token),
+      repository: stringFlag(parsed.flags.repository),
+      eventPath: stringFlag(parsed.flags.event),
+      dryRun: Boolean(parsed.flags["dry-run"]),
+      marker: "<!-- trace-to-skill-scorecard-report -->",
+      reportName: "trace-to-skill scorecard report"
+    });
+    process.stdout.write(`${message}\n`);
     process.exitCode = result.passed ? 0 : 1;
     return;
   }
@@ -245,6 +263,7 @@ Usage:
   trace-to-skill eval <trace-file-or-dir> [--threshold 75] [--format text|json]
   trace-to-skill benchmark [--format markdown|json] [--output docs/BENCHMARK.md]
   trace-to-skill scorecard [repo-dir] [--threshold 85] [--format markdown|json] [--output docs/SCORECARD.md]
+  trace-to-skill scorecard-comment [repo-dir] [--threshold 85] [--dry-run] [--token $GITHUB_TOKEN]
   trace-to-skill comment <trace-file-or-dir> [--dry-run] [--token $GITHUB_TOKEN]
   trace-to-skill compare --before <old-run> --after <new-run> [--format markdown|json]
   trace-to-skill doctor [repo-dir] [--threshold 85] [--format markdown|json|comment] [--output report.md]
@@ -257,6 +276,7 @@ Examples:
   trace-to-skill eval ./runs --threshold 80
   trace-to-skill benchmark
   trace-to-skill scorecard .
+  trace-to-skill scorecard-comment . --threshold 85
   trace-to-skill comment ./runs
   trace-to-skill compare --before ./runs/before --after ./runs/after
   trace-to-skill doctor . --threshold 85

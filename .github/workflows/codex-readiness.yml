@@ -22,6 +22,7 @@ jobs:
           mode: all
           doctor-threshold: "95"
           doctor-comment: "true"
+          scorecard-comment: "true"
           job-summary: "true"
           github-token: ${{ github.token }}
       - name: Show readiness outputs

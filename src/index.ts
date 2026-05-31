@@ -5,5 +5,5 @@ export { compareAnalyses, evaluate } from "./eval.js";
 export { postPullRequestComment } from "./github.js";
 export { initProject } from "./init.js";
 export { renderAgentsRules, renderComparison, renderDoctorMarkdown, renderDoctorPrComment, renderMarkdown, renderPrComment, renderSarif, renderSkill } from "./report.js";
-export { renderScorecardMarkdown, runScorecard } from "./scorecard.js";
+export { renderScorecardMarkdown, renderScorecardPrComment, runScorecard } from "./scorecard.js";
 export type { AnalysisResult, Finding, FindingKind, Severity } from "./types.js";

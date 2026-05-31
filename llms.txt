@@ -25,6 +25,7 @@ npx github:grnbtqdbyx-create/trace-to-skill doctor-comment . --threshold 85 --dr
 npx github:grnbtqdbyx-create/trace-to-skill init --comment --sarif
 npx github:grnbtqdbyx-create/trace-to-skill benchmark
 npx github:grnbtqdbyx-create/trace-to-skill scorecard .
+npx github:grnbtqdbyx-create/trace-to-skill scorecard-comment . --dry-run
 npx github:grnbtqdbyx-create/trace-to-skill analyze ./runs
 npx github:grnbtqdbyx-create/trace-to-skill init --comment --sarif
 npx github:grnbtqdbyx-create/trace-to-skill analyze ./runs --format sarif --output trace-to-skill.sarif

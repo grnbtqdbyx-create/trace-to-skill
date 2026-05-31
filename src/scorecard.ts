@@ -92,3 +92,10 @@ export function renderScorecardMarkdown(result: ScorecardResult): string {
 
   return lines.join("\n");
 }
+
+export function renderScorecardPrComment(result: ScorecardResult): string {
+  return [
+    "<!-- trace-to-skill-scorecard-report -->",
+    renderScorecardMarkdown(result)
+  ].join("\n");
+}

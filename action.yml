@@ -21,6 +21,10 @@ inputs:
     description: Post or update a pull request comment with the Codex readiness doctor summary.
     required: false
     default: "false"
+  scorecard-comment:
+    description: Post or update a pull request comment with the combined scorecard.
+    required: false
+    default: "false"
   traces:
     description: File or directory containing agent traces.
     required: false
@@ -224,6 +228,9 @@ runs:
           cat trace-to-skill-scorecard.md
         } >> "$GITHUB_STEP_SUMMARY"
       if: always() && inputs.job-summary == 'true' && inputs.mode == 'all'
+      shell: bash
+    - run: node "$TRACE_TO_SKILL_CLI" scorecard-comment "${{ inputs.doctor-path }}" --threshold "${{ inputs.doctor-threshold }}" --token "${{ inputs.github-token }}"
+      if: always() && github.event_name == 'pull_request' && inputs.scorecard-comment == 'true' && inputs.mode == 'all'
       shell: bash
     - run: |
         echo "::error::trace-to-skill scorecard failed"

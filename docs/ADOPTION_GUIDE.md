@@ -27,6 +27,7 @@ Open a pull request with those files first. Keep the first PR small so maintaine
 4. Run `trace-to-skill suggest runs --target agents-md`.
 5. Copy only the rules that have clear evidence into `AGENTS.md`.
 6. Run `trace-to-skill eval runs --threshold 80` in CI.
+7. Use `trace-to-skill scorecard-comment . --dry-run` before enabling scorecard PR comments.
 
 The goal is not to automate policy changes. The goal is to make repeated agent mistakes reviewable.
 

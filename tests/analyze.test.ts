@@ -10,7 +10,7 @@ import { compareAnalyses, evaluate } from "../src/eval.js";
 import { postPullRequestComment } from "../src/github.js";
 import { initProject } from "../src/init.js";
 import { renderAgentsRules, renderComparison, renderDoctorPrComment, renderPrComment, renderSarif, renderSkill } from "../src/report.js";
-import { renderScorecardMarkdown, runScorecard } from "../src/scorecard.js";
+import { renderScorecardMarkdown, renderScorecardPrComment, runScorecard } from "../src/scorecard.js";
 
 test("analyzeTargets detects failed agent workflow signals", async () => {
   const result = await analyzeTargets(["fixtures/failed-run.md"]);
@@ -141,6 +141,7 @@ test("initProject scaffolds workflow without overwriting existing files", async 
   assert.match(doctorWorkflow, /mode: all/);
   assert.match(doctorWorkflow, /doctor-threshold: "85"/);
   assert.match(doctorWorkflow, /doctor-comment: "true"/);
+  assert.match(doctorWorkflow, /scorecard-comment: "true"/);
   assert.match(doctorWorkflow, /job-summary: "true"/);
   assert.match(doctorWorkflow, /benchmark-status/);
   assert.match(workflow, /upload-sarif/);
@@ -244,6 +245,7 @@ test("composite action exposes Codex readiness doctor mode", async () => {
   assert.match(action, /mode:/);
   assert.match(action, /doctor-threshold:/);
   assert.match(action, /doctor-comment:/);
+  assert.match(action, /scorecard-comment:/);
   assert.match(action, /job-summary:/);
   assert.match(action, /GITHUB_STEP_SUMMARY/);
   assert.match(action, /GITHUB_ACTION_PATH/);
@@ -260,9 +262,11 @@ test("composite action exposes Codex readiness doctor mode", async () => {
   assert.match(action, /node "\$TRACE_TO_SKILL_CLI" doctor-comment/);
   assert.match(action, /node "\$TRACE_TO_SKILL_CLI" benchmark/);
   assert.match(action, /node "\$TRACE_TO_SKILL_CLI" scorecard/);
+  assert.match(action, /node "\$TRACE_TO_SKILL_CLI" scorecard-comment/);
   assert.match(action, /inputs\.mode == 'doctor' \|\| inputs\.mode == 'both' \|\| inputs\.mode == 'all'/);
   assert.match(action, /inputs\.mode == 'benchmark' \|\| inputs\.mode == 'all'/);
   assert.match(action, /always\(\) && github\.event_name == 'pull_request' && inputs\.doctor-comment == 'true'/);
+  assert.match(action, /always\(\) && github\.event_name == 'pull_request' && inputs\.scorecard-comment == 'true'/);
   assert.match(action, /github\.event_name == 'pull_request' && inputs\.comment == 'true'/);
   assert.match(action, /mode must be one of: traces, doctor, benchmark, both, all/);
 });
@@ -276,6 +280,7 @@ test("repository dogfoods the local Codex readiness action", async () => {
   assert.match(workflow, /mode: all/);
   assert.match(workflow, /doctor-threshold: "95"/);
   assert.match(workflow, /doctor-comment: "true"/);
+  assert.match(workflow, /scorecard-comment: "true"/);
   assert.match(workflow, /job-summary: "true"/);
   assert.match(workflow, /steps\.readiness\.outputs\.doctor-score/);
   assert.match(workflow, /steps\.readiness\.outputs\.benchmark-status/);
@@ -325,6 +330,7 @@ test("benchmark covers public fixture failure classes", async () => {
 test("scorecard combines doctor readiness and benchmark evidence", async () => {
   const scorecard = await runScorecard(".", 95);
   const markdown = renderScorecardMarkdown(scorecard);
+  const comment = renderScorecardPrComment(scorecard);
 
   assert.equal(scorecard.passed, true);
   assert.equal(scorecard.doctor.status, "ready");
@@ -334,4 +340,20 @@ test("scorecard combines doctor readiness and benchmark evidence", async () => {
   assert.match(markdown, /trace-to-skill Scorecard/);
   assert.match(markdown, /Codex readiness/);
   assert.match(markdown, /Benchmark Summary/);
+  assert.match(comment, /trace-to-skill-scorecard-report/);
+  assert.match(comment, /trace-to-skill Scorecard/);
+});
+
+test("scorecard-comment dry-run resolves pull request event", async () => {
+  const scorecard = await runScorecard(".", 95);
+  const message = await postPullRequestComment({
+    repository: "owner/repo",
+    eventPath: "fixtures/github-pr-event.json",
+    body: renderScorecardPrComment(scorecard),
+    marker: "<!-- trace-to-skill-scorecard-report -->",
+    reportName: "trace-to-skill scorecard report",
+    dryRun: true
+  });
+
+  assert.equal(message, "dry-run: would post trace-to-skill scorecard report to owner/repo#42");
 });

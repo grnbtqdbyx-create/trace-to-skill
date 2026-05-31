@@ -16,6 +16,7 @@ npx github:grnbtqdbyx-create/trace-to-skill suggest ./runs --target agents-md
 npx github:grnbtqdbyx-create/trace-to-skill eval ./runs --threshold 80
 npx github:grnbtqdbyx-create/trace-to-skill benchmark
 npx github:grnbtqdbyx-create/trace-to-skill scorecard .
+npx github:grnbtqdbyx-create/trace-to-skill scorecard-comment . --dry-run
 npx github:grnbtqdbyx-create/trace-to-skill comment ./runs --dry-run
 npx github:grnbtqdbyx-create/trace-to-skill compare --before ./runs/before --after ./runs/after
 ```
@@ -188,6 +189,12 @@ trace-to-skill scorecard . --format json
 
 See this repository's current public scorecard in [docs/SCORECARD.md](docs/SCORECARD.md).
 
+Post or update a pull request comment with the combined scorecard:
+
+```bash
+trace-to-skill scorecard-comment . --threshold 85 --token "$GITHUB_TOKEN"
+```
+
 Post or update a GitHub pull request comment:
 
 ```bash
@@ -256,11 +263,12 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v5
-      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.20
+      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.21
         with:
           mode: all
           doctor-threshold: "85"
           doctor-comment: "true"
+          scorecard-comment: "true"
           job-summary: "true"
           github-token: ${{ github.token }}
 ```
@@ -304,11 +312,12 @@ Composite action usage:
 
 ```yaml
 - id: trace-to-skill
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.20
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.21
   with:
     mode: all
     doctor-threshold: "85"
     doctor-comment: "true"
+    scorecard-comment: "true"
     job-summary: "true"
     traces: ./runs
     threshold: "80"
@@ -337,7 +346,7 @@ Action outputs:
 
 By default, generated reports are also appended to the GitHub Actions Job Summary. Set `job-summary: "false"` to disable that UI output.
 
-Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to `@v0.1.20` executes that release's checked-out source instead of pulling the default branch at runtime.
+Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to `@v0.1.21` executes that release's checked-out source instead of pulling the default branch at runtime.
 
 ## OpenAI / Codex Use Case
 
@@ -374,6 +383,7 @@ The goal is not to let agents autonomously rewrite project policy. The goal is t
 - `trace-to-skill scorecard` for combined reviewer proof
 - Scorecard JSON schema and Action outputs
 - Tag-pinned GitHub Action runtime via `$GITHUB_ACTION_PATH`
+- Scorecard PR comments with update-in-place marker
 - public benchmark of common agent failure classes
 
 See [docs/ROADMAP.md](docs/ROADMAP.md).
