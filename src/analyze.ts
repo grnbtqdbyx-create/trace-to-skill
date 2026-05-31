@@ -11,7 +11,7 @@ export async function analyzeTargets(targets: string[], options: AnalyzeOptions 
     generatedAt: new Date().toISOString(),
     inputs: inputs.map((input) => input.path),
     score,
-    summary: summarize(score, findings.length),
+    summary: summarize(score, findings),
     findings,
     recommendations: buildRecommendations(findings)
   };
@@ -31,9 +31,17 @@ function calculateScore(findings: AnalysisResult["findings"]): number {
   return Math.max(0, Math.min(100, 100 - penalty));
 }
 
-function summarize(score: number, findingCount: number): string {
-  if (findingCount === 0) {
+function summarize(score: number, findings: AnalysisResult["findings"]): string {
+  if (findings.length === 0) {
     return "No agent workflow risks detected in the provided traces.";
+  }
+
+  if (findings.some((finding) => finding.severity === "critical")) {
+    return "Agent workflow is risky. Critical findings must be resolved before this workflow is reused.";
+  }
+
+  if (findings.some((finding) => finding.severity === "high")) {
+    return "Agent workflow needs clearer verification, instruction, or security hardening before broad reuse.";
   }
 
   if (score >= 80) {

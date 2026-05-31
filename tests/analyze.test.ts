@@ -70,3 +70,13 @@ test("analyzeTargets scores MCP config capabilities and secret env keys", async 
   assert.match(mcpFinding.evidence.map((evidence) => evidence.excerpt).join("\n"), /filesystem/);
   assert.match(mcpFinding.evidence.map((evidence) => evidence.excerpt).join("\n"), /GITHUB_TOKEN/);
 });
+
+test("analyzeTargets detects contradictory agent instruction files", async () => {
+  const result = await analyzeTargets(["fixtures/instruction-drift"]);
+  const finding = result.findings.find((item) => item.kind === "ignored_instruction");
+
+  assert.ok(finding);
+  assert.match(finding.evidence.map((evidence) => evidence.excerpt).join("\n"), /npm test/);
+  assert.match(finding.evidence.map((evidence) => evidence.excerpt).join("\n"), /pnpm test/);
+  assert.match(finding.evidence.map((evidence) => evidence.excerpt).join("\n"), /skips validation/);
+});

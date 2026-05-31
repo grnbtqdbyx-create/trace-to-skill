@@ -151,6 +151,8 @@ JSONL traces are normalized by extracting common fields such as `message`, `cont
 
 MCP configs with `mcpServers` are parsed for capability hints such as filesystem, shell, browser, network, database, container, and secret-bearing environment variables.
 
+Instruction files such as `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `.cursor/rules`, and `.github/copilot-instructions.md` are checked for obvious contradictions in validation commands, test requirements, and destructive-command approval rules.
+
 ## GitHub Action
 
 Add this to `.github/workflows/agent-learning.yml`:
@@ -182,7 +184,7 @@ jobs:
 Composite action usage:
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.2
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.3
   with:
     traces: ./runs
     threshold: "80"

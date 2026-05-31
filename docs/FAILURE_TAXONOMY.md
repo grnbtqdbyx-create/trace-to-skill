@@ -22,6 +22,12 @@ The trace references a missing path, missing module, or nonexistent file. The fi
 
 Agent instruction files disagree or the agent ignores an existing repository rule.
 
+`trace-to-skill` checks common instruction files such as `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `.cursor/rules`, and `.github/copilot-instructions.md` for obvious contradictions:
+
+- different package managers for validation commands
+- "always run tests" vs "do not run tests"
+- approval required vs approval bypassed for destructive commands
+
 ## Over-Editing
 
 The diff touches too many files for the requested task without matching plan and validation evidence.

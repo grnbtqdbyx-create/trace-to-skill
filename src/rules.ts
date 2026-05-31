@@ -157,8 +157,21 @@ export function collectFindings(inputs: TraceInput[], maxFilesChanged = 12): Fin
     });
   }
 
+  const instructionEvidence = detectInstructionContradictions(inputs);
+  if (instructionEvidence.length > 0 && !findings.some((finding) => finding.kind === "ignored_instruction")) {
+    findings.push({
+      kind: "ignored_instruction",
+      severity: "high",
+      title: "Agent instruction files appear to conflict",
+      why: "Different coding agents may follow different repository instructions when AGENTS.md, CLAUDE.md, Cursor, or Copilot guidance diverges.",
+      evidence: instructionEvidence,
+      suggestedRule:
+        "Keep shared agent behavior in one canonical instruction file, and make tool-specific files reference that source instead of duplicating conflicting commands or completion rules."
+    });
+  }
+
   if (
-    !isConfigOnlyScan(inputs) &&
+    !isStaticConfigScan(inputs) &&
     !hasPositiveValidationEvidence(inputs) &&
     !findings.some((finding) => finding.kind === "tests_not_run")
   ) {
@@ -176,10 +189,97 @@ export function collectFindings(inputs: TraceInput[], maxFilesChanged = 12): Fin
   return findings.sort((a, b) => severityRank(b.severity) - severityRank(a.severity));
 }
 
-function isConfigOnlyScan(inputs: TraceInput[]): boolean {
+function detectInstructionContradictions(inputs: TraceInput[]): Evidence[] {
+  const instructionFiles = inputs.filter((input) => isInstructionFile(input.path));
+  if (instructionFiles.length < 2) {
+    return [];
+  }
+
+  const evidence: Evidence[] = [];
+  const packageManagers = collectInstructionPattern(instructionFiles, /\b(npm|pnpm|yarn|bun)\s+(?:run\s+)?(?:test|check|build|lint)\b/gi);
+  const packageManagerNames = new Set(packageManagers.map((item) => item.match[1].toLowerCase()));
+
+  if (packageManagerNames.size > 1) {
+    evidence.push(...packageManagers.map((item) => ({
+      file: item.input.path,
+      line: item.line,
+      excerpt: `conflicting validation command: ${item.excerpt}`
+    })));
+  }
+
+  const requireTests = collectInstructionPattern(instructionFiles, /\b(must|always|required to)\b.{0,80}\b(run|execute)\b.{0,40}\btests?\b/gi);
+  const skipTests = collectInstructionPattern(instructionFiles, /\b(do not|don't|never|skip)\b.{0,80}\b(run|execute)\b.{0,40}\btests?\b/gi);
+
+  if (requireTests.length > 0 && skipTests.length > 0) {
+    evidence.push(...requireTests.map((item) => ({
+      file: item.input.path,
+      line: item.line,
+      excerpt: `requires validation: ${item.excerpt}`
+    })));
+    evidence.push(...skipTests.map((item) => ({
+      file: item.input.path,
+      line: item.line,
+      excerpt: `skips validation: ${item.excerpt}`
+    })));
+  }
+
+  const approvalRequired = collectInstructionPattern(instructionFiles, /\b(ask|require|get)\b.{0,60}\bapproval\b.{0,80}\b(before|for)\b.{0,80}\b(rm|delete|destructive|sudo)\b/gi);
+  const approvalOptional = collectInstructionPattern(instructionFiles, /\b(no approval|without approval|approval is not required)\b.{0,80}\b(rm|delete|destructive|sudo)\b/gi);
+
+  if (approvalRequired.length > 0 && approvalOptional.length > 0) {
+    evidence.push(...approvalRequired.map((item) => ({
+      file: item.input.path,
+      line: item.line,
+      excerpt: `requires approval: ${item.excerpt}`
+    })));
+    evidence.push(...approvalOptional.map((item) => ({
+      file: item.input.path,
+      line: item.line,
+      excerpt: `bypasses approval: ${item.excerpt}`
+    })));
+  }
+
+  return evidence.slice(0, 10);
+}
+
+interface InstructionMatch {
+  input: TraceInput;
+  line: number;
+  match: RegExpExecArray;
+  excerpt: string;
+}
+
+function collectInstructionPattern(inputs: TraceInput[], pattern: RegExp): InstructionMatch[] {
+  const matches: InstructionMatch[] = [];
+
+  for (const input of inputs) {
+    const lines = input.content.split(/\r?\n/);
+    lines.forEach((line, index) => {
+      const linePattern = new RegExp(pattern.source, pattern.flags);
+      let match: RegExpExecArray | null;
+      while ((match = linePattern.exec(line)) !== null) {
+        matches.push({
+          input,
+          line: index + 1,
+          match,
+          excerpt: line.trim().slice(0, 220)
+        });
+      }
+    });
+  }
+
+  return matches;
+}
+
+function isInstructionFile(filePath: string): boolean {
+  return /(^|\/)(AGENTS|CLAUDE|GEMINI|COPILOT|copilot-instructions)\.md$/i.test(filePath) ||
+    /(^|\/)\.cursor\/rules\//i.test(filePath);
+}
+
+function isStaticConfigScan(inputs: TraceInput[]): boolean {
   return inputs.length > 0 && inputs.every((input) => {
     const extensionLooksLikeConfig = /\.(json|ya?ml|toml)$/i.test(input.path);
-    return extensionLooksLikeConfig && /"mcpServers"\s*:|"servers"\s*:/.test(input.content);
+    return isInstructionFile(input.path) || (extensionLooksLikeConfig && /"mcpServers"\s*:|"servers"\s*:/.test(input.content));
   });
 }
 
@@ -251,6 +351,10 @@ function matchRule(inputs: TraceInput[], rule: RuleDefinition): Evidence[] {
   const evidence: Evidence[] = [];
 
   for (const input of inputs) {
+    if (rule.kind === "tests_not_run" && isInstructionFile(input.path)) {
+      continue;
+    }
+
     const lines = input.content.split(/\r?\n/);
     lines.forEach((line, index) => {
       if (rule.patterns.some((pattern) => pattern.test(line))) {
