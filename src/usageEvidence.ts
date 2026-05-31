@@ -8,7 +8,8 @@ export type UsageEvidenceFindingKind =
   | "quota_percentage_jump"
   | "usage_limit_with_remaining_quota"
   | "high_cached_input"
-  | "high_total_tokens";
+  | "high_total_tokens"
+  | "orchestration_overhead_signal";
 
 export interface UsageSnapshot {
   source: string;
@@ -31,6 +32,39 @@ export interface TokenUsageRecord {
   excerpt: string;
 }
 
+export type UsageOverheadKind =
+  | "background_polling"
+  | "compaction_loop"
+  | "retry_or_tool_loop"
+  | "subagent_fanout"
+  | "idle_drain";
+
+export interface UsageOverheadSignal {
+  kind: UsageOverheadKind;
+  source: string;
+  line: number;
+  excerpt: string;
+}
+
+export interface UsageReceipt {
+  quotaWindows: Array<{
+    window: string;
+    samples: number;
+    firstPercent?: number;
+    lastPercent?: number;
+    resetValues: string[];
+  }>;
+  localTokenTotals: {
+    total?: number;
+    input?: number;
+    cachedInput?: number;
+    output?: number;
+    reasoning?: number;
+  };
+  overheadSignals: UsageOverheadSignal[];
+  suspectedCauses: string[];
+}
+
 export interface UsageEvidenceFinding {
   kind: UsageEvidenceFindingKind;
   severity: "medium" | "high";
@@ -50,9 +84,11 @@ export interface UsageEvidenceResult {
     usageLimitSignals: number;
     resetDriftWindows: number;
     highCachedInputRecords: number;
+    overheadSignals: number;
   };
   snapshots: UsageSnapshot[];
   tokenUsage: TokenUsageRecord[];
+  receipt: UsageReceipt;
   findings: UsageEvidenceFinding[];
   checklist: string[];
 }
@@ -71,6 +107,7 @@ export function buildUsageEvidenceFromInputs(inputs: TraceInput[]): UsageEvidenc
   const snapshots: UsageSnapshot[] = [];
   const tokenUsage: TokenUsageRecord[] = [];
   const usageLimitSignals: UsageLimitSignal[] = [];
+  const overheadSignals: UsageOverheadSignal[] = [];
 
   for (const input of inputs) {
     const lines = input.content.split(/\r?\n/);
@@ -94,13 +131,19 @@ export function buildUsageEvidenceFromInputs(inputs: TraceInput[]): UsageEvidenc
         tokenUsage.push(tokenRecord);
       }
 
+      const overheadSignal = parseOverheadSignal(input.path, lineNumber, excerpt);
+      if (overheadSignal) {
+        overheadSignals.push(overheadSignal);
+      }
+
       if (/\b(hit|reached|exceeded).{0,80}\b(usage|rate|quota|weekly|5-hour|5 hour|limit)\b/i.test(excerpt) || /you(?:'|')?ve hit your usage limit/i.test(excerpt)) {
         usageLimitSignals.push({ source: input.path, line: lineNumber, excerpt });
       }
     });
   }
 
-  const findings = buildFindings(snapshots, tokenUsage, usageLimitSignals);
+  const findings = buildFindings(snapshots, tokenUsage, usageLimitSignals, overheadSignals);
+  const receipt = buildReceipt(snapshots, tokenUsage, overheadSignals, usageLimitSignals);
   return {
     generatedAt: new Date().toISOString(),
     status: findings.length > 0 ? "warn" : "pass",
@@ -110,10 +153,12 @@ export function buildUsageEvidenceFromInputs(inputs: TraceInput[]): UsageEvidenc
       tokenUsageRecords: tokenUsage.length,
       usageLimitSignals: usageLimitSignals.length,
       resetDriftWindows: findings.filter((finding) => finding.kind === "reset_timestamp_drift").length,
-      highCachedInputRecords: findings.filter((finding) => finding.kind === "high_cached_input").length
+      highCachedInputRecords: findings.filter((finding) => finding.kind === "high_cached_input").length,
+      overheadSignals: overheadSignals.length
     },
     snapshots,
     tokenUsage,
+    receipt,
     findings,
     checklist: [
       "Attach this report instead of raw private transcripts.",
@@ -121,6 +166,7 @@ export function buildUsageEvidenceFromInputs(inputs: TraceInput[]): UsageEvidenc
       "Capture before/after `/status` output, usage dashboard timestamp, and timezone for every reset value.",
       "Note whether a prompt was running during reset and whether an outage or compensation reset was announced.",
       "Include token totals when available: total, input, cached input, output, and reasoning.",
+      "Separate quota-window percentage changes from local token totals and orchestration overhead signals.",
       "Add one minimal reproduction or polling table that shows the percentage and reset timestamp changing."
     ]
   };
@@ -140,6 +186,7 @@ export function renderUsageEvidenceMarkdown(result: UsageEvidenceResult): string
     `- Usage limit signals: ${result.summary.usageLimitSignals}`,
     `- Reset drift windows: ${result.summary.resetDriftWindows}`,
     `- High cached-input records: ${result.summary.highCachedInputRecords}`,
+    `- Overhead signals: ${result.summary.overheadSignals}`,
     ""
   ];
 
@@ -155,6 +202,58 @@ export function renderUsageEvidenceMarkdown(result: UsageEvidenceResult): string
       }
       lines.push("");
     }
+  }
+
+  lines.push("## Usage Receipt", "");
+  lines.push("This section separates backend quota-window evidence, local token totals, and orchestration-overhead signals so reports do not collapse every symptom into one number.", "");
+  lines.push("### Quota Windows", "");
+  if (result.receipt.quotaWindows.length === 0) {
+    lines.push("_No quota-window snapshots found._", "");
+  } else {
+    lines.push("| Window | Samples | First Percent | Last Percent | Reset Values |");
+    lines.push("| --- | ---: | ---: | ---: | --- |");
+    for (const window of result.receipt.quotaWindows) {
+      lines.push([
+        escapeCell(window.window),
+        String(window.samples),
+        formatNumber(window.firstPercent),
+        formatNumber(window.lastPercent),
+        escapeCell(window.resetValues.join(", "))
+      ].join(" | ").replace(/^/, "| ").replace(/$/, " |"));
+    }
+    lines.push("");
+  }
+
+  lines.push("### Local Token Totals", "");
+  lines.push("| Total | Input | Cached Input | Output | Reasoning |");
+  lines.push("| ---: | ---: | ---: | ---: | ---: |");
+  lines.push([
+    formatNumber(result.receipt.localTokenTotals.total),
+    formatNumber(result.receipt.localTokenTotals.input),
+    formatNumber(result.receipt.localTokenTotals.cachedInput),
+    formatNumber(result.receipt.localTokenTotals.output),
+    formatNumber(result.receipt.localTokenTotals.reasoning)
+  ].join(" | ").replace(/^/, "| ").replace(/$/, " |"));
+  lines.push("");
+
+  lines.push("### Overhead Signals", "");
+  if (result.receipt.overheadSignals.length === 0) {
+    lines.push("_No background polling, compaction loop, retry/tool loop, subagent fan-out, or idle-drain signals found._", "");
+  } else {
+    for (const signal of result.receipt.overheadSignals.slice(0, 12)) {
+      lines.push(`- **${signal.kind}**: ${signal.source}:${signal.line} - ${signal.excerpt}`);
+    }
+    lines.push("");
+  }
+
+  lines.push("### Suspected Cause Buckets", "");
+  if (result.receipt.suspectedCauses.length === 0) {
+    lines.push("_No cause bucket inferred from the supplied evidence._", "");
+  } else {
+    for (const cause of result.receipt.suspectedCauses) {
+      lines.push(`- ${cause}`);
+    }
+    lines.push("");
   }
 
   lines.push("## Usage Snapshots", "");
@@ -319,7 +418,24 @@ function parseTokenUsage(source: string, line: number, excerpt: string): TokenUs
   return { source, line, total, input, cachedInput, output, reasoning, excerpt };
 }
 
-function buildFindings(snapshots: UsageSnapshot[], tokenUsage: TokenUsageRecord[], usageLimitSignals: UsageLimitSignal[]): UsageEvidenceFinding[] {
+function parseOverheadSignal(source: string, line: number, excerpt: string): UsageOverheadSignal | undefined {
+  const kind =
+    /\bwrite_stdin\b|\b(empty|idle).{0,30}\bpoll/i.test(excerpt) ? "background_polling" :
+      /\b(compaction|compact).{0,80}\b(loop|again|repeat|relaunch|75%|context window)\b/i.test(excerpt) ? "compaction_loop" :
+        /\b(retry|retries|retrying|tool loop|failed operation|same tool).{0,80}\b(repeat|loop|again|no progress)\b/i.test(excerpt) ? "retry_or_tool_loop" :
+          /\b(subagent|sub-agent|agents\.max_threads|agent thread limit|fan-out|spawned).{0,80}\b(agent|thread|session|quota|usage)\b/i.test(excerpt) ? "subagent_fanout" :
+            /\b(idle|only open|background).{0,80}\b(usage|tokens|quota|burn|drain|consum)/i.test(excerpt) ? "idle_drain" :
+              undefined;
+
+  return kind ? { kind, source, line, excerpt } : undefined;
+}
+
+function buildFindings(
+  snapshots: UsageSnapshot[],
+  tokenUsage: TokenUsageRecord[],
+  usageLimitSignals: UsageLimitSignal[],
+  overheadSignals: UsageOverheadSignal[]
+): UsageEvidenceFinding[] {
   const findings: UsageEvidenceFinding[] = [];
   const byWindow = new Map<string, UsageSnapshot[]>();
   for (const snapshot of snapshots) {
@@ -394,7 +510,78 @@ function buildFindings(snapshots: UsageSnapshot[], tokenUsage: TokenUsageRecord[
     }
   }
 
+  for (const signal of overheadSignals) {
+    findings.push({
+      kind: "orchestration_overhead_signal",
+      severity: signal.kind === "compaction_loop" || signal.kind === "retry_or_tool_loop" ? "high" : "medium",
+      title: `Potential ${signal.kind.replace(/_/g, " ")} overhead`,
+      why: "The evidence mentions a local orchestration pattern that can burn tokens without a clean accepted-work result.",
+      evidence: [{ file: signal.source, line: signal.line, excerpt: signal.excerpt }],
+      nextStep: "Report this separately from quota percentages and token totals so maintainers can distinguish useful model work from local orchestration overhead."
+    });
+  }
+
   return dedupeFindings(findings);
+}
+
+function buildReceipt(
+  snapshots: UsageSnapshot[],
+  tokenUsage: TokenUsageRecord[],
+  overheadSignals: UsageOverheadSignal[],
+  usageLimitSignals: UsageLimitSignal[]
+): UsageReceipt {
+  const byWindow = new Map<string, UsageSnapshot[]>();
+  for (const snapshot of snapshots) {
+    const window = snapshot.window || "unknown";
+    byWindow.set(window, [...(byWindow.get(window) ?? []), snapshot]);
+  }
+
+  const quotaWindows = [...byWindow.entries()].map(([window, items]) => {
+    const percentSamples = items.filter((item) => item.percent !== undefined);
+    return {
+      window,
+      samples: items.length,
+      firstPercent: percentSamples[0]?.percent,
+      lastPercent: percentSamples[percentSamples.length - 1]?.percent,
+      resetValues: [...new Set(items.map((item) => item.resetAt).filter((value): value is string => Boolean(value)))]
+    };
+  }).sort((a, b) => a.window.localeCompare(b.window));
+
+  const localTokenTotals = tokenUsage.reduce<UsageReceipt["localTokenTotals"]>((totals, record) => ({
+    total: addOptional(totals.total, record.total),
+    input: addOptional(totals.input, record.input),
+    cachedInput: addOptional(totals.cachedInput, record.cachedInput),
+    output: addOptional(totals.output, record.output),
+    reasoning: addOptional(totals.reasoning, record.reasoning)
+  }), {});
+
+  const suspectedCauses = new Set<string>();
+  if (usageLimitSignals.length > 0 || snapshots.length > 0) {
+    suspectedCauses.add("quota-window or dashboard accounting");
+  }
+  if (tokenUsage.some((record) => record.cachedInput !== undefined && record.cachedInput >= 1_000_000)) {
+    suspectedCauses.add("large cached-context replay");
+  }
+  for (const signal of overheadSignals) {
+    if (signal.kind === "background_polling") {
+      suspectedCauses.add("background polling");
+    } else if (signal.kind === "compaction_loop") {
+      suspectedCauses.add("compaction loop");
+    } else if (signal.kind === "retry_or_tool_loop") {
+      suspectedCauses.add("retry or tool loop");
+    } else if (signal.kind === "subagent_fanout") {
+      suspectedCauses.add("subagent fan-out");
+    } else if (signal.kind === "idle_drain") {
+      suspectedCauses.add("idle/background drain");
+    }
+  }
+
+  return {
+    quotaWindows,
+    localTokenTotals,
+    overheadSignals,
+    suspectedCauses: [...suspectedCauses].sort((a, b) => a.localeCompare(b))
+  };
 }
 
 function findPercentageJumps(items: UsageSnapshot[]): Array<{ before: UsageSnapshot; after: UsageSnapshot; delta: number }> {
@@ -513,6 +700,18 @@ function parseInteger(value: string | undefined): number | undefined {
 
   const parsed = Number(value.replace(/,/g, ""));
   return Number.isFinite(parsed) ? parsed : undefined;
+}
+
+function addOptional(a: number | undefined, b: number | undefined): number | undefined {
+  if (a === undefined) {
+    return b;
+  }
+
+  if (b === undefined) {
+    return a;
+  }
+
+  return a + b;
 }
 
 function cleanValue(value: string | undefined): string {

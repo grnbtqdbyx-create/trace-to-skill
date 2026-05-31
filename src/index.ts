@@ -26,5 +26,5 @@ export type { SessionAuditFile, SessionAuditFinding, SessionAuditOptions, Sessio
 export { auditSensitivePaths, renderSensitiveAuditMarkdown } from "./sensitiveAudit.js";
 export type { SensitiveAuditFinding, SensitiveAuditFindingKind, SensitiveAuditResult, SensitiveAuditSeverity, SensitiveAuditStatus } from "./sensitiveAudit.js";
 export { buildUsageEvidence, buildUsageEvidenceFromInputs, renderUsageEvidenceMarkdown } from "./usageEvidence.js";
-export type { TokenUsageRecord, UsageEvidenceFinding, UsageEvidenceFindingKind, UsageEvidenceResult, UsageEvidenceStatus, UsageSnapshot } from "./usageEvidence.js";
+export type { TokenUsageRecord, UsageEvidenceFinding, UsageEvidenceFindingKind, UsageEvidenceResult, UsageEvidenceStatus, UsageOverheadKind, UsageOverheadSignal, UsageReceipt, UsageSnapshot } from "./usageEvidence.js";
 export type { AnalysisResult, Finding, FindingKind, Severity } from "./types.js";

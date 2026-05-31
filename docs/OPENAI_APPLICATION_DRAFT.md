@@ -72,7 +72,7 @@ Current proof points:
 - Terminal output/scrollback integrity detection for streamed output that disappears, is overwritten, truncates, duplicates, misaligns, snaps to the bottom, or only survives in raw logs/transcripts.
 - Subagent lifecycle/state reconciliation detection for stale visible agents, close/readback drift, `thread_spawn_edges`, spawn quota, recent-list child threads, and compaction-lost prior subagent IDs.
 - Usage reset schedule drift detection for moving weekly reset anchors, saved usage loss, outage compensation resets, and `/status` versus dashboard reset discrepancies.
-- `usage-evidence` reports for scattered `/status`, reset-table, usage-limit, and token-total snippets.
+- `usage-evidence` reports for scattered `/status`, reset-table, usage-limit, token-total, cached-input, and orchestration-overhead snippets.
 - Resource-leak detection for Codex Desktop, VS Code extension, renderer, GPU, shell snapshot, and helper processes that keep burning CPU/GPU/RAM after the useful work should be idle.
 - Quota mismatch detection for usage-limit blocks that contradict `/status`, usage dashboard state, account switching, or reset timing.
 - Sensitive-file access detection for `.env`, private keys, package auth files, cloud credentials, local databases, and production secret manifests entering agent context.
@@ -82,7 +82,7 @@ Current proof points:
 - SARIF output for GitHub code scanning.
 - Before/after eval comparison with keep/revise/reject decisions.
 - One-command repository setup via `trace-to-skill init`.
-- Public release v0.1.69.
+- Public release v0.1.70.
 - Current GitHub scorecard: 100/100 Codex-ready, benchmark passing.
 
 500-character version:

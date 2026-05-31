@@ -53,7 +53,7 @@ What it proves:
 Recommended CI surface:
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.69
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.70
   with:
     mode: all
     doctor-threshold: "85"
@@ -144,14 +144,21 @@ This catches signals such as `Error running remote compact task`, `timeout waiti
 
 ## 8. Codex Usage Evidence Packaging
 
-Use this when a Codex usage issue has scattered evidence across `/status`, dashboard notes, reset tables, and token totals.
+Use this when a Codex usage issue has scattered evidence across `/status`, dashboard notes, reset tables, token totals, cached input, and local overhead clues.
 
 ```bash
 npx trace-to-skill usage-evidence ./usage-notes.md --output usage-evidence.md
 npx trace-to-skill usage-evidence ./usage-notes.md --format json
 ```
 
-This turns Markdown polling tables, CSV-like rows, JSON/JSONL snapshots, `reset_at` values, usage-limit errors, and `Token usage: total=... cached` lines into a single report with reset drift, quota jumps, cached-input-heavy turns, and remaining-quota contradictions.
+This turns Markdown polling tables, CSV-like rows, JSON/JSONL snapshots, `reset_at` values, usage-limit errors, `Token usage: total=... cached` lines, `write_stdin` polling, compaction loops, retry/tool loops, subagent fan-out, and idle-drain notes into a single report with a usage receipt.
+
+The receipt separates:
+
+- backend quota-window percentage evidence
+- local token totals, including cached input and reasoning
+- orchestration-overhead signals that may burn usage without accepted work
+- suspected cause buckets to keep public reports comparable
 
 ## 9. Codex Windows Helper Path Triage
 
@@ -250,6 +257,8 @@ npx trace-to-skill codex-report ./runs --output openai-codex-issue.md
 ```
 
 This catches signals such as tokens `burning very fast`, usage dropping by visible percentages after one or two prompts, weekly allowance depletion, 5-hour usage reaching 0%, large `input` plus `cached input` totals, `write_stdin` empty polling, background commands repeatedly reporting no new output, idle app usage, compaction tax, retry/tool loops, and missing attribution between normal turns, compaction, background polling, subagents, and retries.
+
+For public reports, prefer `usage-evidence` first so the quota-window, local-token, and orchestration-overhead layers are visible separately.
 
 ## 17. Usage Reset Drift Evidence
 

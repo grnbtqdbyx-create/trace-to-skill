@@ -34,7 +34,8 @@ Runtime: Node.js 20+
 - Codex app connector stale auth/cache regressions such as `401 Reauthentication required`, unchanged `link_*`, `isAccessible: false`, and broken `codex_apps_tools` metadata
 - Codex token-burn and usage-drain failures such as background `write_stdin` polling, idle app usage, compaction tax, retry/tool loops, cached-token-heavy turns, fast-mode drift, subagent fan-out, and unclear usage attribution
 - Codex usage reset schedule drift such as weekly reset dates moving, `reset_at` jumping, saved usage disappearing, outage compensation resets changing the anchor, and `/status` disagreeing with enforcement
-- Codex usage evidence packaging for scattered `/status`, reset-table, usage-limit, and token-total snippets
+- Codex usage evidence packaging for scattered `/status`, reset-table, usage-limit, token-total, cached-input, and orchestration-overhead snippets
+- Codex usage receipts that separate backend quota-window percentages, local token totals, and overhead signals such as background polling, compaction loops, retry/tool loops, subagent fan-out, or idle drain
 - Codex resource leaks and runaway local processes such as high CPU/GPU, `Code Helper`, `Codex Helper Renderer`, orphaned shell snapshots, log floods, thinking animation GPU loops, and non-Git workspace CPU loops
 - Codex quota and usage-limit mismatches where `/status` or the usage page shows remaining quota, accounts share limits unexpectedly, or 5h and weekly quotas move together
 - sensitive-file access in traces, including `.env`, private keys, package auth files, cloud credentials, local databases, and production secret manifests entering agent context
@@ -103,7 +104,7 @@ npx trace-to-skill init --comment --sarif
 ## GitHub Action
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.69
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.70
   with:
     mode: all
     doctor-threshold: "85"

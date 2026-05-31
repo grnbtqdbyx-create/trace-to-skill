@@ -41,7 +41,8 @@ This page is written for maintainers, search engines, package indexes, and AI re
 - Codex app connectors keep stale `link_*` authorization or discovery metadata after `401 Reauthentication required`, plugin reinstall, app restart, or cache regeneration.
 - Codex usage drains unexpectedly because of background `write_stdin` polling, idle app activity, compaction/replay overhead, retry loops, subagent fan-out, fast-mode drift, or cached-token-heavy turns.
 - Codex weekly or 5-hour reset anchors move unexpectedly, saved usage is lost, or `/status` and the dashboard disagree about reset timing or enforcement.
-- Codex usage evidence is scattered across `/status`, dashboard notes, reset tables, usage-limit messages, and token totals, making high-signal reports hard to file.
+- Codex usage evidence is scattered across `/status`, dashboard notes, reset tables, usage-limit messages, token totals, cached input, and overhead clues, making high-signal reports hard to file.
+- Codex token-burn reports need a receipt that separates backend quota-window percentages, local token totals, and orchestration overhead such as background polling, compaction loops, retry/tool loops, subagent fan-out, or idle drain.
 - Codex `/compact` or auto-compaction fails against the remote `responses/compact` endpoint with stream disconnects, child-process timeout messages, provider timeout workarounds, or long-thread recovery loss.
 - Codex Desktop, app-server, VS Code extension, renderer, GPU, shell snapshot, or helper processes leak local resources or keep burning CPU/GPU/RAM after the useful work should be idle.
 - Codex reports `You've hit your usage limit` even though `/status` or the usage dashboard shows quota left, or quota appears shared across accounts.

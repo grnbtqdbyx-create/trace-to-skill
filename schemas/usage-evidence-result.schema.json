@@ -3,7 +3,7 @@
   "$id": "https://github.com/grnbtqdbyx-create/trace-to-skill/schemas/usage-evidence-result.schema.json",
   "title": "trace-to-skill Codex usage evidence result",
   "type": "object",
-  "required": ["generatedAt", "status", "inputs", "summary", "snapshots", "tokenUsage", "findings", "checklist"],
+  "required": ["generatedAt", "status", "inputs", "summary", "snapshots", "tokenUsage", "receipt", "findings", "checklist"],
   "additionalProperties": false,
   "properties": {
     "generatedAt": {
@@ -20,7 +20,7 @@
     },
     "summary": {
       "type": "object",
-      "required": ["snapshots", "tokenUsageRecords", "usageLimitSignals", "resetDriftWindows", "highCachedInputRecords"],
+      "required": ["snapshots", "tokenUsageRecords", "usageLimitSignals", "resetDriftWindows", "highCachedInputRecords", "overheadSignals"],
       "additionalProperties": false,
       "properties": {
         "snapshots": {
@@ -42,6 +42,10 @@
         "highCachedInputRecords": {
           "type": "integer",
           "minimum": 0
+        },
+        "overheadSignals": {
+          "type": "integer",
+          "minimum": 0
         }
       }
     },
@@ -56,6 +60,9 @@
       "items": {
         "$ref": "#/$defs/tokenUsage"
       }
+    },
+    "receipt": {
+      "$ref": "#/$defs/receipt"
     },
     "findings": {
       "type": "array",
@@ -143,7 +150,8 @@
             "quota_percentage_jump",
             "usage_limit_with_remaining_quota",
             "high_cached_input",
-            "high_total_tokens"
+            "high_total_tokens",
+            "orchestration_overhead_signal"
           ]
         },
         "severity": {
@@ -172,6 +180,101 @@
       "additionalProperties": false,
       "properties": {
         "file": {
+          "type": "string"
+        },
+        "line": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "excerpt": {
+          "type": "string"
+        }
+      }
+    },
+    "receipt": {
+      "type": "object",
+      "required": ["quotaWindows", "localTokenTotals", "overheadSignals", "suspectedCauses"],
+      "additionalProperties": false,
+      "properties": {
+        "quotaWindows": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/quotaWindow"
+          }
+        },
+        "localTokenTotals": {
+          "$ref": "#/$defs/localTokenTotals"
+        },
+        "overheadSignals": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/overheadSignal"
+          }
+        },
+        "suspectedCauses": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "quotaWindow": {
+      "type": "object",
+      "required": ["window", "samples", "resetValues"],
+      "additionalProperties": false,
+      "properties": {
+        "window": {
+          "type": "string"
+        },
+        "samples": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "firstPercent": {
+          "type": "number"
+        },
+        "lastPercent": {
+          "type": "number"
+        },
+        "resetValues": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "localTokenTotals": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "total": {
+          "type": "number"
+        },
+        "input": {
+          "type": "number"
+        },
+        "cachedInput": {
+          "type": "number"
+        },
+        "output": {
+          "type": "number"
+        },
+        "reasoning": {
+          "type": "number"
+        }
+      }
+    },
+    "overheadSignal": {
+      "type": "object",
+      "required": ["kind", "source", "line", "excerpt"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": ["background_polling", "compaction_loop", "retry_or_tool_loop", "subagent_fanout", "idle_drain"]
+        },
+        "source": {
           "type": "string"
         },
         "line": {
