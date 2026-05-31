@@ -53,7 +53,7 @@ What it proves:
 Recommended CI surface:
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.75
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.76
   with:
     mode: all
     doctor-threshold: "85"
@@ -231,9 +231,9 @@ npx trace-to-skill plugin-audit ~/.codex --app /Applications/Codex.app --format 
 npx trace-to-skill diagnostics-bundle ~/.codex --output codex-diagnostics
 ```
 
-This catches signals such as `codex resume` picker hangs, `codex resume <id>` working while the picker freezes, project pages/search/sidebar hiding threads that still exist on disk, large `rollout-*.jsonl` histories, high JSONL line and `response_item` / `event_msg` / `function_call` counts, large `input_image` payloads, slow `thread/resume` and `thread/goal/get` timings, `Could not load archived chats`, resume compression dropping the last 3-5 turns, `state_5.sqlite` / `goals_1.sqlite` migration mismatches, `no such table: thread_goals`, stale `projectless-thread-ids`, and `thread-workspace-root-hints` reverting after restart.
+This catches signals such as `codex resume` picker hangs, `codex resume <id>` working while the picker freezes, project pages/search/sidebar hiding threads that still exist on disk, transcript-like `session_index.jsonl` titles that can poison sidebar/search caches, large `rollout-*.jsonl` histories, high JSONL line and `response_item` / `event_msg` / `function_call` counts, large `input_image` payloads, slow `thread/resume` and `thread/goal/get` timings, `Could not load archived chats`, resume compression dropping the last 3-5 turns, `state_5.sqlite` / `goals_1.sqlite` migration mismatches, `no such table: thread_goals`, stale `projectless-thread-ids`, and `thread-workspace-root-hints` reverting after restart.
 
-`session-audit` is local and read-only: it reports rollout JSONL size, line count, largest line size, parse errors, session index line count, state-file presence, recoverable thread ids, `codex resume <id>` commands, and common session signals so users can attach a privacy-preserving summary to OpenAI/Codex issues instead of posting transcripts. Full workspace paths are not printed in the thread table; related projects are grouped by basename plus a short path hash.
+`session-audit` is local and read-only: it reports rollout JSONL size, line count, largest line size, parse errors, session index line count, title byte/signal counts, state-file presence, recoverable thread ids, `codex resume <id>` commands, and common session signals so users can attach a privacy-preserving summary to OpenAI/Codex issues instead of posting transcripts. Full workspace paths are not printed in the thread table; related projects are grouped by basename plus a short path hash.
 
 For mixed resume, crash, config, plugin, or history issues, `diagnostics-bundle` writes the session, config, and plugin reports together with a checklist of files not to attach publicly.
 

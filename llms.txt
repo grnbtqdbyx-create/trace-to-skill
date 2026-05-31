@@ -26,7 +26,7 @@ Runtime: Node.js 20+
 - Codex MCP discovery and config-scope mismatches where CLI `/mcp` works but VS Code, Desktop, WSL, project `.codex/config.toml`, `CODEX_HOME`, or an older conversation exposes no `mcp__*` tools
 - Codex terminal output and scrollback integrity failures where streamed lines disappear, get overwritten, truncate, duplicate, misalign, snap to the bottom, or only survive in raw logs/transcripts
 - Codex subagent lifecycle failures where completed or closed agents remain visible, `thread_spawn_edges` drift, child threads crowd the recent list, `agent thread limit reached` blocks spawns, or compaction loses prior subagent IDs
-- Codex resume and session-state failures such as frozen resume pickers, large rollout JSONL histories, short `session_index.jsonl`, sluggish Desktop thread rendering, dropped recent context after resume, archived chat loading failures, and `state_5.sqlite` / `goals_1.sqlite` migration drift
+- Codex resume and session-state failures such as frozen resume pickers, large rollout JSONL histories, short `session_index.jsonl`, transcript-like sidebar title chunks, sluggish Desktop thread rendering, dropped recent context after resume, archived chat loading failures, and `state_5.sqlite` / `goals_1.sqlite` migration drift
 - Codex file tree and workspace navigation UI failures such as `View > Toggle File Tree` doing nothing, missing folder icons, stale floating file panels, and built-in preview failures
 - Codex Thinking or Working hangs after accepted turns, successful local tools, or open Responses streams with no streamed assistant follow-up
 - Codex clipboard, copy/export, long paste, and generated `Pasted text.txt` attachment regressions that break prompt, `/goal`, preview/edit, or support-report workflows
@@ -108,7 +108,7 @@ npx trace-to-skill init --comment --sarif
 ## GitHub Action
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.75
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.76
   with:
     mode: all
     doctor-threshold: "85"

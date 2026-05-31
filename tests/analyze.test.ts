@@ -635,7 +635,13 @@ test("auditCodexSessions reports large rollout, huge lines, parse errors, and sh
   const sessionDir = path.join(cwd, "sessions/2026/05/31");
   await mkdir(sessionDir, { recursive: true });
   await writeFile(path.join(cwd, "state_5.sqlite"), "sqlite placeholder", "utf8");
-  await writeFile(path.join(cwd, "session_index.jsonl"), `${JSON.stringify({ id: "019eaaa", thread_name: "Visible thread", updated_at: "2026-05-31T10:01:00Z" })}\n`, "utf8");
+  const bloatedTitle = [
+    "Visible thread",
+    "assistant: here is a large transcript chunk that should not be stored as a sidebar title",
+    "response_item function_call tool_call Pasted text fileAttachments",
+    "x".repeat(260)
+  ].join(" ");
+  await writeFile(path.join(cwd, "session_index.jsonl"), `${JSON.stringify({ id: "019eaaa", thread_name: bloatedTitle, updated_at: "2026-05-31T10:01:00Z" })}\n`, "utf8");
   await writeFile(path.join(sessionDir, "rollout-2026-05-31T10-00-00-019eaaa.jsonl"), [
     JSON.stringify({ type: "session_meta", timestamp: "2026-05-31T10:00:00Z", payload: { id: "019eaaa", cwd: "/Users/test/VisibleProject", originator: "Codex Desktop", cli_version: "0.135.0-alpha.1", timestamp: "2026-05-31T10:00:00Z" } }),
     JSON.stringify({ type: "response_item", item: { type: "function_call", name: "shell" } }),
@@ -660,7 +666,11 @@ test("auditCodexSessions reports large rollout, huge lines, parse errors, and sh
   assert.equal(result.summary.rolloutThreads, 2);
   assert.equal(result.summary.indexedThreads, 1);
   assert.equal(result.summary.unindexedRolloutThreads, 1);
+  assert.equal(result.summary.bloatedIndexTitles, 1);
   assert.equal(result.threads.find((thread) => thread.id === "019eaaa")?.indexed, true);
+  assert.ok((result.threads.find((thread) => thread.id === "019eaaa")?.indexTitleBytes ?? 0) > 240);
+  assert.ok(result.threads.find((thread) => thread.id === "019eaaa")?.indexTitleSignals?.includes("long_title"));
+  assert.ok(result.threads.find((thread) => thread.id === "019eaaa")?.indexTitleSignals?.includes("transcript_marker"));
   assert.equal(result.threads.find((thread) => thread.id === "019ebbb")?.indexed, false);
   assert.equal(result.threads.find((thread) => thread.id === "019ebbb")?.cwdBasename, "HiddenProject");
   assert.equal(result.threads.find((thread) => thread.id === "019ebbb")?.recoverCommand, "codex resume 019ebbb");
@@ -669,9 +679,12 @@ test("auditCodexSessions reports large rollout, huge lines, parse errors, and sh
   assert.ok(result.findings.some((finding) => finding.kind === "json_parse_error"));
   assert.ok(result.findings.some((finding) => finding.kind === "short_session_index"));
   assert.ok(result.findings.some((finding) => finding.kind === "unindexed_rollout_thread"));
+  assert.ok(result.findings.some((finding) => finding.kind === "bloated_index_title"));
   assert.ok(result.findings.some((finding) => finding.kind === "state_file_present"));
   assert.match(markdown, /Codex Session Audit/);
   assert.match(markdown, /Recoverable Thread Index/);
+  assert.match(markdown, /Bloated index titles: 1/);
+  assert.match(markdown, /bloated_index_title/);
   assert.match(markdown, /codex resume 019ebbb/);
   assert.match(markdown, /thread_resume/);
 });
@@ -1877,6 +1890,7 @@ test("published JSON schemas describe CLI result contracts", async () => {
   assert.ok(sessionAuditSchema.$defs.file);
   assert.ok(sessionAuditSchema.$defs.thread);
   assert.ok((sessionAuditSchema.$defs.finding as { properties: { kind: { enum: string[] } } }).properties.kind.enum.includes("unindexed_rollout_thread"));
+  assert.ok((sessionAuditSchema.$defs.finding as { properties: { kind: { enum: string[] } } }).properties.kind.enum.includes("bloated_index_title"));
   assert.deepEqual(usageEvidenceSchema.required, ["generatedAt", "status", "inputs", "summary", "snapshots", "tokenUsage", "drainExperiments", "receipt", "findings", "checklist"]);
   assert.ok(usageEvidenceSchema.properties.receipt);
   assert.ok(usageEvidenceSchema.properties.drainExperiments);
@@ -1974,7 +1988,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.equal(brief.scorecard.benchmarkStatus, "pass");
   assert.equal(brief.scorecard.benchmarkCases, 33);
   assert.equal(brief.packageName, "trace-to-skill");
-  assert.equal(brief.packageVersion, "0.1.75");
+  assert.equal(brief.packageVersion, "0.1.76");
   assert.equal(brief.license, "Apache-2.0");
   assert.ok(brief.repository?.includes("github.com/grnbtqdbyx-create/trace-to-skill"));
   assert.ok(brief.qualification.max500.length <= 500);
@@ -1982,7 +1996,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.match(markdown, /OpenAI OSS Brief/);
   assert.match(markdown, /Why This Repository Qualifies/);
   assert.match(markdown, /500-Character Version/);
-  assert.match(markdown, /npx trace-to-skill@0\.1\.75/);
+  assert.match(markdown, /npx trace-to-skill@0\.1\.76/);
 });
 
 test("scorecard-comment dry-run resolves pull request event", async () => {

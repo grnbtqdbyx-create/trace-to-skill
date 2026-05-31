@@ -42,7 +42,7 @@ export interface SessionAuditStateFile {
 
 export interface SessionAuditFinding {
   severity: SessionAuditSeverity;
-  kind: "large_rollout" | "huge_jsonl_line" | "json_parse_error" | "short_session_index" | "unindexed_rollout_thread" | "state_file_present";
+  kind: "large_rollout" | "huge_jsonl_line" | "json_parse_error" | "short_session_index" | "unindexed_rollout_thread" | "bloated_index_title" | "state_file_present";
   path?: string;
   message: string;
 }
@@ -52,6 +52,8 @@ export interface SessionAuditThread {
   path: string;
   indexed: boolean;
   indexTitle?: string;
+  indexTitleBytes?: number;
+  indexTitleSignals?: string[];
   indexUpdatedAt?: string;
   createdAt?: string;
   cwdBasename?: string;
@@ -81,6 +83,7 @@ export interface SessionAuditResult {
     rolloutThreads: number;
     indexedThreads: number;
     unindexedRolloutThreads: number;
+    bloatedIndexTitles: number;
     projectRoots: number;
   };
   files: SessionAuditFile[];
@@ -91,6 +94,7 @@ export interface SessionAuditResult {
 
 const DEFAULT_LARGE_FILE_BYTES = 10 * 1024 * 1024;
 const DEFAULT_HUGE_LINE_BYTES = 512 * 1024;
+const INDEX_TITLE_BLOAT_BYTES = 240;
 const STATE_FILE_NAMES = new Set(["state_5.sqlite", "goals_1.sqlite", ".codex-global-state.json", "session_index.jsonl"]);
 
 export async function auditCodexSessions(target = defaultCodexHome(), options: SessionAuditOptions = {}): Promise<SessionAuditResult> {
@@ -124,6 +128,7 @@ export async function auditCodexSessions(target = defaultCodexHome(), options: S
     rolloutThreads: threads.length,
     indexedThreads: threads.filter((thread) => thread.indexed).length,
     unindexedRolloutThreads: threads.filter((thread) => !thread.indexed).length,
+    bloatedIndexTitles: threads.filter((thread) => (thread.indexTitleSignals?.length ?? 0) > 0).length,
     projectRoots: projectKeys.size
   };
 
@@ -156,6 +161,7 @@ export function renderSessionAuditMarkdown(result: SessionAuditResult): string {
     `Rollout threads: ${result.summary.rolloutThreads}`,
     `Indexed threads: ${result.summary.indexedThreads}`,
     `Unindexed rollout threads: ${result.summary.unindexedRolloutThreads}`,
+    `Bloated index titles: ${result.summary.bloatedIndexTitles}`,
     ""
   ];
 
@@ -172,16 +178,21 @@ export function renderSessionAuditMarkdown(result: SessionAuditResult): string {
   if (result.threads.length === 0) {
     lines.push("No rollout session metadata found.", "");
   } else {
-    lines.push("| Indexed | Thread id | Project | Created | Index title | Resume |");
-    lines.push("| --- | --- | --- | --- | --- | --- |");
+    lines.push("| Indexed | Thread id | Project | Created | Index title | Title bytes/signals | Resume |");
+    lines.push("| --- | --- | --- | --- | --- | --- | --- |");
     for (const thread of result.threads.slice(0, 25)) {
       const project = [thread.cwdBasename, thread.cwdHash].filter(Boolean).join(" ");
+      const titleSignals = [
+        thread.indexTitleBytes === undefined ? undefined : `${thread.indexTitleBytes}b`,
+        ...(thread.indexTitleSignals ?? [])
+      ].filter(Boolean).join(", ");
       lines.push([
         String(thread.indexed),
         `\`${thread.id}\``,
         project || "",
         thread.createdAt ?? "",
-        thread.indexTitle ?? "",
+        previewTitle(thread.indexTitle),
+        titleSignals,
         `\`${thread.recoverCommand}\``
       ].map(escapeCell).join(" | ").replace(/^/, "| ").replace(/$/, " |"));
     }
@@ -226,6 +237,7 @@ export function renderSessionAuditMarkdown(result: SessionAuditResult): string {
     "- If this report shows large rollout files or parse errors, attach this JSON/Markdown summary to the Codex issue instead of publishing private transcripts.",
     "- If `codex resume <id>` works but the picker freezes, include the largest file sizes and line counts from this report.",
     "- If project history/search is empty but this report lists unindexed rollout threads, try `codex resume <thread_id>` locally and include the unindexed count plus affected hashed project group in the issue.",
+    "- If sidebar titles contain transcript chunks, include the `bloated_index_title` finding and title byte/signal counts instead of posting the full title text.",
     ""
   );
 
@@ -377,6 +389,15 @@ function buildFindings(
     }
   }
 
+  for (const thread of threads.filter((item) => (item.indexTitleSignals?.length ?? 0) > 0).slice(0, 10)) {
+    findings.push({
+      severity: "warning",
+      kind: "bloated_index_title",
+      path: thread.path,
+      message: `Thread ${thread.id} has a risky session_index title (${thread.indexTitleBytes ?? 0} bytes; ${(thread.indexTitleSignals ?? []).join(", ")}). Large transcript-like titles can make Desktop sidebar/search caches hide or mis-render otherwise recoverable threads.`
+    });
+  }
+
   for (const stateFile of stateFiles.filter((file) => file.path.endsWith(".sqlite"))) {
     findings.push({
       severity: "warning",
@@ -436,6 +457,8 @@ function buildThreads(files: SessionAuditFile[], indexEntries: Map<string, Sessi
         path: file.path,
         indexed: indexed !== undefined,
         indexTitle: indexed?.title,
+        indexTitleBytes: indexed?.title ? Buffer.byteLength(indexed.title, "utf8") : undefined,
+        indexTitleSignals: indexed?.title ? indexTitleSignals(indexed.title) : undefined,
         indexUpdatedAt: indexed?.updatedAt,
         createdAt: session.createdAt,
         cwdBasename: session.cwdBasename,
@@ -528,6 +551,41 @@ function formatSignals(signals: Record<string, number>): string {
 
 function firstString(...values: unknown[]): string | undefined {
   return values.find((value): value is string => typeof value === "string" && value.length > 0);
+}
+
+function indexTitleSignals(title: string): string[] {
+  const signals = new Set<string>();
+  const size = Buffer.byteLength(title, "utf8");
+  if (size >= INDEX_TITLE_BLOAT_BYTES) {
+    signals.add("long_title");
+  }
+
+  if (/```|<code>|<\/code>|\\n|\n/.test(title)) {
+    signals.add("structured_transcript");
+  }
+
+  if (/\b(user|assistant|tool|system|developer)\s*[:=]/i.test(title) || /response_item|event_msg|function_call|tool_call/i.test(title)) {
+    signals.add("transcript_marker");
+  }
+
+  if (/\b(Pasted text|fileAttachments|input_image|data:image|base64|token usage|Get-CimInstance)\b/i.test(title)) {
+    signals.add("attachment_or_log_chunk");
+  }
+
+  if (/^\s*[{[]/.test(title) || /"type"\s*:\s*"(session_meta|response_item|event_msg)"/.test(title)) {
+    signals.add("json_fragment");
+  }
+
+  return [...signals].sort((a, b) => a.localeCompare(b));
+}
+
+function previewTitle(value: string | undefined): string {
+  if (!value) {
+    return "";
+  }
+
+  const compact = value.replace(/\s+/g, " ").trim();
+  return compact.length > 96 ? `${compact.slice(0, 93)}...` : compact;
 }
 
 function sourceKind(source: unknown): string | undefined {

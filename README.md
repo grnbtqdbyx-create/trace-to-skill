@@ -58,7 +58,7 @@ Use it when you need to:
 - **Harden agent instructions:** run `trace-to-skill lint-agents .` to catch missing `AGENTS.md`, conflicting tool instructions, missing includes, nested instruction drift, encoding issues, and risky MCP config.
 - **Protect agent context:** run `trace-to-skill guard-github-event "$GITHUB_EVENT_PATH"` before feeding issue, PR, comment, discussion, check-run, or commit text into an agent.
 - **Prevent unsafe patch overwrites:** run `trace-to-skill guard-patch ./change.patch --root .` before applying generated patches so `*** Add File` cannot silently replace an existing file or symlink target.
-- **Audit local Codex session history:** run `trace-to-skill session-audit ~/.codex --format json` to summarize rollout JSONL sizes, huge lines, parse errors, state files, short `session_index.jsonl` evidence, and recoverable unindexed thread ids without publishing private transcripts.
+- **Audit local Codex session history:** run `trace-to-skill session-audit ~/.codex --format json` to summarize rollout JSONL sizes, huge lines, parse errors, state files, short `session_index.jsonl` evidence, bloated transcript-like sidebar titles, and recoverable unindexed thread ids without publishing private transcripts.
 - **Preflight sensitive paths before agent runs:** run `trace-to-skill sensitive-audit . --format json` to find `.env`, private keys, package auth files, cloud credentials, local databases, signing files, and secret manifests by filename/path without reading file contents.
 - **Preflight language-server readiness:** run `trace-to-skill lsp-audit . --format json` to detect repo languages, missing LSP commands, install hints, and evidence files before asking Codex for symbol-aware edits.
 - **Audit Codex config drift:** run `trace-to-skill config-audit ~/.codex --format json` to summarize legacy profile config, model pins, Speed/Fast service-tier persistence drift, sandbox/approval posture, Windows elevated sandbox mode, missing permission profiles, plugin cache drift, and MCP approval sprawl.
@@ -500,7 +500,7 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v5
-      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.75
+      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.76
         with:
           mode: all
           doctor-threshold: "85"
@@ -549,7 +549,7 @@ Composite action usage:
 
 ```yaml
 - id: trace-to-skill
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.75
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.76
   with:
     mode: all
     doctor-threshold: "85"
@@ -591,7 +591,7 @@ Action outputs:
 
 By default, generated reports are also appended to the GitHub Actions Job Summary. Set `job-summary: "false"` to disable that UI output.
 
-Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.75` executes that release's checked-out source instead of pulling the default branch at runtime.
+Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.76` executes that release's checked-out source instead of pulling the default branch at runtime.
 
 ## Codex Skill
 
