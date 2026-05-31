@@ -12,8 +12,7 @@ Useful entry points:
 Core commands:
 
 ```bash
-npx trace-to-skill analyze ./runs
-npx trace-to-skill suggest ./runs --target agents-md
-npx trace-to-skill eval ./runs --threshold 80
+npx github:grnbtqdbyx-create/trace-to-skill analyze ./runs
+npx github:grnbtqdbyx-create/trace-to-skill suggest ./runs --target agents-md
+npx github:grnbtqdbyx-create/trace-to-skill eval ./runs --threshold 80
 ```
-

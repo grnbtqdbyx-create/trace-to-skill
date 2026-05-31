@@ -3,9 +3,9 @@
 Turn failed AI coding-agent runs into reusable `AGENTS.md` rules, `SKILL.md` files, and eval evidence.
 
 ```bash
-npx trace-to-skill analyze ./runs
-npx trace-to-skill suggest ./runs --target agents-md
-npx trace-to-skill eval ./runs --threshold 80
+npx github:grnbtqdbyx-create/trace-to-skill analyze ./runs
+npx github:grnbtqdbyx-create/trace-to-skill suggest ./runs --target agents-md
+npx github:grnbtqdbyx-create/trace-to-skill eval ./runs --threshold 80
 ```
 
 AI coding agents are getting good enough to change real repositories, but they still repeat the same workflow mistakes: claiming success without tests, ignoring repo instructions, over-editing, inventing files, leaking secrets into traces, or enabling risky MCP tools.
@@ -81,11 +81,19 @@ Generated `AGENTS.md` snippet:
 
 ## Installation
 
+The GitHub release is available now:
+
+```bash
+npx github:grnbtqdbyx-create/trace-to-skill analyze ./runs
+```
+
+After npm publication:
+
 ```bash
 npm install -D trace-to-skill
 ```
 
-Or run without installing:
+or:
 
 ```bash
 npx trace-to-skill analyze ./runs
@@ -148,8 +156,8 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: 20
-      - run: npx trace-to-skill analyze ./runs --output agent-learning-report.md
-      - run: npx trace-to-skill eval ./runs --threshold 80
+      - run: npx github:grnbtqdbyx-create/trace-to-skill analyze ./runs --output agent-learning-report.md
+      - run: npx github:grnbtqdbyx-create/trace-to-skill eval ./runs --threshold 80
 ```
 
 ## OpenAI / Codex Use Case
