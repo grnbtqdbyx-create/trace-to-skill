@@ -535,6 +535,7 @@ test("auditCodexSessions passes small healthy session directories", async () => 
 test("auditCodexConfig reports risky Codex config drift", async () => {
   const cwd = await mkdtemp(path.join(os.tmpdir(), "trace-to-skill-config-"));
   await writeFile(path.join(cwd, "config.toml"), [
+    "profile = \"safe-auto\"",
     "model = \"gpt-5.5\"",
     "sandbox_mode = \"danger-full-access\"",
     "default_permissions = \"trusted\"",
@@ -544,6 +545,9 @@ test("auditCodexConfig reports risky Codex config drift", async () => {
     "",
     "[features]",
     "codex_hooks = true",
+    "",
+    "[profiles.safe-auto]",
+    "sandbox_mode = \"workspace-write\"",
     "",
     "[projects.\"C:\\\\Users\\\\user\\\\repo\"]",
     "trusted_level = \"trusted\"",
@@ -560,6 +564,7 @@ test("auditCodexConfig reports risky Codex config drift", async () => {
   assert.equal(result.status, "fail");
   assert.equal(result.summary.exists, true);
   assert.equal(result.values.model, "gpt-5.5");
+  assert.ok(kinds.includes("legacy_profile_config"));
   assert.ok(kinds.includes("model_pin"));
   assert.ok(kinds.includes("danger_full_access"));
   assert.ok(kinds.includes("windows_elevated_sandbox"));
@@ -1337,7 +1342,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.equal(brief.scorecard.benchmarkStatus, "pass");
   assert.equal(brief.scorecard.benchmarkCases, 26);
   assert.equal(brief.packageName, "trace-to-skill");
-  assert.equal(brief.packageVersion, "0.1.55");
+  assert.equal(brief.packageVersion, "0.1.56");
   assert.equal(brief.license, "Apache-2.0");
   assert.ok(brief.repository?.includes("github.com/grnbtqdbyx-create/trace-to-skill"));
   assert.ok(brief.qualification.max500.length <= 500);
@@ -1345,7 +1350,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.match(markdown, /OpenAI OSS Brief/);
   assert.match(markdown, /Why This Repository Qualifies/);
   assert.match(markdown, /500-Character Version/);
-  assert.match(markdown, /npx trace-to-skill@0\.1\.55/);
+  assert.match(markdown, /npx trace-to-skill@0\.1\.56/);
 });
 
 test("scorecard-comment dry-run resolves pull request event", async () => {

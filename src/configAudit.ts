@@ -9,6 +9,7 @@ export interface ConfigAuditFinding {
   severity: ConfigAuditSeverity;
   kind:
     | "missing_config"
+    | "legacy_profile_config"
     | "model_pin"
     | "danger_full_access"
     | "windows_elevated_sandbox"
@@ -180,11 +181,30 @@ async function resolveConfigPath(target: string): Promise<string> {
 async function collectFindings(configPath: string, entries: TomlEntry[]): Promise<ConfigAuditFinding[]> {
   const findings: ConfigAuditFinding[] = [];
   const model = findAssignment(entries, undefined, "model");
+  const profile = findAssignment(entries, undefined, "profile");
   const sandboxMode = findAssignment(entries, undefined, "sandbox_mode");
   const windowsSandbox = findAssignment(entries, "windows", "sandbox");
   const defaultPermissions = findAssignment(entries, undefined, "default_permissions");
   const permissionProfiles = collectPermissionProfiles(entries);
   const sections = entries.filter((entry) => entry.section && !entry.key).map((entry) => entry.section as string);
+
+  if (profile && typeof profile.value === "string") {
+    findings.push({
+      severity: "warning",
+      kind: "legacy_profile_config",
+      line: profile.line,
+      message: `legacy profile key is set to "${profile.value}"; recent Codex builds may require --profile with a separate <name>.config.toml file.`
+    });
+  }
+
+  for (const section of sections.filter((item) => item.startsWith("profiles."))) {
+    findings.push({
+      severity: "warning",
+      kind: "legacy_profile_config",
+      line: findSectionLine(entries, section),
+      message: `legacy profile section [${section}] is present; include this in config migration reports.`
+    });
+  }
 
   if (model && typeof model.value === "string") {
     findings.push({

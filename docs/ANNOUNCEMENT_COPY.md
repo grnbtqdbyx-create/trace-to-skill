@@ -56,7 +56,7 @@ trace-to-skill checks repo readiness and scans agent traces/logs to generate:
 - Codex Windows helper path detection for bundled `rg.exe`, `node_repl`, Browser, Chrome, and Computer Use failures involving WindowsApps/MSIX paths, missing LocalCache bins, ACLs, and EFS/copyfile errors
 - a `guard-patch` command that fails generated patches when `*** Add File` would overwrite an existing file or symlink target
 - a local `session-audit` command that summarizes Codex rollout JSONL size, huge lines, parse errors, session-index shortness, and state-file presence without publishing transcripts
-- a local `config-audit` command that summarizes Codex config drift, sandbox/approval posture, Windows elevated sandbox mode, plugin cache drift, and MCP approval sprawl without posting raw config
+- a local `config-audit` command that summarizes Codex legacy profile config, model pins, sandbox/approval posture, Windows elevated sandbox mode, plugin cache drift, and MCP approval sprawl without posting raw config
 - Codex sandbox setup and permission failure detection for setup refresh, ACL, ownership, and approval-mode problems
 - Codex auth/connectivity detection for token exchange, CA certificate, proxy, IPv6, Cloudflare challenge, and stream disconnect evidence
 - Codex mobile/remote-control route health detection for stale listener, stale enrollment, missing helper bundle, and `Waiting for desktop` evidence

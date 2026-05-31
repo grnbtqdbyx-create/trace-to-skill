@@ -42,7 +42,7 @@ What it proves:
 Recommended CI surface:
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.55
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.56
   with:
     mode: all
     doctor-threshold: "85"
@@ -83,7 +83,7 @@ npx trace-to-skill config-audit ~/.codex --format json
 
 This catches signals such as Windows sandbox setup refresh failures, `os error 740`, `CodexSandboxOffline` ownership drift, ACL denial, approval-policy mismatch, and Full Access sessions behaving like workspace-write or on-request mode.
 
-`config-audit` is local and read-only: it summarizes `config.toml` model pins, `sandbox_mode`, `approval_policy`, `[windows].sandbox`, missing `default_permissions` profiles, deprecated `codex_hooks`, machine-local project trust entries, enabled plugins with missing cache directories, and large per-tool MCP approval configs.
+`config-audit` is local and read-only: it summarizes legacy `profile` / `[profiles.*]` config, model pins, `sandbox_mode`, `approval_policy`, `[windows].sandbox`, missing `default_permissions` profiles, deprecated `codex_hooks`, machine-local project trust entries, enabled plugins with missing cache directories, and large per-tool MCP approval configs.
 
 ## 5. Codex Auth And Connectivity Triage
 

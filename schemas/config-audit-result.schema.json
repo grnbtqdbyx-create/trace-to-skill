@@ -102,6 +102,7 @@
           "type": "string",
           "enum": [
             "missing_config",
+            "legacy_profile_config",
             "model_pin",
             "danger_full_access",
             "windows_elevated_sandbox",
