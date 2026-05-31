@@ -133,6 +133,8 @@ npx trace-to-skill codex-report redacted-runs --output openai-codex-issue.md
 
 The report includes the likely Codex failure class, line-linked evidence, diagnostics to attach, and a privacy checklist. This is useful for issues about auth/connectivity, sandbox setup, remote-control routing, MCP runtime calls, resume/session-state failures, quota mismatches, and context compaction.
 
+For a cluster-to-command map of current Codex issue patterns, see [CODEX_ISSUE_MAP.md](CODEX_ISSUE_MAP.md).
+
 ## 11. GitHub Context Guard
 
 Use this before an agent reads untrusted GitHub text.

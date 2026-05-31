@@ -39,6 +39,7 @@ failed agent run -> failure class -> evidence-backed AGENTS.md/SKILL.md suggesti
 
 - README: https://github.com/grnbtqdbyx-create/trace-to-skill#readme
 - Use cases: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/USE_CASES.md
+- Codex issue map: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/CODEX_ISSUE_MAP.md
 - Discovery summary: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/DISCOVERY.md
 - Adoption guide: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/ADOPTION_GUIDE.md
 - Failure taxonomy: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/FAILURE_TAXONOMY.md

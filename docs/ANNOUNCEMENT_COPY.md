@@ -40,6 +40,7 @@ trace-to-skill checks repo readiness and scans agent traces/logs to generate:
 - one-command setup for Codex readiness and agent-learning workflows
 - JSON schemas for deterministic CLI report contracts
 - crawler-friendly `llms.txt` and discovery metadata
+- a public Codex issue map that links active issue clusters to the right report command
 - a maintainer adoption guide with privacy checklist and PR template
 - a built-in fixture benchmark and public scorecard
 - GitHub Action benchmark and all-in-one modes
@@ -83,6 +84,7 @@ I’m especially looking for anonymized failed agent traces and feedback from OS
 
 Repo: https://github.com/grnbtqdbyx-create/trace-to-skill
 npm: https://www.npmjs.com/package/trace-to-skill
+Codex issue map: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/CODEX_ISSUE_MAP.md
 ```
 
 ## X / LinkedIn

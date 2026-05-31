@@ -392,6 +392,7 @@ test("package metadata points npm users back to the public project", async () =>
   assert.equal(packageJson.publishConfig?.access, "public");
   assert.ok(packageJson.files?.includes("llms.txt"));
   assert.ok(packageJson.files?.includes("docs/DISCOVERY.md"));
+  assert.ok(packageJson.files?.includes("docs/CODEX_ISSUE_MAP.md"));
   assert.ok(packageJson.keywords?.includes("openai-codex"));
   assert.ok(packageJson.keywords?.includes("prompt-injection"));
   assert.ok(packageJson.keywords?.includes("context-compaction"));

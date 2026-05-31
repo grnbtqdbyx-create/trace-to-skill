@@ -12,6 +12,7 @@ This page is written for maintainers, search engines, package indexes, and AI re
 - npm: https://www.npmjs.com/package/trace-to-skill
 - Latest release: https://github.com/grnbtqdbyx-create/trace-to-skill/releases/latest
 - Use cases: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/USE_CASES.md
+- Codex issue map: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/CODEX_ISSUE_MAP.md
 - Scorecard: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/SCORECARD.md
 - OpenAI OSS strategy: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/OPENAI_OSS_STRATEGY.md
 
@@ -64,6 +65,7 @@ npx trace-to-skill suggest ./runs --target agents-md
 - `trace-to-skill scorecard --format json`
 - SARIF from `trace-to-skill analyze --format sarif`
 - OpenAI/Codex issue-ready Markdown from `trace-to-skill codex-report`
+- Codex issue-cluster mapping in `docs/CODEX_ISSUE_MAP.md`
 - GitHub Action outputs for doctor, AGENTS lint, GitHub context guard, benchmark, and scorecard modes
 
 ## Schema Contracts

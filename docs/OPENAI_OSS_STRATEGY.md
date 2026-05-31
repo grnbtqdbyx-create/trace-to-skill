@@ -19,6 +19,8 @@ The first public release already supports Codex-style JSONL normalization and pu
 
 The `codex-report` command now turns redacted traces into OpenAI/Codex issue-ready Markdown, which helps users file concise reports with line-linked evidence instead of pasting entire private transcripts.
 
+The public Codex Issue Map connects active issue clusters to the right detector and command, making the project easier for Codex users, OpenAI triage, and search crawlers to understand quickly.
+
 SARIF output also lets maintainers surface agent workflow risks inside GitHub code scanning, which makes MCP and instruction-risk findings visible in existing security review surfaces.
 
 ## OSS Maintainer Value
