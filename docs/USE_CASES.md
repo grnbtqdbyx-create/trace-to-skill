@@ -53,7 +53,7 @@ What it proves:
 Recommended CI surface:
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.73
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.74
   with:
     mode: all
     doctor-threshold: "85"
@@ -151,12 +151,13 @@ npx trace-to-skill usage-evidence ./usage-notes.md --output usage-evidence.md
 npx trace-to-skill usage-evidence ./usage-notes.md --format json
 ```
 
-This turns Markdown polling tables, CSV-like rows, JSON/JSONL snapshots, `reset_at` values, usage-limit errors, `Token usage: total=... cached` lines, `write_stdin` polling, compaction loops, retry/tool loops, subagent fan-out, and idle-drain notes into a single report with a usage receipt.
+This turns Markdown polling tables, CSV-like rows, JSON/JSONL snapshots, `reset_at` values, usage-limit errors, rapid drain experiment notes like `1% in 4 minutes`, `22 credits`, or `70% weekly in a day`, `Token usage: total=... cached` lines, `write_stdin` polling, compaction loops, retry/tool loops, subagent fan-out, and idle-drain notes into a single report with a usage receipt.
 
 The receipt separates:
 
 - backend quota-window percentage evidence
 - local token totals, including cached input and reasoning
+- bounded rapid-drain experiment rows with model, plan, prompt count, elapsed time, percent, and credits when present
 - orchestration-overhead signals that may burn usage without accepted work
 - suspected cause buckets to keep public reports comparable
 

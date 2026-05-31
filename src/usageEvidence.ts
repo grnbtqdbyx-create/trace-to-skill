@@ -9,7 +9,8 @@ export type UsageEvidenceFindingKind =
   | "usage_limit_with_remaining_quota"
   | "high_cached_input"
   | "high_total_tokens"
-  | "orchestration_overhead_signal";
+  | "orchestration_overhead_signal"
+  | "rapid_quota_drain_experiment";
 
 export interface UsageSnapshot {
   source: string;
@@ -46,6 +47,19 @@ export interface UsageOverheadSignal {
   excerpt: string;
 }
 
+export interface UsageDrainExperiment {
+  source: string;
+  line: number;
+  window: string;
+  percentDelta?: number;
+  credits?: number;
+  promptCount?: number;
+  durationMinutes?: number;
+  model?: string;
+  plan?: string;
+  excerpt: string;
+}
+
 export interface UsageReceipt {
   quotaWindows: Array<{
     window: string;
@@ -61,6 +75,7 @@ export interface UsageReceipt {
     output?: number;
     reasoning?: number;
   };
+  drainExperiments: UsageDrainExperiment[];
   overheadSignals: UsageOverheadSignal[];
   suspectedCauses: string[];
 }
@@ -84,10 +99,12 @@ export interface UsageEvidenceResult {
     usageLimitSignals: number;
     resetDriftWindows: number;
     highCachedInputRecords: number;
+    drainExperiments: number;
     overheadSignals: number;
   };
   snapshots: UsageSnapshot[];
   tokenUsage: TokenUsageRecord[];
+  drainExperiments: UsageDrainExperiment[];
   receipt: UsageReceipt;
   findings: UsageEvidenceFinding[];
   checklist: string[];
@@ -108,6 +125,7 @@ export function buildUsageEvidenceFromInputs(inputs: TraceInput[]): UsageEvidenc
   const tokenUsage: TokenUsageRecord[] = [];
   const usageLimitSignals: UsageLimitSignal[] = [];
   const overheadSignals: UsageOverheadSignal[] = [];
+  const drainExperiments: UsageDrainExperiment[] = [];
 
   for (const input of inputs) {
     const lines = input.content.split(/\r?\n/);
@@ -136,14 +154,19 @@ export function buildUsageEvidenceFromInputs(inputs: TraceInput[]): UsageEvidenc
         overheadSignals.push(overheadSignal);
       }
 
+      const drainExperiment = parseDrainExperiment(input.path, lineNumber, excerpt);
+      if (drainExperiment) {
+        drainExperiments.push(drainExperiment);
+      }
+
       if (/\b(hit|reached|exceeded).{0,80}\b(usage|rate|quota|weekly|5-hour|5 hour|limit)\b/i.test(excerpt) || /you(?:'|')?ve hit your usage limit/i.test(excerpt)) {
         usageLimitSignals.push({ source: input.path, line: lineNumber, excerpt });
       }
     });
   }
 
-  const findings = buildFindings(snapshots, tokenUsage, usageLimitSignals, overheadSignals);
-  const receipt = buildReceipt(snapshots, tokenUsage, overheadSignals, usageLimitSignals);
+  const findings = buildFindings(snapshots, tokenUsage, usageLimitSignals, overheadSignals, drainExperiments);
+  const receipt = buildReceipt(snapshots, tokenUsage, overheadSignals, usageLimitSignals, drainExperiments);
   return {
     generatedAt: new Date().toISOString(),
     status: findings.length > 0 ? "warn" : "pass",
@@ -154,10 +177,12 @@ export function buildUsageEvidenceFromInputs(inputs: TraceInput[]): UsageEvidenc
       usageLimitSignals: usageLimitSignals.length,
       resetDriftWindows: findings.filter((finding) => finding.kind === "reset_timestamp_drift").length,
       highCachedInputRecords: findings.filter((finding) => finding.kind === "high_cached_input").length,
+      drainExperiments: drainExperiments.length,
       overheadSignals: overheadSignals.length
     },
     snapshots,
     tokenUsage,
+    drainExperiments,
     receipt,
     findings,
     checklist: [
@@ -166,6 +191,7 @@ export function buildUsageEvidenceFromInputs(inputs: TraceInput[]): UsageEvidenc
       "Capture before/after `/status` output, usage dashboard timestamp, and timezone for every reset value.",
       "Note whether a prompt was running during reset and whether an outage or compensation reset was announced.",
       "Include token totals when available: total, input, cached input, output, and reasoning.",
+      "If reporting a sudden burn regression, add a tiny experiment row with model, plan, prompt count, elapsed time, percent or credits consumed, and before/after usage state.",
       "Separate quota-window percentage changes from local token totals and orchestration overhead signals.",
       "Add one minimal reproduction or polling table that shows the percentage and reset timestamp changing."
     ]
@@ -186,6 +212,7 @@ export function renderUsageEvidenceMarkdown(result: UsageEvidenceResult): string
     `- Usage limit signals: ${result.summary.usageLimitSignals}`,
     `- Reset drift windows: ${result.summary.resetDriftWindows}`,
     `- High cached-input records: ${result.summary.highCachedInputRecords}`,
+    `- Drain experiments: ${result.summary.drainExperiments}`,
     `- Overhead signals: ${result.summary.overheadSignals}`,
     ""
   ];
@@ -235,6 +262,31 @@ export function renderUsageEvidenceMarkdown(result: UsageEvidenceResult): string
     formatNumber(result.receipt.localTokenTotals.reasoning)
   ].join(" | ").replace(/^/, "| ").replace(/$/, " |"));
   lines.push("");
+
+  lines.push("### Drain Experiments", "");
+  if (result.receipt.drainExperiments.length === 0) {
+    lines.push("_No rapid quota-drain experiment rows found._", "");
+  } else {
+    lines.push("| Source | Line | Window | Percent/Credits | Duration | Prompts | Model | Plan |");
+    lines.push("| --- | ---: | --- | --- | ---: | ---: | --- | --- |");
+    for (const experiment of result.receipt.drainExperiments.slice(0, 12)) {
+      const amount = [
+        experiment.percentDelta === undefined ? undefined : `${experiment.percentDelta}%`,
+        experiment.credits === undefined ? undefined : `${experiment.credits} credits`
+      ].filter(Boolean).join(" / ");
+      lines.push([
+        escapeCell(experiment.source),
+        String(experiment.line),
+        escapeCell(experiment.window),
+        escapeCell(amount),
+        formatNumber(experiment.durationMinutes),
+        formatNumber(experiment.promptCount),
+        escapeCell(experiment.model ?? ""),
+        escapeCell(experiment.plan ?? "")
+      ].join(" | ").replace(/^/, "| ").replace(/$/, " |"));
+    }
+    lines.push("");
+  }
 
   lines.push("### Overhead Signals", "");
   if (result.receipt.overheadSignals.length === 0) {
@@ -291,6 +343,25 @@ export function renderUsageEvidenceMarkdown(result: UsageEvidenceResult): string
         formatNumber(record.output),
         formatNumber(record.reasoning)
       ].join(" | ").replace(/^/, "| ").replace(/$/, " |"));
+    }
+    lines.push("");
+  }
+
+  lines.push("## Rapid Drain Experiments", "");
+  if (result.drainExperiments.length === 0) {
+    lines.push("_No rapid quota-drain experiment rows found._", "");
+  } else {
+    for (const experiment of result.drainExperiments.slice(0, 20)) {
+      const parts = [
+        `${experiment.window} window`,
+        experiment.percentDelta === undefined ? undefined : `${experiment.percentDelta}%`,
+        experiment.credits === undefined ? undefined : `${experiment.credits} credits`,
+        experiment.durationMinutes === undefined ? undefined : `${experiment.durationMinutes} min`,
+        experiment.promptCount === undefined ? undefined : `${experiment.promptCount} prompts`,
+        experiment.model,
+        experiment.plan
+      ].filter(Boolean);
+      lines.push(`- ${experiment.source}:${experiment.line} - ${parts.join(", ")} - ${experiment.excerpt}`);
     }
     lines.push("");
   }
@@ -430,11 +501,43 @@ function parseOverheadSignal(source: string, line: number, excerpt: string): Usa
   return kind ? { kind, source, line, excerpt } : undefined;
 }
 
+function parseDrainExperiment(source: string, line: number, excerpt: string): UsageDrainExperiment | undefined {
+  const hasDrainLanguage = /\b(burn(?:ed|ing|t| through)?|drain(?:ed|ing)?|deplet(?:ed|ing|e)|consum(?:ed|ing|e)|lost|dropped|drop|used)\b.{0,120}\b(usage|quota|limit|weekly|5[- ]?hour|credits?|percent|%)\b/i.test(excerpt) ||
+    /\b(usage|quota|limit|weekly|5[- ]?hour|credits?|percent|%)\b.{0,120}\b(burn(?:ed|ing|t| through)?|drain(?:ed|ing)?|deplet(?:ed|ing|e)|consum(?:ed|ing|e)|lost|dropped|drop|used)\b/i.test(excerpt);
+  const hasExperimentShape = /\b(prompt|experiment|minute|second|hour|day|credits?|weekly|5[- ]?hour|normal workload|same workload)\b/i.test(excerpt);
+  if (!hasDrainLanguage || !hasExperimentShape) {
+    return undefined;
+  }
+
+  const percentDelta = parseDrainPercent(excerpt);
+  const credits = numberAfter(excerpt, /\bconsumed\s+([0-9][0-9,]*)\s+credits?\b/i) ??
+    numberAfter(excerpt, /\b([0-9][0-9,]*)\s+credits?\b/i);
+  const promptCount = parsePromptCount(excerpt);
+  const durationMinutes = parseDurationMinutes(excerpt);
+  if (percentDelta === undefined && credits === undefined && promptCount === undefined && durationMinutes === undefined) {
+    return undefined;
+  }
+
+  return {
+    source,
+    line,
+    window: normalizeWindow(undefined, excerpt),
+    percentDelta,
+    credits,
+    promptCount,
+    durationMinutes,
+    model: parseModel(excerpt),
+    plan: parsePlan(excerpt),
+    excerpt
+  };
+}
+
 function buildFindings(
   snapshots: UsageSnapshot[],
   tokenUsage: TokenUsageRecord[],
   usageLimitSignals: UsageLimitSignal[],
-  overheadSignals: UsageOverheadSignal[]
+  overheadSignals: UsageOverheadSignal[],
+  drainExperiments: UsageDrainExperiment[]
 ): UsageEvidenceFinding[] {
   const findings: UsageEvidenceFinding[] = [];
   const byWindow = new Map<string, UsageSnapshot[]>();
@@ -521,6 +624,24 @@ function buildFindings(
     });
   }
 
+  for (const experiment of drainExperiments) {
+    const severePercent = (experiment.percentDelta ?? 0) >= 20;
+    const severeCredits = (experiment.credits ?? 0) >= 10;
+    const fastMeasuredDrain = experiment.durationMinutes !== undefined && experiment.durationMinutes <= 60 && ((experiment.percentDelta ?? 0) >= 1 || (experiment.credits ?? 0) >= 1);
+    if (!severePercent && !severeCredits && !fastMeasuredDrain) {
+      continue;
+    }
+
+    findings.push({
+      kind: "rapid_quota_drain_experiment",
+      severity: severePercent || severeCredits ? "high" : "medium",
+      title: "Rapid quota drain experiment",
+      why: "The evidence describes a bounded prompt/time experiment where Codex usage, quota percentage, or credits dropped quickly under a stated workload.",
+      evidence: [{ file: experiment.source, line: experiment.line, excerpt: experiment.excerpt }],
+      nextStep: "Include before/after quota screenshots or /status output plus model, plan, reasoning/speed mode, prompt count, elapsed time, and whether subagents or fast mode were enabled."
+    });
+  }
+
   return dedupeFindings(findings);
 }
 
@@ -528,7 +649,8 @@ function buildReceipt(
   snapshots: UsageSnapshot[],
   tokenUsage: TokenUsageRecord[],
   overheadSignals: UsageOverheadSignal[],
-  usageLimitSignals: UsageLimitSignal[]
+  usageLimitSignals: UsageLimitSignal[],
+  drainExperiments: UsageDrainExperiment[]
 ): UsageReceipt {
   const byWindow = new Map<string, UsageSnapshot[]>();
   for (const snapshot of snapshots) {
@@ -559,6 +681,9 @@ function buildReceipt(
   if (usageLimitSignals.length > 0 || snapshots.length > 0) {
     suspectedCauses.add("quota-window or dashboard accounting");
   }
+  if (drainExperiments.length > 0) {
+    suspectedCauses.add("rapid quota-drain experiment");
+  }
   if (tokenUsage.some((record) => record.cachedInput !== undefined && record.cachedInput >= 1_000_000)) {
     suspectedCauses.add("large cached-context replay");
   }
@@ -579,6 +704,7 @@ function buildReceipt(
   return {
     quotaWindows,
     localTokenTotals,
+    drainExperiments,
     overheadSignals,
     suspectedCauses: [...suspectedCauses].sort((a, b) => a.localeCompare(b))
   };
@@ -656,6 +782,60 @@ function parseNaturalPercent(value: string): number | undefined {
 
   const percent = Number(match[1]);
   return Number.isFinite(percent) && percent >= 0 && percent <= 100 ? percent : undefined;
+}
+
+function parseDrainPercent(value: string): number | undefined {
+  const matches = [...value.matchAll(/\b([0-9]{1,3})(?:\.[0-9]+)?\s*(?:%|percent|pct)/gi)]
+    .map((match) => Number(match[1]))
+    .filter((percent) => Number.isFinite(percent) && percent >= 0 && percent <= 100);
+  if (matches.length === 0) {
+    return undefined;
+  }
+
+  return Math.max(...matches);
+}
+
+function parsePromptCount(value: string): number | undefined {
+  if (/\b(single|one)\s+prompt\b/i.test(value)) {
+    return 1;
+  }
+
+  if (/\bfew\s+prompts?\b/i.test(value)) {
+    return 3;
+  }
+
+  return numberAfter(value, /\b([0-9][0-9,]*)\s+(?:prompts?|requests?|messages?)\b/i);
+}
+
+function parseDurationMinutes(value: string): number | undefined {
+  if (/\bsingle day\b/i.test(value)) {
+    return 24 * 60;
+  }
+
+  const day = value.match(/\b(?:within|in|over|after)?\s*([0-9]+(?:\.[0-9]+)?)\s+days?\b/i);
+  if (day) {
+    return Math.round(Number(day[1]) * 24 * 60);
+  }
+
+  const hour = value.match(/\b(?:within|in|over|after)?\s*([0-9]+(?:\.[0-9]+)?)\s+hours?\b/i);
+  const minute = value.match(/\b(?:within|in|over|after)?\s*([0-9]+(?:\.[0-9]+)?)\s+minutes?\b/i);
+  const second = value.match(/\b([0-9]+(?:\.[0-9]+)?)\s+seconds?\b/i);
+  if (!hour && !minute && !second) {
+    return undefined;
+  }
+
+  const total = (hour ? Number(hour[1]) * 60 : 0) + (minute ? Number(minute[1]) : 0) + (second ? Number(second[1]) / 60 : 0);
+  return Number.isFinite(total) ? Math.round(total * 100) / 100 : undefined;
+}
+
+function parseModel(value: string): string | undefined {
+  const match = value.match(/\b(?:GPT[- ]?)?[0-9](?:\.[0-9])?(?:\s*codex)?\b/i);
+  return cleanValue(match?.[0]);
+}
+
+function parsePlan(value: string): string | undefined {
+  const match = value.match(/\b(Free|Plus|Pro|Business|Team|Enterprise)\b/i);
+  return match ? match[1] : undefined;
 }
 
 function parseResetAt(value: string): string | undefined {

@@ -3,7 +3,7 @@
   "$id": "https://github.com/grnbtqdbyx-create/trace-to-skill/schemas/usage-evidence-result.schema.json",
   "title": "trace-to-skill Codex usage evidence result",
   "type": "object",
-  "required": ["generatedAt", "status", "inputs", "summary", "snapshots", "tokenUsage", "receipt", "findings", "checklist"],
+  "required": ["generatedAt", "status", "inputs", "summary", "snapshots", "tokenUsage", "drainExperiments", "receipt", "findings", "checklist"],
   "additionalProperties": false,
   "properties": {
     "generatedAt": {
@@ -20,7 +20,7 @@
     },
     "summary": {
       "type": "object",
-      "required": ["snapshots", "tokenUsageRecords", "usageLimitSignals", "resetDriftWindows", "highCachedInputRecords", "overheadSignals"],
+      "required": ["snapshots", "tokenUsageRecords", "usageLimitSignals", "resetDriftWindows", "highCachedInputRecords", "drainExperiments", "overheadSignals"],
       "additionalProperties": false,
       "properties": {
         "snapshots": {
@@ -43,6 +43,10 @@
           "type": "integer",
           "minimum": 0
         },
+        "drainExperiments": {
+          "type": "integer",
+          "minimum": 0
+        },
         "overheadSignals": {
           "type": "integer",
           "minimum": 0
@@ -59,6 +63,12 @@
       "type": "array",
       "items": {
         "$ref": "#/$defs/tokenUsage"
+      }
+    },
+    "drainExperiments": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/drainExperiment"
       }
     },
     "receipt": {
@@ -151,7 +161,8 @@
             "usage_limit_with_remaining_quota",
             "high_cached_input",
             "high_total_tokens",
-            "orchestration_overhead_signal"
+            "orchestration_overhead_signal",
+            "rapid_quota_drain_experiment"
           ]
         },
         "severity": {
@@ -193,7 +204,7 @@
     },
     "receipt": {
       "type": "object",
-      "required": ["quotaWindows", "localTokenTotals", "overheadSignals", "suspectedCauses"],
+      "required": ["quotaWindows", "localTokenTotals", "drainExperiments", "overheadSignals", "suspectedCauses"],
       "additionalProperties": false,
       "properties": {
         "quotaWindows": {
@@ -204,6 +215,12 @@
         },
         "localTokenTotals": {
           "$ref": "#/$defs/localTokenTotals"
+        },
+        "drainExperiments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/drainExperiment"
+          }
         },
         "overheadSignals": {
           "type": "array",
@@ -263,6 +280,44 @@
         },
         "reasoning": {
           "type": "number"
+        }
+      }
+    },
+    "drainExperiment": {
+      "type": "object",
+      "required": ["source", "line", "window", "excerpt"],
+      "additionalProperties": false,
+      "properties": {
+        "source": {
+          "type": "string"
+        },
+        "line": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "window": {
+          "type": "string"
+        },
+        "percentDelta": {
+          "type": "number"
+        },
+        "credits": {
+          "type": "number"
+        },
+        "promptCount": {
+          "type": "number"
+        },
+        "durationMinutes": {
+          "type": "number"
+        },
+        "model": {
+          "type": "string"
+        },
+        "plan": {
+          "type": "string"
+        },
+        "excerpt": {
+          "type": "string"
         }
       }
     },

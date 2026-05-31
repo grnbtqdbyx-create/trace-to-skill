@@ -73,9 +73,9 @@ trace-to-skill checks repo readiness and scans agent traces/logs to generate:
 - Codex resume/session-state detection for large JSONL histories, sluggish Desktop thread rendering, dropped recent context, archived chat failures, and SQLite migration drift
 - Codex Thinking/Working hang detection for accepted turns, completed local tools, delayed first `response_item`, `responses_http` `time.busy` / `time.idle`, stop/interrupt failures, MCP state, and subagent parent/child lifecycle evidence
 - Codex clipboard/pasted-text attachment detection for missing `Copy as Markdown`, long prompts becoming `Pasted text.txt`, `/goal` ignoring non-empty fileAttachments, and missing in-app preview/edit/revert actions
-- Codex token-burn attribution for background polling, idle app usage, compaction tax, retry loops, cached-token-heavy turns, and fast-mode/subagent drift
+- Codex token-burn attribution for rapid drain experiments, background polling, idle app usage, compaction tax, retry loops, cached-token-heavy turns, and fast-mode/subagent drift
 - Codex usage reset drift detection for moving weekly reset anchors, lost saved usage, and `/status` versus dashboard reset discrepancies
-- a `usage-evidence` command that turns scattered `/status`, reset-table, usage-limit, token-total, cached-input, and overhead snippets into a single Codex usage receipt
+- a `usage-evidence` command that turns scattered `/status`, reset-table, usage-limit, rapid drain experiment, token-total, cached-input, and overhead snippets into a single Codex usage receipt
 - a `process-audit` command that turns Task Manager, System Informer, `Get-CimInstance`, `ps`, or `top` snippets into a privacy-aware process report for PowerShell polling and high-CPU helper issues
 - Codex deeplink/OAuth launch detection for `codex://oauth_callback`, notification `type=click&tag`, AppX/MSIX protocol evidence, mobile links, and `codex app <path>` routing regressions
 - Codex app connector auth-cache detection for `401 Reauthentication required`, stale `link_*`, `isAccessible: false`, and external MCP workaround evidence

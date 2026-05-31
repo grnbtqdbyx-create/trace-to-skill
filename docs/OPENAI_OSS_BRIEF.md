@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Repository | https://github.com/grnbtqdbyx-create/trace-to-skill |
-| Package | trace-to-skill@0.1.73 |
+| Package | trace-to-skill@0.1.74 |
 | License | Apache-2.0 |
 | Codex readiness | ready (100/100) |
 | Benchmark | pass, 33 cases |
@@ -27,7 +27,7 @@ API credits would power optional maintainer workflows on top of the local determ
 ## Evidence
 
 - Public repository: https://github.com/grnbtqdbyx-create/trace-to-skill
-- One-command package: npx trace-to-skill@0.1.73
+- One-command package: npx trace-to-skill@0.1.74
 - Open-source license: Apache-2.0
 - Codex readiness doctor: ready, 100/100, 0 failed checks.
 - Public fixture benchmark: pass, 33 cases.

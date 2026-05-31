@@ -22,7 +22,7 @@ npx trace-to-skill lsp-audit . --format json
 
 | OpenAI/Codex issue cluster | Common signals | Finding kind | Best command |
 | --- | --- | --- | --- |
-| Token burn and usage drain | `tokens burning very fast`, large cached input totals, `write_stdin` empty polls, idle app usage, compaction tax, retry loops, subagent fan-out | `codex_token_burn` plus usage receipt | `trace-to-skill usage-evidence ./usage-notes.md` first, then `trace-to-skill codex-report ./runs` for trace reports |
+| Token burn and usage drain | `tokens burning very fast`, `1% in 4 minutes`, `22 credits`, large cached input totals, `write_stdin` empty polls, idle app usage, compaction tax, retry loops, subagent fan-out | `codex_token_burn` plus usage receipt | `trace-to-skill usage-evidence ./usage-notes.md` first, then `trace-to-skill codex-report ./runs` for trace reports |
 | Usage reset schedule drift | weekly reset time changes, `reset_at` jumps, saved quota is wiped or pushed into the next window, outage compensation reset changes the anchor | `codex_usage_reset_drift` | `trace-to-skill usage-evidence ./usage-notes.md` or `trace-to-skill codex-report ./runs` |
 | Remote compact task failures | `/compact` or auto-compact fails, `responses/compact` stream disconnects, `timeout waiting for child process to exit`, `tcp_user_timeout` or `stream_idle_timeout_ms` workarounds, provider-id timeout drift | `codex_remote_compact` | `trace-to-skill codex-report ./runs` |
 | Windows helper and bundled tool path failures | bundled `rg.exe`, `node_repl.exe`, `codex-command-runner.exe`, Browser, Chrome, or Computer Use helpers resolve through `WindowsApps`, missing `%LOCALAPPDATA%\OpenAI\Codex\bin`, broken LocalCache helper bins, `CodexSandboxUsers` ACL gaps, EFS/copyfile failures | `codex_windows_helper_path` | `trace-to-skill codex-report ./runs` |
@@ -90,7 +90,7 @@ npx trace-to-skill lsp-audit . --format json
 - For sensitive-file reports, attach only redacted excerpts and the file path/class, not the original credential material.
 - For preflight exclusion reports, attach `sensitive-audit` output and recommended exclude globs; it does not read file contents or follow symlink targets.
 - For LSP readiness reports, attach `lsp-audit` output so maintainers can see detected languages, evidence files, missing server commands, and install hints without auto-installing tools.
-- For token-burn reports, attach `usage-evidence` output so quota-window percentages, local token totals, cached input, and orchestration-overhead signals are not collapsed into one ambiguous symptom.
+- For token-burn reports, attach `usage-evidence` output so quota-window percentages, rapid drain experiments, local token totals, cached input, and orchestration-overhead signals are not collapsed into one ambiguous symptom.
 
 ## Related OpenAI/Codex Threads Used For Fixtures
 
