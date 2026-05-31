@@ -10,6 +10,7 @@ Use it when you want to file a concise Codex issue, deduplicate reports, or conv
 npx trace-to-skill redact ./runs --output redacted-runs
 npx trace-to-skill analyze redacted-runs --format json
 npx trace-to-skill codex-report redacted-runs --output openai-codex-issue.md
+npx trace-to-skill plugin-audit ~/.codex --app /Applications/Codex.app --format json
 npx trace-to-skill diagnostics-bundle ~/.codex --output codex-diagnostics
 ```
 
@@ -26,6 +27,7 @@ npx trace-to-skill diagnostics-bundle ~/.codex --output codex-diagnostics
 | Latency regressions | GPT-5.5 Fast feels like Standard, simple tasks take 10-20+ minutes, pre-first-token or thinking stalls, slow search/read/compaction, hours for small code changes | `codex_latency_regression` | `trace-to-skill codex-report ./runs` |
 | Approval persistence and MCP approval friction | `Approve for this session` is not remembered, command approval cache misses, repeated file-change approvals, `approval_policy = "never"` still prompts for MCP tools, per-tool approval configs explode | `codex_approval_friction` | `trace-to-skill codex-report ./runs` |
 | Config and Preferences drift | legacy `profile` / `[profiles.*]`, `configVersionConflict`, Preferences `Unable to save`, stale model pin, missing `default_permissions` profile, enabled plugin cache missing, Windows elevated sandbox mode | `sandbox_permission`, `codex_plugin_runtime`, `codex_approval_friction` | `trace-to-skill config-audit ~/.codex --format json` |
+| Bundled plugin cache and marketplace drift | Computer Use unavailable, Browser/Chrome plugin unavailable, generated runtime marketplace omits bundled plugins, missing `.mcp.json` or `plugin.json`, helper app not installed, `CODEX_HOME` points at another runtime | `codex_plugin_runtime`, `codex_mcp_runtime` | `trace-to-skill plugin-audit ~/.codex --app /Applications/Codex.app --format json` |
 | Support diagnostics packaging | maintainers ask for more detail, but raw `config.toml`, `logs_2.sqlite`, `state_5.sqlite`, `session_index.jsonl`, rollout JSONL, or local logs are too private to post | multiple | `trace-to-skill diagnostics-bundle ~/.codex --output codex-diagnostics` |
 | Quota mismatch | `/status` or usage page shows quota left, but runtime says `You've hit your usage limit`; account/workspace reset or cache confusion | `quota_mismatch` | `trace-to-skill codex-report ./runs` |
 | Sensitive file exclusion | `.env`, private keys, `.npmrc`, cloud credentials, local databases, or production secret manifests entered agent context | `sensitive_file_access` | `trace-to-skill codex-report ./runs` |
@@ -57,7 +59,7 @@ npx trace-to-skill diagnostics-bundle ~/.codex --output codex-diagnostics
 - Include pre-first-token, thinking, tool, search, read, and compaction timings plus model/speed settings for latency regressions.
 - Include selected approval scope, displayed vs executed command, MCP server/tool names, visible args, repeated prompt count, and config snippets for approval-friction reports.
 - Include `config-audit` output for Preferences/config, sandbox, model-pin, MCP approval, and plugin-cache reports.
-- Include plugin name/version, cache path, helper path, native pipe env vars, settings/plugin-list errors, and restart behavior for plugin runtime failures.
+- Include `plugin-audit` output, plugin name/version, cache path, helper path, manifest path, runtime marketplace, app-bundle marketplace, native pipe env vars, settings/plugin-list errors, and restart behavior for plugin runtime failures.
 - Include app version, OS, screenshot or screen recording, menu/shortcut used, workspace attachment state, file-tree icon visibility, floating-panel refresh behavior, file preview extension, and persisted panel-state keys for file-tree UI failures.
 - Include the latest user request, stale earlier prompt/response, compaction timing, context size, and feedback/thread id for latest-turn drift.
 - Include line-linked evidence rather than screenshots alone when logs are available.

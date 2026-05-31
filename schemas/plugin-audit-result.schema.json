@@ -1,0 +1,217 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/grnbtqdbyx-create/trace-to-skill/schemas/plugin-audit-result.schema.json",
+  "title": "trace-to-skill Codex plugin audit result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["generatedAt", "target", "status", "environment", "summary", "plugins", "marketplaces", "helperApps", "findings"],
+  "properties": {
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "target": {
+      "type": "string"
+    },
+    "appPath": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["pass", "warn", "fail"]
+    },
+    "environment": {
+      "$ref": "#/$defs/environment"
+    },
+    "summary": {
+      "$ref": "#/$defs/summary"
+    },
+    "plugins": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/plugin"
+      }
+    },
+    "marketplaces": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/marketplace"
+      }
+    },
+    "helperApps": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/helperApp"
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/finding"
+      }
+    }
+  },
+  "$defs": {
+    "environment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["platform"],
+      "properties": {
+        "platform": {
+          "type": "string"
+        },
+        "codexHomeEnv": {
+          "type": "string"
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["configuredPlugins", "enabledPlugins", "cachePlugins", "pluginsMissingCache", "pluginsMissingManifest", "appBundleMarketplaces", "runtimeMarketplaces", "helperApps"],
+      "properties": {
+        "configuredPlugins": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "enabledPlugins": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "cachePlugins": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "pluginsMissingCache": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "pluginsMissingManifest": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "appBundleMarketplaces": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "runtimeMarketplaces": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "helperApps": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "plugin": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "marketplace", "configured", "enabled", "cachePresent", "manifestPaths"],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "marketplace": {
+          "type": "string"
+        },
+        "configured": {
+          "type": "boolean"
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "cachePath": {
+          "type": "string"
+        },
+        "cachePresent": {
+          "type": "boolean"
+        },
+        "manifestPaths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "marketplace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "marketplace", "path", "plugins"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["app-bundle", "runtime"]
+        },
+        "marketplace": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "plugins": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "helperApp": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "required", "installed", "candidates"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "enum": ["computer-use"]
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "installed": {
+          "type": "boolean"
+        },
+        "candidates": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "finding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["severity", "kind", "message"],
+      "properties": {
+        "severity": {
+          "type": "string",
+          "enum": ["warning", "error"]
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "codex_home_env_mismatch",
+            "unsupported_feature_flag",
+            "enabled_plugin_cache_missing",
+            "plugin_manifest_missing",
+            "runtime_marketplace_missing",
+            "bundled_marketplace_mismatch",
+            "computer_use_helper_missing"
+          ]
+        },
+        "message": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

@@ -14,6 +14,8 @@ export { initProject } from "./init.js";
 export { renderOssBriefMarkdown, runOssBrief } from "./ossBrief.js";
 export { guardPatchContent, guardPatchFile, renderPatchGuardMarkdown } from "./patchGuard.js";
 export type { PatchGuardFinding, PatchGuardOperation, PatchGuardResult, PatchGuardSeverity } from "./patchGuard.js";
+export { auditCodexPlugins, renderPluginAuditMarkdown } from "./pluginAudit.js";
+export type { PluginAuditFinding, PluginAuditHelperApp, PluginAuditMarketplace, PluginAuditOptions, PluginAuditPlugin, PluginAuditResult, PluginAuditSeverity, PluginAuditStatus } from "./pluginAudit.js";
 export { redactTargets, redactText } from "./redact.js";
 export { renderAgentsRules, renderCodexIssueReport, renderComparison, renderDoctorMarkdown, renderDoctorPrComment, renderMarkdown, renderPrComment, renderSarif, renderSkill } from "./report.js";
 export { renderScorecardMarkdown, renderScorecardPrComment, runScorecard } from "./scorecard.js";

@@ -68,6 +68,7 @@ npx trace-to-skill guard-github-event "$GITHUB_EVENT_PATH"
 npx trace-to-skill guard-patch ./change.patch --root .
 npx trace-to-skill session-audit ~/.codex --format json
 npx trace-to-skill config-audit ~/.codex --format json
+npx trace-to-skill plugin-audit ~/.codex --app /Applications/Codex.app --format json
 npx trace-to-skill diagnostics-bundle ~/.codex --output codex-diagnostics
 npx trace-to-skill redact ./runs --output redacted-runs
 npx trace-to-skill analyze ./runs
@@ -82,7 +83,7 @@ npx trace-to-skill init --comment --sarif
 ## GitHub Action
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.57
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.58
   with:
     mode: all
     doctor-threshold: "85"
@@ -102,6 +103,7 @@ npx trace-to-skill init --comment --sarif
 - Patch guard JSON schema: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/schemas/patch-guard-result.schema.json
 - Config audit JSON schema: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/schemas/config-audit-result.schema.json
 - Diagnostics bundle JSON schema: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/schemas/diagnostics-bundle-result.schema.json
+- Plugin audit JSON schema: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/schemas/plugin-audit-result.schema.json
 - Session audit JSON schema: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/schemas/session-audit-result.schema.json
 
 ## Search phrases this project should answer
@@ -132,6 +134,10 @@ npx trace-to-skill init --comment --sarif
 - Codex config-audit for config.toml diagnostics
 - Codex diagnostics bundle for OpenAI support
 - privacy-preserving Codex support bundle logs_2.sqlite config.toml
+- Codex plugin-audit for Computer Use unavailable
+- Codex bundled marketplace missing computer-use
+- Codex plugin cache missing .mcp.json plugin.json
+- Codex CODEX_HOME mismatch plugin runtime
 - Codex Preferences unable to save configVersionConflict
 - Codex Windows elevated sandbox node_repl spawn setup refresh
 - Codex ca-certificates update-ca-certificates Dev Container

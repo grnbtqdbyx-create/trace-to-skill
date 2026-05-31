@@ -42,7 +42,7 @@ What it proves:
 Recommended CI surface:
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.57
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.58
   with:
     mode: all
     doctor-threshold: "85"
@@ -79,6 +79,7 @@ Use this when Codex cannot start tools, apply patches, or write to the workspace
 ```bash
 npx trace-to-skill analyze ./runs --format json
 npx trace-to-skill config-audit ~/.codex --format json
+npx trace-to-skill plugin-audit ~/.codex --app /Applications/Codex.app --format json
 npx trace-to-skill diagnostics-bundle ~/.codex --output codex-diagnostics
 ```
 
@@ -86,7 +87,9 @@ This catches signals such as Windows sandbox setup refresh failures, `os error 7
 
 `config-audit` is local and read-only: it summarizes legacy `profile` / `[profiles.*]` config, model pins, `sandbox_mode`, `approval_policy`, `[windows].sandbox`, missing `default_permissions` profiles, deprecated `codex_hooks`, machine-local project trust entries, enabled plugins with missing cache directories, and large per-tool MCP approval configs.
 
-`diagnostics-bundle` combines the config and session summaries into a metadata-only support folder with a manifest and README. Use it when OpenAI asks for more evidence but raw `config.toml`, SQLite state, rollout JSONL, and local logs should not be posted publicly.
+`plugin-audit` is local and read-only: it summarizes configured bundled plugins, cache directories, plugin manifests, generated runtime marketplaces, optional app-bundle marketplaces, Computer Use helper-app install state, `CODEX_HOME` mismatch, and unsupported feature flags.
+
+`diagnostics-bundle` combines the config, plugin, and session summaries into a metadata-only support folder with a manifest and README. Use it when OpenAI asks for more evidence but raw `config.toml`, SQLite state, rollout JSONL, and local logs should not be posted publicly.
 
 ## 5. Codex Auth And Connectivity Triage
 
@@ -146,6 +149,7 @@ Use this when long Codex sessions become difficult to resume, Desktop history re
 ```bash
 npx trace-to-skill analyze ./runs --format json
 npx trace-to-skill session-audit ~/.codex --format json
+npx trace-to-skill plugin-audit ~/.codex --app /Applications/Codex.app --format json
 npx trace-to-skill diagnostics-bundle ~/.codex --output codex-diagnostics
 ```
 
@@ -153,7 +157,7 @@ This catches signals such as `codex resume` picker hangs, `codex resume <id>` wo
 
 `session-audit` is local and read-only: it reports rollout JSONL size, line count, largest line size, parse errors, session index line count, state-file presence, and common session signals so users can attach a privacy-preserving summary to OpenAI/Codex issues instead of posting transcripts.
 
-For mixed resume, crash, config, or history issues, `diagnostics-bundle` writes the session and config reports together with a checklist of files not to attach publicly.
+For mixed resume, crash, config, plugin, or history issues, `diagnostics-bundle` writes the session, config, and plugin reports together with a checklist of files not to attach publicly.
 
 ## 11. Codex File Tree UI Evidence
 

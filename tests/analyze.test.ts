@@ -16,6 +16,7 @@ import { postPullRequestComment } from "../src/github.js";
 import { initProject } from "../src/init.js";
 import { renderOssBriefMarkdown, runOssBrief } from "../src/ossBrief.js";
 import { guardPatchContent, guardPatchFile, renderPatchGuardMarkdown } from "../src/patchGuard.js";
+import { auditCodexPlugins, renderPluginAuditMarkdown } from "../src/pluginAudit.js";
 import { redactTargets, redactText } from "../src/redact.js";
 import { renderAgentsRules, renderCodexIssueReport, renderComparison, renderDoctorPrComment, renderPrComment, renderSarif, renderSkill } from "../src/report.js";
 import { renderScorecardMarkdown, renderScorecardPrComment, runScorecard } from "../src/scorecard.js";
@@ -595,6 +596,73 @@ test("auditCodexConfig passes a minimal portable config", async () => {
   assert.equal(result.values.sandboxMode, "workspace-write");
 });
 
+test("auditCodexPlugins reports bundled plugin cache and marketplace drift", async () => {
+  const cwd = await mkdtemp(path.join(os.tmpdir(), "trace-to-skill-plugins-"));
+  const homeDir = path.join(cwd, "home");
+  const appPath = path.join(cwd, "Codex.app");
+  const runtimeMarketplace = path.join(cwd, ".tmp/bundled-marketplaces/openai-bundled/.agents/plugins");
+  const appMarketplace = path.join(appPath, "Contents/Resources/plugins/openai-bundled/.agents/plugins");
+  await mkdir(path.join(cwd, "plugins/cache/openai-bundled/computer-use"), { recursive: true });
+  await mkdir(path.join(cwd, "plugins/cache/openai-bundled/browser-use"), { recursive: true });
+  await mkdir(path.join(cwd, "plugins/cache/openai-bundled/browser-use/tool"), { recursive: true });
+  await mkdir(runtimeMarketplace, { recursive: true });
+  await mkdir(appMarketplace, { recursive: true });
+  await writeFile(path.join(cwd, "plugins/cache/openai-bundled/browser-use/tool/.mcp.json"), "{}", "utf8");
+  await writeFile(path.join(runtimeMarketplace, "marketplace.json"), JSON.stringify({ plugins: ["browser-use"] }), "utf8");
+  await writeFile(path.join(appMarketplace, "marketplace.json"), JSON.stringify({ plugins: ["browser-use", "computer-use"] }), "utf8");
+  await writeFile(path.join(cwd, "config.toml"), [
+    "[features]",
+    "workspace_dependencies = true",
+    "",
+    "[plugins.\"computer-use@openai-bundled\"]",
+    "enabled = true",
+    "",
+    "[plugins.\"missing@openai-bundled\"]",
+    "enabled = true",
+    ""
+  ].join("\n"), "utf8");
+
+  const result = await auditCodexPlugins(cwd, {
+    appPath,
+    env: { CODEX_HOME: path.join(cwd, "other-home") },
+    platform: "darwin",
+    homeDir
+  });
+  const markdown = renderPluginAuditMarkdown(result);
+  const kinds = result.findings.map((finding) => finding.kind);
+
+  assert.equal(result.status, "warn");
+  assert.equal(result.summary.enabledPlugins, 2);
+  assert.equal(result.summary.cachePlugins, 2);
+  assert.ok(kinds.includes("codex_home_env_mismatch"));
+  assert.ok(kinds.includes("unsupported_feature_flag"));
+  assert.ok(kinds.includes("enabled_plugin_cache_missing"));
+  assert.ok(kinds.includes("plugin_manifest_missing"));
+  assert.ok(kinds.includes("bundled_marketplace_mismatch"));
+  assert.ok(kinds.includes("computer_use_helper_missing"));
+  assert.match(markdown, /Codex Plugin Audit/);
+  assert.match(markdown, /computer-use@openai-bundled/);
+});
+
+test("auditCodexPlugins passes a healthy cached plugin", async () => {
+  const cwd = await mkdtemp(path.join(os.tmpdir(), "trace-to-skill-plugins-"));
+  const pluginDir = path.join(cwd, "plugins/cache/openai-bundled/browser-use/tool");
+  await mkdir(pluginDir, { recursive: true });
+  await writeFile(path.join(pluginDir, ".mcp.json"), "{}", "utf8");
+  await writeFile(path.join(cwd, "config.toml"), [
+    "[plugins.\"browser-use@openai-bundled\"]",
+    "enabled = true",
+    ""
+  ].join("\n"), "utf8");
+
+  const result = await auditCodexPlugins(cwd, { env: {}, platform: "linux" });
+
+  assert.equal(result.status, "pass");
+  assert.equal(result.summary.enabledPlugins, 1);
+  assert.equal(result.summary.pluginsMissingManifest, 0);
+  assert.equal(result.findings.length, 0);
+});
+
 test("createDiagnosticsBundle writes metadata-only Codex support reports", async () => {
   const cwd = await mkdtemp(path.join(os.tmpdir(), "trace-to-skill-bundle-"));
   const outputDir = path.join(cwd, "bundle");
@@ -622,13 +690,15 @@ test("createDiagnosticsBundle writes metadata-only Codex support reports", async
   assert.equal(result.privacy.mode, "metadata-only");
   assert.equal(result.privacy.rawFilesIncluded, false);
   assert.equal(result.summary.configStatus, "warn");
+  assert.equal(result.summary.pluginStatus, "pass");
   assert.equal(result.summary.sessionStatus, "pass");
-  assert.equal(result.recommendedAttachments.length, 6);
+  assert.equal(result.recommendedAttachments.length, 8);
   assert.deepEqual(manifest.recommendedAttachments, result.recommendedAttachments);
   assert.match(markdown, /Diagnostics Bundle/);
   assert.match(readme, /Do Not Publicly Attach/);
   assert.match(readme, /logs_2\.sqlite/);
   assert.match(configJson, /legacy_profile_config/);
+  assert.match(await readFile(path.join(outputDir, "plugin-audit.json"), "utf8"), /"plugins"/);
   assert.doesNotMatch(sessionJson, /private prompt is not copied/);
 });
 
@@ -1284,6 +1354,11 @@ test("published JSON schemas describe CLI result contracts", async () => {
     properties: Record<string, unknown>;
     $defs: Record<string, unknown>;
   };
+  const pluginAuditSchema = JSON.parse(await readFile("schemas/plugin-audit-result.schema.json", "utf8")) as {
+    required: string[];
+    properties: Record<string, unknown>;
+    $defs: Record<string, unknown>;
+  };
   const sessionAuditSchema = JSON.parse(await readFile("schemas/session-audit-result.schema.json", "utf8")) as {
     required: string[];
     properties: Record<string, unknown>;
@@ -1336,6 +1411,9 @@ test("published JSON schemas describe CLI result contracts", async () => {
   assert.deepEqual(diagnosticsBundleSchema.required, ["generatedAt", "target", "outputDir", "status", "privacy", "summary", "recommendedAttachments", "reports"]);
   assert.ok(diagnosticsBundleSchema.properties.privacy);
   assert.ok(diagnosticsBundleSchema.$defs.report);
+  assert.deepEqual(pluginAuditSchema.required, ["generatedAt", "target", "status", "environment", "summary", "plugins", "marketplaces", "helperApps", "findings"]);
+  assert.ok(pluginAuditSchema.properties.plugins);
+  assert.ok(pluginAuditSchema.$defs.finding);
   assert.deepEqual(sessionAuditSchema.required, ["generatedAt", "root", "status", "thresholds", "summary", "files", "stateFiles", "findings"]);
   assert.ok(sessionAuditSchema.properties.summary);
   assert.ok(sessionAuditSchema.$defs.file);
@@ -1406,7 +1484,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.equal(brief.scorecard.benchmarkStatus, "pass");
   assert.equal(brief.scorecard.benchmarkCases, 26);
   assert.equal(brief.packageName, "trace-to-skill");
-  assert.equal(brief.packageVersion, "0.1.57");
+  assert.equal(brief.packageVersion, "0.1.58");
   assert.equal(brief.license, "Apache-2.0");
   assert.ok(brief.repository?.includes("github.com/grnbtqdbyx-create/trace-to-skill"));
   assert.ok(brief.qualification.max500.length <= 500);
@@ -1414,7 +1492,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.match(markdown, /OpenAI OSS Brief/);
   assert.match(markdown, /Why This Repository Qualifies/);
   assert.match(markdown, /500-Character Version/);
-  assert.match(markdown, /npx trace-to-skill@0\.1\.57/);
+  assert.match(markdown, /npx trace-to-skill@0\.1\.58/);
 });
 
 test("scorecard-comment dry-run resolves pull request event", async () => {

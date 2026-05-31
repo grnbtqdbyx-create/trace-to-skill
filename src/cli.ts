@@ -13,6 +13,7 @@ import { postPullRequestComment } from "./github.js";
 import { initProject } from "./init.js";
 import { renderOssBriefMarkdown, runOssBrief } from "./ossBrief.js";
 import { guardPatchFile, renderPatchGuardMarkdown } from "./patchGuard.js";
+import { auditCodexPlugins, renderPluginAuditMarkdown } from "./pluginAudit.js";
 import { redactTargets } from "./redact.js";
 import { renderAgentsRules, renderCodexIssueReport, renderComparison, renderDoctorMarkdown, renderDoctorPrComment, renderMarkdown, renderPrComment, renderSarif, renderSkill } from "./report.js";
 import { renderScorecardMarkdown, renderScorecardPrComment, runScorecard } from "./scorecard.js";
@@ -205,11 +206,23 @@ async function main(): Promise<void> {
     return;
   }
 
+  if (parsed.command === "plugin-audit") {
+    const result = await auditCodexPlugins(parsed.targets[0] ?? "~/.codex", {
+      appPath: stringFlag(parsed.flags.app)
+    });
+    const format = String(parsed.flags.format ?? "markdown");
+    const output = format === "json" ? `${JSON.stringify(result, null, 2)}\n` : renderPluginAuditMarkdown(result);
+    await writeOutput(output, parsed.flags.output);
+    process.exitCode = result.status === "fail" ? 1 : 0;
+    return;
+  }
+
   if (parsed.command === "diagnostics-bundle") {
     const result = await createDiagnosticsBundle(
       parsed.targets[0] ?? "~/.codex",
       stringFlag(parsed.flags.output) ?? "trace-to-skill-codex-diagnostics",
       {
+        appPath: stringFlag(parsed.flags.app),
         largeFileBytes: byteFlag(parsed.flags["large-mb"], 1024 * 1024),
         hugeLineBytes: byteFlag(parsed.flags["huge-line-kb"], 1024),
         force: Boolean(parsed.flags.force)
@@ -425,6 +438,7 @@ Usage:
   trace-to-skill guard-patch <patch-file> [--root repo-dir] [--format markdown|json] [--output report.md]
   trace-to-skill session-audit [codex-home-or-sessions-dir] [--large-mb 10] [--huge-line-kb 512] [--format markdown|json]
   trace-to-skill config-audit [codex-home-or-config.toml] [--format markdown|json]
+  trace-to-skill plugin-audit [codex-home] [--app /Applications/Codex.app] [--format markdown|json]
   trace-to-skill diagnostics-bundle [codex-home] [--output codex-diagnostics] [--force] [--format markdown|json]
   trace-to-skill comment <trace-file-or-dir> [--dry-run] [--token $GITHUB_TOKEN]
   trace-to-skill compare --before <old-run> --after <new-run> [--format markdown|json]
@@ -449,6 +463,7 @@ Examples:
   trace-to-skill guard-patch ./change.patch --root .
   trace-to-skill session-audit ~/.codex --format json
   trace-to-skill config-audit ~/.codex --format json
+  trace-to-skill plugin-audit ~/.codex --app /Applications/Codex.app --format json
   trace-to-skill diagnostics-bundle ~/.codex --output codex-diagnostics
   trace-to-skill comment ./runs
   trace-to-skill compare --before ./runs/before --after ./runs/after

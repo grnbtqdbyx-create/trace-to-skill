@@ -64,9 +64,13 @@
     "summary": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["configStatus", "sessionStatus", "reports"],
+      "required": ["configStatus", "pluginStatus", "sessionStatus", "reports"],
       "properties": {
         "configStatus": {
+          "type": "string",
+          "enum": ["pass", "warn", "fail"]
+        },
+        "pluginStatus": {
           "type": "string",
           "enum": ["pass", "warn", "fail"]
         },
@@ -87,7 +91,7 @@
       "properties": {
         "kind": {
           "type": "string",
-          "enum": ["manifest", "readme", "config-audit", "session-audit"]
+          "enum": ["manifest", "readme", "config-audit", "plugin-audit", "session-audit"]
         },
         "format": {
           "type": "string",
