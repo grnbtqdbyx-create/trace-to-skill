@@ -18,6 +18,7 @@ Runtime: Node.js 20+
 - Codex sandbox and permission failures such as setup refresh errors, `os error 740`, `CodexSandboxOffline` ownership drift, ACL denial, and approval-mode downgrades
 - Codex auth and connectivity failures such as `token_exchange_failed`, `auth.openai.com/oauth/token`, missing `ca-certificates`, proxy or MITM TLS behavior, IPv6 fallback problems, Cloudflare challenge responses, and ChatGPT stream disconnects
 - Codex mobile and remote-control route health failures such as `Waiting for desktop`, `Directory Unavailable`, stale listeners on `127.0.0.1:14567`, stale `server_name` enrollment, empty backend environments, and incomplete helper bundles
+- Codex MCP runtime failures such as cancelled non-interactive approvals, `request_user_input is not supported in exec mode`, dropped namespace or `serverName` metadata, `unsupported call: mcp__...__...`, and closed `StdioServerTransport` sessions
 - Codex quota and usage-limit mismatches where `/status` or the usage page shows remaining quota, accounts share limits unexpectedly, or 5h and weekly quotas move together
 - hallucinated files and broad over-editing
 - conflicting `AGENTS.md`, `CLAUDE.md`, Cursor, Copilot, or Gemini instructions
@@ -98,5 +99,8 @@ npx trace-to-skill init --comment --sarif
 - Codex ca-certificates update-ca-certificates Dev Container
 - Codex remote-control stale listener 127.0.0.1:14567
 - Codex mobile Waiting for desktop Directory Unavailable
+- Codex MCP unsupported call mcp__node_repl__js
+- Codex MCP tools/list succeeds but runtime call fails
+- Codex MCP Transport closed StdioServerTransport
 - Codex usage limit despite remaining quota
 - Codex quota mismatch and rate limit debugging

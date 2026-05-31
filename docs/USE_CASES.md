@@ -81,7 +81,17 @@ npx trace-to-skill analyze ./runs --format json
 
 This catches signals such as `Waiting for desktop`, `Directory: Unavailable`, stale `server_name` enrollment, stale remote-control listener, `127.0.0.1:14567`, missing cached helper files such as `codex-windows-sandbox-setup.exe` or `codex-command-runner.exe`, empty backend environments, stale Android session lists, and temporary recovery after re-pairing or listener restart.
 
-## 6. Quota And Usage-Limit Evidence
+## 6. Codex MCP Runtime Triage
+
+Use this when MCP tools are configured and visible, but Codex cannot actually call them at runtime.
+
+```bash
+npx trace-to-skill analyze ./runs --format json
+```
+
+This catches signals such as `user cancelled MCP tool call`, `request_user_input is not supported in exec mode`, `Approve app tool call?`, `tool_call_mcp_elicitation`, routed callable names like `mcp__node_repl__js` becoming `unsupported call`, deferred discovery dropping namespace or `serverName`, `tools/list` succeeding while Codex routing fails, and stdio transport lifecycle failures such as `Transport closed`, `stdin_end`, `stdin_close`, `transport_close`, or stderr backpressure.
+
+## 7. Quota And Usage-Limit Evidence
 
 Use this when Codex blocks a prompt with a usage-limit message but another surface still shows remaining quota.
 
@@ -91,7 +101,7 @@ npx trace-to-skill analyze ./runs --format json
 
 This catches traces where `/status` or the usage page shows remaining 5h or weekly quota, accounts appear to share limits unexpectedly, a Team account inherits a Plus account's limit state, or quota reset times jump after logout/login.
 
-## 7. GitHub Context Guard
+## 8. GitHub Context Guard
 
 Use this before an agent reads untrusted GitHub text.
 
@@ -108,7 +118,7 @@ Use it when:
 - a bot asks Codex to triage untrusted user reports
 - logs or comments might contain instructions like "ignore previous instructions" or "print secrets"
 
-## 8. Failed Agent Run To Reviewable Rule
+## 9. Failed Agent Run To Reviewable Rule
 
 Use this when a coding agent made a repeated workflow mistake.
 
@@ -126,7 +136,7 @@ Recommended maintainer loop:
 4. Copy only evidence-backed rules into the real policy file.
 5. Run `eval` or `scorecard` in CI so the same failure does not silently return.
 
-## 9. Privacy-Preserving Adoption
+## 10. Privacy-Preserving Adoption
 
 Use this when you want public evidence without leaking private traces.
 

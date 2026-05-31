@@ -40,6 +40,14 @@ Common signals include `Waiting for desktop`, `Directory: Unavailable`, `remote-
 
 The fix is to capture desktop/app/CLI versions, mobile OS/app version, host id, remote-control status, listener pid and executable path, bound port, cache directory id, helper bundle completeness, active `server_name` or enrollment id, workspace root, last mobile command id, and whether restarting the listener or re-pairing changes the route.
 
+## Codex MCP Runtime
+
+Codex MCP tools can be configured and discoverable but still fail at runtime. Common causes include non-interactive approval paths cancelling the call, elicitation not being supported in exec mode, deferred discovery replaying a call without namespace or `serverName`, routed callable names such as `mcp__node_repl__js` becoming unsupported, or stdio transports closing before a second tool call.
+
+Common signals include `user cancelled MCP tool call`, `request_user_input is not supported in exec mode`, `Approve app tool call?`, `tool_call_mcp_elicitation`, `unsupported call: mcp__...__...`, `tools/list` succeeding while manual `tools/call` succeeds but Codex routing fails, missing namespace or `serverName` metadata, `Transport closed`, and `StdioServerTransport` lifecycle events such as `stdin_end`, `stdin_close`, `transport_close`, `parent_gone`, or stderr backpressure.
+
+The fix is to capture the Codex version, MCP server name and transport, tool name, exposed callable name, whether `tools/list` and manual `tools/call` succeed, `approval_policy`, sandbox mode, exec or interactive mode, elicitation setting, namespace or `serverName` metadata, exact `item.started` / `item.completed` JSONL, stderr or backpressure evidence, and whether restarting or reinitializing the transport changes the result.
+
 ## Quota Mismatch
 
 Codex reports a usage-limit block even though another surface shows remaining quota, or quota state appears to be shared across accounts, consumed in parallel across 5h and weekly windows, or reset at an impossible time.

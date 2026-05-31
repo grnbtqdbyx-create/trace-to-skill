@@ -47,6 +47,7 @@ Use it when you need to:
 - **Diagnose sandbox blockers:** run `trace-to-skill analyze ./runs` on Codex traces that fail with sandbox setup refresh, `os error 740`, ACL, ownership, or approval-mode permission errors.
 - **Debug Codex auth/connectivity:** run `trace-to-skill analyze ./runs` on logs with `token_exchange_failed`, `auth.openai.com/oauth/token`, Cloudflare challenge, proxy/CA, IPv6, or stream disconnect symptoms.
 - **Prove remote-control route health:** run `trace-to-skill analyze ./runs` when Codex mobile/remote sessions show `Waiting for desktop`, `Directory Unavailable`, stale listener/cache, missing helper bundle, or stale enrollment symptoms.
+- **Triage Codex MCP runtime failures:** run `trace-to-skill analyze ./runs` when MCP tools are listed but Codex cancels approval, drops namespace/serverName metadata, routes to `unsupported call`, or closes stdio transport.
 - **Package quota bugs cleanly:** run `trace-to-skill analyze ./runs` on Codex traces where `/status` or the usage page shows remaining quota but the client returns `You've hit your usage limit`.
 
 For copy-paste workflows, see [docs/USE_CASES.md](https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/USE_CASES.md). For crawler-friendly metadata, see [docs/DISCOVERY.md](https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/DISCOVERY.md) and [llms.txt](https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/llms.txt).
@@ -67,6 +68,7 @@ Open-source maintainers do not need more AI-generated noise. They need agents th
 - Did a long Codex session fail during context compaction?
 - Did Codex sandbox setup or workspace permissions block every tool call?
 - Did quota accounting, account switching, or reset timing contradict the runtime usage-limit error?
+- Did an MCP tool appear in `tools/list` but fail at Codex runtime because approval, namespace routing, or stdio lifecycle broke?
 
 ## Example Output
 
@@ -134,6 +136,7 @@ Trace analysis detects run-level failures:
 | Sandbox permission | Codex sandbox setup, approval mode, ACL, or workspace ownership blocks tool execution |
 | Codex connectivity | Auth token exchange, proxy/CA, IPv6, Cloudflare challenge, or ChatGPT transport errors block Codex |
 | Codex remote control | Mobile or remote sessions route through stale listeners, stale enrollment, or incomplete helper bundles |
+| Codex MCP runtime | MCP tools are configured but approval, namespace routing, unsupported callable names, or stdio transport fail at runtime |
 | Quota mismatch | Codex usage dashboard, `/status`, account state, or reset timing contradicts a usage-limit block |
 | MCP risk | Tool permissions and trust boundaries are unclear |
 

@@ -52,6 +52,7 @@ trace-to-skill checks repo readiness and scans agent traces/logs to generate:
 - Codex sandbox setup and permission failure detection for setup refresh, ACL, ownership, and approval-mode problems
 - Codex auth/connectivity detection for token exchange, CA certificate, proxy, IPv6, Cloudflare challenge, and stream disconnect evidence
 - Codex mobile/remote-control route health detection for stale listener, stale enrollment, missing helper bundle, and `Waiting for desktop` evidence
+- Codex MCP runtime detection for cancelled approvals, unsupported routed tool calls, dropped namespace/serverName metadata, and closed stdio transports
 - Codex quota mismatch detection for usage-limit, account-switching, reset-time, and rate-limit evidence
 - a Codex-native readiness auditor skill
 - an Agent Learning Report

@@ -15,6 +15,7 @@ export type FindingKind =
   | "sandbox_permission"
   | "codex_connectivity"
   | "codex_remote_control"
+  | "codex_mcp_runtime"
   | "quota_mismatch"
   | "mcp_risk"
   | "weak_evidence";

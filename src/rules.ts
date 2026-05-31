@@ -209,6 +209,29 @@ const RULES: RuleDefinition[] = [
     suggestedSkill: "codex-remote-control-triage"
   },
   {
+    kind: "codex_mcp_runtime",
+    severity: "high",
+    title: "Codex MCP runtime or routing failure",
+    why: "MCP tools can be correctly configured and still fail at runtime because Codex cancels non-interactive approvals, loses tool namespaces, routes to an unsupported callable name, or reuses a closed stdio transport.",
+    patterns: [
+      /\buser cancelled MCP tool call\b/i,
+      /\brequest_user_input is not supported in exec mode\b/i,
+      /\bApprove app tool call\?\b/i,
+      /\btool_call_mcp_elicitation\b.{0,120}\b(true|default-on|stable|enabled)\b/i,
+      /\bmaybe_request_mcp_tool_approval\b/i,
+      /\bunsupported call:\s*mcp__[A-Za-z0-9_-]+__[A-Za-z0-9_-]+\b/i,
+      /\btools\/list\b.{0,160}\b(runtime routes|unsupported call|manual tools\/call success|ToolRouter|canonical_tool_name)\b/i,
+      /\bnamespaced MCP tool calls?\b.{0,180}\b(fail|drops namespace|un-namespaced|deferred tool discovery|replay)\b/i,
+      /\bfunction_call\b.{0,180}\b(namespace|serverName)\b.{0,120}\b(drop|missing|omitted|lost)\b/i,
+      /\btool call failed for `[^`]+`\b.{0,160}\bTransport closed\b/i,
+      /\bTransport closed\b.{0,160}\b(MCP|stdio|rmcp|server exits|stale stdio client|reinitialize|retry)\b/i,
+      /\bStdioServerTransport\b.{0,180}\b(stdin_end|stdin_close|transport_close|parent_gone|stderr backpressure)\b/i
+    ],
+    suggestedRule:
+      "When a Codex MCP tool fails at runtime, capture the Codex version, MCP server name and transport, tool name, exposed callable name, whether tools/list and manual tools/call succeed, approval_policy, sandbox mode, exec/non-interactive mode, elicitation setting, namespace/serverName metadata, exact item.started/item.completed JSONL, stderr/backpressure evidence, and whether restarting or reinitializing the MCP transport changes the result.",
+    suggestedSkill: "codex-mcp-runtime-triage"
+  },
+  {
     kind: "quota_mismatch",
     severity: "high",
     title: "Codex quota or usage-limit mismatch",

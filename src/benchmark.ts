@@ -90,6 +90,12 @@ const BENCHMARK_CASES: BenchmarkCaseDefinition[] = [
     requireCritical: true
   },
   {
+    id: "codex-mcp-runtime",
+    title: "Codex MCP runtime failure",
+    fixture: "fixtures/codex-mcp-runtime.md",
+    expectedKinds: ["codex_mcp_runtime", "weak_evidence"]
+  },
+  {
     id: "prompt-injection",
     title: "Untrusted PR comment prompt injection",
     fixture: "fixtures/prompt-injection.md",

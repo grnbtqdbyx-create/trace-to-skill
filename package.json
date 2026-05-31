@@ -69,6 +69,8 @@
     "token-exchange-failed",
     "codex-remote-control",
     "codex-mobile",
+    "codex-mcp",
+    "mcp-runtime",
     "quota-mismatch",
     "codex-rate-limits",
     "usage-limit",
