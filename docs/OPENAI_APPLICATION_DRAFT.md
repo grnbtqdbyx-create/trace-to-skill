@@ -1,0 +1,32 @@
+# OpenAI Codex for OSS Application Draft
+
+Use this after the project has public usage signals. Do not submit too early if the repository still has no external stars, issues, or users.
+
+## Repository URL
+
+https://github.com/grnbtqdbyx-create/trace-to-skill
+
+## Role
+
+Primary maintainer.
+
+## Why This Repository Qualifies
+
+`trace-to-skill` helps OSS maintainers safely adopt Codex and other coding agents by turning failed agent runs into evidence-backed `AGENTS.md` rules, `SKILL.md` workflows, and eval gates. It targets real maintainer work: PR review, issue triage, release quality, MCP risk, and repeated agent failure reduction.
+
+500-character version:
+
+> trace-to-skill helps OSS maintainers safely adopt Codex by converting failed agent runs into evidence-backed AGENTS.md rules, SKILL.md workflows, and eval gates. It targets real maintainer work: PR review, issue triage, release quality, MCP risk, and repeated agent failure reduction.
+
+## How API Credits Would Be Used
+
+Credits would power optional trace analysis and before/after eval runs for open-source maintainers: classify failed Codex sessions, generate candidate rules/skills, rerun validation, and produce PR-ready reports. Credits would not be required for local deterministic scanning.
+
+500-character version:
+
+> Credits would power optional trace analysis and before/after eval runs for OSS maintainers: classify failed Codex sessions, generate candidate rules/skills, rerun validation, and produce PR-ready reports. The local deterministic scanner remains free and dependency-light.
+
+## Anything Else
+
+The project is designed around maintainer control: generated rules are suggestions, evidence is line-linked, secrets are redacted, and eval gates fail closed on critical findings.
+
