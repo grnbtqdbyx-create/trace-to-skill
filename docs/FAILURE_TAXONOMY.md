@@ -44,6 +44,12 @@ Credentials, API keys, or tokens appear in traces or reports.
 
 Bidirectional or zero-width Unicode control characters appear in agent-visible instructions or patches.
 
+## Prompt Injection
+
+Untrusted issue bodies, PR comments, copied logs, or web pages instruct the agent to ignore maintainer policy, hide actions from reviewers, reveal hidden prompts, or exfiltrate secrets.
+
+The fix is to treat those surfaces as data unless the instruction is also present in a maintainer-controlled file such as `AGENTS.md`, workflow YAML, or source code owned by the repository.
+
 ## MCP Risk
 
 MCP server configuration or tool usage appears without an explicit trust boundary, capability inventory, or approval policy.

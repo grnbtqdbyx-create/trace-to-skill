@@ -28,6 +28,7 @@
 - Scorecard JSON schema and Action outputs
 - Tag-pinned GitHub Action runtime via `$GITHUB_ACTION_PATH`
 - Scorecard PR comments with update-in-place marker
+- Prompt-injection detection for untrusted issue, PR, log, and web text
 
 ## v0.2
 

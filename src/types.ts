@@ -10,6 +10,7 @@ export type FindingKind =
   | "unsafe_command"
   | "secret_exposure"
   | "hidden_unicode"
+  | "prompt_injection"
   | "mcp_risk"
   | "weak_evidence";
 

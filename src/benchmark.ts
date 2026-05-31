@@ -60,6 +60,13 @@ const BENCHMARK_CASES: BenchmarkCaseDefinition[] = [
     requireCritical: true
   },
   {
+    id: "prompt-injection",
+    title: "Untrusted PR comment prompt injection",
+    fixture: "fixtures/prompt-injection.md",
+    expectedKinds: ["prompt_injection"],
+    requireCritical: true
+  },
+  {
     id: "instruction-drift",
     title: "Conflicting agent instruction files",
     fixture: "fixtures/instruction-drift",

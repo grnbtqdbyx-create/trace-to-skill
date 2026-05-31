@@ -105,6 +105,7 @@ Trace analysis detects run-level failures:
 | Unsafe command | Destructive shell or remote script execution |
 | Secret exposure | Tokens/API keys in traces or PR comments |
 | Hidden Unicode | Invisible instruction or code-review manipulation |
+| Prompt injection | Untrusted issue, PR, log, or web text asks the agent to ignore policy or leak secrets |
 | MCP risk | Tool permissions and trust boundaries are unclear |
 
 ## Installation
@@ -263,7 +264,7 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v5
-      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.21
+      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.22
         with:
           mode: all
           doctor-threshold: "85"
@@ -312,7 +313,7 @@ Composite action usage:
 
 ```yaml
 - id: trace-to-skill
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.21
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.22
   with:
     mode: all
     doctor-threshold: "85"
@@ -346,7 +347,7 @@ Action outputs:
 
 By default, generated reports are also appended to the GitHub Actions Job Summary. Set `job-summary: "false"` to disable that UI output.
 
-Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to `@v0.1.21` executes that release's checked-out source instead of pulling the default branch at runtime.
+Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to `@v0.1.22` executes that release's checked-out source instead of pulling the default branch at runtime.
 
 ## OpenAI / Codex Use Case
 

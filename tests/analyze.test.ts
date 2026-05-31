@@ -101,6 +101,16 @@ test("analyzeTargets detects contradictory agent instruction files", async () =>
   assert.match(finding.evidence.map((evidence) => evidence.excerpt).join("\n"), /skips validation/);
 });
 
+test("analyzeTargets detects prompt injection in untrusted agent inputs", async () => {
+  const result = await analyzeTargets(["fixtures/prompt-injection.md"]);
+  const finding = result.findings.find((item) => item.kind === "prompt_injection");
+
+  assert.ok(finding);
+  assert.equal(finding.severity, "critical");
+  assert.match(finding.suggestedRule, /untrusted data/);
+  assert.ok(finding.evidence.length >= 2);
+});
+
 test("compareAnalyses keeps improved runs and renders a decision", async () => {
   const before = await analyzeTargets(["fixtures/failed-run.md"]);
   const after = await analyzeTargets(["fixtures/safe-run.md"]);
@@ -319,12 +329,14 @@ test("benchmark covers public fixture failure classes", async () => {
   const markdown = renderBenchmarkMarkdown(benchmark);
 
   assert.equal(benchmark.passed, true);
-  assert.equal(benchmark.cases.length, 5);
+  assert.equal(benchmark.cases.length, 6);
   assert.ok(benchmark.cases.some((item) => item.id === "clean-validated-run" && item.score === 100));
   assert.ok(benchmark.cases.some((item) => item.id === "failed-workflow" && item.detectedKinds.includes("test_failure")));
   assert.ok(benchmark.cases.some((item) => item.id === "mcp-risk" && item.detectedKinds.includes("secret_exposure")));
+  assert.ok(benchmark.cases.some((item) => item.id === "prompt-injection" && item.detectedKinds.includes("prompt_injection")));
   assert.match(markdown, /trace-to-skill Benchmark/);
   assert.match(markdown, /Codex JSONL failed session/);
+  assert.match(markdown, /Untrusted PR comment prompt injection/);
 });
 
 test("scorecard combines doctor readiness and benchmark evidence", async () => {
@@ -336,7 +348,7 @@ test("scorecard combines doctor readiness and benchmark evidence", async () => {
   assert.equal(scorecard.doctor.status, "ready");
   assert.equal(scorecard.doctor.score, 100);
   assert.equal(scorecard.benchmark.status, "pass");
-  assert.equal(scorecard.benchmark.cases, 5);
+  assert.equal(scorecard.benchmark.cases, 6);
   assert.match(markdown, /trace-to-skill Scorecard/);
   assert.match(markdown, /Codex readiness/);
   assert.match(markdown, /Benchmark Summary/);
