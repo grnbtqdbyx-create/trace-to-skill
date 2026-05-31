@@ -193,7 +193,8 @@ function isInstructionFile(file: string): boolean {
 
 function isMcpConfigCandidate(file: string): boolean {
   return /(^|\/)(mcp|\.mcp|mcp-config|model-context)\.(json|jsonc)$/i.test(file) ||
-    /(^|\/)\.cursor\/mcp\.json$/i.test(file);
+    /(^|\/)\.cursor\/mcp\.json$/i.test(file) ||
+    /(^|\/)\.codex\/config\.toml$/i.test(file);
 }
 
 function isEvidenceArchive(file: string): boolean {
@@ -324,17 +325,21 @@ async function detectMcpConfigDiagnostics(root: string, mcpConfigs: string[]): P
   for (const file of mcpConfigs) {
     const absolute = path.join(root, file);
     const content = await fs.readFile(absolute, "utf8");
-    const parsed = parseJsonObject(stripJsonComments(content));
+    const parsed = parseMcpConfig(file, content);
     if (!parsed) {
       evidence.push({
         file,
         line: 1,
-        excerpt: "MCP config could not be parsed as JSON/JSONC."
+        excerpt: `MCP config could not be parsed as ${file.endsWith(".toml") ? "TOML" : "JSON/JSONC"}.`
       });
       continue;
     }
 
-    if (asObject(parsed.mcp_servers) && !asObject(parsed.mcpServers)) {
+    if (isTomlConfig(file) && !asObject(parsed.mcp_servers)) {
+      continue;
+    }
+
+    if (!isTomlConfig(file) && asObject(parsed.mcp_servers) && !asObject(parsed.mcpServers)) {
       evidence.push({
         file,
         line: findLine(content, "mcp_servers"),
@@ -361,6 +366,14 @@ async function detectMcpConfigDiagnostics(root: string, mcpConfigs: string[]): P
           excerpt: `server "${name}" is not an object`
         });
         continue;
+      }
+
+      if (isTomlConfig(file) && commandLooksLocal(server.command) && typeof server.cwd !== "string") {
+        evidence.push({
+          file,
+          line: findLine(content, name),
+          excerpt: `server "${name}" in project .codex/config.toml uses a local stdio command without explicit cwd`
+        });
       }
 
       evidence.push(...(await inspectMcpServer(root, file, content, name, server)));
@@ -395,7 +408,14 @@ async function inspectMcpServer(root: string, file: string, content: string, nam
     });
   }
 
-  if (command && !(await commandExists(root, command))) {
+  const commandIssue = startupStringIssue(command);
+  if (commandIssue) {
+    evidence.push({
+      file,
+      line: findLine(content, command),
+      excerpt: `server "${name}" command ${commandIssue}: ${command}`
+    });
+  } else if (command && !(await commandExists(root, command))) {
     evidence.push({
       file,
       line: findLine(content, command),
@@ -405,13 +425,36 @@ async function inspectMcpServer(root: string, file: string, content: string, nam
 
   if (typeof server.cwd === "string" && server.cwd.trim()) {
     const cwd = server.cwd.trim();
-    if (!(await localPathExists(root, cwd))) {
+    const cwdIssue = startupStringIssue(cwd);
+    if (cwdIssue) {
+      evidence.push({
+        file,
+        line: findLine(content, cwd),
+        excerpt: `server "${name}" cwd ${cwdIssue}: ${cwd}`
+      });
+    } else if (!(await localPathExists(root, cwd))) {
       evidence.push({
         file,
         line: findLine(content, cwd),
         excerpt: `server "${name}" cwd does not exist: ${cwd}`
       });
     }
+  }
+
+  if (Array.isArray(server.args)) {
+    server.args.forEach((value) => {
+      if (typeof value !== "string") {
+        return;
+      }
+      const issue = startupStringIssue(value);
+      if (issue) {
+        evidence.push({
+          file,
+          line: findLine(content, value),
+          excerpt: `server "${name}" arg ${issue}: ${value}`
+        });
+      }
+    });
   }
 
   const env = asObject(server.env);
@@ -454,6 +497,10 @@ function looksLikeMcpServer(value: unknown): boolean {
     Array.isArray(server.args) ||
     asObject(server.env)
   ));
+}
+
+function commandLooksLocal(value: unknown): boolean {
+  return typeof value === "string" && (value.includes("/") || value.includes("\\") || value === "php" || value === "node" || value === "python" || value === "python3");
 }
 
 async function commandExists(root: string, command: string): Promise<boolean> {
@@ -531,6 +578,142 @@ function envValueIssue(key: string, value: unknown): string | undefined {
   }
 
   return undefined;
+}
+
+function startupStringIssue(value: string): string | undefined {
+  const variableReferences = Array.from(value.matchAll(/\$\{?([A-Za-z_][A-Za-z0-9_]*)\}?/g)).map((match) => match[1]);
+  const unresolved = variableReferences.filter((name) => !process.env[name]);
+  if (unresolved.length > 0) {
+    return `references unset environment variable ${unresolved.join(", ")}`;
+  }
+
+  return undefined;
+}
+
+function parseMcpConfig(file: string, content: string): Record<string, unknown> | undefined {
+  if (isTomlConfig(file)) {
+    return parseMcpToml(content);
+  }
+
+  return parseJsonObject(stripJsonComments(content));
+}
+
+function isTomlConfig(file: string): boolean {
+  return /\.toml$/i.test(file);
+}
+
+function parseMcpToml(content: string): Record<string, unknown> | undefined {
+  const mcpServers: Record<string, unknown> = {};
+  const lines = content.split(/\r?\n/);
+  let currentServer: Record<string, unknown> | undefined;
+
+  for (const rawLine of lines) {
+    const line = stripTomlComment(rawLine).trim();
+    if (!line) {
+      continue;
+    }
+
+    const section = /^\[mcp_servers\.([A-Za-z0-9_.-]+)\]$/.exec(line) ?? /^\[mcpServers\.([A-Za-z0-9_.-]+)\]$/.exec(line);
+    if (section) {
+      currentServer = {};
+      mcpServers[section[1]] = currentServer;
+      continue;
+    }
+
+    if (line.startsWith("[") && line.endsWith("]")) {
+      currentServer = undefined;
+      continue;
+    }
+
+    if (!currentServer) {
+      continue;
+    }
+
+    const assignment = /^([A-Za-z0-9_-]+)\s*=\s*(.+)$/.exec(line);
+    if (!assignment) {
+      continue;
+    }
+
+    currentServer[assignment[1]] = parseTomlValue(assignment[2].trim());
+  }
+
+  return Object.keys(mcpServers).length > 0 ? { mcp_servers: mcpServers } : {};
+}
+
+function parseTomlValue(value: string): unknown {
+  if (value.startsWith("\"") || value.startsWith("'")) {
+    return parseTomlString(value);
+  }
+
+  if (value.startsWith("[")) {
+    return parseTomlArray(value);
+  }
+
+  if (value === "true") {
+    return true;
+  }
+
+  if (value === "false") {
+    return false;
+  }
+
+  return value;
+}
+
+function parseTomlArray(value: string): unknown[] {
+  const trimmed = value.trim();
+  if (!trimmed.startsWith("[") || !trimmed.endsWith("]")) {
+    return [];
+  }
+
+  const items: unknown[] = [];
+  const pattern = /"((?:\\.|[^"\\])*)"|'((?:\\.|[^'\\])*)'|([^,\s][^,]*)/g;
+  const inner = trimmed.slice(1, -1);
+  for (const match of inner.matchAll(pattern)) {
+    if (match[1] !== undefined) {
+      items.push(unescapeTomlString(match[1]));
+    } else if (match[2] !== undefined) {
+      items.push(match[2]);
+    } else if (match[3] !== undefined) {
+      items.push(parseTomlValue(match[3].trim()));
+    }
+  }
+
+  return items;
+}
+
+function parseTomlString(value: string): string {
+  if (value.startsWith("\"")) {
+    const match = /^"((?:\\.|[^"\\])*)"/.exec(value);
+    return match ? unescapeTomlString(match[1]) : value;
+  }
+
+  const match = /^'([^']*)'/.exec(value);
+  return match ? match[1] : value;
+}
+
+function unescapeTomlString(value: string): string {
+  return value
+    .replace(/\\"/g, "\"")
+    .replace(/\\n/g, "\n")
+    .replace(/\\t/g, "\t")
+    .replace(/\\\\/g, "\\");
+}
+
+function stripTomlComment(line: string): string {
+  let quote: "\"" | "'" | undefined;
+  for (let index = 0; index < line.length; index += 1) {
+    const char = line[index];
+    const previous = line[index - 1];
+    if ((char === "\"" || char === "'") && previous !== "\\") {
+      quote = quote === char ? undefined : quote ?? char;
+      continue;
+    }
+    if (char === "#" && !quote) {
+      return line.slice(0, index);
+    }
+  }
+  return line;
 }
 
 function stripJsonComments(content: string): string {

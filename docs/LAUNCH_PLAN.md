@@ -60,7 +60,7 @@ Secondary headline:
 
 - Repository: https://github.com/grnbtqdbyx-create/trace-to-skill
 - npm: https://www.npmjs.com/package/trace-to-skill
-- Latest release: https://github.com/grnbtqdbyx-create/trace-to-skill/releases/tag/v0.1.32
+- Latest release: https://github.com/grnbtqdbyx-create/trace-to-skill/releases/tag/v0.1.33
 - CI: passing on `main`
 - Profile README: https://github.com/grnbtqdbyx-create/grnbtqdbyx-create
 

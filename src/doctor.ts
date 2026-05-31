@@ -339,7 +339,8 @@ function isInstructionFile(file: string): boolean {
 
 function isMcpConfigCandidate(file: string): boolean {
   return /(^|\/)(mcp|\.mcp|mcp-config|model-context)\.(json|jsonc)$/i.test(file) ||
-    /(^|\/)\.cursor\/mcp\.json$/i.test(file);
+    /(^|\/)\.cursor\/mcp\.json$/i.test(file) ||
+    /(^|\/)\.codex\/config\.toml$/i.test(file);
 }
 
 function isEvidenceArchive(file: string): boolean {

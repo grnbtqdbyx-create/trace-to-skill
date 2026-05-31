@@ -408,6 +408,34 @@ test("lintAgents detects static MCP config startup problems", async () => {
   assert.match(evidence, /placeholder value/);
 });
 
+test("lintAgents detects project Codex TOML MCP startup problems", async () => {
+  const cwd = await mkdtemp(path.join(os.tmpdir(), "trace-to-skill-agents-lint-codex-toml-"));
+  await mkdir(path.join(cwd, ".codex"), { recursive: true });
+  await writeFile(path.join(cwd, "AGENTS.md"), "Always run npm test before completion.\n", "utf8");
+  await writeFile(path.join(cwd, "package.json"), JSON.stringify({
+    scripts: {
+      test: "node --test"
+    }
+  }), "utf8");
+  await writeFile(path.join(cwd, ".codex/config.toml"), [
+    "[mcp_servers.laravel-boost]",
+    "command = \"php\"",
+    "args = [\"artisan\", \"boost:mcp\", \"${CLAUDE_PLUGIN_ROOT}\"]",
+    "enabled = true",
+    ""
+  ].join("\n"), "utf8");
+
+  const result = await lintAgents(cwd);
+  const mcpFinding = result.findings.find((finding) => finding.kind === "mcp_risk" && /unresolved startup/.test(finding.title));
+  const evidence = mcpFinding?.evidence.map((item) => item.excerpt).join("\n") ?? "";
+
+  assert.equal(result.status, "warn");
+  assert.ok(result.mcpConfigs.includes(".codex/config.toml"));
+  assert.ok(mcpFinding);
+  assert.match(evidence, /local stdio command without explicit cwd/);
+  assert.match(evidence, /CLAUDE_PLUGIN_ROOT/);
+});
+
 test("composite action exposes Codex readiness doctor mode", async () => {
   const action = await readFile("action.yml", "utf8");
 
