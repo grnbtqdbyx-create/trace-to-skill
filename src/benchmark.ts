@@ -102,6 +102,12 @@ const BENCHMARK_CASES: BenchmarkCaseDefinition[] = [
     expectedKinds: ["codex_mcp_runtime", "weak_evidence"]
   },
   {
+    id: "codex-plugin-runtime",
+    title: "Codex plugin runtime and bundled capability failure",
+    fixture: "fixtures/codex-plugin-runtime.md",
+    expectedKinds: ["codex_plugin_runtime", "weak_evidence"]
+  },
+  {
     id: "codex-session-state",
     title: "Codex session resume and state failure",
     fixture: "fixtures/codex-session-state.md",

@@ -247,6 +247,29 @@ const RULES: RuleDefinition[] = [
     suggestedSkill: "codex-mcp-runtime-triage"
   },
   {
+    kind: "codex_plugin_runtime",
+    severity: "high",
+    title: "Codex plugin runtime or bundled capability failure",
+    why: "Codex Desktop can advertise Browser, Computer Use, skills, or connectors while the shared plugin runtime is missing helper paths, stale cache state, or marketplace variants, leaving users without the capability they were told is available.",
+    patterns: [
+      /\bComputer Use native pipe path is unavailable\b/i,
+      /\bWindows Computer Use helper paths are unavailable\b/i,
+      /\bSKY_CUA_NATIVE_PIPE_DIRECTORY\b.{0,160}\b(missing|not present|unavailable|not injected)\b/i,
+      /\bcomputer-use native pipe\b.{0,180}\b(startup ready|helper paths changed|missing-helper-path|native pipe path is unavailable|bootstrap fails?)\b/i,
+      /\bnative pipe path\b.{0,160}\b(unavailable|missing|not injected|helper path|computer-use)\b/i,
+      /\b(Computer Use|Browser|Chrome)\b.{0,180}\b(plugin|bundled plugin|skill|helper|native pipe)\b.{0,160}\b(unavailable|fails? to bootstrap|missing|disappear|not shown|cannot be used)\b/i,
+      /\bPlugins? (?:UI|page)\b.{0,160}\b(no longer showed|disappeared|Plugin loading failed|插件加载失败|failed to load|unknown variant)\b/i,
+      /\bInvalid request:\s*unknown variant ['"]vertical['"], expected one of ['"]local['"], ['"]workspace-directory['"], ['"]shared-with-me['"]/i,
+      /\bplugin\/list\b.{0,180}\b(unknown variant|vertical|marketplace|failed|Plugin loading failed)\b/i,
+      /\bplugin cache\b.{0,180}\b(stale|reset|downgrade|replaced|file lock|EBUSY|reconciliation|helper paths changed|missing-helper-path)\b/i,
+      /\b(codex plugin add|installed plugin|re-add(?:ing)? the plugin)\b.{0,180}\b(resets?|downgrades?|stale version|replaced|cache contains|changed back)\b/i,
+      /\b~\/\.codex\/plugins\/cache\b.{0,180}\b(version|stale|downgrade|replaced|missing|EBUSY|locked)\b/i
+    ],
+    suggestedRule:
+      "When reporting Codex plugin runtime failures, capture app version, OS, plugin name and version, plugin cache path, helper binary/client path, native pipe or helper env vars, plugin/list or settings error text, connector install return flow, cache reconciliation/file-lock logs, whether the UI still lists the plugin, whether restarting resets or downgrades it, and whether a clean profile reproduces the failure.",
+    suggestedSkill: "codex-plugin-runtime-triage"
+  },
+  {
     kind: "codex_session_state",
     severity: "high",
     title: "Codex session resume or state failure",

@@ -27,6 +27,7 @@ npx trace-to-skill codex-report redacted-runs --output openai-codex-issue.md
 | Auth and connectivity failures | `token_exchange_failed`, `auth.openai.com/oauth/token`, missing CA certificates, proxy/TLS, IPv6, Cloudflare, stream disconnects | `codex_connectivity` | `trace-to-skill codex-report ./runs` |
 | Remote-control routing failures | `Waiting for desktop`, `Directory: Unavailable`, stale listener/enrollment, `127.0.0.1:14567`, empty backend environments | `codex_remote_control` | `trace-to-skill codex-report ./runs` |
 | MCP runtime failures | `user cancelled MCP tool call`, `unsupported call: mcp__...__...`, namespace/serverName loss, `Transport closed` | `codex_mcp_runtime` | `trace-to-skill codex-report ./runs` |
+| Plugin runtime and bundled capability failures | Computer Use native pipe path unavailable, Browser/Computer Use settings fail, plugin/list `unknown variant 'vertical'`, stale plugin cache downgrades | `codex_plugin_runtime` | `trace-to-skill codex-report ./runs` |
 | MCP config risk | filesystem/shell/browser/network/database/container access, secret-bearing env vars, broken startup inputs | `mcp_risk` | `trace-to-skill lint-agents .` |
 | GitHub prompt injection | issue/PR/comment text says to ignore policy, leak secrets, hide actions, or execute attacker-controlled commands | `prompt_injection` | `trace-to-skill guard-github-event "$GITHUB_EVENT_PATH"` |
 
@@ -38,6 +39,7 @@ npx trace-to-skill codex-report redacted-runs --output openai-codex-issue.md
 - Include before/after `/status` and usage dashboard state for quota or token-burn reports.
 - Include process names/PIDs, CPU/GPU/RSS samples, log-loop signatures, and whether killing exact PIDs or closing the app clears resource leaks.
 - Include exact tool input/output, `tool_call_id` order, affected path state, and rollback evidence for tool-call integrity failures.
+- Include plugin name/version, cache path, helper path, native pipe env vars, settings/plugin-list errors, and restart behavior for plugin runtime failures.
 - Include line-linked evidence rather than screenshots alone when logs are available.
 - Redact tokens, API keys, emails, local home paths, customer data, and hidden Unicode before posting publicly.
 - For sensitive-file reports, attach only redacted excerpts and the file path/class, not the original credential material.
@@ -49,5 +51,6 @@ npx trace-to-skill codex-report redacted-runs --output openai-codex-issue.md
 - Tool-call integrity and rollback failures: https://github.com/openai/codex/issues/25399, https://github.com/openai/codex/issues/25380, https://github.com/openai/codex/issues/25426, https://github.com/openai/codex/issues/7291
 - Session state and resume failures: https://github.com/openai/codex/issues/25430, https://github.com/openai/codex/issues/25390, https://github.com/openai/codex/issues/25394, https://github.com/openai/codex/issues/25407
 - MCP runtime failures: https://github.com/openai/codex/issues/16685, https://github.com/openai/codex/issues/18977, https://github.com/openai/codex/issues/24297, https://github.com/openai/codex/issues/23839
+- Plugin runtime and bundled capability failures: https://github.com/openai/codex/issues/25391, https://github.com/openai/codex/issues/25418, https://github.com/openai/codex/issues/25406, https://github.com/openai/codex/issues/18258
 - Sensitive file exclusion: https://github.com/openai/codex/issues/2847
 - Auth/connectivity and remote-control reports are represented by the public fixtures in `fixtures/codex-connectivity.md` and `fixtures/codex-remote-control.md`.

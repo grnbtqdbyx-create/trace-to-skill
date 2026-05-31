@@ -48,6 +48,14 @@ Common signals include `user cancelled MCP tool call`, `request_user_input is no
 
 The fix is to capture the Codex version, MCP server name and transport, tool name, exposed callable name, whether `tools/list` and manual `tools/call` succeed, `approval_policy`, sandbox mode, exec or interactive mode, elicitation setting, namespace or `serverName` metadata, exact `item.started` / `item.completed` JSONL, stderr or backpressure evidence, and whether restarting or reinitializing the transport changes the result.
 
+## Codex Plugin Runtime
+
+Codex Desktop can show a plugin, connector, Browser, Computer Use, or bundled skill as available while the shared plugin runtime is not actually usable. Common causes include missing native pipe/helper metadata, plugin-list schema drift, stale plugin cache reconciliation, file-lock issues, or installed plugins being silently downgraded.
+
+Common signals include `Computer Use native pipe path is unavailable`, `Windows Computer Use helper paths are unavailable`, `SKY_CUA_NATIVE_PIPE_DIRECTORY` missing, `computer-use native pipe helper paths changed`, `reason=missing-helper-path`, `Plugin loading failed`, `plugin/list`, `unknown variant 'vertical'`, Plugins UI losing Browser/Computer Use/Chrome, `~/.codex/plugins/cache`, stale plugin versions, `EBUSY`, and `plugin_cache_windows_file_lock`.
+
+The fix is to capture app version, OS, plugin name and version, plugin cache path, helper binary or client path, native pipe/helper environment variables, Browser/Computer Use/Plugins settings error text, connector install return flow, cache reconciliation or file-lock logs, whether the UI still lists the plugin, whether restarting resets or downgrades it, and whether a clean profile reproduces the failure.
+
 ## Codex Session State
 
 Codex resume, Desktop history rendering, archived chat loading, context compression, or local state migrations can fail after a long thread accumulates large JSONL history, images, tool output, or stale SQLite/global-state metadata.
