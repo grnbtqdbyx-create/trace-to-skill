@@ -320,6 +320,27 @@ const RULES: RuleDefinition[] = [
     suggestedSkill: "codex-resource-leak-triage"
   },
   {
+    kind: "codex_tool_call_integrity",
+    severity: "high",
+    title: "Codex tool-call integrity or rollback failure",
+    why: "Patch, rollback, subagent, and protocol-level tool-call failures can silently overwrite files, strand threads, or make recovery actions fail unless reports preserve exact tool inputs, tool results, durable state, and recovery evidence.",
+    patterns: [
+      /\bapply_patch\b.{0,120}\bAdd File\b.{0,160}\b(overwrite|overwrites|existing file|already exists|silently|symlink|replaces? its contents|should fail)\b/i,
+      /\b\*\*\* Add File:\b.{0,180}\b(existing file|overwrite|symlink|\.env|target already existed|replaced|destructive)\b/i,
+      /\bassistant message with ['"]tool_calls['"] must be followed by tool messages\b/i,
+      /\binsufficient tool messages following tool_calls message\b/i,
+      /\btool_call_id\b.{0,160}\b(missing|unmatched|not followed|protocol|invalid_request_error|tool messages?)\b/i,
+      /\bclose_agent\b.{0,180}\b(hang forever|waits? forever|never returns|thread never terminates|agent thread limit reached|registry slot|already closed)\b/i,
+      /\b(subagent|child thread|durable spawn edge|thread_spawn_edges)\b.{0,180}\b(closed|interrupted|terminated|registry slot|thread limit|hang|timeout)\b/i,
+      /\b(failed to revert changes|revert changes failed|undo button stopped working|could not undo|rollback failed)\b/i,
+      /\b(Codex|agent|extension)\b.{0,180}\b(deleted|truncated|overwrote|destroyed|lost)\b.{0,160}\b(uncommitted code|existing file|codebase|file contents)\b/i,
+      /\b(IDE-integrated diff|presenting changes|proposed changes|diff approval|show a diff|apply changes)\b.{0,180}\b(fail|missing|unsafe|rollback|revert|approval)\b/i
+    ],
+    suggestedRule:
+      "When reporting Codex tool-call integrity failures, capture the exact tool input and output, app/CLI/extension version, OS/IDE, workspace git state, affected file path and whether it already existed or was a symlink, diff before/after, tool_call_id sequence, durable thread state for subagents, rollback/revert attempts, and whether a clean repo reproduction fails the same way.",
+    suggestedSkill: "codex-tool-call-integrity-triage"
+  },
+  {
     kind: "quota_mismatch",
     severity: "high",
     title: "Codex quota or usage-limit mismatch",

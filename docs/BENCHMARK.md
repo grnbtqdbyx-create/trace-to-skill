@@ -20,6 +20,7 @@ This benchmark runs the public fixture pack that ships with the repository and p
 | Codex session resume and state failure | `fixtures/codex-session-state.md` | 59 | 3 | 0 | `codex_resource_leak`, `codex_session_state`, `weak_evidence` | pass |
 | Codex token burn and usage-drain loop | `fixtures/codex-token-burn.md` | 59 | 3 | 0 | `codex_resource_leak`, `codex_token_burn`, `weak_evidence` | pass |
 | Codex resource leak and runaway process | `fixtures/codex-resource-leak.md` | 75 | 2 | 0 | `codex_resource_leak`, `weak_evidence` | pass |
+| Codex tool-call integrity and rollback failure | `fixtures/codex-tool-call-integrity.md` | 59 | 3 | 0 | `codex_resource_leak`, `codex_tool_call_integrity`, `weak_evidence` | pass |
 | Untrusted PR comment prompt injection | `fixtures/prompt-injection.md` | 50 | 3 | 1 | `premature_completion`, `prompt_injection`, `weak_evidence` | pass |
 | Conflicting agent instruction files | `fixtures/instruction-drift` | 84 | 1 | 0 | `ignored_instruction` | pass |
 

@@ -72,6 +72,14 @@ Common signals include high `Code Helper (Renderer)` or `Code Helper (Plugin)` C
 
 The fix is to capture app/extension/CLI version, OS, IDE, thread type, process names/PIDs, CPU/GPU/RSS samples over time, whether the process is orphaned, log-loop signatures, workspace Git-root state, animation/reduce-motion state, reproduction steps, and whether closing the panel/app, killing exact PIDs, `git init`, rollback, or restart clears the leak.
 
+## Codex Tool-Call Integrity
+
+Codex patch, rollback, subagent, and protocol tool calls can fail in ways that threaten maintainer trust: `apply_patch` accepting `*** Add File` for an existing file, `tool_calls` messages missing matching tool responses, `close_agent` hanging after durable state says closed, or extension revert/undo failing after code was deleted.
+
+Common signals include `apply_patch`, `*** Add File`, existing file overwrite, symlink target replacement, `assistant message with 'tool_calls' must be followed by tool messages`, missing `tool_call_id`, `close_agent` hanging forever, `agent thread limit reached`, `Failed to revert changes`, and deleted or truncated uncommitted code.
+
+The fix is to capture exact tool input/output, app/CLI/extension version, OS/IDE, workspace git state, affected file path and whether it already existed or was a symlink, diff before/after, tool-call ordering, durable subagent/thread state, rollback attempts, and whether a clean repo reproduction fails the same way.
+
 ## Quota Mismatch
 
 Codex reports a usage-limit block even though another surface shows remaining quota, or quota state appears to be shared across accounts, consumed in parallel across 5h and weekly windows, or reset at an impossible time.

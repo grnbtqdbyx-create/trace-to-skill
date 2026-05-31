@@ -120,6 +120,12 @@ const BENCHMARK_CASES: BenchmarkCaseDefinition[] = [
     expectedKinds: ["codex_resource_leak", "weak_evidence"]
   },
   {
+    id: "codex-tool-call-integrity",
+    title: "Codex tool-call integrity and rollback failure",
+    fixture: "fixtures/codex-tool-call-integrity.md",
+    expectedKinds: ["codex_tool_call_integrity", "weak_evidence"]
+  },
+  {
     id: "prompt-injection",
     title: "Untrusted PR comment prompt injection",
     fixture: "fixtures/prompt-injection.md",

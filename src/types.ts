@@ -20,6 +20,7 @@ export type FindingKind =
   | "codex_session_state"
   | "codex_token_burn"
   | "codex_resource_leak"
+  | "codex_tool_call_integrity"
   | "quota_mismatch"
   | "mcp_risk"
   | "weak_evidence";
