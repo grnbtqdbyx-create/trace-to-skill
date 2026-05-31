@@ -255,6 +255,7 @@ Instruction files such as `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `.cursor/rules`
 Stable machine-readable contracts are published with the npm package and release tarball:
 
 - [`schemas/analysis-result.schema.json`](schemas/analysis-result.schema.json) describes `trace-to-skill analyze --format json`.
+- [`schemas/agents-lint-result.schema.json`](schemas/agents-lint-result.schema.json) describes `trace-to-skill lint-agents --format json`.
 - [`schemas/doctor-result.schema.json`](schemas/doctor-result.schema.json) describes `trace-to-skill doctor --format json`.
 - [`schemas/scorecard-result.schema.json`](schemas/scorecard-result.schema.json) describes `trace-to-skill scorecard --format json`.
 
@@ -284,7 +285,7 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v5
-      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.25
+      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.26
         with:
           mode: all
           doctor-threshold: "85"
@@ -333,7 +334,7 @@ Composite action usage:
 
 ```yaml
 - id: trace-to-skill
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.25
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.26
   with:
     mode: all
     doctor-threshold: "85"
@@ -357,6 +358,10 @@ Action outputs:
 | `doctor-report` | Markdown report path |
 | `doctor-json` | JSON report path |
 | `agent-report` | Agent learning report path |
+| `agents-lint-score` | AGENTS.md linter score from 0 to 100 |
+| `agents-lint-status` | `pass`, `warn`, or `fail` |
+| `agents-lint-report` | Markdown AGENTS.md linter report path |
+| `agents-lint-json` | JSON AGENTS.md linter report path |
 | `context-score` | Untrusted GitHub event context score from 0 to 100 |
 | `context-status` | `pass` or `fail` |
 | `context-report` | Markdown GitHub context guard report path |
@@ -371,7 +376,7 @@ Action outputs:
 
 By default, generated reports are also appended to the GitHub Actions Job Summary. Set `job-summary: "false"` to disable that UI output.
 
-Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to `@v0.1.25` executes that release's checked-out source instead of pulling the default branch at runtime.
+Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to `@v0.1.26` executes that release's checked-out source instead of pulling the default branch at runtime.
 
 ## Codex Skill
 

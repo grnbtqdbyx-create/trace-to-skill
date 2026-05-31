@@ -300,16 +300,22 @@ test("composite action exposes Codex readiness doctor mode", async () => {
   assert.match(action, /scorecard-report:/);
   assert.match(action, /scorecard-json:/);
   assert.match(action, /agent-report:/);
+  assert.match(action, /agents-lint-score:/);
+  assert.match(action, /agents-lint-status:/);
+  assert.match(action, /agents-lint-report:/);
+  assert.match(action, /agents-lint-json:/);
   assert.match(action, /context-score:/);
   assert.match(action, /context-status:/);
   assert.match(action, /context-report:/);
   assert.match(action, /context-json:/);
   assert.match(action, /steps\.doctor\.outputs\.report/);
+  assert.match(action, /steps\.agents-lint\.outputs\.status/);
   assert.match(action, /steps\.agent-report\.outputs\.report/);
   assert.match(action, /steps\.github-context\.outputs\.status/);
   assert.match(action, /steps\.benchmark\.outputs\.status/);
   assert.match(action, /steps\.scorecard\.outputs\.status/);
   assert.match(action, /codex-readiness-report\.json/);
+  assert.match(action, /agents-lint-report\.json/);
   assert.match(action, /github-context-report\.json/);
   assert.match(action, /trace-to-skill-benchmark\.json/);
   assert.match(action, /trace-to-skill-scorecard\.json/);
@@ -327,23 +333,26 @@ test("composite action exposes Codex readiness doctor mode", async () => {
   assert.match(action, /npm run build/);
   assert.equal(action.includes("npx github:grnbtqdbyx-create/trace-to-skill"), false);
   assert.match(action, /trace-to-skill Codex Readiness/);
+  assert.match(action, /trace-to-skill AGENTS\.md Lint/);
   assert.match(action, /trace-to-skill GitHub Context Guard/);
   assert.match(action, /trace-to-skill Agent Learning/);
   assert.match(action, /trace-to-skill Benchmark/);
   assert.match(action, /trace-to-skill Scorecard/);
   assert.match(action, /node "\$TRACE_TO_SKILL_CLI" doctor/);
+  assert.match(action, /node "\$TRACE_TO_SKILL_CLI" lint-agents/);
   assert.match(action, /node "\$TRACE_TO_SKILL_CLI" guard-github-event/);
   assert.match(action, /node "\$TRACE_TO_SKILL_CLI" doctor-comment/);
   assert.match(action, /node "\$TRACE_TO_SKILL_CLI" benchmark/);
   assert.match(action, /node "\$TRACE_TO_SKILL_CLI" scorecard/);
   assert.match(action, /node "\$TRACE_TO_SKILL_CLI" scorecard-comment/);
+  assert.match(action, /inputs\.mode == 'agents-lint' \|\| inputs\.mode == 'all'/);
   assert.match(action, /inputs\.mode == 'github-context' \|\| inputs\.mode == 'all'/);
   assert.match(action, /inputs\.mode == 'doctor' \|\| inputs\.mode == 'both' \|\| inputs\.mode == 'all'/);
   assert.match(action, /inputs\.mode == 'benchmark' \|\| inputs\.mode == 'all'/);
   assert.match(action, /always\(\) && github\.event_name == 'pull_request' && inputs\.doctor-comment == 'true'/);
   assert.match(action, /always\(\) && github\.event_name == 'pull_request' && inputs\.scorecard-comment == 'true'/);
   assert.match(action, /github\.event_name == 'pull_request' && inputs\.comment == 'true'/);
-  assert.match(action, /mode must be one of: traces, github-context, doctor, benchmark, both, all/);
+  assert.match(action, /mode must be one of: traces, agents-lint, github-context, doctor, benchmark, both, all/);
 });
 
 test("repository dogfoods the local Codex readiness action", async () => {
@@ -358,6 +367,7 @@ test("repository dogfoods the local Codex readiness action", async () => {
   assert.match(workflow, /scorecard-comment: "true"/);
   assert.match(workflow, /job-summary: "true"/);
   assert.match(workflow, /steps\.readiness\.outputs\.doctor-score/);
+  assert.match(workflow, /steps\.readiness\.outputs\.agents-lint-status/);
   assert.match(workflow, /steps\.readiness\.outputs\.context-status/);
   assert.match(workflow, /steps\.readiness\.outputs\.benchmark-status/);
   assert.match(workflow, /steps\.readiness\.outputs\.scorecard-status/);
@@ -368,6 +378,10 @@ test("published JSON schemas describe CLI result contracts", async () => {
     required: string[];
     properties: Record<string, unknown>;
     $defs: Record<string, unknown>;
+  };
+  const agentsLintSchema = JSON.parse(await readFile("schemas/agents-lint-result.schema.json", "utf8")) as {
+    required: string[];
+    properties: Record<string, unknown>;
   };
   const doctorSchema = JSON.parse(await readFile("schemas/doctor-result.schema.json", "utf8")) as {
     required: string[];
@@ -382,6 +396,9 @@ test("published JSON schemas describe CLI result contracts", async () => {
   assert.deepEqual(analysisSchema.required, ["generatedAt", "inputs", "score", "summary", "findings", "recommendations"]);
   assert.ok(analysisSchema.properties.score);
   assert.ok(analysisSchema.$defs.finding);
+  assert.deepEqual(agentsLintSchema.required, ["generatedAt", "root", "status", "score", "instructionFiles", "mcpConfigs", "checks", "findings", "summary"]);
+  assert.ok(agentsLintSchema.properties.instructionFiles);
+  assert.ok(agentsLintSchema.properties.mcpConfigs);
   assert.deepEqual(doctorSchema.required, ["generatedAt", "root", "score", "summary", "checks", "findings"]);
   assert.ok(doctorSchema.properties.checks);
   assert.ok(doctorSchema.$defs.check);

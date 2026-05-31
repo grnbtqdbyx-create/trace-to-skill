@@ -6,7 +6,7 @@ branding:
   color: green
 inputs:
   mode:
-    description: Run "traces", "github-context", "doctor", "benchmark", "both", or "all".
+    description: Run "traces", "agents-lint", "github-context", "doctor", "benchmark", "both", or "all".
     required: false
     default: traces
   doctor-path:
@@ -68,6 +68,18 @@ outputs:
   agent-report:
     description: Path to the Markdown agent learning report.
     value: ${{ steps.agent-report.outputs.report }}
+  agents-lint-score:
+    description: AGENTS.md linter score, from 0 to 100.
+    value: ${{ steps.agents-lint.outputs.score }}
+  agents-lint-status:
+    description: AGENTS.md linter status, either pass, warn, or fail.
+    value: ${{ steps.agents-lint.outputs.status }}
+  agents-lint-report:
+    description: Path to the Markdown AGENTS.md linter report.
+    value: ${{ steps.agents-lint.outputs.report }}
+  agents-lint-json:
+    description: Path to the JSON AGENTS.md linter report.
+    value: ${{ steps.agents-lint.outputs.json }}
   context-score:
     description: Untrusted GitHub event context score, from 0 to 100.
     value: ${{ steps.github-context.outputs.score }}
@@ -116,9 +128,40 @@ runs:
       shell: bash
     - run: |
         case "${{ inputs.mode }}" in
-          traces|github-context|doctor|benchmark|both|all) ;;
-          *) echo "::error::mode must be one of: traces, github-context, doctor, benchmark, both, all"; exit 1 ;;
+          traces|agents-lint|github-context|doctor|benchmark|both|all) ;;
+          *) echo "::error::mode must be one of: traces, agents-lint, github-context, doctor, benchmark, both, all"; exit 1 ;;
         esac
+      shell: bash
+    - id: agents-lint
+      run: |
+        set -euo pipefail
+        node "$TRACE_TO_SKILL_CLI" lint-agents "${{ inputs.doctor-path }}" --format json --output agents-lint-report.json || true
+        node "$TRACE_TO_SKILL_CLI" lint-agents "${{ inputs.doctor-path }}" --output agents-lint-report.md || true
+        node --input-type=module <<'NODE'
+        import { appendFileSync, readFileSync } from "node:fs";
+        const report = JSON.parse(readFileSync("agents-lint-report.json", "utf8"));
+        const output = [
+          `score=${report.score}`,
+          `status=${report.status}`,
+          "report=agents-lint-report.md",
+          "json=agents-lint-report.json"
+        ].join("\n");
+        appendFileSync(process.env.GITHUB_OUTPUT, `${output}\n`);
+        NODE
+      if: inputs.mode == 'agents-lint' || inputs.mode == 'all'
+      shell: bash
+    - run: |
+        {
+          echo "## trace-to-skill AGENTS.md Lint"
+          echo
+          cat agents-lint-report.md
+        } >> "$GITHUB_STEP_SUMMARY"
+      if: always() && inputs.job-summary == 'true' && (inputs.mode == 'agents-lint' || inputs.mode == 'all')
+      shell: bash
+    - run: |
+        echo "::error::AGENTS.md linter failed with score ${{ steps.agents-lint.outputs.score }}"
+        exit 1
+      if: steps.agents-lint.outputs.status == 'fail' && (inputs.mode == 'agents-lint' || inputs.mode == 'all')
       shell: bash
     - id: github-context
       run: |

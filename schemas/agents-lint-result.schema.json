@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/grnbtqdbyx-create/trace-to-skill/main/schemas/agents-lint-result.schema.json",
+  "title": "trace-to-skill AgentsLintResult",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "generatedAt",
+    "root",
+    "status",
+    "score",
+    "instructionFiles",
+    "mcpConfigs",
+    "checks",
+    "findings",
+    "summary"
+  ],
+  "properties": {
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "root": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pass",
+        "warn",
+        "fail"
+      ]
+    },
+    "score": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "instructionFiles": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "mcpConfigs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "$ref": "doctor-result.schema.json#/$defs/check"
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "$ref": "analysis-result.schema.json#/$defs/finding"
+      }
+    },
+    "summary": {
+      "type": "string"
+    }
+  }
+}
