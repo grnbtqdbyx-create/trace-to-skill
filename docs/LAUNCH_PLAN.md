@@ -39,6 +39,7 @@ Secondary headline:
 - [x] GitHub Action doctor mode with score threshold
 - [x] Doctor PR summary comments
 - [x] Action metadata branding and self-dogfooding Codex readiness workflow
+- [x] Composite Action outputs for score, status, summary, and report paths
 - [x] one-command repository setup with `trace-to-skill init`
 - [x] discovery PR to awesome-codex-cli: https://github.com/milisp/awesome-codex-cli/pull/35
 - [x] discovery PR to awesome-harness-engineering: https://github.com/ai-boost/awesome-harness-engineering/pull/45
@@ -46,7 +47,7 @@ Secondary headline:
 ## Current Public Proof
 
 - Repository: https://github.com/grnbtqdbyx-create/trace-to-skill
-- Latest release: https://github.com/grnbtqdbyx-create/trace-to-skill/releases/tag/v0.1.10
+- Latest release: https://github.com/grnbtqdbyx-create/trace-to-skill/releases/tag/v0.1.11
 - CI: passing on `main`
 - Profile README: https://github.com/grnbtqdbyx-create/grnbtqdbyx-create
 

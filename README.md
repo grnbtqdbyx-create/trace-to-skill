@@ -220,7 +220,7 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v5
-      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.9
+      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.11
         with:
           mode: doctor
           doctor-threshold: "85"
@@ -268,7 +268,8 @@ Code scanning / SARIF upload:
 Composite action usage:
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.9
+- id: trace-to-skill
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.11
   with:
     mode: both
     doctor-threshold: "85"
@@ -277,7 +278,19 @@ Composite action usage:
     threshold: "80"
     comment: "true"
     github-token: ${{ github.token }}
+- run: echo "Codex readiness score is ${{ steps.trace-to-skill.outputs.doctor-score }}"
 ```
+
+Action outputs:
+
+| Output | Description |
+| --- | --- |
+| `doctor-score` | Codex readiness score from 0 to 100 |
+| `doctor-status` | `ready` or `needs-attention` |
+| `doctor-summary` | Human-readable doctor summary |
+| `doctor-report` | Markdown report path |
+| `doctor-json` | JSON report path |
+| `agent-report` | Agent learning report path |
 
 ## OpenAI / Codex Use Case
 
@@ -305,6 +318,7 @@ The goal is not to let agents autonomously rewrite project policy. The goal is t
 - GitHub Action doctor mode with score threshold
 - Doctor PR summary comments
 - Marketplace-ready action branding and self-dogfooding workflow
+- Composite Action outputs for downstream workflow steps
 - `trace-to-skill init` for repository setup
 - public benchmark of common agent failure classes
 

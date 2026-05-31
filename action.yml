@@ -37,6 +37,25 @@ inputs:
     description: Post or update a pull request comment with the report.
     required: false
     default: "false"
+outputs:
+  doctor-score:
+    description: Codex readiness doctor score, from 0 to 100.
+    value: ${{ steps.doctor.outputs.score }}
+  doctor-status:
+    description: Codex readiness doctor status, either ready or needs-attention.
+    value: ${{ steps.doctor.outputs.status }}
+  doctor-summary:
+    description: Codex readiness doctor summary text.
+    value: ${{ steps.doctor.outputs.summary }}
+  doctor-report:
+    description: Path to the Markdown Codex readiness doctor report.
+    value: ${{ steps.doctor.outputs.report }}
+  doctor-json:
+    description: Path to the JSON Codex readiness doctor report.
+    value: ${{ steps.doctor.outputs.json }}
+  agent-report:
+    description: Path to the Markdown agent learning report.
+    value: ${{ steps.agent-report.outputs.report }}
 runs:
   using: composite
   steps:
@@ -49,13 +68,50 @@ runs:
           *) echo "::error::mode must be one of: traces, doctor, both"; exit 1 ;;
         esac
       shell: bash
-    - run: npx github:grnbtqdbyx-create/trace-to-skill doctor "${{ inputs.doctor-path }}" --threshold "${{ inputs.doctor-threshold }}" --output codex-readiness-report.md
+    - id: doctor
+      run: |
+        set -euo pipefail
+        npx github:grnbtqdbyx-create/trace-to-skill doctor "${{ inputs.doctor-path }}" --format json --output codex-readiness-report.json
+        npx github:grnbtqdbyx-create/trace-to-skill doctor "${{ inputs.doctor-path }}" --output codex-readiness-report.md
+        node --input-type=module <<'NODE'
+        import { readFileSync } from "node:fs";
+        const report = JSON.parse(readFileSync("codex-readiness-report.json", "utf8"));
+        const thresholdText = "${{ inputs.doctor-threshold }}";
+        if (!/^[0-9]{1,3}$/.test(thresholdText)) {
+          console.error("::error::doctor-threshold must be an integer between 1 and 100");
+          process.exit(1);
+        }
+        const threshold = Number(thresholdText);
+        if (!Number.isInteger(threshold) || threshold < 1 || threshold > 100) {
+          console.error("::error::doctor-threshold must be an integer between 1 and 100");
+          process.exit(1);
+        }
+        const hasFailedChecks = report.checks.some((check) => check.status === "fail");
+        const hasCriticalFindings = report.findings.some((finding) => finding.severity === "critical");
+        const passesThreshold = report.score >= threshold;
+        const status = hasFailedChecks || hasCriticalFindings || !passesThreshold ? "needs-attention" : "ready";
+        const output = [
+          `score=${report.score}`,
+          `status=${status}`,
+          `summary=${String(report.summary).replace(/\r?\n/g, " ")}`,
+          "report=codex-readiness-report.md",
+          "json=codex-readiness-report.json"
+        ].join("\n");
+        await import("node:fs").then(({ appendFileSync }) => appendFileSync(process.env.GITHUB_OUTPUT, `${output}\n`));
+        if (status !== "ready") {
+          console.error(`::error::Codex readiness doctor status is ${status} with score ${report.score}/${threshold}`);
+          process.exit(1);
+        }
+        NODE
       if: inputs.mode == 'doctor' || inputs.mode == 'both'
       shell: bash
     - run: npx github:grnbtqdbyx-create/trace-to-skill doctor-comment "${{ inputs.doctor-path }}" --threshold "${{ inputs.doctor-threshold }}" --token "${{ inputs.github-token }}"
       if: always() && github.event_name == 'pull_request' && inputs.doctor-comment == 'true' && (inputs.mode == 'doctor' || inputs.mode == 'both')
       shell: bash
-    - run: npx github:grnbtqdbyx-create/trace-to-skill analyze "${{ inputs.traces }}" --output agent-learning-report.md
+    - id: agent-report
+      run: |
+        npx github:grnbtqdbyx-create/trace-to-skill analyze "${{ inputs.traces }}" --output agent-learning-report.md
+        echo "report=agent-learning-report.md" >> "$GITHUB_OUTPUT"
       if: inputs.mode == 'traces' || inputs.mode == 'both'
       shell: bash
     - run: npx github:grnbtqdbyx-create/trace-to-skill comment "${{ inputs.traces }}" --token "${{ inputs.github-token }}"

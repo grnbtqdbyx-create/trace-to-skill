@@ -33,6 +33,7 @@ trace-to-skill checks repo readiness and scans agent traces/logs to generate:
 - a GitHub Action readiness gate
 - a PR comment with the readiness score and top recommendations
 - a self-dogfooding workflow for its own Codex readiness
+- Action outputs for downstream workflows
 - an Agent Learning Report
 - suggested AGENTS.md rules
 - suggested SKILL.md content

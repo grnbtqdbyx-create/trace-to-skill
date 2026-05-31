@@ -209,6 +209,15 @@ test("composite action exposes Codex readiness doctor mode", async () => {
   assert.match(action, /branding:/);
   assert.match(action, /icon: check-circle/);
   assert.match(action, /color: green/);
+  assert.match(action, /outputs:/);
+  assert.match(action, /doctor-score:/);
+  assert.match(action, /doctor-status:/);
+  assert.match(action, /doctor-summary:/);
+  assert.match(action, /doctor-report:/);
+  assert.match(action, /agent-report:/);
+  assert.match(action, /steps\.doctor\.outputs\.report/);
+  assert.match(action, /steps\.agent-report\.outputs\.report/);
+  assert.match(action, /codex-readiness-report\.json/);
   assert.match(action, /mode:/);
   assert.match(action, /doctor-threshold:/);
   assert.match(action, /doctor-comment:/);
@@ -224,8 +233,10 @@ test("repository dogfoods the local Codex readiness action", async () => {
   const workflow = await readFile(".github/workflows/codex-readiness.yml", "utf8");
 
   assert.match(workflow, /name: Codex Readiness/);
+  assert.match(workflow, /id: readiness/);
   assert.match(workflow, /uses: \.\//);
   assert.match(workflow, /mode: doctor/);
   assert.match(workflow, /doctor-threshold: "95"/);
   assert.match(workflow, /doctor-comment: "true"/);
+  assert.match(workflow, /steps\.readiness\.outputs\.doctor-score/);
 });

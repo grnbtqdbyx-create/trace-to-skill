@@ -23,13 +23,14 @@ Current proof points:
 - GitHub Action doctor mode with configurable readiness threshold.
 - Pull request comments for Codex readiness scores and recommendations.
 - Self-dogfooding Codex readiness workflow in the repository.
+- Composite Action outputs for downstream maintainer workflows.
 - MCP config capability and secret-risk scoring.
 - `AGENTS.md` / `CLAUDE.md` contradiction detection.
 - Pull request comment reports.
 - SARIF output for GitHub code scanning.
 - Before/after eval comparison with keep/revise/reject decisions.
 - One-command repository setup via `trace-to-skill init`.
-- Public release v0.1.10.
+- Public release v0.1.11.
 
 500-character version:
 
