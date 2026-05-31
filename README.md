@@ -16,6 +16,7 @@ npx trace-to-skill doctor .
 npx trace-to-skill lint-agents .
 npx trace-to-skill analyze ./runs
 npx trace-to-skill codex-report ./runs
+npx trace-to-skill usage-evidence ./usage-notes.md --output usage-evidence.md
 npx trace-to-skill init --comment --sarif
 npx trace-to-skill suggest ./runs --target agents-md
 npx trace-to-skill eval ./runs --threshold 80
@@ -57,6 +58,7 @@ Use it when you need to:
 - **Audit Codex config drift:** run `trace-to-skill config-audit ~/.codex --format json` to summarize legacy profile config, model pins, sandbox/approval posture, Windows elevated sandbox mode, missing permission profiles, plugin cache drift, and MCP approval sprawl.
 - **Audit bundled plugin drift:** run `trace-to-skill plugin-audit ~/.codex --app /Applications/Codex.app --format json` to check Browser, Chrome, Computer Use, bundled marketplace, plugin cache, manifest, helper app, `CODEX_HOME`, and unsupported feature-flag drift without posting raw logs.
 - **Bundle Codex diagnostics safely:** run `trace-to-skill diagnostics-bundle ~/.codex --output codex-diagnostics` to create a metadata-only support folder with manifest, README, config, plugin, and session audit reports while excluding raw logs, SQLite state, raw config, and transcripts.
+- **Package Codex usage evidence:** run `trace-to-skill usage-evidence ./usage-notes.md --output usage-evidence.md` to turn `/status`, reset tables, usage-limit errors, and token totals into a redaction-aware report.
 - **Share failed traces safely:** run `trace-to-skill redact ./runs --output redacted-runs` before publishing anonymized failure fixtures.
 - **Catch sensitive file access:** run `trace-to-skill analyze ./runs` when an agent trace includes `.env`, private keys, `.npmrc`, cloud credentials, local databases, or production secret manifests.
 - **Report remote compact failures:** run `trace-to-skill codex-report ./runs` when `/compact` or auto-compaction fails with `responses/compact` timeouts, stream disconnects, provider timeout workarounds, or long-thread recovery loss.
@@ -74,6 +76,7 @@ Use it when you need to:
 - **Debug Codex resume/session state:** run `trace-to-skill analyze ./runs` when `codex resume` freezes, large JSONL histories make Desktop sluggish, recent context disappears after resume, or SQLite migration/state errors break goals.
 - **Attribute token burn:** run `trace-to-skill analyze ./runs` when Codex drains usage unexpectedly because of background polling, idle app activity, compaction loops, retry spirals, fast-mode drift, or cached-token-heavy turns.
 - **Report usage reset drift:** run `trace-to-skill analyze ./runs` when weekly or 5-hour reset times move unexpectedly, saved usage is lost, or `/status` and the dashboard disagree about the reset anchor.
+- **Bundle quota evidence:** run `trace-to-skill usage-evidence ./usage-notes.md` when you have polling tables, `/status` percentages, reset timestamps, cached-token totals, or `You've hit your usage limit` messages.
 - **Report resource leaks:** run `trace-to-skill analyze ./runs` when Codex Desktop, VS Code extension, app-server, renderer, GPU, or orphaned helper processes keep burning CPU/GPU/memory after the work should be idle.
 - **Catch tool-call integrity failures:** run `trace-to-skill analyze ./runs` when `apply_patch`, `*** Add File` overwrite behavior, rollback/undo, subagent shutdown, or `tool_call_id` protocol failures threaten file safety or strand a session.
 - **File better OpenAI/Codex issues:** run `trace-to-skill codex-report ./runs` to turn a failed trace into a redaction-aware, copy-paste-ready issue body with evidence and diagnostics.
@@ -287,6 +290,15 @@ trace-to-skill codex-report ./runs --output openai-codex-issue.md
 
 This renders a copy-paste issue body with the likely Codex failure class, evidence lines, diagnostics to attach, and privacy/redaction reminders. It is designed for high-signal reports in `openai/codex` issues without forcing maintainers to read full private transcripts.
 
+Package Codex usage, reset, and quota evidence:
+
+```bash
+trace-to-skill usage-evidence ./usage-notes.md --output usage-evidence.md
+trace-to-skill usage-evidence ./usage-notes.md --format json
+```
+
+This parses Markdown polling tables, CSV-like rows, JSON/JSONL snapshots, `/status` excerpts, `reset_at` timestamps, usage-limit messages, and `Token usage: total=... cached` lines into a concise report for Codex rate-limit, reset-drift, and token-burn issues.
+
 Generate reusable rules:
 
 ```bash
@@ -372,6 +384,7 @@ trace-to-skill compare --before ./runs/before --after ./runs/after
 - `.md`
 - `.txt`
 - `.log`
+- `.csv`
 - `.json`
 - `.jsonl`
 
@@ -396,6 +409,7 @@ Stable machine-readable contracts are published with the npm package and release
 - [`schemas/diagnostics-bundle-result.schema.json`](schemas/diagnostics-bundle-result.schema.json) describes `trace-to-skill diagnostics-bundle --format json`.
 - [`schemas/plugin-audit-result.schema.json`](schemas/plugin-audit-result.schema.json) describes `trace-to-skill plugin-audit --format json`.
 - [`schemas/session-audit-result.schema.json`](schemas/session-audit-result.schema.json) describes `trace-to-skill session-audit --format json`.
+- [`schemas/usage-evidence-result.schema.json`](schemas/usage-evidence-result.schema.json) describes `trace-to-skill usage-evidence --format json`.
 
 These schemas let downstream Codex workflows, dashboards, and CI bots consume reports without scraping Markdown.
 
@@ -427,7 +441,7 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v5
-      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.58
+      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.59
         with:
           mode: all
           doctor-threshold: "85"
@@ -476,7 +490,7 @@ Composite action usage:
 
 ```yaml
 - id: trace-to-skill
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.58
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.59
   with:
     mode: all
     doctor-threshold: "85"
@@ -518,7 +532,7 @@ Action outputs:
 
 By default, generated reports are also appended to the GitHub Actions Job Summary. Set `job-summary: "false"` to disable that UI output.
 
-Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.58` executes that release's checked-out source instead of pulling the default branch at runtime.
+Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.59` executes that release's checked-out source instead of pulling the default branch at runtime.
 
 ## Codex Skill
 

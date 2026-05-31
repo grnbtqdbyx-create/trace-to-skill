@@ -27,6 +27,7 @@ Runtime: Node.js 20+
 - Codex file tree and workspace navigation UI failures such as `View > Toggle File Tree` doing nothing, missing folder icons, stale floating file panels, and built-in preview failures
 - Codex token-burn and usage-drain failures such as background `write_stdin` polling, idle app usage, compaction tax, retry/tool loops, cached-token-heavy turns, fast-mode drift, subagent fan-out, and unclear usage attribution
 - Codex usage reset schedule drift such as weekly reset dates moving, `reset_at` jumping, saved usage disappearing, outage compensation resets changing the anchor, and `/status` disagreeing with enforcement
+- Codex usage evidence packaging for scattered `/status`, reset-table, usage-limit, and token-total snippets
 - Codex resource leaks and runaway local processes such as high CPU/GPU, `Code Helper`, `Codex Helper Renderer`, orphaned shell snapshots, log floods, thinking animation GPU loops, and non-Git workspace CPU loops
 - Codex quota and usage-limit mismatches where `/status` or the usage page shows remaining quota, accounts share limits unexpectedly, or 5h and weekly quotas move together
 - sensitive-file access in traces, including `.env`, private keys, package auth files, cloud credentials, local databases, and production secret manifests entering agent context
@@ -70,6 +71,7 @@ npx trace-to-skill session-audit ~/.codex --format json
 npx trace-to-skill config-audit ~/.codex --format json
 npx trace-to-skill plugin-audit ~/.codex --app /Applications/Codex.app --format json
 npx trace-to-skill diagnostics-bundle ~/.codex --output codex-diagnostics
+npx trace-to-skill usage-evidence ./usage-notes.md --output usage-evidence.md
 npx trace-to-skill redact ./runs --output redacted-runs
 npx trace-to-skill analyze ./runs
 npx trace-to-skill codex-report ./runs --output openai-codex-issue.md
@@ -83,7 +85,7 @@ npx trace-to-skill init --comment --sarif
 ## GitHub Action
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.58
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.59
   with:
     mode: all
     doctor-threshold: "85"
@@ -105,6 +107,7 @@ npx trace-to-skill init --comment --sarif
 - Diagnostics bundle JSON schema: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/schemas/diagnostics-bundle-result.schema.json
 - Plugin audit JSON schema: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/schemas/plugin-audit-result.schema.json
 - Session audit JSON schema: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/schemas/session-audit-result.schema.json
+- Usage evidence JSON schema: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/schemas/usage-evidence-result.schema.json
 
 ## Search phrases this project should answer
 
@@ -157,6 +160,8 @@ npx trace-to-skill init --comment --sarif
 - OpenAI Codex issue report from failed trace
 - Codex bug report evidence checklist
 - Codex token burn write_stdin background polling
+- Codex usage evidence report
+- Codex rate-limit evidence report
 - Codex cached input token usage drain
 - Codex weekly reset date changed
 - Codex usage reset_at jumping

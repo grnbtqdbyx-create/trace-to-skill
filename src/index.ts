@@ -21,4 +21,6 @@ export { renderAgentsRules, renderCodexIssueReport, renderComparison, renderDoct
 export { renderScorecardMarkdown, renderScorecardPrComment, runScorecard } from "./scorecard.js";
 export { auditCodexSessions, renderSessionAuditMarkdown } from "./sessionAudit.js";
 export type { SessionAuditFile, SessionAuditFinding, SessionAuditOptions, SessionAuditResult, SessionAuditSeverity, SessionAuditStateFile, SessionAuditStatus } from "./sessionAudit.js";
+export { buildUsageEvidence, buildUsageEvidenceFromInputs, renderUsageEvidenceMarkdown } from "./usageEvidence.js";
+export type { TokenUsageRecord, UsageEvidenceFinding, UsageEvidenceFindingKind, UsageEvidenceResult, UsageEvidenceStatus, UsageSnapshot } from "./usageEvidence.js";
 export type { AnalysisResult, Finding, FindingKind, Severity } from "./types.js";

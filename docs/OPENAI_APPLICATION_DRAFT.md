@@ -63,6 +63,7 @@ Current proof points:
 - Codex file tree and workspace navigation UI detection for missing `View > Toggle File Tree`, stale floating file panels, and file-preview failures.
 - Token-burn attribution for background polling, idle app activity, compaction/replay overhead, retry loops, cached-token-heavy turns, fast-mode drift, and subagent fan-out.
 - Usage reset schedule drift detection for moving weekly reset anchors, saved usage loss, outage compensation resets, and `/status` versus dashboard reset discrepancies.
+- `usage-evidence` reports for scattered `/status`, reset-table, usage-limit, and token-total snippets.
 - Resource-leak detection for Codex Desktop, VS Code extension, renderer, GPU, shell snapshot, and helper processes that keep burning CPU/GPU/RAM after the useful work should be idle.
 - Quota mismatch detection for usage-limit blocks that contradict `/status`, usage dashboard state, account switching, or reset timing.
 - Sensitive-file access detection for `.env`, private keys, package auth files, cloud credentials, local databases, and production secret manifests entering agent context.
@@ -72,7 +73,7 @@ Current proof points:
 - SARIF output for GitHub code scanning.
 - Before/after eval comparison with keep/revise/reject decisions.
 - One-command repository setup via `trace-to-skill init`.
-- Public release v0.1.58.
+- Public release v0.1.59.
 - Current GitHub scorecard: 100/100 Codex-ready, benchmark passing.
 
 500-character version:

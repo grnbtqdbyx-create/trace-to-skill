@@ -1,0 +1,187 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/grnbtqdbyx-create/trace-to-skill/schemas/usage-evidence-result.schema.json",
+  "title": "trace-to-skill Codex usage evidence result",
+  "type": "object",
+  "required": ["generatedAt", "status", "inputs", "summary", "snapshots", "tokenUsage", "findings", "checklist"],
+  "additionalProperties": false,
+  "properties": {
+    "generatedAt": {
+      "type": "string"
+    },
+    "status": {
+      "enum": ["pass", "warn"]
+    },
+    "inputs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "summary": {
+      "type": "object",
+      "required": ["snapshots", "tokenUsageRecords", "usageLimitSignals", "resetDriftWindows", "highCachedInputRecords"],
+      "additionalProperties": false,
+      "properties": {
+        "snapshots": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "tokenUsageRecords": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "usageLimitSignals": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "resetDriftWindows": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "highCachedInputRecords": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "snapshots": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/snapshot"
+      }
+    },
+    "tokenUsage": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/tokenUsage"
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/finding"
+      }
+    },
+    "checklist": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "$defs": {
+    "snapshot": {
+      "type": "object",
+      "required": ["source", "line", "window", "excerpt"],
+      "additionalProperties": false,
+      "properties": {
+        "source": {
+          "type": "string"
+        },
+        "line": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "window": {
+          "type": "string"
+        },
+        "percent": {
+          "type": "number"
+        },
+        "resetAt": {
+          "type": "string"
+        },
+        "sampleTime": {
+          "type": "string"
+        },
+        "excerpt": {
+          "type": "string"
+        }
+      }
+    },
+    "tokenUsage": {
+      "type": "object",
+      "required": ["source", "line", "excerpt"],
+      "additionalProperties": false,
+      "properties": {
+        "source": {
+          "type": "string"
+        },
+        "line": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "total": {
+          "type": "number"
+        },
+        "input": {
+          "type": "number"
+        },
+        "cachedInput": {
+          "type": "number"
+        },
+        "output": {
+          "type": "number"
+        },
+        "reasoning": {
+          "type": "number"
+        },
+        "excerpt": {
+          "type": "string"
+        }
+      }
+    },
+    "finding": {
+      "type": "object",
+      "required": ["kind", "severity", "title", "why", "evidence", "nextStep"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": [
+            "reset_timestamp_drift",
+            "quota_percentage_jump",
+            "usage_limit_with_remaining_quota",
+            "high_cached_input",
+            "high_total_tokens"
+          ]
+        },
+        "severity": {
+          "enum": ["medium", "high"]
+        },
+        "title": {
+          "type": "string"
+        },
+        "why": {
+          "type": "string"
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/evidence"
+          }
+        },
+        "nextStep": {
+          "type": "string"
+        }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "required": ["file", "line", "excerpt"],
+      "additionalProperties": false,
+      "properties": {
+        "file": {
+          "type": "string"
+        },
+        "line": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "excerpt": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

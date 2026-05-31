@@ -10,6 +10,7 @@ Use it when you want to file a concise Codex issue, deduplicate reports, or conv
 npx trace-to-skill redact ./runs --output redacted-runs
 npx trace-to-skill analyze redacted-runs --format json
 npx trace-to-skill codex-report redacted-runs --output openai-codex-issue.md
+npx trace-to-skill usage-evidence ./usage-notes.md --output usage-evidence.md
 npx trace-to-skill plugin-audit ~/.codex --app /Applications/Codex.app --format json
 npx trace-to-skill diagnostics-bundle ~/.codex --output codex-diagnostics
 ```
@@ -18,8 +19,8 @@ npx trace-to-skill diagnostics-bundle ~/.codex --output codex-diagnostics
 
 | OpenAI/Codex issue cluster | Common signals | Finding kind | Best command |
 | --- | --- | --- | --- |
-| Token burn and usage drain | `tokens burning very fast`, large cached input totals, `write_stdin` empty polls, idle app usage, compaction tax, retry loops | `codex_token_burn` | `trace-to-skill codex-report ./runs` |
-| Usage reset schedule drift | weekly reset time changes, `reset_at` jumps, saved quota is wiped or pushed into the next window, outage compensation reset changes the anchor | `codex_usage_reset_drift` | `trace-to-skill codex-report ./runs` |
+| Token burn and usage drain | `tokens burning very fast`, large cached input totals, `write_stdin` empty polls, idle app usage, compaction tax, retry loops | `codex_token_burn` | `trace-to-skill usage-evidence ./usage-notes.md` or `trace-to-skill codex-report ./runs` |
+| Usage reset schedule drift | weekly reset time changes, `reset_at` jumps, saved quota is wiped or pushed into the next window, outage compensation reset changes the anchor | `codex_usage_reset_drift` | `trace-to-skill usage-evidence ./usage-notes.md` or `trace-to-skill codex-report ./runs` |
 | Remote compact task failures | `/compact` or auto-compact fails, `responses/compact` stream disconnects, `timeout waiting for child process to exit`, `tcp_user_timeout` or `stream_idle_timeout_ms` workarounds, provider-id timeout drift | `codex_remote_compact` | `trace-to-skill codex-report ./runs` |
 | Windows helper and bundled tool path failures | bundled `rg.exe`, `node_repl.exe`, `codex-command-runner.exe`, Browser, Chrome, or Computer Use helpers resolve through `WindowsApps`, missing `%LOCALAPPDATA%\OpenAI\Codex\bin`, broken LocalCache helper bins, `CodexSandboxUsers` ACL gaps, EFS/copyfile failures | `codex_windows_helper_path` | `trace-to-skill codex-report ./runs` |
 | Resource leaks and runaway processes | high CPU/GPU/RAM, `Code Helper`, `Codex Helper Renderer`, orphaned `shell-snapshot`, `syspolicyd`, log floods, thinking animation GPU loops | `codex_resource_leak` | `trace-to-skill codex-report ./runs` |
@@ -29,7 +30,7 @@ npx trace-to-skill diagnostics-bundle ~/.codex --output codex-diagnostics
 | Config and Preferences drift | legacy `profile` / `[profiles.*]`, `configVersionConflict`, Preferences `Unable to save`, stale model pin, missing `default_permissions` profile, enabled plugin cache missing, Windows elevated sandbox mode | `sandbox_permission`, `codex_plugin_runtime`, `codex_approval_friction` | `trace-to-skill config-audit ~/.codex --format json` |
 | Bundled plugin cache and marketplace drift | Computer Use unavailable, Browser/Chrome plugin unavailable, generated runtime marketplace omits bundled plugins, missing `.mcp.json` or `plugin.json`, helper app not installed, `CODEX_HOME` points at another runtime | `codex_plugin_runtime`, `codex_mcp_runtime` | `trace-to-skill plugin-audit ~/.codex --app /Applications/Codex.app --format json` |
 | Support diagnostics packaging | maintainers ask for more detail, but raw `config.toml`, `logs_2.sqlite`, `state_5.sqlite`, `session_index.jsonl`, rollout JSONL, or local logs are too private to post | multiple | `trace-to-skill diagnostics-bundle ~/.codex --output codex-diagnostics` |
-| Quota mismatch | `/status` or usage page shows quota left, but runtime says `You've hit your usage limit`; account/workspace reset or cache confusion | `quota_mismatch` | `trace-to-skill codex-report ./runs` |
+| Quota mismatch | `/status` or usage page shows quota left, but runtime says `You've hit your usage limit`; account/workspace reset or cache confusion | `quota_mismatch` | `trace-to-skill usage-evidence ./usage-notes.md` or `trace-to-skill codex-report ./runs` |
 | Sensitive file exclusion | `.env`, private keys, `.npmrc`, cloud credentials, local databases, or production secret manifests entered agent context | `sensitive_file_access` | `trace-to-skill codex-report ./runs` |
 | Context compaction failures | `Error running remote compact task`, `context_length_exceeded`, compaction loops, `responses/compact` stream disconnects | `context_compaction` | `trace-to-skill analyze ./runs` |
 | Latest-turn drift | Codex answers an older prompt, repeats a previous response, redoes an already fixed task, forgets recent edits after compaction, or leaks raw tool payload text | `codex_latest_turn_drift` | `trace-to-skill codex-report ./runs` |

@@ -21,6 +21,7 @@ import { redactTargets, redactText } from "../src/redact.js";
 import { renderAgentsRules, renderCodexIssueReport, renderComparison, renderDoctorPrComment, renderPrComment, renderSarif, renderSkill } from "../src/report.js";
 import { renderScorecardMarkdown, renderScorecardPrComment, runScorecard } from "../src/scorecard.js";
 import { auditCodexSessions, renderSessionAuditMarkdown } from "../src/sessionAudit.js";
+import { buildUsageEvidence, buildUsageEvidenceFromInputs, renderUsageEvidenceMarkdown } from "../src/usageEvidence.js";
 
 test("analyzeTargets detects failed agent workflow signals", async () => {
   const result = await analyzeTargets(["fixtures/failed-run.md"]);
@@ -730,6 +731,54 @@ test("analyzeTargets detects Codex quota mismatches", async () => {
   assert.match(evidence, /You've hit your usage limit/);
   assert.match(evidence, /21% left/);
   assert.match(finding.suggestedRule, /usage dashboard/);
+});
+
+test("buildUsageEvidence packages reset drift, token burn, and quota mismatch evidence", async () => {
+  const cwd = await mkdtemp(path.join(os.tmpdir(), "trace-to-skill-usage-"));
+  const fixture = path.join(cwd, "usage-notes.md");
+  await writeFile(fixture, [
+    "sample time | type1 | pct1 | reset1 | type2 | pct2 | reset2",
+    "-- | -- | -- | -- | -- | -- | --",
+    "2025-11-30 16:05:07 | 5h | 38 | 2025-11-30 16:17:57 | 7d | 75 | 2025-12-02 17:00:03",
+    "2025-11-30 16:45:04 | 5h | 5 | 2025-11-30 21:18:04 | 7d | 78 | **2025-11-30 16:50:02**",
+    "2025-11-30 17:05:02 | 5h | 9 | 2025-11-30 21:18:04 | 7d | 1 | 2025-12-07 16:50:09",
+    "/status says weekly 21% left, reset_at 2025-12-07 16:50:09",
+    "Codex says: You've hit your usage limit.",
+    "Token usage: total=742,555 input=697,188 (+ 9,077,504 cached) output=45,367 (reasoning 11,450)",
+    ""
+  ].join("\n"), "utf8");
+
+  const result = await buildUsageEvidence([fixture]);
+  const markdown = renderUsageEvidenceMarkdown(result);
+  const kinds = result.findings.map((finding) => finding.kind);
+
+  assert.equal(result.status, "warn");
+  assert.ok(result.summary.snapshots >= 6);
+  assert.equal(result.summary.tokenUsageRecords, 1);
+  assert.ok(kinds.includes("reset_timestamp_drift"));
+  assert.ok(kinds.includes("quota_percentage_jump"));
+  assert.ok(kinds.includes("usage_limit_with_remaining_quota"));
+  assert.ok(kinds.includes("high_cached_input"));
+  assert.match(markdown, /Codex Usage Evidence/);
+  assert.match(markdown, /Usage Snapshots/);
+  assert.match(markdown, /9,077,504/);
+});
+
+test("buildUsageEvidenceFromInputs parses JSONL-style usage snapshots", () => {
+  const result = buildUsageEvidenceFromInputs([
+    {
+      path: "usage.jsonl",
+      content: [
+        JSON.stringify({ sampleTime: "2026-05-31T10:00:00Z", window: "7d", percent: 62, resetAt: "2026-06-03T10:00:00Z" }),
+        JSON.stringify({ timestamp: "2026-05-31T10:20:00Z", type: "5h", pct: "14%", reset_at: "2026-05-31T15:20:00Z" })
+      ].join("\n")
+    }
+  ]);
+
+  assert.equal(result.status, "pass");
+  assert.equal(result.snapshots.length, 2);
+  assert.equal(result.snapshots[0]?.window, "7d");
+  assert.equal(result.snapshots[1]?.window, "5h");
 });
 
 test("analyzeTargets detects Codex usage reset schedule drift", async () => {
@@ -1484,7 +1533,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.equal(brief.scorecard.benchmarkStatus, "pass");
   assert.equal(brief.scorecard.benchmarkCases, 26);
   assert.equal(brief.packageName, "trace-to-skill");
-  assert.equal(brief.packageVersion, "0.1.58");
+  assert.equal(brief.packageVersion, "0.1.59");
   assert.equal(brief.license, "Apache-2.0");
   assert.ok(brief.repository?.includes("github.com/grnbtqdbyx-create/trace-to-skill"));
   assert.ok(brief.qualification.max500.length <= 500);
@@ -1492,7 +1541,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.match(markdown, /OpenAI OSS Brief/);
   assert.match(markdown, /Why This Repository Qualifies/);
   assert.match(markdown, /500-Character Version/);
-  assert.match(markdown, /npx trace-to-skill@0\.1\.58/);
+  assert.match(markdown, /npx trace-to-skill@0\.1\.59/);
 });
 
 test("scorecard-comment dry-run resolves pull request event", async () => {

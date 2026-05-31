@@ -2,7 +2,7 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import type { TraceInput } from "./types.js";
 
-const SUPPORTED_EXTENSIONS = new Set([".txt", ".log", ".md", ".json", ".jsonl"]);
+const SUPPORTED_EXTENSIONS = new Set([".txt", ".log", ".md", ".csv", ".json", ".jsonl"]);
 
 export async function loadTraceInputs(targets: string[]): Promise<TraceInput[]> {
   const expanded: TraceInput[] = [];

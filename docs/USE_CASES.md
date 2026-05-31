@@ -42,7 +42,7 @@ What it proves:
 Recommended CI surface:
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.58
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.59
   with:
     mode: all
     doctor-threshold: "85"
@@ -111,7 +111,18 @@ npx trace-to-skill codex-report ./runs --output openai-codex-compact-issue.md
 
 This catches signals such as `Error running remote compact task`, `timeout waiting for child process to exit`, `stream disconnected before completion`, `responses/compact`, `tcp_user_timeout`, `stream_idle_timeout_ms`, provider-id timeout workarounds, Azure provider config drift, and long-running tasks broken by failed compaction.
 
-## 7. Codex Windows Helper Path Triage
+## 7. Codex Usage Evidence Packaging
+
+Use this when a Codex usage issue has scattered evidence across `/status`, dashboard notes, reset tables, and token totals.
+
+```bash
+npx trace-to-skill usage-evidence ./usage-notes.md --output usage-evidence.md
+npx trace-to-skill usage-evidence ./usage-notes.md --format json
+```
+
+This turns Markdown polling tables, CSV-like rows, JSON/JSONL snapshots, `reset_at` values, usage-limit errors, and `Token usage: total=... cached` lines into a single report with reset drift, quota jumps, cached-input-heavy turns, and remaining-quota contradictions.
+
+## 8. Codex Windows Helper Path Triage
 
 Use this when Codex Desktop on Windows discovers bundled tools or plugin helpers but cannot execute them from the integrated terminal, tool runner, Browser, Chrome, Computer Use, or node_repl path.
 
@@ -121,7 +132,7 @@ npx trace-to-skill codex-report ./runs --output openai-codex-windows-helper-issu
 
 This catches signals such as `Program 'rg.exe' failed to run`, `Access is denied`, `WindowsApps\OpenAI.Codex...\app\resources`, missing `%LOCALAPPDATA%\OpenAI\Codex\bin`, missing MSIX LocalCache helper bins, `CodexSandboxUsers` ACL/RX problems, `copyfile` failures from WindowsApps bundled plugin manifests, EFS/Application Protected attributes, `windows sandbox failed: spawn setup refresh`, `missing-helper-path`, and unavailable Browser/Chrome/Computer Use plugin helpers.
 
-## 8. Codex Mobile And Remote-Control Route Health
+## 9. Codex Mobile And Remote-Control Route Health
 
 Use this when Codex mobile, SSH remote, or desktop remote-control says it is connected but commands do not reach the expected host, workspace, or app-server.
 
@@ -131,7 +142,7 @@ npx trace-to-skill analyze ./runs --format json
 
 This catches signals such as `Waiting for desktop`, `Directory: Unavailable`, stale `server_name` enrollment, stale remote-control listener, `127.0.0.1:14567`, missing cached helper files such as `codex-windows-sandbox-setup.exe` or `codex-command-runner.exe`, empty backend environments, stale Android session lists, and temporary recovery after re-pairing or listener restart.
 
-## 9. Codex MCP Runtime Triage
+## 10. Codex MCP Runtime Triage
 
 Use this when MCP tools are configured and visible, but Codex cannot actually call them at runtime.
 

@@ -18,6 +18,7 @@ import { redactTargets } from "./redact.js";
 import { renderAgentsRules, renderCodexIssueReport, renderComparison, renderDoctorMarkdown, renderDoctorPrComment, renderMarkdown, renderPrComment, renderSarif, renderSkill } from "./report.js";
 import { renderScorecardMarkdown, renderScorecardPrComment, runScorecard } from "./scorecard.js";
 import { auditCodexSessions, renderSessionAuditMarkdown } from "./sessionAudit.js";
+import { buildUsageEvidence, renderUsageEvidenceMarkdown } from "./usageEvidence.js";
 
 interface ParsedArgs {
   command: string;
@@ -67,6 +68,14 @@ async function main(): Promise<void> {
   if (parsed.command === "codex-report") {
     const result = await analyzeTargets(parsed.targets);
     await writeOutput(renderCodexIssueReport(result), parsed.flags.output);
+    return;
+  }
+
+  if (parsed.command === "usage-evidence") {
+    const result = await buildUsageEvidence(parsed.targets);
+    const format = String(parsed.flags.format ?? "markdown");
+    const output = format === "json" ? `${JSON.stringify(result, null, 2)}\n` : renderUsageEvidenceMarkdown(result);
+    await writeOutput(output, parsed.flags.output);
     return;
   }
 
@@ -426,6 +435,7 @@ Usage:
   trace-to-skill demo [scenario] [--list] [--format markdown|json] [--output docs/DEMO.md]
   trace-to-skill analyze <trace-file-or-dir> [--format markdown|json|sarif] [--output report.md]
   trace-to-skill codex-report <trace-file-or-dir> [--output openai-codex-issue.md]
+  trace-to-skill usage-evidence <usage-log-file-or-dir> [--format markdown|json] [--output usage-evidence.md]
   trace-to-skill suggest <trace-file-or-dir> [--target agents-md|skill] [--output AGENTS.generated.md]
   trace-to-skill lint-agents [repo-dir] [--format markdown|json] [--output report.md]
   trace-to-skill redact <trace-file-or-dir> [--output redacted-runs] [--format text|json]
@@ -451,6 +461,7 @@ Examples:
   trace-to-skill demo latency-regression
   trace-to-skill analyze ./runs
   trace-to-skill codex-report ./runs --output openai-codex-issue.md
+  trace-to-skill usage-evidence ./usage-notes.md --output usage-evidence.md
   trace-to-skill suggest ./runs --target skill --output skills/verification-before-completion/SKILL.md
   trace-to-skill lint-agents .
   trace-to-skill redact ./runs --output redacted-runs
