@@ -20,6 +20,8 @@ export { guardPatchContent, guardPatchFile, renderPatchGuardMarkdown } from "./p
 export type { PatchGuardFinding, PatchGuardOperation, PatchGuardResult, PatchGuardSeverity } from "./patchGuard.js";
 export { auditCodexPlugins, renderPluginAuditMarkdown } from "./pluginAudit.js";
 export type { PluginAuditFinding, PluginAuditHelperApp, PluginAuditMarketplace, PluginAuditOptions, PluginAuditPlugin, PluginAuditResult, PluginAuditSeverity, PluginAuditStatus } from "./pluginAudit.js";
+export { auditProcessEvidence, auditProcessEvidenceFromInputs, renderProcessAuditMarkdown } from "./processAudit.js";
+export type { ProcessAuditFinding, ProcessAuditResult, ProcessAuditSignal, ProcessAuditSignalKind, ProcessAuditStatus } from "./processAudit.js";
 export { redactTargets, redactText } from "./redact.js";
 export { renderAgentsRules, renderCodexIssueReport, renderComparison, renderDoctorMarkdown, renderDoctorPrComment, renderMarkdown, renderPrComment, renderSarif, renderSkill } from "./report.js";
 export { renderScorecardMarkdown, renderScorecardPrComment, runScorecard } from "./scorecard.js";

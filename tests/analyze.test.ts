@@ -21,6 +21,7 @@ import { auditLspReadiness, renderLspAuditMarkdown } from "../src/lspAudit.js";
 import { renderOssBriefMarkdown, runOssBrief } from "../src/ossBrief.js";
 import { guardPatchContent, guardPatchFile, renderPatchGuardMarkdown } from "../src/patchGuard.js";
 import { auditCodexPlugins, renderPluginAuditMarkdown } from "../src/pluginAudit.js";
+import { auditProcessEvidenceFromInputs, renderProcessAuditMarkdown } from "../src/processAudit.js";
 import { redactTargets, redactText } from "../src/redact.js";
 import { renderAgentsRules, renderCodexIssueReport, renderComparison, renderDoctorPrComment, renderPrComment, renderSarif, renderSkill } from "../src/report.js";
 import { renderScorecardMarkdown, renderScorecardPrComment, runScorecard } from "../src/scorecard.js";
@@ -1072,6 +1073,32 @@ test("buildUsageEvidenceFromInputs parses JSONL-style usage snapshots", () => {
   assert.equal(result.snapshots[1]?.window, "5h");
 });
 
+test("process audit packages Codex process polling and high CPU evidence", () => {
+  const result = auditProcessEvidenceFromInputs([
+    {
+      path: "process-notes.md",
+      content: [
+        "30.05s sample: observed 23 PowerShell/pwsh processes, approximately 0.77/sec, consuming about 48.95 CPU-seconds total.",
+        "powershell.exe -NoProfile -NonInteractive -Command \"Get-CimInstance Win32_Process | Select-Object ProcessId,ParentProcessId | ConvertTo-Json -Depth 2\"",
+        "~/.codex/process_manager/chat_processes.json had 15 stale entries from previous conversations.",
+        "Codex Helper Renderer pid=1234 CPU=92% sustained load after closing the app.",
+        ""
+      ].join("\n")
+    }
+  ]);
+  const markdown = renderProcessAuditMarkdown(result);
+
+  assert.equal(result.status, "warn");
+  assert.equal(result.summary.powershellCimCommands, 2);
+  assert.equal(result.summary.highCpuProcesses, 1);
+  assert.equal(result.summary.staleProcessManagerSignals, 1);
+  assert.equal(result.summary.codexHelperSignals, 1);
+  assert.ok(result.findings.some((finding) => finding.kind === "powershell_cim_polling" && finding.severity === "high"));
+  assert.ok(result.signals.some((signal) => signal.kind === "high_cpu_process" && signal.cpuPercent === 92));
+  assert.match(markdown, /Codex Process Audit/);
+  assert.match(markdown, /PowerShell CIM process polling detected/);
+});
+
 test("analyzeTargets detects Codex usage reset schedule drift", async () => {
   const result = await analyzeTargets(["fixtures/codex-usage-reset-drift.md"]);
   const finding = result.findings.find((item) => item.kind === "codex_usage_reset_drift");
@@ -1335,6 +1362,8 @@ test("package metadata points npm users back to the public project", async () =>
   assert.ok(packageJson.keywords?.includes("codex-usage-reset"));
   assert.ok(packageJson.keywords?.includes("codex-resource-leak"));
   assert.ok(packageJson.keywords?.includes("codex-performance"));
+  assert.ok(packageJson.keywords?.includes("codex-process-audit"));
+  assert.ok(packageJson.keywords?.includes("powershell-polling"));
   assert.ok(packageJson.keywords?.includes("codex-approval"));
   assert.ok(packageJson.keywords?.includes("mcp-approval"));
   assert.ok(packageJson.keywords?.includes("quota-mismatch"));
@@ -1753,6 +1782,11 @@ test("published JSON schemas describe CLI result contracts", async () => {
     properties: Record<string, unknown>;
     $defs: Record<string, unknown>;
   };
+  const processAuditSchema = JSON.parse(await readFile("schemas/process-audit-result.schema.json", "utf8")) as {
+    required: string[];
+    properties: Record<string, unknown>;
+    $defs: Record<string, unknown>;
+  };
   const checkpointSchema = JSON.parse(await readFile("schemas/workspace-checkpoint-result.schema.json", "utf8")) as {
     required: string[];
     properties: Record<string, unknown>;
@@ -1836,6 +1870,10 @@ test("published JSON schemas describe CLI result contracts", async () => {
   assert.ok(usageEvidenceSchema.$defs.receipt);
   assert.ok(usageEvidenceSchema.$defs.overheadSignal);
   assert.ok((usageEvidenceSchema.$defs.finding as { properties: { kind: { enum: string[] } } }).properties.kind.enum.includes("orchestration_overhead_signal"));
+  assert.deepEqual(processAuditSchema.required, ["generatedAt", "status", "inputs", "summary", "signals", "findings", "checklist"]);
+  assert.ok(processAuditSchema.properties.signals);
+  assert.ok(processAuditSchema.$defs.signal);
+  assert.ok((processAuditSchema.$defs.kind as { enum: string[] }).enum.includes("powershell_cim_polling"));
   assert.deepEqual(checkpointSchema.required, ["generatedAt", "root", "outputDir", "includeUntracked", "includeIgnored", "summary", "files", "artifacts"]);
   assert.ok(checkpointSchema.properties.artifacts);
   assert.ok(checkpointSchema.$defs.file);
@@ -1921,7 +1959,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.equal(brief.scorecard.benchmarkStatus, "pass");
   assert.equal(brief.scorecard.benchmarkCases, 33);
   assert.equal(brief.packageName, "trace-to-skill");
-  assert.equal(brief.packageVersion, "0.1.72");
+  assert.equal(brief.packageVersion, "0.1.73");
   assert.equal(brief.license, "Apache-2.0");
   assert.ok(brief.repository?.includes("github.com/grnbtqdbyx-create/trace-to-skill"));
   assert.ok(brief.qualification.max500.length <= 500);
@@ -1929,7 +1967,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.match(markdown, /OpenAI OSS Brief/);
   assert.match(markdown, /Why This Repository Qualifies/);
   assert.match(markdown, /500-Character Version/);
-  assert.match(markdown, /npx trace-to-skill@0\.1\.72/);
+  assert.match(markdown, /npx trace-to-skill@0\.1\.73/);
 });
 
 test("scorecard-comment dry-run resolves pull request event", async () => {

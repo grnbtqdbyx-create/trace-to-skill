@@ -33,6 +33,7 @@ Runtime: Node.js 20+
 - Codex deeplink, OAuth callback, notification click, browser-extension activation, mobile pairing, and `codex app <path>` launch regressions
 - Codex app connector stale auth/cache regressions such as `401 Reauthentication required`, unchanged `link_*`, `isAccessible: false`, and broken `codex_apps_tools` metadata
 - Codex token-burn and usage-drain failures such as background `write_stdin` polling, idle app usage, compaction tax, retry/tool loops, cached-token-heavy turns, fast-mode drift, subagent fan-out, and unclear usage attribution
+- Codex process evidence packaging for Windows PowerShell/pwsh CIM polling, high-CPU helpers, stale process-manager entries, and renderer runaways
 - Codex usage reset schedule drift such as weekly reset dates moving, `reset_at` jumping, saved usage disappearing, outage compensation resets changing the anchor, and `/status` disagreeing with enforcement
 - Codex usage evidence packaging for scattered `/status`, reset-table, usage-limit, token-total, cached-input, and orchestration-overhead snippets
 - Codex usage receipts that separate backend quota-window percentages, local token totals, and overhead signals such as background polling, compaction loops, retry/tool loops, subagent fan-out, or idle drain
@@ -90,6 +91,7 @@ npx trace-to-skill config-audit ~/.codex --format json
 npx trace-to-skill plugin-audit ~/.codex --app /Applications/Codex.app --format json
 npx trace-to-skill diagnostics-bundle ~/.codex --output codex-diagnostics
 npx trace-to-skill usage-evidence ./usage-notes.md --output usage-evidence.md
+npx trace-to-skill process-audit ./process-notes.md --output process-audit.md
 npx trace-to-skill checkpoint . --output .trace-to-skill/checkpoints/before-codex
 npx trace-to-skill redact ./runs --output redacted-runs
 npx trace-to-skill sensitive-audit . --format json
@@ -106,7 +108,7 @@ npx trace-to-skill init --comment --sarif
 ## GitHub Action
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.72
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.73
   with:
     mode: all
     doctor-threshold: "85"
@@ -131,6 +133,7 @@ npx trace-to-skill init --comment --sarif
 - Plugin audit JSON schema: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/schemas/plugin-audit-result.schema.json
 - Session audit JSON schema: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/schemas/session-audit-result.schema.json
 - Usage evidence JSON schema: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/schemas/usage-evidence-result.schema.json
+- Process audit JSON schema: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/schemas/process-audit-result.schema.json
 - Workspace checkpoint JSON schema: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/schemas/workspace-checkpoint-result.schema.json
 
 ## Search phrases this project should answer

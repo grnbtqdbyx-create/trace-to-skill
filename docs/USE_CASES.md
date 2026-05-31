@@ -53,7 +53,7 @@ What it proves:
 Recommended CI surface:
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.72
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.73
   with:
     mode: all
     doctor-threshold: "85"
@@ -293,6 +293,15 @@ npx trace-to-skill codex-report ./runs --output openai-codex-issue.md
 This catches signals such as high `Code Helper (Renderer)` or `Code Helper (Plugin)` CPU, `Codex Helper Renderer`, `Codex app-server`, `syspolicyd`, `zygote`, `WindowServer`, orphaned `shell-snapshot` subprocesses, `.codex/shell_snapshots`, `chat_processes.json`, repeated `thread-stream-state-changed`, `worker_rpc_response_error`, thinking/shimmer GPU loops, and non-Git workspace CPU runaways.
 
 Include process names/PIDs, CPU/GPU/RSS samples over time, log-loop snippets, workspace Git-root state, animation/reduce-motion state, and whether closing the panel/app, killing exact PIDs, `git init`, rollback, or restart clears the leak.
+
+For process-only reports, run:
+
+```bash
+npx trace-to-skill process-audit ./process-notes.md --output process-audit.md
+npx trace-to-skill process-audit ./process-notes.md --format json
+```
+
+`process-audit` packages Task Manager, System Informer, `Get-CimInstance`, `ps`, `top`, or handwritten process measurement snippets into a smaller public report. It detects PowerShell/pwsh CIM polling such as `Get-CimInstance Win32_Process`, high-CPU Codex/helper/renderer samples, stale `process_manager/chat_processes.json` mentions, and runaway helper signals without inspecting live processes or asking users to post full raw process dumps.
 
 ## 20. Codex Thinking Hang Evidence
 

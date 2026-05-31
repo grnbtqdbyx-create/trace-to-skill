@@ -17,6 +17,7 @@ npx trace-to-skill lint-agents .
 npx trace-to-skill analyze ./runs
 npx trace-to-skill codex-report ./runs
 npx trace-to-skill usage-evidence ./usage-notes.md --output usage-evidence.md
+npx trace-to-skill process-audit ./process-notes.md --output process-audit.md
 npx trace-to-skill checkpoint . --output .trace-to-skill/checkpoints/before-codex
 npx trace-to-skill init --comment --sarif
 npx trace-to-skill suggest ./runs --target agents-md
@@ -64,6 +65,7 @@ Use it when you need to:
 - **Audit bundled plugin drift:** run `trace-to-skill plugin-audit ~/.codex --app /Applications/Codex.app --format json` to check Browser, Chrome, Computer Use, bundled marketplace, plugin cache, manifest, helper app, `CODEX_HOME`, and unsupported feature-flag drift without posting raw logs.
 - **Bundle Codex diagnostics safely:** run `trace-to-skill diagnostics-bundle ~/.codex --output codex-diagnostics` to create a metadata-only support folder with manifest, README, config, plugin, and session audit reports while excluding raw logs, SQLite state, raw config, and transcripts.
 - **Package Codex usage evidence:** run `trace-to-skill usage-evidence ./usage-notes.md --output usage-evidence.md` to turn `/status`, reset tables, usage-limit errors, token totals, cached-input spikes, and orchestration-overhead clues into a redaction-aware usage receipt.
+- **Package Codex process evidence:** run `trace-to-skill process-audit ./process-notes.md --output process-audit.md` to turn Task Manager, System Informer, `Get-CimInstance`, `ps`, or `top` snippets into a privacy-aware report for PowerShell CIM polling, stale process-manager entries, high CPU helpers, and runaway renderers.
 - **Bookmark a workspace before agent edits:** run `trace-to-skill checkpoint . --output .trace-to-skill/checkpoints/before-codex` to store git diffs plus copied changed/untracked files before Codex, Claude, Cursor, or another agent touches a dirty repo. It does not auto-restore or run destructive commands.
 - **Share failed traces safely:** run `trace-to-skill redact ./runs --output redacted-runs` before publishing anonymized failure fixtures.
 - **Catch sensitive file access:** run `trace-to-skill analyze ./runs` when an agent trace includes `.env`, private keys, `.npmrc`, cloud credentials, local databases, or production secret manifests.
@@ -120,6 +122,7 @@ Open-source maintainers do not need more AI-generated noise. They need agents th
 - Which bundled plugin/cache/marketplace/helper-app mismatch explains a Browser, Chrome, Computer Use, or MCP runtime failure?
 - Can I attach one safe diagnostics folder to OpenAI without posting raw `config.toml`, SQLite state, local logs, or transcripts?
 - Can I prove a project thread still exists on disk and get the `codex resume <id>` command when Desktop search/sidebar hides it?
+- Can I report Codex high-CPU or PowerShell polling without posting a full raw process dump?
 - Can I create a local checkpoint before an agent run so untracked dirty files are not lost if I need a manual rewind?
 - Which files in this repo should be excluded from agent context before Codex, Claude, Cursor, or Gemini reads the workspace?
 - Which language servers should be installed before Codex attempts symbol-aware navigation, diagnostics, rename, or go-to-definition work?
@@ -464,6 +467,7 @@ Stable machine-readable contracts are published with the npm package and release
 - [`schemas/plugin-audit-result.schema.json`](schemas/plugin-audit-result.schema.json) describes `trace-to-skill plugin-audit --format json`.
 - [`schemas/session-audit-result.schema.json`](schemas/session-audit-result.schema.json) describes `trace-to-skill session-audit --format json`.
 - [`schemas/usage-evidence-result.schema.json`](schemas/usage-evidence-result.schema.json) describes `trace-to-skill usage-evidence --format json`.
+- [`schemas/process-audit-result.schema.json`](schemas/process-audit-result.schema.json) describes `trace-to-skill process-audit --format json`.
 - [`schemas/workspace-checkpoint-result.schema.json`](schemas/workspace-checkpoint-result.schema.json) describes `trace-to-skill checkpoint --format json`.
 
 These schemas let downstream Codex workflows, dashboards, and CI bots consume reports without scraping Markdown.
@@ -496,7 +500,7 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v5
-      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.72
+      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.73
         with:
           mode: all
           doctor-threshold: "85"
@@ -545,7 +549,7 @@ Composite action usage:
 
 ```yaml
 - id: trace-to-skill
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.72
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.73
   with:
     mode: all
     doctor-threshold: "85"
@@ -587,7 +591,7 @@ Action outputs:
 
 By default, generated reports are also appended to the GitHub Actions Job Summary. Set `job-summary: "false"` to disable that UI output.
 
-Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.72` executes that release's checked-out source instead of pulling the default branch at runtime.
+Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.73` executes that release's checked-out source instead of pulling the default branch at runtime.
 
 ## Codex Skill
 

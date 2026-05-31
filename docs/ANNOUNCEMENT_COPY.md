@@ -76,6 +76,7 @@ trace-to-skill checks repo readiness and scans agent traces/logs to generate:
 - Codex token-burn attribution for background polling, idle app usage, compaction tax, retry loops, cached-token-heavy turns, and fast-mode/subagent drift
 - Codex usage reset drift detection for moving weekly reset anchors, lost saved usage, and `/status` versus dashboard reset discrepancies
 - a `usage-evidence` command that turns scattered `/status`, reset-table, usage-limit, token-total, cached-input, and overhead snippets into a single Codex usage receipt
+- a `process-audit` command that turns Task Manager, System Informer, `Get-CimInstance`, `ps`, or `top` snippets into a privacy-aware process report for PowerShell polling and high-CPU helper issues
 - Codex deeplink/OAuth launch detection for `codex://oauth_callback`, notification `type=click&tag`, AppX/MSIX protocol evidence, mobile links, and `codex app <path>` routing regressions
 - Codex app connector auth-cache detection for `401 Reauthentication required`, stale `link_*`, `isAccessible: false`, and external MCP workaround evidence
 - Codex resource-leak detection for high CPU/GPU/RAM, orphaned shell snapshots, renderer/helper loops, and thinking-animation GPU reports
@@ -117,6 +118,7 @@ npx trace-to-skill config-audit ~/.codex --format json
 npx trace-to-skill plugin-audit ~/.codex --app /Applications/Codex.app --format json
 npx trace-to-skill diagnostics-bundle ~/.codex --output codex-diagnostics
 npx trace-to-skill usage-evidence ./usage-notes.md --output usage-evidence.md
+npx trace-to-skill process-audit ./process-notes.md --output process-audit.md
 npx trace-to-skill checkpoint . --output .trace-to-skill/checkpoints/before-codex
 npx trace-to-skill doctor-comment . --threshold 85 --dry-run
 

@@ -16,6 +16,7 @@ import { auditLspReadiness, renderLspAuditMarkdown } from "./lspAudit.js";
 import { renderOssBriefMarkdown, runOssBrief } from "./ossBrief.js";
 import { guardPatchFile, renderPatchGuardMarkdown } from "./patchGuard.js";
 import { auditCodexPlugins, renderPluginAuditMarkdown } from "./pluginAudit.js";
+import { auditProcessEvidence, renderProcessAuditMarkdown } from "./processAudit.js";
 import { redactTargets } from "./redact.js";
 import { renderAgentsRules, renderCodexIssueReport, renderComparison, renderDoctorMarkdown, renderDoctorPrComment, renderMarkdown, renderPrComment, renderSarif, renderSkill } from "./report.js";
 import { renderScorecardMarkdown, renderScorecardPrComment, runScorecard } from "./scorecard.js";
@@ -79,6 +80,15 @@ async function main(): Promise<void> {
     const format = String(parsed.flags.format ?? "markdown");
     const output = format === "json" ? `${JSON.stringify(result, null, 2)}\n` : renderUsageEvidenceMarkdown(result);
     await writeOutput(output, parsed.flags.output);
+    return;
+  }
+
+  if (parsed.command === "process-audit") {
+    const result = await auditProcessEvidence(parsed.targets);
+    const format = String(parsed.flags.format ?? "markdown");
+    const output = format === "json" ? `${JSON.stringify(result, null, 2)}\n` : renderProcessAuditMarkdown(result);
+    await writeOutput(output, parsed.flags.output);
+    process.exitCode = result.status === "warn" ? 1 : 0;
     return;
   }
 
@@ -469,6 +479,7 @@ Usage:
   trace-to-skill analyze <trace-file-or-dir> [--format markdown|json|sarif] [--output report.md]
   trace-to-skill codex-report <trace-file-or-dir> [--output openai-codex-issue.md]
   trace-to-skill usage-evidence <usage-log-file-or-dir> [--format markdown|json] [--output usage-evidence.md]
+  trace-to-skill process-audit <process-log-file-or-dir> [--format markdown|json] [--output process-audit.md]
   trace-to-skill checkpoint [repo-dir] [--output checkpoint-dir] [--format markdown|json] [--no-untracked] [--include-ignored]
   trace-to-skill suggest <trace-file-or-dir> [--target agents-md|skill] [--output AGENTS.generated.md]
   trace-to-skill lint-agents [repo-dir] [--format markdown|json] [--output report.md]
@@ -498,6 +509,7 @@ Examples:
   trace-to-skill analyze ./runs
   trace-to-skill codex-report ./runs --output openai-codex-issue.md
   trace-to-skill usage-evidence ./usage-notes.md --output usage-evidence.md
+  trace-to-skill process-audit ./process-notes.md --output process-audit.md
   trace-to-skill checkpoint . --output .trace-to-skill/checkpoints/before-codex
   trace-to-skill suggest ./runs --target skill --output skills/verification-before-completion/SKILL.md
   trace-to-skill lint-agents .
