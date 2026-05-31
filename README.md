@@ -48,6 +48,7 @@ Use it when you need to:
 - **Triage stuck Codex sessions:** run `trace-to-skill analyze ./runs` to catch context compaction failures such as compact stream disconnects, `context_length_exceeded`, and schema mismatches.
 - **Catch latest-turn drift:** run `trace-to-skill analyze ./runs` when Codex answers an older prompt, repeats a previous response, forgets recent edits after compaction, or leaks raw tool payload text into chat.
 - **Measure Codex latency regressions:** run `trace-to-skill analyze ./runs` when GPT-5.5 Fast feels like Standard, simple tasks take 10-20+ minutes, thinking stalls, or search/read/compaction delays dominate the session.
+- **Reduce approval friction:** run `trace-to-skill analyze ./runs` when `Approve for this session` is not remembered, repeated prompts push users toward Full Access, or trusted MCP tools like Playwright require dozens of approvals.
 - **Diagnose sandbox blockers:** run `trace-to-skill analyze ./runs` on Codex traces that fail with sandbox setup refresh, `os error 740`, ACL, ownership, or approval-mode permission errors.
 - **Debug Codex auth/connectivity:** run `trace-to-skill analyze ./runs` on logs with `token_exchange_failed`, `auth.openai.com/oauth/token`, Cloudflare challenge, proxy/CA, IPv6, or stream disconnect symptoms.
 - **Prove remote-control route health:** run `trace-to-skill analyze ./runs` when Codex mobile/remote sessions show `Waiting for desktop`, `Directory Unavailable`, stale listener/cache, missing helper bundle, or stale enrollment symptoms.
@@ -82,6 +83,7 @@ Open-source maintainers do not need more AI-generated noise. They need agents th
 - Did a long local Codex session become impossible to resume because history size, context compression, archived chat loading, or state migration broke?
 - Did usage burn come from useful model work, background polling, compaction/replay, retry loops, subagents, or idle app activity?
 - Did a model/runtime latency regression make Fast behave like Standard, stall before first output, or spend minutes in thinking, search, read, or compaction phases?
+- Did repeated approval prompts make a safer scoped mode unusable or require huge per-tool MCP approval configs?
 - Can the failure be reported to OpenAI with line-linked evidence, redaction notes, and the exact diagnostics maintainers need?
 
 ## Example Output
@@ -150,6 +152,7 @@ Trace analysis detects run-level failures:
 | Context compaction | Codex compact task fails, disconnects, loops, or hits `context_length_exceeded` |
 | Codex latest-turn drift | Long or compacted conversations answer stale prompts, redo old tasks, forget recent edits, or expose raw tool payloads |
 | Codex latency regression | Model/runtime routing, thinking stalls, search/read, or compaction latency makes simple tasks take minutes or hours |
+| Codex approval friction | Session approvals are not remembered, MCP tools reprompt repeatedly, or users fall back to unsafe full access |
 | Sandbox permission | Codex sandbox setup, approval mode, ACL, or workspace ownership blocks tool execution |
 | Codex connectivity | Auth token exchange, proxy/CA, IPv6, Cloudflare challenge, or ChatGPT transport errors block Codex |
 | Codex remote control | Mobile or remote sessions route through stale listeners, stale enrollment, or incomplete helper bundles |
@@ -362,7 +365,7 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v5
-      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.45
+      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.46
         with:
           mode: all
           doctor-threshold: "85"
@@ -411,7 +414,7 @@ Composite action usage:
 
 ```yaml
 - id: trace-to-skill
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.45
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.46
   with:
     mode: all
     doctor-threshold: "85"
@@ -453,7 +456,7 @@ Action outputs:
 
 By default, generated reports are also appended to the GitHub Actions Job Summary. Set `job-summary: "false"` to disable that UI output.
 
-Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.45` executes that release's checked-out source instead of pulling the default branch at runtime.
+Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.46` executes that release's checked-out source instead of pulling the default branch at runtime.
 
 ## Codex Skill
 

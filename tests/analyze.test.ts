@@ -173,6 +173,24 @@ test("analyzeTargets detects Codex latency regressions", async () => {
   assert.match(report, /Codex model or runtime latency regression/);
 });
 
+test("analyzeTargets detects Codex approval friction", async () => {
+  const result = await analyzeTargets(["fixtures/codex-approval-friction.md"]);
+  const finding = result.findings.find((item) => item.kind === "codex_approval_friction");
+  const evidence = finding?.evidence.map((item) => item.excerpt).join("\n") ?? "";
+  const report = renderCodexIssueReport(result);
+
+  assert.ok(finding);
+  assert.equal(finding.severity, "high");
+  assert.match(evidence, /approve this session/i);
+  assert.match(evidence, /Full Access/);
+  assert.match(evidence, /item\/fileChange\/requestApproval/);
+  assert.match(evidence, /browser_click/);
+  assert.match(evidence, /default_tools_approval_mode/);
+  assert.match(finding.suggestedRule, /displayed command versus executed command/);
+  assert.match(finding.suggestedRule, /MCP server name/);
+  assert.match(report, /Codex approval persistence or MCP approval friction/);
+});
+
 test("analyzeTargets detects Codex sandbox permission failures", async () => {
   const result = await analyzeTargets(["fixtures/sandbox-permission.md"]);
   const finding = result.findings.find((item) => item.kind === "sandbox_permission");
@@ -508,6 +526,8 @@ test("package metadata points npm users back to the public project", async () =>
   assert.ok(packageJson.keywords?.includes("codex-usage"));
   assert.ok(packageJson.keywords?.includes("codex-resource-leak"));
   assert.ok(packageJson.keywords?.includes("codex-performance"));
+  assert.ok(packageJson.keywords?.includes("codex-approval"));
+  assert.ok(packageJson.keywords?.includes("mcp-approval"));
   assert.ok(packageJson.keywords?.includes("quota-mismatch"));
   assert.ok(packageJson.keywords?.includes("sensitive-files"));
   assert.ok(packageJson.keywords?.includes("codex-privacy"));
@@ -898,6 +918,7 @@ test("published JSON schemas describe CLI result contracts", async () => {
   assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("context_compaction"));
   assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("codex_latest_turn_drift"));
   assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("codex_latency_regression"));
+  assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("codex_approval_friction"));
   assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("sandbox_permission"));
   assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("codex_connectivity"));
   assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("codex_remote_control"));
@@ -928,12 +949,13 @@ test("benchmark covers public fixture failure classes", async () => {
   const markdown = renderBenchmarkMarkdown(benchmark);
 
   assert.equal(benchmark.passed, true);
-  assert.equal(benchmark.cases.length, 20);
+  assert.equal(benchmark.cases.length, 21);
   assert.ok(benchmark.cases.some((item) => item.id === "clean-validated-run" && item.score === 100));
   assert.ok(benchmark.cases.some((item) => item.id === "failed-workflow" && item.detectedKinds.includes("test_failure")));
   assert.ok(benchmark.cases.some((item) => item.id === "context-compaction" && item.detectedKinds.includes("context_compaction")));
   assert.ok(benchmark.cases.some((item) => item.id === "codex-latest-turn-drift" && item.detectedKinds.includes("codex_latest_turn_drift")));
   assert.ok(benchmark.cases.some((item) => item.id === "codex-latency-regression" && item.detectedKinds.includes("codex_latency_regression")));
+  assert.ok(benchmark.cases.some((item) => item.id === "codex-approval-friction" && item.detectedKinds.includes("codex_approval_friction")));
   assert.ok(benchmark.cases.some((item) => item.id === "sandbox-permission" && item.detectedKinds.includes("sandbox_permission")));
   assert.ok(benchmark.cases.some((item) => item.id === "codex-connectivity" && item.detectedKinds.includes("codex_connectivity")));
   assert.ok(benchmark.cases.some((item) => item.id === "codex-remote-control" && item.detectedKinds.includes("codex_remote_control")));
@@ -961,7 +983,7 @@ test("scorecard combines doctor readiness and benchmark evidence", async () => {
   assert.equal(scorecard.doctor.status, "ready");
   assert.equal(scorecard.doctor.score, 100);
   assert.equal(scorecard.benchmark.status, "pass");
-  assert.equal(scorecard.benchmark.cases, 20);
+  assert.equal(scorecard.benchmark.cases, 21);
   assert.match(markdown, /trace-to-skill Scorecard/);
   assert.match(markdown, /Codex readiness/);
   assert.match(markdown, /Benchmark Summary/);

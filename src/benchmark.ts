@@ -71,6 +71,12 @@ const BENCHMARK_CASES: BenchmarkCaseDefinition[] = [
     expectedKinds: ["codex_latency_regression", "weak_evidence"]
   },
   {
+    id: "codex-approval-friction",
+    title: "Codex approval persistence and MCP approval friction",
+    fixture: "fixtures/codex-approval-friction.md",
+    expectedKinds: ["codex_approval_friction", "sandbox_permission", "weak_evidence"]
+  },
+  {
     id: "sandbox-permission",
     title: "Codex sandbox permission failure",
     fixture: "fixtures/sandbox-permission.md",

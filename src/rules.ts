@@ -196,6 +196,27 @@ const RULES: RuleDefinition[] = [
     suggestedSkill: "codex-latency-regression-triage"
   },
   {
+    kind: "codex_approval_friction",
+    severity: "high",
+    title: "Codex approval persistence or MCP approval friction",
+    why: "Repeated approval prompts can make Codex unusable, push users toward unsafe full-access modes, or hide whether the regression is command approval caching, file-change approval, raw MCP trust, or per-tool configuration scale.",
+    patterns: [
+      /\b(Allow|Approve|Accept)\s+(?:for|this)\s+(?:the\s+)?session\b.{0,180}\b(not remembered|isn'?t remembered|asks? again|asks? every time|again and again|keeps? asking|repeated)\b/i,
+      /\bapproval prompt(?:s)?\b.{0,160}\b(every time|again and again|repeated|dozens|constant(?:ly)?|too many|unusable|babysit|baby sit)\b/i,
+      /\bapprove this session\b.{0,180}\b(every time|again and again|keeps? asking|not remembered|still asks|not fixed)\b/i,
+      /\bdisplayed command\b.{0,160}\b(executed command|translated|wrapped|PowerShell|command vector|cached approval|miss(?:es|ed) the session approval)\b/i,
+      /\b(item\/fileChange\/requestApproval|apply_patch_approval_request|file-change approval|patch_apply_begin)\b/i,
+      /\bapproval_policy\s*=\s*["']never["']\b.{0,180}\b(does not stop|still asks|approval prompts?|MCP|Playwright|browser_click|browser_type)\b/i,
+      /\b(Playwright|Chrome DevTools|Obsidian|raw MCP|MCP server)\b.{0,180}\b(approval prompts?|approve every|per-tool|per tool|default_tools_approval_mode|unusable|hundreds|500 approval entries)\b/i,
+      /\b(mcp_servers\.[A-Za-z0-9_-]+\.tools\.[A-Za-z0-9_-]+\.approval_mode|default_tools_approval_mode)\b/i,
+      /\b(browser_click|browser_type|browser_navigate|chrome-devtools\.take_snapshot)\b.{0,180}\b(approval|approve|prompt|asks?)\b/i,
+      /\b(have to|has to|forced to)\b.{0,120}\b(Full ?Access|danger-full-access|full access)\b.{0,120}\b(scared|afraid|unsafe|avoid|workaround)\b/i
+    ],
+    suggestedRule:
+      "When reporting Codex approval friction, capture client/app/extension version, OS and remote/WSL/SSH state, sandbox and approval_policy, exact approval scope selected, displayed command versus executed command, whether the repeat is command, file-change, patch, or MCP tool approval, MCP server name and tool names, visible tool args, persisted config snippets such as default_tools_approval_mode or per-tool approval_mode, repeated prompt count, timestamps, whether Full Access/WSL/downgrade changes behavior, and the smallest safe reproduction.",
+    suggestedSkill: "codex-approval-friction-triage"
+  },
+  {
     kind: "sandbox_permission",
     severity: "high",
     title: "Codex sandbox or permission failure",

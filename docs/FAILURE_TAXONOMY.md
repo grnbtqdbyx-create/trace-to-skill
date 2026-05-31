@@ -40,6 +40,14 @@ Common signals include `GPT-5.5 Fast` feeling as slow as `Standard`, simple task
 
 The fix is to capture app/CLI/extension version, model and speed/reasoning settings, subscription or workspace, timestamps for pre-first-token, thinking, tool execution, search, read, and compaction phases, task size and lines changed, local CPU/memory/network/VPN/proxy evidence, feedback ids, before/after latency comparison, and whether API and Codex paths differ.
 
+## Codex Approval Friction
+
+Codex approval UX can fail even when the sandbox itself works. The common pattern is that a user chooses `Approve for this session`, `Always`, or an MCP/tool trust setting, but Codex keeps asking for approval, makes the user babysit every step, or pushes them toward `Full Access` just to get useful work done.
+
+Common signals include session approval not being remembered, displayed commands differing from translated or wrapped commands, repeated `item/fileChange/requestApproval` or `apply_patch_approval_request` events, `approval_policy = "never"` still prompting for Playwright/Chrome DevTools/Obsidian MCP tools, configs growing into hundreds of `mcp_servers.<id>.tools.<tool>.approval_mode = "approve"` entries, and prompts that hide the tool arguments needed for an informed decision.
+
+The fix is to capture client/app/extension version, OS and remote/WSL/SSH state, sandbox and `approval_policy`, exact approval scope selected, displayed command versus executed command, whether the repeated prompt is command, file-change, patch, or MCP tool approval, MCP server and tool names, visible args, persisted config snippets, repeated prompt count, timestamps, whether Full Access/WSL/downgrade changes behavior, and the smallest safe reproduction.
+
 ## Codex Connectivity
 
 Codex login, device auth, API-key auth, ChatGPT response streaming, or remote transport fails because of token exchange errors, missing CA certificates, proxy or MITM behavior, Cloudflare challenges, IPv6 routing, DNS, VPN, or WebSocket/HTTPS fallback problems.
