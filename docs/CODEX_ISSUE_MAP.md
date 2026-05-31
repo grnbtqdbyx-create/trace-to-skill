@@ -17,6 +17,7 @@ npx trace-to-skill codex-report redacted-runs --output openai-codex-issue.md
 | OpenAI/Codex issue cluster | Common signals | Finding kind | Best command |
 | --- | --- | --- | --- |
 | Token burn and usage drain | `tokens burning very fast`, large cached input totals, `write_stdin` empty polls, idle app usage, compaction tax, retry loops | `codex_token_burn` | `trace-to-skill codex-report ./runs` |
+| Usage reset schedule drift | weekly reset time changes, `reset_at` jumps, saved quota is wiped or pushed into the next window, outage compensation reset changes the anchor | `codex_usage_reset_drift` | `trace-to-skill codex-report ./runs` |
 | Resource leaks and runaway processes | high CPU/GPU/RAM, `Code Helper`, `Codex Helper Renderer`, orphaned `shell-snapshot`, `syspolicyd`, log floods, thinking animation GPU loops | `codex_resource_leak` | `trace-to-skill codex-report ./runs` |
 | Tool-call integrity and rollback failures | `apply_patch` overwrites an existing `Add File` target, unmatched `tool_call_id`, `close_agent` hangs, failed revert/undo, unsafe diff application | `codex_tool_call_integrity` | `trace-to-skill codex-report ./runs` |
 | Latency regressions | GPT-5.5 Fast feels like Standard, simple tasks take 10-20+ minutes, pre-first-token or thinking stalls, slow search/read/compaction, hours for small code changes | `codex_latency_regression` | `trace-to-skill codex-report ./runs` |
@@ -41,6 +42,7 @@ npx trace-to-skill codex-report redacted-runs --output openai-codex-issue.md
 - Include OS, shell/terminal, IDE, model, reasoning effort, speed mode, and subscription/workspace.
 - Include the smallest redacted trace that reproduces the failure.
 - Include before/after `/status` and usage dashboard state for quota or token-burn reports.
+- Include previous and new `reset_at`, timezone, 5h/daily/weekly percentages, prompt-in-flight state, outage/reset announcement link, and whether prior-window usage was preserved for usage-reset drift reports.
 - Include process names/PIDs, CPU/GPU/RSS samples, log-loop signatures, and whether killing exact PIDs or closing the app clears resource leaks.
 - Include exact tool input/output, `tool_call_id` order, affected path state, and rollback evidence for tool-call integrity failures.
 - Include pre-first-token, thinking, tool, search, read, and compaction timings plus model/speed settings for latency regressions.
@@ -55,6 +57,7 @@ npx trace-to-skill codex-report redacted-runs --output openai-codex-issue.md
 ## Related OpenAI/Codex Threads Used For Fixtures
 
 - Token burn and usage drain: https://github.com/openai/codex/issues/14593, https://github.com/openai/codex/issues/13733, https://github.com/openai/codex/issues/25420, https://github.com/openai/codex/issues/19585
+- Usage reset schedule drift: https://github.com/openai/codex/issues/9508, https://github.com/openai/codex/issues/5999
 - Resource leaks and runaway processes: https://github.com/openai/codex/issues/16231, https://github.com/openai/codex/issues/11981, https://github.com/openai/codex/issues/16857, https://github.com/openai/codex/issues/25388
 - Tool-call integrity and rollback failures: https://github.com/openai/codex/issues/25399, https://github.com/openai/codex/issues/25380, https://github.com/openai/codex/issues/25426, https://github.com/openai/codex/issues/7291
 - Latency regressions: https://github.com/openai/codex/issues/24422, https://github.com/openai/codex/issues/21527, https://github.com/openai/codex/issues/11984, https://github.com/openai/codex/issues/12161

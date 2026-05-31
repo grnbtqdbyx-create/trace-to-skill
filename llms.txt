@@ -22,6 +22,7 @@ Runtime: Node.js 20+
 - Codex resume and session-state failures such as frozen resume pickers, large rollout JSONL histories, sluggish Desktop thread rendering, dropped recent context after resume, archived chat loading failures, and `state_5.sqlite` / `goals_1.sqlite` migration drift
 - Codex file tree and workspace navigation UI failures such as `View > Toggle File Tree` doing nothing, missing folder icons, stale floating file panels, and built-in preview failures
 - Codex token-burn and usage-drain failures such as background `write_stdin` polling, idle app usage, compaction tax, retry/tool loops, cached-token-heavy turns, fast-mode drift, subagent fan-out, and unclear usage attribution
+- Codex usage reset schedule drift such as weekly reset dates moving, `reset_at` jumping, saved usage disappearing, outage compensation resets changing the anchor, and `/status` disagreeing with enforcement
 - Codex resource leaks and runaway local processes such as high CPU/GPU, `Code Helper`, `Codex Helper Renderer`, orphaned shell snapshots, log floods, thinking animation GPU loops, and non-Git workspace CPU loops
 - Codex quota and usage-limit mismatches where `/status` or the usage page shows remaining quota, accounts share limits unexpectedly, or 5h and weekly quotas move together
 - sensitive-file access in traces, including `.env`, private keys, package auth files, cloud credentials, local databases, and production secret manifests entering agent context
@@ -122,6 +123,9 @@ npx trace-to-skill init --comment --sarif
 - Codex bug report evidence checklist
 - Codex token burn write_stdin background polling
 - Codex cached input token usage drain
+- Codex weekly reset date changed
+- Codex usage reset_at jumping
+- Codex deterministic reset schedule
 - Codex compaction tax weekly usage depleted
 - Codex high CPU GPU resource leak shell snapshot
 - Codex Code Helper Renderer runaway process

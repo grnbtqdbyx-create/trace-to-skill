@@ -61,6 +61,7 @@ Use it when you need to:
 - **Report Codex file tree UI failures:** run `trace-to-skill analyze ./runs` when `View > Toggle File Tree`, the folder icon, floating file panel, or built-in file preview disappears, goes stale, or stops revealing workspace files.
 - **Debug Codex resume/session state:** run `trace-to-skill analyze ./runs` when `codex resume` freezes, large JSONL histories make Desktop sluggish, recent context disappears after resume, or SQLite migration/state errors break goals.
 - **Attribute token burn:** run `trace-to-skill analyze ./runs` when Codex drains usage unexpectedly because of background polling, idle app activity, compaction loops, retry spirals, fast-mode drift, or cached-token-heavy turns.
+- **Report usage reset drift:** run `trace-to-skill analyze ./runs` when weekly or 5-hour reset times move unexpectedly, saved usage is lost, or `/status` and the dashboard disagree about the reset anchor.
 - **Report resource leaks:** run `trace-to-skill analyze ./runs` when Codex Desktop, VS Code extension, app-server, renderer, GPU, or orphaned helper processes keep burning CPU/GPU/memory after the work should be idle.
 - **Catch tool-call integrity failures:** run `trace-to-skill analyze ./runs` when `apply_patch`, rollback/undo, subagent shutdown, or `tool_call_id` protocol failures threaten file safety or strand a session.
 - **File better OpenAI/Codex issues:** run `trace-to-skill codex-report ./runs` to turn a failed trace into a redaction-aware, copy-paste-ready issue body with evidence and diagnostics.
@@ -167,6 +168,7 @@ Trace analysis detects run-level failures:
 | Codex file tree UI | Desktop file tree, floating file panel, or file preview cannot be revealed, refreshes stale entries, or loses workspace navigation |
 | Codex session state | Resume, history rendering, context compression, archived chats, or local SQLite/global-state migrations break long sessions |
 | Codex token burn | Background polling, idle app activity, compaction/replay, cached-token-heavy turns, or retry loops drain usage unexpectedly |
+| Codex usage reset drift | Weekly or 5-hour reset anchors move unexpectedly, saved usage is lost, or reset display differs from enforcement |
 | Codex resource leak | Desktop/app/extension/helper processes, shell snapshots, renderer, GPU, or log loops keep consuming local resources |
 | Codex tool-call integrity | Patch safety, rollback/undo, subagent shutdown, or missing tool-call responses break maintainer trust |
 | Quota mismatch | Codex usage dashboard, `/status`, account state, or reset timing contradicts a usage-limit block |
@@ -394,7 +396,7 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v5
-      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.49
+      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.50
         with:
           mode: all
           doctor-threshold: "85"
@@ -443,7 +445,7 @@ Composite action usage:
 
 ```yaml
 - id: trace-to-skill
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.49
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.50
   with:
     mode: all
     doctor-threshold: "85"
@@ -485,7 +487,7 @@ Action outputs:
 
 By default, generated reports are also appended to the GitHub Actions Job Summary. Set `job-summary: "false"` to disable that UI output.
 
-Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.49` executes that release's checked-out source instead of pulling the default branch at runtime.
+Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.50` executes that release's checked-out source instead of pulling the default branch at runtime.
 
 ## Codex Skill
 
@@ -535,6 +537,7 @@ The goal is not to let agents autonomously rewrite project policy. The goal is t
 - `trace-to-skill scorecard` for combined reviewer proof
 - `trace-to-skill oss-brief` for OpenAI OSS application-ready evidence
 - Codex file tree and workspace navigation UI failure detection
+- Codex usage reset schedule drift detection
 - Scorecard JSON schema and Action outputs
 - Tag-pinned GitHub Action runtime via `$GITHUB_ACTION_PATH`
 - Scorecard PR comments with update-in-place marker

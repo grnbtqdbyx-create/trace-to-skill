@@ -59,6 +59,7 @@ trace-to-skill checks repo readiness and scans agent traces/logs to generate:
 - Codex file tree and workspace navigation UI failure detection for missing `View > Toggle File Tree`, stale floating panels, and file-preview failures
 - Codex resume/session-state detection for large JSONL histories, sluggish Desktop thread rendering, dropped recent context, archived chat failures, and SQLite migration drift
 - Codex token-burn attribution for background polling, idle app usage, compaction tax, retry loops, cached-token-heavy turns, and fast-mode/subagent drift
+- Codex usage reset drift detection for moving weekly reset anchors, lost saved usage, and `/status` versus dashboard reset discrepancies
 - Codex resource-leak detection for high CPU/GPU/RAM, orphaned shell snapshots, renderer/helper loops, and thinking-animation GPU reports
 - Codex quota mismatch detection for usage-limit, account-switching, reset-time, and rate-limit evidence
 - sensitive-file access detection for `.env`, private keys, package auth files, cloud credentials, local databases, and production secret manifests entering agent context

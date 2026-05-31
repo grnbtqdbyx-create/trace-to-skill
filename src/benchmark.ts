@@ -156,6 +156,12 @@ const BENCHMARK_CASES: BenchmarkCaseDefinition[] = [
     expectedKinds: ["codex_tool_call_integrity", "weak_evidence"]
   },
   {
+    id: "codex-usage-reset-drift",
+    title: "Codex usage reset schedule drift",
+    fixture: "fixtures/codex-usage-reset-drift.md",
+    expectedKinds: ["codex_usage_reset_drift", "weak_evidence"]
+  },
+  {
     id: "prompt-injection",
     title: "Untrusted PR comment prompt injection",
     fixture: "fixtures/prompt-injection.md",

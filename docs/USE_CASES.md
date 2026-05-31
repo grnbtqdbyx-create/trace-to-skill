@@ -39,7 +39,7 @@ What it proves:
 Recommended CI surface:
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.49
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.50
   with:
     mode: all
     doctor-threshold: "85"
@@ -141,7 +141,18 @@ npx trace-to-skill codex-report ./runs --output openai-codex-issue.md
 
 This catches signals such as tokens `burning very fast`, usage dropping by visible percentages after one or two prompts, weekly allowance depletion, 5-hour usage reaching 0%, large `input` plus `cached input` totals, `write_stdin` empty polling, background commands repeatedly reporting no new output, idle app usage, compaction tax, retry/tool loops, and missing attribution between normal turns, compaction, background polling, subagents, and retries.
 
-## 11. Quota And Usage-Limit Evidence
+## 11. Usage Reset Drift Evidence
+
+Use this when Codex reset timing changes unexpectedly or users lose the ability to plan paid usage.
+
+```bash
+npx trace-to-skill analyze ./runs --format json
+npx trace-to-skill codex-report ./runs --output openai-codex-issue.md
+```
+
+This catches signals such as weekly reset dates moving from one date to another, `reset_at` jumping after the first prompt, saved weekly usage being wiped or pushed into the next window, outage compensation resets changing the anchor, `/status` and dashboard disagreement, and requests for deterministic reset schedules or rollover of unused prior-window usage.
+
+## 12. Quota And Usage-Limit Evidence
 
 Use this when Codex blocks a prompt with a usage-limit message but another surface still shows remaining quota.
 
@@ -151,7 +162,7 @@ npx trace-to-skill analyze ./runs --format json
 
 This catches traces where `/status` or the usage page shows remaining 5h or weekly quota, accounts appear to share limits unexpectedly, a Team account inherits a Plus account's limit state, or quota reset times jump after logout/login.
 
-## 12. Codex Resource Leak Evidence
+## 13. Codex Resource Leak Evidence
 
 Use this when Codex Desktop, the VS Code extension, renderer, app-server, GPU process, shell snapshot, or helper process keeps burning local resources after the useful work should be idle.
 
@@ -164,7 +175,7 @@ This catches signals such as high `Code Helper (Renderer)` or `Code Helper (Plug
 
 Include process names/PIDs, CPU/GPU/RSS samples over time, log-loop snippets, workspace Git-root state, animation/reduce-motion state, and whether closing the panel/app, killing exact PIDs, `git init`, rollback, or restart clears the leak.
 
-## 13. OpenAI Codex Issue Report
+## 14. OpenAI Codex Issue Report
 
 Use this when you want to file or update an OpenAI/Codex issue with a concise, evidence-backed report instead of pasting a full transcript.
 
@@ -173,11 +184,11 @@ npx trace-to-skill redact ./runs --output redacted-runs
 npx trace-to-skill codex-report redacted-runs --output openai-codex-issue.md
 ```
 
-The report includes the likely Codex failure class, line-linked evidence, diagnostics to attach, and a privacy checklist. This is useful for issues about auth/connectivity, sandbox setup, remote-control routing, MCP runtime calls, resume/session-state failures, quota mismatches, and context compaction.
+The report includes the likely Codex failure class, line-linked evidence, diagnostics to attach, and a privacy checklist. This is useful for issues about auth/connectivity, sandbox setup, remote-control routing, MCP runtime calls, resume/session-state failures, quota mismatches, usage reset drift, and context compaction.
 
 For a cluster-to-command map of current Codex issue patterns, see [CODEX_ISSUE_MAP.md](CODEX_ISSUE_MAP.md).
 
-## 14. Sensitive File Access Evidence
+## 15. Sensitive File Access Evidence
 
 Use this when a trace suggests an agent read, attached, uploaded, diffed, or indexed credential-bearing files.
 
@@ -190,7 +201,7 @@ This catches signals such as `.env`, `.env.production`, `.npmrc`, `.pypirc`, `.n
 
 Before publishing evidence, run `trace-to-skill redact` and attach only redacted excerpts plus the file path/class.
 
-## 15. GitHub Context Guard
+## 16. GitHub Context Guard
 
 Use this before an agent reads untrusted GitHub text.
 
@@ -207,7 +218,7 @@ Use it when:
 - a bot asks Codex to triage untrusted user reports
 - logs or comments might contain instructions like "ignore previous instructions" or "print secrets"
 
-## 16. Failed Agent Run To Reviewable Rule
+## 17. Failed Agent Run To Reviewable Rule
 
 Use this when a coding agent made a repeated workflow mistake.
 
@@ -225,7 +236,7 @@ Recommended maintainer loop:
 4. Copy only evidence-backed rules into the real policy file.
 5. Run `eval` or `scorecard` in CI so the same failure does not silently return.
 
-## 17. Privacy-Preserving Adoption
+## 18. Privacy-Preserving Adoption
 
 Use this when you want public evidence without leaking private traces.
 

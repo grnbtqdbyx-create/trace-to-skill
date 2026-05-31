@@ -202,6 +202,7 @@ test("demo command runs packaged scenarios without private traces", async () => 
   assert.ok(scenarios.some((scenario) => scenario.id === "approval-friction"));
   assert.ok(scenarios.some((scenario) => scenario.id === "latency-regression"));
   assert.ok(scenarios.some((scenario) => scenario.id === "file-tree-ui"));
+  assert.ok(scenarios.some((scenario) => scenario.id === "usage-reset-drift"));
   assert.equal(result.scenario.id, "approval-friction");
   assert.ok(result.analysis.findings.some((finding) => finding.kind === "codex_approval_friction"));
   assert.match(markdown, /trace-to-skill Demo/);
@@ -209,6 +210,7 @@ test("demo command runs packaged scenarios without private traces", async () => 
   assert.match(markdown, /codex_approval_friction/);
   assert.match(list, /latency-regression/);
   assert.match(list, /file-tree-ui/);
+  assert.match(list, /usage-reset-drift/);
   await assert.rejects(() => runDemo("missing"), /unknown demo scenario/);
 });
 
@@ -367,6 +369,22 @@ test("analyzeTargets detects Codex quota mismatches", async () => {
   assert.match(evidence, /You've hit your usage limit/);
   assert.match(evidence, /21% left/);
   assert.match(finding.suggestedRule, /usage dashboard/);
+});
+
+test("analyzeTargets detects Codex usage reset schedule drift", async () => {
+  const result = await analyzeTargets(["fixtures/codex-usage-reset-drift.md"]);
+  const finding = result.findings.find((item) => item.kind === "codex_usage_reset_drift");
+  const evidence = finding?.evidence.map((item) => item.excerpt).join("\n") ?? "";
+  const report = renderCodexIssueReport(result);
+
+  assert.ok(finding);
+  assert.equal(finding.severity, "high");
+  assert.match(evidence, /weekly limit reset due on Nov 3/);
+  assert.match(evidence, /first prompt after the blackout period/);
+  assert.match(evidence, /14 hours ahead/);
+  assert.match(evidence, /7d reset timestamp flips/);
+  assert.match(finding.suggestedRule, /previous and new reset_at values/);
+  assert.match(report, /codex_usage_reset_drift/);
 });
 
 test("analyzeTargets detects sensitive file access in agent context", async () => {
@@ -569,6 +587,8 @@ test("package metadata points npm users back to the public project", async () =>
   assert.ok(packageJson.keywords?.includes("codex-demo"));
   assert.ok(packageJson.keywords?.includes("codex-token-burn"));
   assert.ok(packageJson.keywords?.includes("codex-usage"));
+  assert.ok(packageJson.keywords?.includes("codex-reset"));
+  assert.ok(packageJson.keywords?.includes("codex-usage-reset"));
   assert.ok(packageJson.keywords?.includes("codex-resource-leak"));
   assert.ok(packageJson.keywords?.includes("codex-performance"));
   assert.ok(packageJson.keywords?.includes("codex-approval"));
@@ -979,6 +999,7 @@ test("published JSON schemas describe CLI result contracts", async () => {
   assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("codex_token_burn"));
   assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("codex_resource_leak"));
   assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("codex_tool_call_integrity"));
+  assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("codex_usage_reset_drift"));
   assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("quota_mismatch"));
   assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("sensitive_file_access"));
   assert.deepEqual(agentsLintSchema.required, ["generatedAt", "root", "status", "score", "instructionFiles", "mcpConfigs", "checks", "findings", "summary"]);
@@ -1003,7 +1024,7 @@ test("benchmark covers public fixture failure classes", async () => {
   const markdown = renderBenchmarkMarkdown(benchmark);
 
   assert.equal(benchmark.passed, true);
-  assert.equal(benchmark.cases.length, 22);
+  assert.equal(benchmark.cases.length, 23);
   assert.ok(benchmark.cases.some((item) => item.id === "clean-validated-run" && item.score === 100));
   assert.ok(benchmark.cases.some((item) => item.id === "failed-workflow" && item.detectedKinds.includes("test_failure")));
   assert.ok(benchmark.cases.some((item) => item.id === "context-compaction" && item.detectedKinds.includes("context_compaction")));
@@ -1020,6 +1041,7 @@ test("benchmark covers public fixture failure classes", async () => {
   assert.ok(benchmark.cases.some((item) => item.id === "codex-token-burn" && item.detectedKinds.includes("codex_token_burn")));
   assert.ok(benchmark.cases.some((item) => item.id === "codex-resource-leak" && item.detectedKinds.includes("codex_resource_leak")));
   assert.ok(benchmark.cases.some((item) => item.id === "codex-tool-call-integrity" && item.detectedKinds.includes("codex_tool_call_integrity")));
+  assert.ok(benchmark.cases.some((item) => item.id === "codex-usage-reset-drift" && item.detectedKinds.includes("codex_usage_reset_drift")));
   assert.ok(benchmark.cases.some((item) => item.id === "quota-mismatch" && item.detectedKinds.includes("quota_mismatch")));
   assert.ok(benchmark.cases.some((item) => item.id === "mcp-risk" && item.detectedKinds.includes("secret_exposure")));
   assert.ok(benchmark.cases.some((item) => item.id === "sensitive-file-access" && item.detectedKinds.includes("sensitive_file_access")));
@@ -1038,7 +1060,7 @@ test("scorecard combines doctor readiness and benchmark evidence", async () => {
   assert.equal(scorecard.doctor.status, "ready");
   assert.equal(scorecard.doctor.score, 100);
   assert.equal(scorecard.benchmark.status, "pass");
-  assert.equal(scorecard.benchmark.cases, 22);
+  assert.equal(scorecard.benchmark.cases, 23);
   assert.match(markdown, /trace-to-skill Scorecard/);
   assert.match(markdown, /Codex readiness/);
   assert.match(markdown, /Benchmark Summary/);
@@ -1054,9 +1076,9 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.equal(brief.scorecard.doctorStatus, "ready");
   assert.equal(brief.scorecard.doctorScore, 100);
   assert.equal(brief.scorecard.benchmarkStatus, "pass");
-  assert.equal(brief.scorecard.benchmarkCases, 22);
+  assert.equal(brief.scorecard.benchmarkCases, 23);
   assert.equal(brief.packageName, "trace-to-skill");
-  assert.equal(brief.packageVersion, "0.1.49");
+  assert.equal(brief.packageVersion, "0.1.50");
   assert.equal(brief.license, "Apache-2.0");
   assert.ok(brief.repository?.includes("github.com/grnbtqdbyx-create/trace-to-skill"));
   assert.ok(brief.qualification.max500.length <= 500);
@@ -1064,7 +1086,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.match(markdown, /OpenAI OSS Brief/);
   assert.match(markdown, /Why This Repository Qualifies/);
   assert.match(markdown, /500-Character Version/);
-  assert.match(markdown, /npx trace-to-skill@0\.1\.49/);
+  assert.match(markdown, /npx trace-to-skill@0\.1\.50/);
 });
 
 test("scorecard-comment dry-run resolves pull request event", async () => {

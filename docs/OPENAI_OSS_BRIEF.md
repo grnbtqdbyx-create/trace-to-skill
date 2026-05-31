@@ -3,18 +3,18 @@
 | Field | Value |
 | --- | --- |
 | Repository | https://github.com/grnbtqdbyx-create/trace-to-skill |
-| Package | trace-to-skill@0.1.49 |
+| Package | trace-to-skill@0.1.50 |
 | License | Apache-2.0 |
 | Codex readiness | ready (100/100) |
-| Benchmark | pass, 22 cases |
+| Benchmark | pass, 23 cases |
 
 ## Why This Repository Qualifies
 
-trace-to-skill helps open-source maintainers adopt Codex safely by turning failed coding-agent runs into evidence-backed rules, reusable workflows, and CI gates. It supports real maintenance work: PR review, issue triage, release quality, MCP risk, prompt-injection defense, privacy-preserving trace sharing, and repeat failure reduction. The repository is ready, scores 100/100 on the local Codex readiness doctor, and ships a deterministic benchmark with 22 public fixture cases.
+trace-to-skill helps open-source maintainers adopt Codex safely by turning failed coding-agent runs into evidence-backed rules, reusable workflows, and CI gates. It supports real maintenance work: PR review, issue triage, release quality, MCP risk, prompt-injection defense, privacy-preserving trace sharing, and repeat failure reduction. The repository is ready, scores 100/100 on the local Codex readiness doctor, and ships a deterministic benchmark with 23 public fixture cases.
 
 ### 500-Character Version
 
-> trace-to-skill helps open-source maintainers adopt Codex safely by turning failed coding-agent runs into evidence-backed rules, reusable workflows, and CI gates. It supports real maintenance work: PR review, issue triage, release quality, MCP risk, prompt-injection defense, privacy-preserving trace sharing, and repeat failure reduction. The repository is ready, scores 100/100 on the local Codex readiness doctor, and ships a deterministic benchmark with 22 public fixture cases.
+> trace-to-skill helps open-source maintainers adopt Codex safely by turning failed coding-agent runs into evidence-backed rules, reusable workflows, and CI gates. It supports real maintenance work: PR review, issue triage, release quality, MCP risk, prompt-injection defense, privacy-preserving trace sharing, and repeat failure reduction. The repository is ready, scores 100/100 on the local Codex readiness doctor, and ships a deterministic benchmark with 23 public fixture cases.
 
 ## How API Credits Would Be Used
 
@@ -27,10 +27,10 @@ API credits would power optional maintainer workflows on top of the local determ
 ## Evidence
 
 - Public repository: https://github.com/grnbtqdbyx-create/trace-to-skill
-- One-command package: npx trace-to-skill@0.1.49
+- One-command package: npx trace-to-skill@0.1.50
 - Open-source license: Apache-2.0
 - Codex readiness doctor: ready, 100/100, 0 failed checks.
-- Public fixture benchmark: pass, 22 cases.
+- Public fixture benchmark: pass, 23 cases.
 - Maintainer control: generated rules are suggestions, evidence is line-linked, and secrets can be redacted before sharing.
 
 ## Next Steps Before Submitting

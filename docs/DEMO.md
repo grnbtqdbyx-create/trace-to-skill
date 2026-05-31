@@ -99,8 +99,10 @@ Suggested rule:
 - `sensitive-files`: Secrets, local credentials, production env files, or private databases enter agent context.
 - `github-prompt-injection`: Untrusted issue, PR, comment, or web text tells the agent to ignore policy or leak secrets.
 - `file-tree-ui`: Desktop file tree, floating file panel, or file preview disappears, goes stale, or cannot be revealed.
+- `usage-reset-drift`: Weekly or 5-hour reset dates move unexpectedly, making paid usage hard to plan or wasting saved capacity.
 
 ```bash
 trace-to-skill demo --list
 trace-to-skill demo file-tree-ui
+trace-to-skill demo usage-reset-drift
 ```

@@ -444,6 +444,29 @@ const RULES: RuleDefinition[] = [
     suggestedSkill: "codex-tool-call-integrity-triage"
   },
   {
+    kind: "codex_usage_reset_drift",
+    severity: "high",
+    title: "Codex usage reset schedule drift",
+    why: "Unexpected weekly or 5-hour reset-date changes make paid Codex usage hard to plan, can erase saved capacity, and need evidence that separates display bugs, rolling windows, outage compensation resets, and actual enforcement changes.",
+    patterns: [
+      /\b(weekly|7d|7-day|5h|five-hour|daily)\b.{0,120}\b(reset|refresh)\b.{0,160}\b(changed|moved|jump(?:ed|ing)?|postponed|pushed back|early|ahead of time|random|unexpected|not deterministic|inconsistent)\b/i,
+      /\b(reset date|reset time|reset timestamp|reset_at|weekly reset)\b.{0,180}\b(changed|moved|jump(?:ed|ing)?|postponed|pushed back|flips?|random|inconsistent|not deterministic|not reliable)\b/i,
+      /\b\/status\b.{0,160}\b(reset|resets|reset_at)\b.{0,160}\b(changed|moved|jump(?:ed|ing)?|postponed|different|inconsistent|first prompt|blackout)\b/i,
+      /\b(first prompt|first request)\b.{0,180}\b(after (?:the )?(?:blackout|reset|outage)|sets? the weekly|starts? the weekly|reset clock|window)\b/i,
+      /\b(saved|remaining|left|unused)\b.{0,80}\b(\d{1,3}%|usage|weekly|quota|allowance|tokens?)\b.{0,180}\b(lost|wiped|erased|taken away|eat into next week|newly reset|next week's allowance)\b/i,
+      /\b(usage|quota|allowance|weekly limit)\b.{0,180}\b(reset|resets|resetting)\b.{0,160}\b(mid-run|mid run|overnight|without warning|surprise|global reset|compensation|outage)\b/i,
+      /\b(reset|refresh)\b.{0,160}\b(\d{1,3}\s*(?:hours?|days?)\s*(?:ahead|early|before|later)|ahead of (?:the )?time|before (?:the )?(?:displayed|shown|expected) time)\b/i,
+      /\b(roll over|rollover|carry over|preserve)\b.{0,140}\b(unused|remaining|leftover|prior window|previous window|weekly usage|allowance|credits)\b/i,
+      /\b(about-to-happen-reset|deterministic reset|fixed 7 days|same day every week|plan my token usage|budget our limits|transparent billing)\b/i,
+      /\b(sample time|pct1|reset1|pct2|reset2)\b.{0,220}\b(7d|weekly|reset)\b/i,
+      /\b(reset)\b.{0,120}\b(May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|Jan|Feb|Mar|Apr)\b.{0,80}\b(May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|Jan|Feb|Mar|Apr)\b/i,
+      /\b(rate limit resets? are announced|resetting everyone|limits reset for everyone|Tibo|changelog)\b.{0,180}\b(reset|weekly|usage|quota|limits?)\b/i
+    ],
+    suggestedRule:
+      "When reporting Codex usage reset drift, capture plan and workspace, account type, client/app/CLI version, model, exact /status output before and after, usage dashboard screenshots or timestamps, previous and new reset_at values with timezone, 5h/daily/weekly percentages, whether a prompt was running during reset, whether the reset was announced as outage compensation, whether unused prior-window capacity was lost or rolled over, and whether actual enforcement matched the displayed reset time.",
+    suggestedSkill: "codex-usage-reset-drift-triage"
+  },
+  {
     kind: "quota_mismatch",
     severity: "high",
     title: "Codex quota or usage-limit mismatch",

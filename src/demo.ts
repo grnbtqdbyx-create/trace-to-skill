@@ -53,6 +53,12 @@ const DEMO_SCENARIOS: DemoScenario[] = [
     title: "Codex file tree UI failure",
     fixture: "fixtures/codex-file-tree-ui.md",
     description: "Desktop file tree, floating file panel, or file preview disappears, goes stale, or cannot be revealed."
+  },
+  {
+    id: "usage-reset-drift",
+    title: "Codex usage reset schedule drift",
+    fixture: "fixtures/codex-usage-reset-drift.md",
+    description: "Weekly or 5-hour reset dates move unexpectedly, making paid usage hard to plan or wasting saved capacity."
   }
 ];
 
@@ -102,6 +108,7 @@ export function renderDemoMarkdown(result: DemoResult): string {
     "```bash",
     "trace-to-skill demo --list",
     "trace-to-skill demo file-tree-ui",
+    "trace-to-skill demo usage-reset-drift",
     "```",
     ""
   ].join("\n");
