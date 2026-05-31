@@ -230,12 +230,17 @@ test("composite action exposes Codex readiness doctor mode", async () => {
   assert.match(action, /benchmark-cases:/);
   assert.match(action, /benchmark-report:/);
   assert.match(action, /benchmark-json:/);
+  assert.match(action, /scorecard-status:/);
+  assert.match(action, /scorecard-report:/);
+  assert.match(action, /scorecard-json:/);
   assert.match(action, /agent-report:/);
   assert.match(action, /steps\.doctor\.outputs\.report/);
   assert.match(action, /steps\.agent-report\.outputs\.report/);
   assert.match(action, /steps\.benchmark\.outputs\.status/);
+  assert.match(action, /steps\.scorecard\.outputs\.status/);
   assert.match(action, /codex-readiness-report\.json/);
   assert.match(action, /trace-to-skill-benchmark\.json/);
+  assert.match(action, /trace-to-skill-scorecard\.json/);
   assert.match(action, /mode:/);
   assert.match(action, /doctor-threshold:/);
   assert.match(action, /doctor-comment:/);
@@ -244,9 +249,11 @@ test("composite action exposes Codex readiness doctor mode", async () => {
   assert.match(action, /trace-to-skill Codex Readiness/);
   assert.match(action, /trace-to-skill Agent Learning/);
   assert.match(action, /trace-to-skill Benchmark/);
+  assert.match(action, /trace-to-skill Scorecard/);
   assert.match(action, /trace-to-skill doctor/);
   assert.match(action, /trace-to-skill doctor-comment/);
   assert.match(action, /trace-to-skill benchmark/);
+  assert.match(action, /trace-to-skill scorecard/);
   assert.match(action, /inputs\.mode == 'doctor' \|\| inputs\.mode == 'both' \|\| inputs\.mode == 'all'/);
   assert.match(action, /inputs\.mode == 'benchmark' \|\| inputs\.mode == 'all'/);
   assert.match(action, /always\(\) && github\.event_name == 'pull_request' && inputs\.doctor-comment == 'true'/);
@@ -266,6 +273,7 @@ test("repository dogfoods the local Codex readiness action", async () => {
   assert.match(workflow, /job-summary: "true"/);
   assert.match(workflow, /steps\.readiness\.outputs\.doctor-score/);
   assert.match(workflow, /steps\.readiness\.outputs\.benchmark-status/);
+  assert.match(workflow, /steps\.readiness\.outputs\.scorecard-status/);
 });
 
 test("published JSON schemas describe CLI result contracts", async () => {
@@ -279,6 +287,10 @@ test("published JSON schemas describe CLI result contracts", async () => {
     properties: Record<string, unknown>;
     $defs: Record<string, unknown>;
   };
+  const scorecardSchema = JSON.parse(await readFile("schemas/scorecard-result.schema.json", "utf8")) as {
+    required: string[];
+    properties: Record<string, unknown>;
+  };
 
   assert.deepEqual(analysisSchema.required, ["generatedAt", "inputs", "score", "summary", "findings", "recommendations"]);
   assert.ok(analysisSchema.properties.score);
@@ -286,6 +298,9 @@ test("published JSON schemas describe CLI result contracts", async () => {
   assert.deepEqual(doctorSchema.required, ["generatedAt", "root", "score", "summary", "checks", "findings"]);
   assert.ok(doctorSchema.properties.checks);
   assert.ok(doctorSchema.$defs.check);
+  assert.deepEqual(scorecardSchema.required, ["generatedAt", "passed", "threshold", "doctor", "benchmark", "reports"]);
+  assert.ok(scorecardSchema.properties.doctor);
+  assert.ok(scorecardSchema.properties.benchmark);
 });
 
 test("benchmark covers public fixture failure classes", async () => {

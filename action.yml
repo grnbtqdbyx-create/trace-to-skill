@@ -72,6 +72,15 @@ outputs:
   benchmark-json:
     description: Path to the JSON benchmark report.
     value: ${{ steps.benchmark.outputs.json }}
+  scorecard-status:
+    description: Combined scorecard status, either pass or fail.
+    value: ${{ steps.scorecard.outputs.status }}
+  scorecard-report:
+    description: Path to the Markdown scorecard report.
+    value: ${{ steps.scorecard.outputs.report }}
+  scorecard-json:
+    description: Path to the JSON scorecard report.
+    value: ${{ steps.scorecard.outputs.json }}
 runs:
   using: composite
   steps:
@@ -183,4 +192,34 @@ runs:
         echo "::error::trace-to-skill benchmark failed"
         exit 1
       if: steps.benchmark.outputs.status == 'fail' && (inputs.mode == 'benchmark' || inputs.mode == 'all')
+      shell: bash
+    - id: scorecard
+      run: |
+        set -euo pipefail
+        npx github:grnbtqdbyx-create/trace-to-skill scorecard "${{ inputs.doctor-path }}" --threshold "${{ inputs.doctor-threshold }}" --format json --output trace-to-skill-scorecard.json
+        npx github:grnbtqdbyx-create/trace-to-skill scorecard "${{ inputs.doctor-path }}" --threshold "${{ inputs.doctor-threshold }}" --output trace-to-skill-scorecard.md
+        node --input-type=module <<'NODE'
+        import { appendFileSync, readFileSync } from "node:fs";
+        const report = JSON.parse(readFileSync("trace-to-skill-scorecard.json", "utf8"));
+        const output = [
+          `status=${report.passed ? "pass" : "fail"}`,
+          "report=trace-to-skill-scorecard.md",
+          "json=trace-to-skill-scorecard.json"
+        ].join("\n");
+        appendFileSync(process.env.GITHUB_OUTPUT, `${output}\n`);
+        NODE
+      if: inputs.mode == 'all'
+      shell: bash
+    - run: |
+        {
+          echo "## trace-to-skill Scorecard"
+          echo
+          cat trace-to-skill-scorecard.md
+        } >> "$GITHUB_STEP_SUMMARY"
+      if: always() && inputs.job-summary == 'true' && inputs.mode == 'all'
+      shell: bash
+    - run: |
+        echo "::error::trace-to-skill scorecard failed"
+        exit 1
+      if: steps.scorecard.outputs.status == 'fail' && inputs.mode == 'all'
       shell: bash

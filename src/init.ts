@@ -111,7 +111,7 @@ function renderCodexReadinessWorkflow(doctorThreshold: string, comment: boolean)
     "    steps:",
     "      - uses: actions/checkout@v5",
     "      - id: trace-to-skill",
-    "        uses: grnbtqdbyx-create/trace-to-skill@v0.1.18",
+    "        uses: grnbtqdbyx-create/trace-to-skill@v0.1.19",
     "        with:",
     "          mode: all",
     `          doctor-threshold: "${doctorThreshold}"`,
@@ -120,7 +120,8 @@ function renderCodexReadinessWorkflow(doctorThreshold: string, comment: boolean)
     comment ? "          github-token: ${{ github.token }}" : undefined,
     "      - run: |",
     "          echo \"Codex readiness score is ${{ steps.trace-to-skill.outputs.doctor-score }}\"",
-    "          echo \"Benchmark status is ${{ steps.trace-to-skill.outputs.benchmark-status }}\""
+    "          echo \"Benchmark status is ${{ steps.trace-to-skill.outputs.benchmark-status }}\"",
+    "          echo \"Scorecard status is ${{ steps.trace-to-skill.outputs.scorecard-status }}\""
   ].filter((line): line is string => Boolean(line)).join("\n")}\n`;
 }
 
@@ -138,7 +139,7 @@ function renderAgentLearningWorkflow(traces: string, threshold: string, comment:
   const steps = [
     "      - uses: actions/checkout@v5",
     "      - id: trace-to-skill",
-    "        uses: grnbtqdbyx-create/trace-to-skill@v0.1.18",
+    "        uses: grnbtqdbyx-create/trace-to-skill@v0.1.19",
     "        with:",
     "          mode: traces",
     `          traces: ${traces}`,

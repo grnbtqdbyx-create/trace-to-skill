@@ -41,6 +41,7 @@ trace-to-skill checks repo readiness and scans agent traces/logs to generate:
 - a built-in fixture benchmark and public scorecard
 - GitHub Action benchmark and all-in-one modes
 - a combined scorecard for reviewer-ready proof
+- scorecard JSON schema and Action outputs
 - an Agent Learning Report
 - suggested AGENTS.md rules
 - suggested SKILL.md content

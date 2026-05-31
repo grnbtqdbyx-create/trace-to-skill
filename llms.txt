@@ -13,6 +13,7 @@ Useful entry points:
 - Combined scorecard: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/SCORECARD.md
 - Analysis JSON schema: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/schemas/analysis-result.schema.json
 - Doctor JSON schema: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/schemas/doctor-result.schema.json
+- Scorecard JSON schema: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/schemas/scorecard-result.schema.json
 
 Core commands:
 

@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/grnbtqdbyx-create/trace-to-skill/main/schemas/scorecard-result.schema.json",
+  "title": "trace-to-skill ScorecardResult",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "generatedAt",
+    "passed",
+    "threshold",
+    "doctor",
+    "benchmark",
+    "reports"
+  ],
+  "properties": {
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "passed": {
+      "type": "boolean"
+    },
+    "threshold": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+    },
+    "doctor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "score",
+        "status",
+        "summary",
+        "failedChecks",
+        "criticalFindings"
+      ],
+      "properties": {
+        "score": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "ready",
+            "needs-attention"
+          ]
+        },
+        "summary": {
+          "type": "string"
+        },
+        "failedChecks": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "criticalFindings": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "benchmark": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "cases"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "pass",
+            "fail"
+          ]
+        },
+        "cases": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "reports": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "doctor",
+        "benchmark"
+      ],
+      "properties": {
+        "doctor": {
+          "$ref": "doctor-result.schema.json"
+        },
+        "benchmark": {
+          "type": "object"
+        }
+      }
+    }
+  }
+}

@@ -228,6 +228,7 @@ Stable machine-readable contracts are published with the npm package and release
 
 - [`schemas/analysis-result.schema.json`](schemas/analysis-result.schema.json) describes `trace-to-skill analyze --format json`.
 - [`schemas/doctor-result.schema.json`](schemas/doctor-result.schema.json) describes `trace-to-skill doctor --format json`.
+- [`schemas/scorecard-result.schema.json`](schemas/scorecard-result.schema.json) describes `trace-to-skill scorecard --format json`.
 
 These schemas let downstream Codex workflows, dashboards, and CI bots consume reports without scraping Markdown.
 
@@ -255,7 +256,7 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v5
-      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.18
+      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.19
         with:
           mode: all
           doctor-threshold: "85"
@@ -303,7 +304,7 @@ Composite action usage:
 
 ```yaml
 - id: trace-to-skill
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.18
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.19
   with:
     mode: all
     doctor-threshold: "85"
@@ -330,6 +331,9 @@ Action outputs:
 | `benchmark-cases` | Number of benchmark cases executed |
 | `benchmark-report` | Markdown benchmark report path |
 | `benchmark-json` | JSON benchmark report path |
+| `scorecard-status` | Combined scorecard status, `pass` or `fail` |
+| `scorecard-report` | Markdown scorecard report path |
+| `scorecard-json` | JSON scorecard report path |
 
 By default, generated reports are also appended to the GitHub Actions Job Summary. Set `job-summary: "false"` to disable that UI output.
 
@@ -366,6 +370,7 @@ The goal is not to let agents autonomously rewrite project policy. The goal is t
 - `trace-to-skill benchmark` for public fixture scorecards
 - GitHub Action `benchmark` and `all` modes
 - `trace-to-skill scorecard` for combined reviewer proof
+- Scorecard JSON schema and Action outputs
 - public benchmark of common agent failure classes
 
 See [docs/ROADMAP.md](docs/ROADMAP.md).

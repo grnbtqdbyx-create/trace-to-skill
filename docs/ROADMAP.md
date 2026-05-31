@@ -25,6 +25,7 @@
 - `trace-to-skill benchmark` for the public fixture scorecard
 - GitHub Action `benchmark` and `all` modes
 - `trace-to-skill scorecard` for combined reviewer proof
+- Scorecard JSON schema and Action outputs
 
 ## v0.2
 

@@ -87,5 +87,6 @@ For dashboards, bots, or custom CI:
 
 - `schemas/analysis-result.schema.json` describes `trace-to-skill analyze --format json`.
 - `schemas/doctor-result.schema.json` describes `trace-to-skill doctor --format json`.
+- `schemas/scorecard-result.schema.json` describes `trace-to-skill scorecard --format json`.
 
 Use the schemas instead of scraping Markdown reports.

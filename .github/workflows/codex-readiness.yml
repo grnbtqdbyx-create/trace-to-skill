@@ -31,3 +31,4 @@ jobs:
           echo "Codex readiness summary: ${{ steps.readiness.outputs.doctor-summary }}"
           echo "Benchmark status: ${{ steps.readiness.outputs.benchmark-status }}"
           echo "Benchmark cases: ${{ steps.readiness.outputs.benchmark-cases }}"
+          echo "Scorecard status: ${{ steps.readiness.outputs.scorecard-status }}"
