@@ -5,6 +5,7 @@ import { analyzeTargets } from "./analyze.js";
 import { renderBenchmarkMarkdown, runBenchmark } from "./benchmark.js";
 import { auditCodexConfig, renderConfigAuditMarkdown } from "./configAudit.js";
 import { listDemoScenarios, renderDemoMarkdown, renderDemoScenarioList, runDemo } from "./demo.js";
+import { createDiagnosticsBundle, renderDiagnosticsBundleMarkdown } from "./diagnosticsBundle.js";
 import { doctorRepo } from "./doctor.js";
 import { compareAnalyses, evaluate } from "./eval.js";
 import { analyzeGithubEventContext } from "./githubContext.js";
@@ -200,6 +201,23 @@ async function main(): Promise<void> {
     const format = String(parsed.flags.format ?? "markdown");
     const output = format === "json" ? `${JSON.stringify(result, null, 2)}\n` : renderConfigAuditMarkdown(result);
     await writeOutput(output, parsed.flags.output);
+    process.exitCode = result.status === "fail" ? 1 : 0;
+    return;
+  }
+
+  if (parsed.command === "diagnostics-bundle") {
+    const result = await createDiagnosticsBundle(
+      parsed.targets[0] ?? "~/.codex",
+      stringFlag(parsed.flags.output) ?? "trace-to-skill-codex-diagnostics",
+      {
+        largeFileBytes: byteFlag(parsed.flags["large-mb"], 1024 * 1024),
+        hugeLineBytes: byteFlag(parsed.flags["huge-line-kb"], 1024),
+        force: Boolean(parsed.flags.force)
+      }
+    );
+    const format = String(parsed.flags.format ?? "markdown");
+    const output = format === "json" ? `${JSON.stringify(result, null, 2)}\n` : renderDiagnosticsBundleMarkdown(result);
+    await writeOutput(output, undefined);
     process.exitCode = result.status === "fail" ? 1 : 0;
     return;
   }
@@ -407,6 +425,7 @@ Usage:
   trace-to-skill guard-patch <patch-file> [--root repo-dir] [--format markdown|json] [--output report.md]
   trace-to-skill session-audit [codex-home-or-sessions-dir] [--large-mb 10] [--huge-line-kb 512] [--format markdown|json]
   trace-to-skill config-audit [codex-home-or-config.toml] [--format markdown|json]
+  trace-to-skill diagnostics-bundle [codex-home] [--output codex-diagnostics] [--force] [--format markdown|json]
   trace-to-skill comment <trace-file-or-dir> [--dry-run] [--token $GITHUB_TOKEN]
   trace-to-skill compare --before <old-run> --after <new-run> [--format markdown|json]
   trace-to-skill doctor [repo-dir] [--threshold 85] [--format markdown|json|comment] [--output report.md]
@@ -430,6 +449,7 @@ Examples:
   trace-to-skill guard-patch ./change.patch --root .
   trace-to-skill session-audit ~/.codex --format json
   trace-to-skill config-audit ~/.codex --format json
+  trace-to-skill diagnostics-bundle ~/.codex --output codex-diagnostics
   trace-to-skill comment ./runs
   trace-to-skill compare --before ./runs/before --after ./runs/after
   trace-to-skill doctor . --threshold 85

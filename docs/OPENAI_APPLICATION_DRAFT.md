@@ -56,6 +56,7 @@ Current proof points:
 - Focused `patch-overwrite` demo and public fixture based on active Codex `apply_patch` overwrite reports.
 - Local `session-audit` command for privacy-preserving Codex history diagnostics: rollout JSONL size, line count, largest line size, parse errors, session-index shortness, and state-file presence.
 - Local `config-audit` command for privacy-preserving Codex config diagnostics: legacy profile config, model pins, sandbox/approval posture, Windows elevated sandbox mode, missing permission profiles, plugin cache drift, and MCP approval sprawl.
+- Local `diagnostics-bundle` command for metadata-only OpenAI support bundles: manifest, README, config audit, and session audit reports without copying raw config, logs, SQLite state, or transcripts.
 - Context compaction failure detection for stuck Codex sessions and shareable support traces.
 - Sandbox and permission failure detection for Codex setup refresh, Windows `os error 740`, ACL, workspace ownership, and approval-mode drift reports.
 - Codex file tree and workspace navigation UI detection for missing `View > Toggle File Tree`, stale floating file panels, and file-preview failures.
@@ -70,7 +71,7 @@ Current proof points:
 - SARIF output for GitHub code scanning.
 - Before/after eval comparison with keep/revise/reject decisions.
 - One-command repository setup via `trace-to-skill init`.
-- Public release v0.1.56.
+- Public release v0.1.57.
 - Current GitHub scorecard: 100/100 Codex-ready, benchmark passing.
 
 500-character version:

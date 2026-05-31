@@ -8,6 +8,7 @@ import { analyzeInputs, analyzeTargets } from "../src/analyze.js";
 import { renderBenchmarkMarkdown, runBenchmark } from "../src/benchmark.js";
 import { auditCodexConfig, renderConfigAuditMarkdown } from "../src/configAudit.js";
 import { listDemoScenarios, renderDemoMarkdown, renderDemoScenarioList, runDemo } from "../src/demo.js";
+import { createDiagnosticsBundle, renderDiagnosticsBundleMarkdown } from "../src/diagnosticsBundle.js";
 import { doctorRepo } from "../src/doctor.js";
 import { compareAnalyses, evaluate } from "../src/eval.js";
 import { analyzeGithubEventContext, extractGithubContextInputs } from "../src/githubContext.js";
@@ -592,6 +593,61 @@ test("auditCodexConfig passes a minimal portable config", async () => {
   assert.equal(result.status, "pass");
   assert.equal(result.findings.length, 0);
   assert.equal(result.values.sandboxMode, "workspace-write");
+});
+
+test("createDiagnosticsBundle writes metadata-only Codex support reports", async () => {
+  const cwd = await mkdtemp(path.join(os.tmpdir(), "trace-to-skill-bundle-"));
+  const outputDir = path.join(cwd, "bundle");
+  const sessionDir = path.join(cwd, "sessions");
+  await mkdir(sessionDir, { recursive: true });
+  await writeFile(path.join(cwd, "config.toml"), [
+    "profile = \"safe-auto\"",
+    "model = \"gpt-5-codex\"",
+    ""
+  ].join("\n"), "utf8");
+  await writeFile(path.join(sessionDir, "rollout-2026-05-31T10-00-00-019eaaa.jsonl"), [
+    JSON.stringify({ type: "session_meta", payload: { id: "019eaaa" } }),
+    JSON.stringify({ type: "response_item", item: { type: "message", content: "private prompt is not copied" } }),
+    ""
+  ].join("\n"), "utf8");
+
+  const result = await createDiagnosticsBundle(cwd, outputDir);
+  const markdown = renderDiagnosticsBundleMarkdown(result);
+  const manifest = JSON.parse(await readFile(path.join(outputDir, "manifest.json"), "utf8")) as typeof result;
+  const readme = await readFile(path.join(outputDir, "README.md"), "utf8");
+  const configJson = await readFile(path.join(outputDir, "config-audit.json"), "utf8");
+  const sessionJson = await readFile(path.join(outputDir, "session-audit.json"), "utf8");
+
+  assert.equal(result.status, "warn");
+  assert.equal(result.privacy.mode, "metadata-only");
+  assert.equal(result.privacy.rawFilesIncluded, false);
+  assert.equal(result.summary.configStatus, "warn");
+  assert.equal(result.summary.sessionStatus, "pass");
+  assert.equal(result.recommendedAttachments.length, 6);
+  assert.deepEqual(manifest.recommendedAttachments, result.recommendedAttachments);
+  assert.match(markdown, /Diagnostics Bundle/);
+  assert.match(readme, /Do Not Publicly Attach/);
+  assert.match(readme, /logs_2\.sqlite/);
+  assert.match(configJson, /legacy_profile_config/);
+  assert.doesNotMatch(sessionJson, /private prompt is not copied/);
+});
+
+test("createDiagnosticsBundle refuses non-empty output directories without force", async () => {
+  const cwd = await mkdtemp(path.join(os.tmpdir(), "trace-to-skill-bundle-"));
+  const outputDir = path.join(cwd, "bundle");
+  await mkdir(outputDir, { recursive: true });
+  await writeFile(path.join(outputDir, "keep.txt"), "do not overwrite", "utf8");
+  await writeFile(path.join(cwd, "config.toml"), "sandbox_mode = \"workspace-write\"\n", "utf8");
+  await writeFile(path.join(cwd, "session_index.jsonl"), `${JSON.stringify({ id: "019e" })}\n`, "utf8");
+
+  await assert.rejects(
+    () => createDiagnosticsBundle(cwd, outputDir),
+    /output directory is not empty/
+  );
+
+  const result = await createDiagnosticsBundle(cwd, outputDir, { force: true });
+  assert.equal(result.outputDir, outputDir);
+  assert.equal(await readFile(path.join(outputDir, "keep.txt"), "utf8"), "do not overwrite");
 });
 
 test("analyzeTargets detects Codex quota mismatches", async () => {
@@ -1223,6 +1279,11 @@ test("published JSON schemas describe CLI result contracts", async () => {
     properties: Record<string, unknown>;
     $defs: Record<string, unknown>;
   };
+  const diagnosticsBundleSchema = JSON.parse(await readFile("schemas/diagnostics-bundle-result.schema.json", "utf8")) as {
+    required: string[];
+    properties: Record<string, unknown>;
+    $defs: Record<string, unknown>;
+  };
   const sessionAuditSchema = JSON.parse(await readFile("schemas/session-audit-result.schema.json", "utf8")) as {
     required: string[];
     properties: Record<string, unknown>;
@@ -1272,6 +1333,9 @@ test("published JSON schemas describe CLI result contracts", async () => {
   assert.deepEqual(configAuditSchema.required, ["generatedAt", "target", "configPath", "status", "summary", "values", "findings"]);
   assert.ok(configAuditSchema.properties.values);
   assert.ok(configAuditSchema.$defs.finding);
+  assert.deepEqual(diagnosticsBundleSchema.required, ["generatedAt", "target", "outputDir", "status", "privacy", "summary", "recommendedAttachments", "reports"]);
+  assert.ok(diagnosticsBundleSchema.properties.privacy);
+  assert.ok(diagnosticsBundleSchema.$defs.report);
   assert.deepEqual(sessionAuditSchema.required, ["generatedAt", "root", "status", "thresholds", "summary", "files", "stateFiles", "findings"]);
   assert.ok(sessionAuditSchema.properties.summary);
   assert.ok(sessionAuditSchema.$defs.file);
@@ -1342,7 +1406,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.equal(brief.scorecard.benchmarkStatus, "pass");
   assert.equal(brief.scorecard.benchmarkCases, 26);
   assert.equal(brief.packageName, "trace-to-skill");
-  assert.equal(brief.packageVersion, "0.1.56");
+  assert.equal(brief.packageVersion, "0.1.57");
   assert.equal(brief.license, "Apache-2.0");
   assert.ok(brief.repository?.includes("github.com/grnbtqdbyx-create/trace-to-skill"));
   assert.ok(brief.qualification.max500.length <= 500);
@@ -1350,7 +1414,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.match(markdown, /OpenAI OSS Brief/);
   assert.match(markdown, /Why This Repository Qualifies/);
   assert.match(markdown, /500-Character Version/);
-  assert.match(markdown, /npx trace-to-skill@0\.1\.56/);
+  assert.match(markdown, /npx trace-to-skill@0\.1\.57/);
 });
 
 test("scorecard-comment dry-run resolves pull request event", async () => {

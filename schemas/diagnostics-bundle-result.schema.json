@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/grnbtqdbyx-create/trace-to-skill/schemas/diagnostics-bundle-result.schema.json",
+  "title": "trace-to-skill Codex diagnostics bundle result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["generatedAt", "target", "outputDir", "status", "privacy", "summary", "recommendedAttachments", "reports"],
+  "properties": {
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "target": {
+      "type": "string"
+    },
+    "outputDir": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["pass", "warn", "fail"]
+    },
+    "privacy": {
+      "$ref": "#/$defs/privacy"
+    },
+    "summary": {
+      "$ref": "#/$defs/summary"
+    },
+    "recommendedAttachments": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "reports": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/report"
+      }
+    }
+  },
+  "$defs": {
+    "privacy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "rawFilesIncluded", "excludedRawFiles"],
+      "properties": {
+        "mode": {
+          "type": "string",
+          "const": "metadata-only"
+        },
+        "rawFilesIncluded": {
+          "type": "boolean",
+          "const": false
+        },
+        "excludedRawFiles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["configStatus", "sessionStatus", "reports"],
+      "properties": {
+        "configStatus": {
+          "type": "string",
+          "enum": ["pass", "warn", "fail"]
+        },
+        "sessionStatus": {
+          "type": "string",
+          "enum": ["pass", "warn", "fail"]
+        },
+        "reports": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "report": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "format", "path"],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["manifest", "readme", "config-audit", "session-audit"]
+        },
+        "format": {
+          "type": "string",
+          "enum": ["json", "markdown"]
+        },
+        "path": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

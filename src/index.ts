@@ -4,6 +4,8 @@ export { renderBenchmarkMarkdown, runBenchmark } from "./benchmark.js";
 export { auditCodexConfig, renderConfigAuditMarkdown } from "./configAudit.js";
 export type { ConfigAuditFinding, ConfigAuditResult, ConfigAuditSeverity, ConfigAuditStatus } from "./configAudit.js";
 export { listDemoScenarios, renderDemoMarkdown, renderDemoScenarioList, runDemo } from "./demo.js";
+export { createDiagnosticsBundle, renderDiagnosticsBundleMarkdown } from "./diagnosticsBundle.js";
+export type { DiagnosticsBundleOptions, DiagnosticsBundleReport, DiagnosticsBundleResult, DiagnosticsBundleStatus } from "./diagnosticsBundle.js";
 export { doctorRepo } from "./doctor.js";
 export { compareAnalyses, evaluate } from "./eval.js";
 export { analyzeGithubEventContext, extractGithubContextInputs } from "./githubContext.js";

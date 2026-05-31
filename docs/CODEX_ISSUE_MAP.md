@@ -10,6 +10,7 @@ Use it when you want to file a concise Codex issue, deduplicate reports, or conv
 npx trace-to-skill redact ./runs --output redacted-runs
 npx trace-to-skill analyze redacted-runs --format json
 npx trace-to-skill codex-report redacted-runs --output openai-codex-issue.md
+npx trace-to-skill diagnostics-bundle ~/.codex --output codex-diagnostics
 ```
 
 ## Issue Clusters
@@ -25,6 +26,7 @@ npx trace-to-skill codex-report redacted-runs --output openai-codex-issue.md
 | Latency regressions | GPT-5.5 Fast feels like Standard, simple tasks take 10-20+ minutes, pre-first-token or thinking stalls, slow search/read/compaction, hours for small code changes | `codex_latency_regression` | `trace-to-skill codex-report ./runs` |
 | Approval persistence and MCP approval friction | `Approve for this session` is not remembered, command approval cache misses, repeated file-change approvals, `approval_policy = "never"` still prompts for MCP tools, per-tool approval configs explode | `codex_approval_friction` | `trace-to-skill codex-report ./runs` |
 | Config and Preferences drift | legacy `profile` / `[profiles.*]`, `configVersionConflict`, Preferences `Unable to save`, stale model pin, missing `default_permissions` profile, enabled plugin cache missing, Windows elevated sandbox mode | `sandbox_permission`, `codex_plugin_runtime`, `codex_approval_friction` | `trace-to-skill config-audit ~/.codex --format json` |
+| Support diagnostics packaging | maintainers ask for more detail, but raw `config.toml`, `logs_2.sqlite`, `state_5.sqlite`, `session_index.jsonl`, rollout JSONL, or local logs are too private to post | multiple | `trace-to-skill diagnostics-bundle ~/.codex --output codex-diagnostics` |
 | Quota mismatch | `/status` or usage page shows quota left, but runtime says `You've hit your usage limit`; account/workspace reset or cache confusion | `quota_mismatch` | `trace-to-skill codex-report ./runs` |
 | Sensitive file exclusion | `.env`, private keys, `.npmrc`, cloud credentials, local databases, or production secret manifests entered agent context | `sensitive_file_access` | `trace-to-skill codex-report ./runs` |
 | Context compaction failures | `Error running remote compact task`, `context_length_exceeded`, compaction loops, `responses/compact` stream disconnects | `context_compaction` | `trace-to-skill analyze ./runs` |
@@ -51,6 +53,7 @@ npx trace-to-skill codex-report redacted-runs --output openai-codex-issue.md
 - Include process names/PIDs, CPU/GPU/RSS samples, log-loop signatures, and whether killing exact PIDs or closing the app clears resource leaks.
 - Include exact tool input/output, `tool_call_id` order, affected path state, rollback evidence, and `guard-patch` output for tool-call integrity failures.
 - Include `session-audit` output, largest rollout JSONL sizes, largest line sizes, parse-error counts, `session_index.jsonl` line count, and state-file presence for resume/session-state failures.
+- Include `diagnostics-bundle` output when the issue spans config plus local session/history state, or when you need one metadata-only folder that excludes raw logs, SQLite databases, raw config, and transcripts.
 - Include pre-first-token, thinking, tool, search, read, and compaction timings plus model/speed settings for latency regressions.
 - Include selected approval scope, displayed vs executed command, MCP server/tool names, visible args, repeated prompt count, and config snippets for approval-friction reports.
 - Include `config-audit` output for Preferences/config, sandbox, model-pin, MCP approval, and plugin-cache reports.

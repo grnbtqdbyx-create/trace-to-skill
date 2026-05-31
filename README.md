@@ -27,6 +27,7 @@ npx trace-to-skill guard-github-event "$GITHUB_EVENT_PATH"
 npx trace-to-skill guard-patch ./change.patch --root .
 npx trace-to-skill session-audit ~/.codex --format json
 npx trace-to-skill config-audit ~/.codex --format json
+npx trace-to-skill diagnostics-bundle ~/.codex --output codex-diagnostics
 npx trace-to-skill comment ./runs --dry-run
 npx trace-to-skill compare --before ./runs/before --after ./runs/after
 ```
@@ -53,6 +54,7 @@ Use it when you need to:
 - **Prevent unsafe patch overwrites:** run `trace-to-skill guard-patch ./change.patch --root .` before applying generated patches so `*** Add File` cannot silently replace an existing file or symlink target.
 - **Audit local Codex session history:** run `trace-to-skill session-audit ~/.codex --format json` to summarize rollout JSONL sizes, huge lines, parse errors, state files, and short `session_index.jsonl` evidence without publishing private transcripts.
 - **Audit Codex config drift:** run `trace-to-skill config-audit ~/.codex --format json` to summarize legacy profile config, model pins, sandbox/approval posture, Windows elevated sandbox mode, missing permission profiles, plugin cache drift, and MCP approval sprawl.
+- **Bundle Codex diagnostics safely:** run `trace-to-skill diagnostics-bundle ~/.codex --output codex-diagnostics` to create a metadata-only support folder with manifest, README, config audit, and session audit reports while excluding raw logs, SQLite state, raw config, and transcripts.
 - **Share failed traces safely:** run `trace-to-skill redact ./runs --output redacted-runs` before publishing anonymized failure fixtures.
 - **Catch sensitive file access:** run `trace-to-skill analyze ./runs` when an agent trace includes `.env`, private keys, `.npmrc`, cloud credentials, local databases, or production secret manifests.
 - **Report remote compact failures:** run `trace-to-skill codex-report ./runs` when `/compact` or auto-compaction fails with `responses/compact` timeouts, stream disconnects, provider timeout workarounds, or long-thread recovery loss.
@@ -97,6 +99,7 @@ Open-source maintainers do not need more AI-generated noise. They need agents th
 - Can a generated patch be guarded before it touches the workspace?
 - Which local Codex rollout JSONL or `session_index.jsonl` files make `codex resume` or Desktop history sluggish?
 - Which `config.toml` setting explains a sandbox, approval, plugin, model, or Preferences save regression?
+- Can I attach one safe diagnostics folder to OpenAI without posting raw `config.toml`, SQLite state, local logs, or transcripts?
 - Did Codex sandbox setup or workspace permissions block every tool call?
 - Did quota accounting, account switching, or reset timing contradict the runtime usage-limit error?
 - Did an MCP tool appear in `tools/list` but fail at Codex runtime because approval, namespace routing, or stdio lifecycle broke?
@@ -222,6 +225,7 @@ trace-to-skill demo patch-overwrite
 trace-to-skill guard-patch ./change.patch --root .
 trace-to-skill session-audit ~/.codex --format json
 trace-to-skill config-audit ~/.codex --format json
+trace-to-skill diagnostics-bundle ~/.codex --output codex-diagnostics
 trace-to-skill demo --format json
 ```
 
@@ -385,6 +389,7 @@ Stable machine-readable contracts are published with the npm package and release
 - [`schemas/oss-brief-result.schema.json`](schemas/oss-brief-result.schema.json) describes `trace-to-skill oss-brief --format json`.
 - [`schemas/patch-guard-result.schema.json`](schemas/patch-guard-result.schema.json) describes `trace-to-skill guard-patch --format json`.
 - [`schemas/config-audit-result.schema.json`](schemas/config-audit-result.schema.json) describes `trace-to-skill config-audit --format json`.
+- [`schemas/diagnostics-bundle-result.schema.json`](schemas/diagnostics-bundle-result.schema.json) describes `trace-to-skill diagnostics-bundle --format json`.
 - [`schemas/session-audit-result.schema.json`](schemas/session-audit-result.schema.json) describes `trace-to-skill session-audit --format json`.
 
 These schemas let downstream Codex workflows, dashboards, and CI bots consume reports without scraping Markdown.
@@ -417,7 +422,7 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v5
-      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.56
+      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.57
         with:
           mode: all
           doctor-threshold: "85"
@@ -466,7 +471,7 @@ Composite action usage:
 
 ```yaml
 - id: trace-to-skill
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.56
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.57
   with:
     mode: all
     doctor-threshold: "85"
@@ -508,7 +513,7 @@ Action outputs:
 
 By default, generated reports are also appended to the GitHub Actions Job Summary. Set `job-summary: "false"` to disable that UI output.
 
-Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.56` executes that release's checked-out source instead of pulling the default branch at runtime.
+Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.57` executes that release's checked-out source instead of pulling the default branch at runtime.
 
 ## Codex Skill
 

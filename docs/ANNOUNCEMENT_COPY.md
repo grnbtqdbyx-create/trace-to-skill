@@ -57,6 +57,7 @@ trace-to-skill checks repo readiness and scans agent traces/logs to generate:
 - a `guard-patch` command that fails generated patches when `*** Add File` would overwrite an existing file or symlink target
 - a local `session-audit` command that summarizes Codex rollout JSONL size, huge lines, parse errors, session-index shortness, and state-file presence without publishing transcripts
 - a local `config-audit` command that summarizes Codex legacy profile config, model pins, sandbox/approval posture, Windows elevated sandbox mode, plugin cache drift, and MCP approval sprawl without posting raw config
+- a local `diagnostics-bundle` command that writes a metadata-only OpenAI support folder with manifest, README, config audit, and session audit reports while excluding raw config, logs, SQLite state, and transcripts
 - Codex sandbox setup and permission failure detection for setup refresh, ACL, ownership, and approval-mode problems
 - Codex auth/connectivity detection for token exchange, CA certificate, proxy, IPv6, Cloudflare challenge, and stream disconnect evidence
 - Codex mobile/remote-control route health detection for stale listener, stale enrollment, missing helper bundle, and `Waiting for desktop` evidence
@@ -91,6 +92,7 @@ npx trace-to-skill scorecard-comment . --dry-run
 npx trace-to-skill guard-github-event "$GITHUB_EVENT_PATH"
 npx trace-to-skill session-audit ~/.codex --format json
 npx trace-to-skill config-audit ~/.codex --format json
+npx trace-to-skill diagnostics-bundle ~/.codex --output codex-diagnostics
 npx trace-to-skill doctor-comment . --threshold 85 --dry-run
 
 I’m especially looking for anonymized failed agent traces and feedback from OSS maintainers who review AI-generated PRs.

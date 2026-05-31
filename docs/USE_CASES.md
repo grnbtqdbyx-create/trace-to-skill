@@ -42,7 +42,7 @@ What it proves:
 Recommended CI surface:
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.56
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.57
   with:
     mode: all
     doctor-threshold: "85"
@@ -79,11 +79,14 @@ Use this when Codex cannot start tools, apply patches, or write to the workspace
 ```bash
 npx trace-to-skill analyze ./runs --format json
 npx trace-to-skill config-audit ~/.codex --format json
+npx trace-to-skill diagnostics-bundle ~/.codex --output codex-diagnostics
 ```
 
 This catches signals such as Windows sandbox setup refresh failures, `os error 740`, `CodexSandboxOffline` ownership drift, ACL denial, approval-policy mismatch, and Full Access sessions behaving like workspace-write or on-request mode.
 
 `config-audit` is local and read-only: it summarizes legacy `profile` / `[profiles.*]` config, model pins, `sandbox_mode`, `approval_policy`, `[windows].sandbox`, missing `default_permissions` profiles, deprecated `codex_hooks`, machine-local project trust entries, enabled plugins with missing cache directories, and large per-tool MCP approval configs.
+
+`diagnostics-bundle` combines the config and session summaries into a metadata-only support folder with a manifest and README. Use it when OpenAI asks for more evidence but raw `config.toml`, SQLite state, rollout JSONL, and local logs should not be posted publicly.
 
 ## 5. Codex Auth And Connectivity Triage
 
@@ -143,11 +146,14 @@ Use this when long Codex sessions become difficult to resume, Desktop history re
 ```bash
 npx trace-to-skill analyze ./runs --format json
 npx trace-to-skill session-audit ~/.codex --format json
+npx trace-to-skill diagnostics-bundle ~/.codex --output codex-diagnostics
 ```
 
 This catches signals such as `codex resume` picker hangs, `codex resume <id>` working while the picker freezes, large `rollout-*.jsonl` histories, high JSONL line and `response_item` / `event_msg` / `function_call` counts, large `input_image` payloads, slow `thread/resume` and `thread/goal/get` timings, `Could not load archived chats`, resume compression dropping the last 3-5 turns, `state_5.sqlite` / `goals_1.sqlite` migration mismatches, `no such table: thread_goals`, stale `projectless-thread-ids`, and `thread-workspace-root-hints` reverting after restart.
 
 `session-audit` is local and read-only: it reports rollout JSONL size, line count, largest line size, parse errors, session index line count, state-file presence, and common session signals so users can attach a privacy-preserving summary to OpenAI/Codex issues instead of posting transcripts.
+
+For mixed resume, crash, config, or history issues, `diagnostics-bundle` writes the session and config reports together with a checklist of files not to attach publicly.
 
 ## 11. Codex File Tree UI Evidence
 
