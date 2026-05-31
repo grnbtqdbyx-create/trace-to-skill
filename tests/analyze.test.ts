@@ -17,6 +17,7 @@ import { guardPatchContent, guardPatchFile, renderPatchGuardMarkdown } from "../
 import { redactTargets, redactText } from "../src/redact.js";
 import { renderAgentsRules, renderCodexIssueReport, renderComparison, renderDoctorPrComment, renderPrComment, renderSarif, renderSkill } from "../src/report.js";
 import { renderScorecardMarkdown, renderScorecardPrComment, runScorecard } from "../src/scorecard.js";
+import { auditCodexSessions, renderSessionAuditMarkdown } from "../src/sessionAudit.js";
 
 test("analyzeTargets detects failed agent workflow signals", async () => {
   const result = await analyzeTargets(["fixtures/failed-run.md"]);
@@ -473,6 +474,61 @@ test("guardPatchContent passes safe create and update operations", async () => {
 
   assert.equal(result.status, "pass");
   assert.deepEqual(result.findings, []);
+});
+
+test("auditCodexSessions reports large rollout, huge lines, parse errors, and short session index", async () => {
+  const cwd = await mkdtemp(path.join(os.tmpdir(), "trace-to-skill-session-"));
+  const sessionDir = path.join(cwd, "sessions/2026/05/31");
+  await mkdir(sessionDir, { recursive: true });
+  await writeFile(path.join(cwd, "state_5.sqlite"), "sqlite placeholder", "utf8");
+  await writeFile(path.join(cwd, "session_index.jsonl"), `${JSON.stringify({ id: "019e" })}\n`, "utf8");
+  await writeFile(path.join(sessionDir, "rollout-2026-05-31T10-00-00-019eaaa.jsonl"), [
+    JSON.stringify({ type: "session_meta", payload: { id: "019eaaa" } }),
+    JSON.stringify({ type: "response_item", item: { type: "function_call", name: "shell" } }),
+    JSON.stringify({ type: "event_msg", msg: "thread/resume took 7760 ms" }),
+    "not-json",
+    ""
+  ].join("\n"), "utf8");
+  await writeFile(path.join(sessionDir, "rollout-2026-05-31T10-05-00-019ebbb.jsonl"), [
+    JSON.stringify({ type: "response_item", item: { type: "input_image", data: "x".repeat(80) } }),
+    ""
+  ].join("\n"), "utf8");
+
+  const result = await auditCodexSessions(cwd, {
+    largeFileBytes: 120,
+    hugeLineBytes: 60
+  });
+  const markdown = renderSessionAuditMarkdown(result);
+
+  assert.equal(result.status, "fail");
+  assert.equal(result.summary.rolloutFiles, 2);
+  assert.ok(result.findings.some((finding) => finding.kind === "large_rollout"));
+  assert.ok(result.findings.some((finding) => finding.kind === "huge_jsonl_line"));
+  assert.ok(result.findings.some((finding) => finding.kind === "json_parse_error"));
+  assert.ok(result.findings.some((finding) => finding.kind === "short_session_index"));
+  assert.ok(result.findings.some((finding) => finding.kind === "state_file_present"));
+  assert.match(markdown, /Codex Session Audit/);
+  assert.match(markdown, /thread_resume/);
+});
+
+test("auditCodexSessions passes small healthy session directories", async () => {
+  const cwd = await mkdtemp(path.join(os.tmpdir(), "trace-to-skill-session-"));
+  const sessionDir = path.join(cwd, "sessions");
+  await mkdir(sessionDir, { recursive: true });
+  await writeFile(path.join(sessionDir, "rollout-2026-05-31T10-00-00-019eaaa.jsonl"), [
+    JSON.stringify({ type: "session_meta", payload: { id: "019eaaa" } }),
+    JSON.stringify({ type: "response_item", item: { type: "message", content: "ok" } }),
+    ""
+  ].join("\n"), "utf8");
+
+  const result = await auditCodexSessions(cwd, {
+    largeFileBytes: 1024 * 1024,
+    hugeLineBytes: 1024
+  });
+
+  assert.equal(result.status, "pass");
+  assert.equal(result.summary.jsonlFiles, 1);
+  assert.equal(result.findings.length, 0);
 });
 
 test("analyzeTargets detects Codex quota mismatches", async () => {
@@ -1099,6 +1155,11 @@ test("published JSON schemas describe CLI result contracts", async () => {
     properties: Record<string, unknown>;
     $defs: Record<string, unknown>;
   };
+  const sessionAuditSchema = JSON.parse(await readFile("schemas/session-audit-result.schema.json", "utf8")) as {
+    required: string[];
+    properties: Record<string, unknown>;
+    $defs: Record<string, unknown>;
+  };
   const redactSchema = JSON.parse(await readFile("schemas/redact-result.schema.json", "utf8")) as {
     required: string[];
     properties: Record<string, unknown>;
@@ -1140,6 +1201,9 @@ test("published JSON schemas describe CLI result contracts", async () => {
   assert.deepEqual(patchGuardSchema.required, ["generatedAt", "patch", "root", "status", "findings"]);
   assert.ok(patchGuardSchema.properties.findings);
   assert.ok(patchGuardSchema.$defs.finding);
+  assert.deepEqual(sessionAuditSchema.required, ["generatedAt", "root", "status", "thresholds", "summary", "files", "stateFiles", "findings"]);
+  assert.ok(sessionAuditSchema.properties.summary);
+  assert.ok(sessionAuditSchema.$defs.file);
   assert.deepEqual(redactSchema.required, ["generatedAt", "files", "totals"]);
   assert.ok(redactSchema.properties.files);
   assert.ok(redactSchema.$defs.redactedFile);
@@ -1207,7 +1271,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.equal(brief.scorecard.benchmarkStatus, "pass");
   assert.equal(brief.scorecard.benchmarkCases, 26);
   assert.equal(brief.packageName, "trace-to-skill");
-  assert.equal(brief.packageVersion, "0.1.53");
+  assert.equal(brief.packageVersion, "0.1.54");
   assert.equal(brief.license, "Apache-2.0");
   assert.ok(brief.repository?.includes("github.com/grnbtqdbyx-create/trace-to-skill"));
   assert.ok(brief.qualification.max500.length <= 500);
@@ -1215,7 +1279,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.match(markdown, /OpenAI OSS Brief/);
   assert.match(markdown, /Why This Repository Qualifies/);
   assert.match(markdown, /500-Character Version/);
-  assert.match(markdown, /npx trace-to-skill@0\.1\.53/);
+  assert.match(markdown, /npx trace-to-skill@0\.1\.54/);
 });
 
 test("scorecard-comment dry-run resolves pull request event", async () => {

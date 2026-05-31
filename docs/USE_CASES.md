@@ -42,7 +42,7 @@ What it proves:
 Recommended CI surface:
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.53
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.54
   with:
     mode: all
     doctor-threshold: "85"
@@ -138,9 +138,12 @@ Use this when long Codex sessions become difficult to resume, Desktop history re
 
 ```bash
 npx trace-to-skill analyze ./runs --format json
+npx trace-to-skill session-audit ~/.codex --format json
 ```
 
 This catches signals such as `codex resume` picker hangs, `codex resume <id>` working while the picker freezes, large `rollout-*.jsonl` histories, high JSONL line and `response_item` / `event_msg` / `function_call` counts, large `input_image` payloads, slow `thread/resume` and `thread/goal/get` timings, `Could not load archived chats`, resume compression dropping the last 3-5 turns, `state_5.sqlite` / `goals_1.sqlite` migration mismatches, `no such table: thread_goals`, stale `projectless-thread-ids`, and `thread-workspace-root-hints` reverting after restart.
+
+`session-audit` is local and read-only: it reports rollout JSONL size, line count, largest line size, parse errors, session index line count, state-file presence, and common session signals so users can attach a privacy-preserving summary to OpenAI/Codex issues instead of posting transcripts.
 
 ## 11. Codex File Tree UI Evidence
 

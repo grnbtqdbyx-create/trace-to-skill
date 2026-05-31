@@ -28,7 +28,7 @@ npx trace-to-skill codex-report redacted-runs --output openai-codex-issue.md
 | Sensitive file exclusion | `.env`, private keys, `.npmrc`, cloud credentials, local databases, or production secret manifests entered agent context | `sensitive_file_access` | `trace-to-skill codex-report ./runs` |
 | Context compaction failures | `Error running remote compact task`, `context_length_exceeded`, compaction loops, `responses/compact` stream disconnects | `context_compaction` | `trace-to-skill analyze ./runs` |
 | Latest-turn drift | Codex answers an older prompt, repeats a previous response, redoes an already fixed task, forgets recent edits after compaction, or leaks raw tool payload text | `codex_latest_turn_drift` | `trace-to-skill codex-report ./runs` |
-| Session resume and state failures | `codex resume` picker freezes, large rollout JSONL, `Could not load archived chats`, `state_5.sqlite`, `thread_goals` | `codex_session_state` | `trace-to-skill codex-report ./runs` |
+| Session resume and state failures | `codex resume` picker freezes, large rollout JSONL, short `session_index.jsonl`, `Could not load archived chats`, `state_5.sqlite`, `thread_goals` | `codex_session_state` | `trace-to-skill codex-report ./runs` or `trace-to-skill session-audit ~/.codex --format json` |
 | Sandbox and permission blockers | Windows sandbox setup refresh, `os error 740`, ACL/ownership drift, approval-mode mismatch | `sandbox_permission` | `trace-to-skill analyze ./runs` |
 | Auth and connectivity failures | `token_exchange_failed`, `auth.openai.com/oauth/token`, missing CA certificates, proxy/TLS, IPv6, Cloudflare, stream disconnects | `codex_connectivity` | `trace-to-skill codex-report ./runs` |
 | Remote-control routing failures | `Waiting for desktop`, `Directory: Unavailable`, stale listener/enrollment, `127.0.0.1:14567`, empty backend environments | `codex_remote_control` | `trace-to-skill codex-report ./runs` |
@@ -49,6 +49,7 @@ npx trace-to-skill codex-report redacted-runs --output openai-codex-issue.md
 - Include `Get-Command rg -All`, `where.exe rg`, exact WindowsApps/LocalCache helper paths, `%LOCALAPPDATA%\OpenAI\Codex\bin` listing, `icacls`/`CodexSandboxUsers` RX state, file attributes, node_repl/plugin diagnostics, and sandbox mode for Windows helper path failures.
 - Include process names/PIDs, CPU/GPU/RSS samples, log-loop signatures, and whether killing exact PIDs or closing the app clears resource leaks.
 - Include exact tool input/output, `tool_call_id` order, affected path state, rollback evidence, and `guard-patch` output for tool-call integrity failures.
+- Include `session-audit` output, largest rollout JSONL sizes, largest line sizes, parse-error counts, `session_index.jsonl` line count, and state-file presence for resume/session-state failures.
 - Include pre-first-token, thinking, tool, search, read, and compaction timings plus model/speed settings for latency regressions.
 - Include selected approval scope, displayed vs executed command, MCP server/tool names, visible args, repeated prompt count, and config snippets for approval-friction reports.
 - Include plugin name/version, cache path, helper path, native pipe env vars, settings/plugin-list errors, and restart behavior for plugin runtime failures.

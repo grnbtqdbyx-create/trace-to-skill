@@ -1,0 +1,175 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/grnbtqdbyx-create/trace-to-skill/schemas/session-audit-result.schema.json",
+  "title": "trace-to-skill Codex session audit result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["generatedAt", "root", "status", "thresholds", "summary", "files", "stateFiles", "findings"],
+  "properties": {
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "root": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["pass", "warn", "fail"]
+    },
+    "thresholds": {
+      "$ref": "#/$defs/thresholds"
+    },
+    "summary": {
+      "$ref": "#/$defs/summary"
+    },
+    "files": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/file"
+      }
+    },
+    "stateFiles": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/stateFile"
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/finding"
+      }
+    }
+  },
+  "$defs": {
+    "thresholds": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["largeFileBytes", "hugeLineBytes"],
+      "properties": {
+        "largeFileBytes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "hugeLineBytes": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["jsonlFiles", "totalBytes", "largeFiles", "hugeLineFiles", "parseErrorFiles"],
+      "properties": {
+        "jsonlFiles": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "totalBytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "largeFiles": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "hugeLineFiles": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "parseErrorFiles": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sessionIndexLines": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "rolloutFiles": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "file": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sizeBytes", "lineCount", "largestLineBytes", "jsonParseErrors", "recordTypes", "signalCounts"],
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "sizeBytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "lineCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "largestLineBytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "jsonParseErrors": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "recordTypes": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "signalCounts": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      }
+    },
+    "stateFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sizeBytes", "present"],
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "sizeBytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "present": {
+          "type": "boolean"
+        }
+      }
+    },
+    "finding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["severity", "kind", "message"],
+      "properties": {
+        "severity": {
+          "type": "string",
+          "enum": ["warning", "error"]
+        },
+        "kind": {
+          "type": "string",
+          "enum": ["large_rollout", "huge_jsonl_line", "json_parse_error", "short_session_index", "state_file_present"]
+        },
+        "path": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

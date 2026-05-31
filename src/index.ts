@@ -13,4 +13,6 @@ export type { PatchGuardFinding, PatchGuardOperation, PatchGuardResult, PatchGua
 export { redactTargets, redactText } from "./redact.js";
 export { renderAgentsRules, renderCodexIssueReport, renderComparison, renderDoctorMarkdown, renderDoctorPrComment, renderMarkdown, renderPrComment, renderSarif, renderSkill } from "./report.js";
 export { renderScorecardMarkdown, renderScorecardPrComment, runScorecard } from "./scorecard.js";
+export { auditCodexSessions, renderSessionAuditMarkdown } from "./sessionAudit.js";
+export type { SessionAuditFile, SessionAuditFinding, SessionAuditOptions, SessionAuditResult, SessionAuditSeverity, SessionAuditStateFile, SessionAuditStatus } from "./sessionAudit.js";
 export type { AnalysisResult, Finding, FindingKind, Severity } from "./types.js";

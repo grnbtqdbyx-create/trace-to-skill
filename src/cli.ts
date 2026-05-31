@@ -14,6 +14,7 @@ import { guardPatchFile, renderPatchGuardMarkdown } from "./patchGuard.js";
 import { redactTargets } from "./redact.js";
 import { renderAgentsRules, renderCodexIssueReport, renderComparison, renderDoctorMarkdown, renderDoctorPrComment, renderMarkdown, renderPrComment, renderSarif, renderSkill } from "./report.js";
 import { renderScorecardMarkdown, renderScorecardPrComment, runScorecard } from "./scorecard.js";
+import { auditCodexSessions, renderSessionAuditMarkdown } from "./sessionAudit.js";
 
 interface ParsedArgs {
   command: string;
@@ -181,6 +182,18 @@ async function main(): Promise<void> {
     return;
   }
 
+  if (parsed.command === "session-audit") {
+    const result = await auditCodexSessions(parsed.targets[0] ?? "~/.codex", {
+      largeFileBytes: byteFlag(parsed.flags["large-mb"], 1024 * 1024),
+      hugeLineBytes: byteFlag(parsed.flags["huge-line-kb"], 1024)
+    });
+    const format = String(parsed.flags.format ?? "markdown");
+    const output = format === "json" ? `${JSON.stringify(result, null, 2)}\n` : renderSessionAuditMarkdown(result);
+    await writeOutput(output, parsed.flags.output);
+    process.exitCode = result.status === "fail" ? 1 : 0;
+    return;
+  }
+
   if (parsed.command === "comment") {
     const result = await analyzeTargets(parsed.targets);
     const body = renderPrComment(result);
@@ -283,6 +296,23 @@ function numberFlag(value: string | boolean | undefined): number | undefined {
   return parsed;
 }
 
+function byteFlag(value: string | boolean | undefined, multiplier: number): number | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+
+  if (typeof value !== "string" || !/^[0-9]{1,6}$/.test(value)) {
+    throw new Error("byte threshold flags must be positive integers");
+  }
+
+  const parsed = Number(value);
+  if (!Number.isInteger(parsed) || parsed < 1) {
+    throw new Error("byte threshold flags must be positive integers");
+  }
+
+  return parsed * multiplier;
+}
+
 function doctorPassed(result: Awaited<ReturnType<typeof doctorRepo>>, threshold: number | undefined): boolean {
   if (result.checks.some((check) => check.status === "fail")) {
     return false;
@@ -365,6 +395,7 @@ Usage:
   trace-to-skill oss-brief [repo-dir] [--threshold 85] [--format markdown|json] [--output docs/OPENAI_OSS_BRIEF.md]
   trace-to-skill guard-github-event [event.json] [--threshold 80] [--format markdown|json] [--output report.md]
   trace-to-skill guard-patch <patch-file> [--root repo-dir] [--format markdown|json] [--output report.md]
+  trace-to-skill session-audit [codex-home-or-sessions-dir] [--large-mb 10] [--huge-line-kb 512] [--format markdown|json]
   trace-to-skill comment <trace-file-or-dir> [--dry-run] [--token $GITHUB_TOKEN]
   trace-to-skill compare --before <old-run> --after <new-run> [--format markdown|json]
   trace-to-skill doctor [repo-dir] [--threshold 85] [--format markdown|json|comment] [--output report.md]
@@ -386,6 +417,7 @@ Examples:
   trace-to-skill oss-brief . --output docs/OPENAI_OSS_BRIEF.md
   trace-to-skill guard-github-event "$GITHUB_EVENT_PATH"
   trace-to-skill guard-patch ./change.patch --root .
+  trace-to-skill session-audit ~/.codex --format json
   trace-to-skill comment ./runs
   trace-to-skill compare --before ./runs/before --after ./runs/after
   trace-to-skill doctor . --threshold 85
