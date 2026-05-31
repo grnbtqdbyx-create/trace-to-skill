@@ -17,6 +17,8 @@ Codex gets more useful when maintainers can repeatedly improve repository-specif
 
 The first public release already supports Codex-style JSONL normalization and pull request comment reports, so maintainers can connect real agent runs to GitHub review workflows.
 
+SARIF output also lets maintainers surface agent workflow risks inside GitHub code scanning, which makes MCP and instruction-risk findings visible in existing security review surfaces.
+
 ## OSS Maintainer Value
 
 Maintainers can use the tool to:

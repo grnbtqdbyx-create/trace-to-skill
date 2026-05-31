@@ -13,6 +13,7 @@
 - Eval score and non-zero CI gate
 - Pull request comment command with update-in-place marker
 - Before/after comparison command for keep/revise/reject decisions
+- SARIF output for GitHub code scanning and security dashboards
 
 ## v0.2
 

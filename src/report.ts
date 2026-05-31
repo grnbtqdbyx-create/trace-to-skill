@@ -1,5 +1,5 @@
 import type { ComparisonResult } from "./eval.js";
-import type { AnalysisResult, Finding } from "./types.js";
+import type { AnalysisResult, Finding, Severity } from "./types.js";
 
 export function renderMarkdown(result: AnalysisResult): string {
   const lines: string[] = [
@@ -124,6 +124,49 @@ export function renderComparison(result: ComparisonResult): string {
   ].join("\n")}\n`;
 }
 
+export function renderSarif(result: AnalysisResult): string {
+  const sarif = {
+    version: "2.1.0",
+    $schema: "https://json.schemastore.org/sarif-2.1.0.json",
+    runs: [
+      {
+        tool: {
+          driver: {
+            name: "trace-to-skill",
+            informationUri: "https://github.com/grnbtqdbyx-create/trace-to-skill",
+            rules: buildSarifRules(result.findings)
+          }
+        },
+        results: result.findings.flatMap((finding) => finding.evidence.map((evidence) => ({
+          ruleId: finding.kind,
+          level: severityToSarifLevel(finding.severity),
+          message: {
+            text: `${finding.title}: ${evidence.excerpt}`
+          },
+          locations: [
+            {
+              physicalLocation: {
+                artifactLocation: {
+                  uri: evidence.file
+                },
+                region: {
+                  startLine: Math.max(1, evidence.line)
+                }
+              }
+            }
+          ],
+          properties: {
+            severity: finding.severity,
+            suggestedRule: finding.suggestedRule
+          }
+        })))
+      }
+    ]
+  };
+
+  return `${JSON.stringify(sarif, null, 2)}\n`;
+}
+
 function renderFinding(finding: Finding, index: number): string {
   const lines = [
     `### ${index}. ${finding.title}`,
@@ -142,4 +185,42 @@ function renderFinding(finding: Finding, index: number): string {
   lines.push("", "Suggested rule:", "", `> ${finding.suggestedRule}`, "");
 
   return lines.join("\n");
+}
+
+function buildSarifRules(findings: Finding[]): Array<Record<string, unknown>> {
+  const byKind = new Map<string, Finding>();
+  findings.forEach((finding) => {
+    if (!byKind.has(finding.kind)) {
+      byKind.set(finding.kind, finding);
+    }
+  });
+
+  return Array.from(byKind.values()).map((finding) => ({
+    id: finding.kind,
+    name: finding.title,
+    shortDescription: {
+      text: finding.title
+    },
+    fullDescription: {
+      text: finding.why
+    },
+    help: {
+      text: finding.suggestedRule
+    },
+    properties: {
+      severity: finding.severity
+    }
+  }));
+}
+
+function severityToSarifLevel(severity: Severity): "none" | "note" | "warning" | "error" {
+  if (severity === "critical" || severity === "high") {
+    return "error";
+  }
+
+  if (severity === "medium") {
+    return "warning";
+  }
+
+  return "note";
 }

@@ -3,7 +3,7 @@ import { test } from "node:test";
 import { analyzeTargets } from "../src/analyze.js";
 import { compareAnalyses, evaluate } from "../src/eval.js";
 import { postPullRequestComment } from "../src/github.js";
-import { renderAgentsRules, renderComparison, renderPrComment, renderSkill } from "../src/report.js";
+import { renderAgentsRules, renderComparison, renderPrComment, renderSarif, renderSkill } from "../src/report.js";
 
 test("analyzeTargets detects failed agent workflow signals", async () => {
   const result = await analyzeTargets(["fixtures/failed-run.md"]);
@@ -89,4 +89,20 @@ test("compareAnalyses keeps improved runs and renders a decision", async () => {
   assert.equal(comparison.decision, "keep");
   assert.ok(comparison.delta > 0);
   assert.match(renderComparison(comparison), /Decision: \*\*keep\*\*/);
+});
+
+test("renderSarif produces GitHub code-scanning compatible results", async () => {
+  const result = await analyzeTargets(["fixtures/mcp-risk.json"]);
+  const sarif = JSON.parse(renderSarif(result)) as {
+    version: string;
+    runs: Array<{
+      tool: { driver: { name: string; rules: Array<{ id: string }> } };
+      results: Array<{ ruleId: string; level: string; locations: unknown[] }>;
+    }>;
+  };
+
+  assert.equal(sarif.version, "2.1.0");
+  assert.equal(sarif.runs[0].tool.driver.name, "trace-to-skill");
+  assert.ok(sarif.runs[0].tool.driver.rules.some((rule) => rule.id === "mcp_risk"));
+  assert.ok(sarif.runs[0].results.some((item) => item.ruleId === "mcp_risk" && item.level === "error"));
 });

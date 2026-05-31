@@ -115,6 +115,7 @@ Analyze traces:
 ```bash
 trace-to-skill analyze ./runs --format markdown --output agent-learning-report.md
 trace-to-skill analyze ./runs --format json
+trace-to-skill analyze ./runs --format sarif --output trace-to-skill.sarif
 ```
 
 Generate reusable rules:
@@ -188,10 +189,19 @@ jobs:
       - run: npx github:grnbtqdbyx-create/trace-to-skill eval ./runs --threshold 80
 ```
 
+Code scanning / SARIF upload:
+
+```yaml
+- run: npx github:grnbtqdbyx-create/trace-to-skill analyze ./runs --format sarif --output trace-to-skill.sarif
+- uses: github/codeql-action/upload-sarif@v4
+  with:
+    sarif_file: trace-to-skill.sarif
+```
+
 Composite action usage:
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.4
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.5
   with:
     traces: ./runs
     threshold: "80"
@@ -220,6 +230,7 @@ The goal is not to let agents autonomously rewrite project policy. The goal is t
 - MCP config parser with explicit capability scoring
 - GitHub PR comment mode
 - before/after eval runner
+- SARIF output for GitHub code scanning
 - `trace-to-skill init` for repository setup
 - public benchmark of common agent failure classes
 

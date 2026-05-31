@@ -3,7 +3,7 @@ import { writeFile } from "node:fs/promises";
 import { analyzeTargets } from "./analyze.js";
 import { compareAnalyses, evaluate } from "./eval.js";
 import { postPullRequestComment } from "./github.js";
-import { renderAgentsRules, renderComparison, renderMarkdown, renderPrComment, renderSkill } from "./report.js";
+import { renderAgentsRules, renderComparison, renderMarkdown, renderPrComment, renderSarif, renderSkill } from "./report.js";
 
 interface ParsedArgs {
   command: string;
@@ -22,7 +22,7 @@ async function main(): Promise<void> {
   if (parsed.command === "analyze") {
     const result = await analyzeTargets(parsed.targets);
     const format = String(parsed.flags.format ?? "markdown");
-    const output = format === "json" ? `${JSON.stringify(result, null, 2)}\n` : renderMarkdown(result);
+    const output = renderAnalysis(result, format);
     await writeOutput(output, parsed.flags.output);
     return;
   }
@@ -85,6 +85,18 @@ function stringFlag(value: string | boolean | undefined): string | undefined {
   return typeof value === "string" ? value : undefined;
 }
 
+function renderAnalysis(result: Awaited<ReturnType<typeof analyzeTargets>>, format: string): string {
+  if (format === "json") {
+    return `${JSON.stringify(result, null, 2)}\n`;
+  }
+
+  if (format === "sarif") {
+    return renderSarif(result);
+  }
+
+  return renderMarkdown(result);
+}
+
 function parseArgs(args: string[]): ParsedArgs {
   const [command = "help", ...rest] = args;
   const targets: string[] = [];
@@ -130,7 +142,7 @@ function printHelp(): void {
 Turn failed AI coding-agent runs into reusable rules, skills, and eval evidence.
 
 Usage:
-  trace-to-skill analyze <trace-file-or-dir> [--format markdown|json] [--output report.md]
+  trace-to-skill analyze <trace-file-or-dir> [--format markdown|json|sarif] [--output report.md]
   trace-to-skill suggest <trace-file-or-dir> [--target agents-md|skill] [--output AGENTS.generated.md]
   trace-to-skill eval <trace-file-or-dir> [--threshold 75] [--format text|json]
   trace-to-skill comment <trace-file-or-dir> [--dry-run] [--token $GITHUB_TOKEN]
