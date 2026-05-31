@@ -49,7 +49,7 @@ What it proves:
 Recommended CI surface:
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.66
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.67
   with:
     mode: all
     doctor-threshold: "85"
@@ -92,7 +92,9 @@ npx trace-to-skill diagnostics-bundle ~/.codex --output codex-diagnostics
 
 This catches signals such as Windows sandbox setup refresh failures, `os error 740`, `CodexSandboxOffline` ownership drift, ACL denial, approval-policy mismatch, and Full Access sessions behaving like workspace-write or on-request mode.
 
-`config-audit` is local and read-only: it summarizes legacy `profile` / `[profiles.*]` config, model pins, `sandbox_mode`, `approval_policy`, `[windows].sandbox`, missing `default_permissions` profiles, deprecated `codex_hooks`, machine-local project trust entries, enabled plugins with missing cache directories, and large per-tool MCP approval configs.
+`config-audit` is local and read-only: it summarizes legacy `profile` / `[profiles.*]` config, model pins, Speed/Fast persistence drift between `config.toml` and `.codex-global-state.json`, `sandbox_mode`, `approval_policy`, `[windows].sandbox`, missing `default_permissions` profiles, deprecated `codex_hooks`, machine-local project trust entries, enabled plugins with missing cache directories, and large per-tool MCP approval configs.
+
+For Codex App reports where Speed resets from Fast to Standard after restart, include the `service_tier`, `config default-service-tier`, `global default-service-tier`, `global has-user-changed-service-tier`, and `service_tier_persistence_drift` fields instead of pasting the raw state file.
 
 `plugin-audit` is local and read-only: it summarizes configured bundled plugins, cache directories, plugin manifests, generated runtime marketplaces, optional app-bundle marketplaces, Computer Use helper-app install state, `CODEX_HOME` mismatch, and unsupported feature flags.
 

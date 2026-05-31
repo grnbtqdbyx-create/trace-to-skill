@@ -55,7 +55,7 @@ Use it when you need to:
 - **Protect agent context:** run `trace-to-skill guard-github-event "$GITHUB_EVENT_PATH"` before feeding issue, PR, comment, discussion, check-run, or commit text into an agent.
 - **Prevent unsafe patch overwrites:** run `trace-to-skill guard-patch ./change.patch --root .` before applying generated patches so `*** Add File` cannot silently replace an existing file or symlink target.
 - **Audit local Codex session history:** run `trace-to-skill session-audit ~/.codex --format json` to summarize rollout JSONL sizes, huge lines, parse errors, state files, and short `session_index.jsonl` evidence without publishing private transcripts.
-- **Audit Codex config drift:** run `trace-to-skill config-audit ~/.codex --format json` to summarize legacy profile config, model pins, sandbox/approval posture, Windows elevated sandbox mode, missing permission profiles, plugin cache drift, and MCP approval sprawl.
+- **Audit Codex config drift:** run `trace-to-skill config-audit ~/.codex --format json` to summarize legacy profile config, model pins, Speed/Fast service-tier persistence drift, sandbox/approval posture, Windows elevated sandbox mode, missing permission profiles, plugin cache drift, and MCP approval sprawl.
 - **Audit bundled plugin drift:** run `trace-to-skill plugin-audit ~/.codex --app /Applications/Codex.app --format json` to check Browser, Chrome, Computer Use, bundled marketplace, plugin cache, manifest, helper app, `CODEX_HOME`, and unsupported feature-flag drift without posting raw logs.
 - **Bundle Codex diagnostics safely:** run `trace-to-skill diagnostics-bundle ~/.codex --output codex-diagnostics` to create a metadata-only support folder with manifest, README, config, plugin, and session audit reports while excluding raw logs, SQLite state, raw config, and transcripts.
 - **Package Codex usage evidence:** run `trace-to-skill usage-evidence ./usage-notes.md --output usage-evidence.md` to turn `/status`, reset tables, usage-limit errors, and token totals into a redaction-aware report.
@@ -110,7 +110,7 @@ Open-source maintainers do not need more AI-generated noise. They need agents th
 - Did an `apply_patch` create operation actually overwrite an existing file or symlink target?
 - Can a generated patch be guarded before it touches the workspace?
 - Which local Codex rollout JSONL or `session_index.jsonl` files make `codex resume` or Desktop history sluggish?
-- Which `config.toml` setting explains a sandbox, approval, plugin, model, or Preferences save regression?
+- Which `config.toml` or `.codex-global-state.json` setting explains a sandbox, approval, plugin, model, Speed/Fast, or Preferences save regression?
 - Which bundled plugin/cache/marketplace/helper-app mismatch explains a Browser, Chrome, Computer Use, or MCP runtime failure?
 - Can I attach one safe diagnostics folder to OpenAI without posting raw `config.toml`, SQLite state, local logs, or transcripts?
 - Did Codex sandbox setup or workspace permissions block every tool call?
@@ -126,6 +126,7 @@ Open-source maintainers do not need more AI-generated noise. They need agents th
 - Did MCP servers work in Codex CLI, `~/.codex/config.toml`, or a new conversation, but disappear from VS Code, Desktop, WSL, project `.codex/config.toml`, or an older session?
 - Did Codex terminal scrollback, streamed output, or transcript rendering drop, overwrite, truncate, duplicate, or hide evidence lines that still exist in raw logs?
 - Did completed, closed, interrupted, or stale subagents diverge between the Desktop UI, live registry, `thread_spawn_edges`, spawn quota, recent-list/sidebar, and parent-agent discoverability?
+- Did Codex App reset Speed from Fast to Standard after restart even though `service_tier = "fast"` or `default-service-tier = "priority"` was still present?
 - Did repeated approval prompts make a safer scoped mode unusable or require huge per-tool MCP approval configs?
 - Can the failure be reported to OpenAI with line-linked evidence, redaction notes, and the exact diagnostics maintainers need?
 - Can we produce an application-ready OpenAI OSS brief from the repo's actual license, distribution, readiness, and benchmark state?
@@ -418,7 +419,7 @@ trace-to-skill compare --before ./runs/before --after ./runs/after
 
 JSONL traces are normalized by extracting common fields such as `message`, `content`, `text`, `output`, and `error`. Codex-style JSONL traces with `response_item`, `function_call`, `function_call_output`, and `event_msg` payloads are normalized into readable evidence lines.
 
-MCP configs with `mcpServers`, `.mcp.json`, or project-local `.codex/config.toml` are parsed for capability hints such as filesystem, shell, browser, network, database, container, and secret-bearing environment variables. `lint-agents` also checks static startup inputs such as `command`, `cwd`, env placeholders, unresolved `$VARS`, `${CLAUDE_PLUGIN_ROOT}`-style plugin placeholders, local stdio commands without explicit `cwd`, and the common JSON `mcp_servers` / `mcpServers` casing mismatch. Codex config hygiene checks catch deprecated `[features].codex_hooks`, missing `default_permissions` profile definitions, and machine-local `projects.* trusted_level` metadata in synced config files.
+MCP configs with `mcpServers`, `.mcp.json`, or project-local `.codex/config.toml` are parsed for capability hints such as filesystem, shell, browser, network, database, container, and secret-bearing environment variables. `lint-agents` also checks static startup inputs such as `command`, `cwd`, env placeholders, unresolved `$VARS`, `${CLAUDE_PLUGIN_ROOT}`-style plugin placeholders, local stdio commands without explicit `cwd`, and the common JSON `mcp_servers` / `mcpServers` casing mismatch. Codex config hygiene checks catch deprecated `[features].codex_hooks`, missing `default_permissions` profile definitions, machine-local `projects.* trusted_level` metadata in synced config files, and Speed/Fast persistence drift between `config.toml` and `.codex-global-state.json`.
 
 Instruction files such as `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `.cursor/rules`, and `.github/copilot-instructions.md` are checked for obvious contradictions in validation commands, test requirements, destructive-command approval rules, invalid UTF-8, missing include targets, and nested `AGENTS.md` files that may not be loaded automatically.
 
@@ -469,7 +470,7 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v5
-      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.66
+      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.67
         with:
           mode: all
           doctor-threshold: "85"
@@ -518,7 +519,7 @@ Composite action usage:
 
 ```yaml
 - id: trace-to-skill
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.66
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.67
   with:
     mode: all
     doctor-threshold: "85"
@@ -560,7 +561,7 @@ Action outputs:
 
 By default, generated reports are also appended to the GitHub Actions Job Summary. Set `job-summary: "false"` to disable that UI output.
 
-Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.66` executes that release's checked-out source instead of pulling the default branch at runtime.
+Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.67` executes that release's checked-out source instead of pulling the default branch at runtime.
 
 ## Codex Skill
 

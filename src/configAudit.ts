@@ -17,7 +17,9 @@ export interface ConfigAuditFinding {
     | "deprecated_codex_hooks"
     | "machine_local_project_state"
     | "plugin_cache_missing"
-    | "mcp_approval_sprawl";
+    | "mcp_approval_sprawl"
+    | "global_state_unreadable"
+    | "service_tier_persistence_drift";
   line?: number;
   message: string;
 }
@@ -26,9 +28,11 @@ export interface ConfigAuditResult {
   generatedAt: string;
   target: string;
   configPath: string;
+  globalStatePath: string;
   status: ConfigAuditStatus;
   summary: {
     exists: boolean;
+    globalStateExists: boolean;
     sizeBytes: number;
     topLevelKeys: string[];
     sections: string[];
@@ -41,6 +45,10 @@ export interface ConfigAuditResult {
     sandboxMode?: string;
     windowsSandbox?: string;
     defaultPermissions?: string;
+    serviceTier?: string;
+    configDefaultServiceTier?: string;
+    globalDefaultServiceTier?: string | null;
+    globalHasUserChangedServiceTier?: boolean;
   };
   findings: ConfigAuditFinding[];
 }
@@ -55,12 +63,14 @@ interface TomlEntry {
 export async function auditCodexConfig(target = "~/.codex"): Promise<ConfigAuditResult> {
   const resolvedTarget = path.resolve(expandHome(target));
   const configPath = await resolveConfigPath(resolvedTarget);
+  const globalStatePath = path.join(path.dirname(configPath), ".codex-global-state.json");
 
   try {
     const content = await fs.readFile(configPath, "utf8");
     const fileStat = await fs.stat(configPath);
     const entries = parseTomlEntries(content);
-    const findings = await collectFindings(configPath, entries);
+    const globalState = await readGlobalState(globalStatePath);
+    const findings = await collectFindings(configPath, entries, globalState);
     const sections = entries.filter((entry) => entry.section && !entry.key).map((entry) => entry.section as string);
     const topLevelKeys = entries.filter((entry) => !entry.section && entry.key).map((entry) => entry.key as string);
 
@@ -68,9 +78,11 @@ export async function auditCodexConfig(target = "~/.codex"): Promise<ConfigAudit
       generatedAt: new Date().toISOString(),
       target: resolvedTarget,
       configPath,
+      globalStatePath,
       status: statusFor(findings),
       summary: {
         exists: true,
+        globalStateExists: globalState.exists,
         sizeBytes: fileStat.size,
         topLevelKeys,
         sections,
@@ -82,7 +94,11 @@ export async function auditCodexConfig(target = "~/.codex"): Promise<ConfigAudit
         approvalPolicy: stringValue(findAssignment(entries, undefined, "approval_policy")?.value),
         sandboxMode: stringValue(findAssignment(entries, undefined, "sandbox_mode")?.value),
         windowsSandbox: stringValue(findAssignment(entries, "windows", "sandbox")?.value),
-        defaultPermissions: stringValue(findAssignment(entries, undefined, "default_permissions")?.value)
+        defaultPermissions: stringValue(findAssignment(entries, undefined, "default_permissions")?.value),
+        serviceTier: stringValue(findAssignment(entries, undefined, "service_tier")?.value),
+        configDefaultServiceTier: stringValue(findAssignment(entries, undefined, "default-service-tier")?.value),
+        globalDefaultServiceTier: globalState.defaultServiceTier,
+        globalHasUserChangedServiceTier: globalState.hasUserChangedServiceTier
       },
       findings
     };
@@ -100,9 +116,11 @@ export async function auditCodexConfig(target = "~/.codex"): Promise<ConfigAudit
       generatedAt: new Date().toISOString(),
       target: resolvedTarget,
       configPath,
+      globalStatePath,
       status: statusFor(findings),
       summary: {
         exists: false,
+        globalStateExists: false,
         sizeBytes: 0,
         topLevelKeys: [],
         sections: [],
@@ -123,7 +141,9 @@ export function renderConfigAuditMarkdown(result: ConfigAuditResult): string {
     "",
     `Target: \`${result.target}\``,
     `Config: \`${result.configPath}\``,
+    `Global state: \`${result.globalStatePath}\``,
     `Exists: ${result.summary.exists ? "yes" : "no"}`,
+    `Global state exists: ${result.summary.globalStateExists ? "yes" : "no"}`,
     `Size: ${result.summary.sizeBytes} bytes`,
     `Top-level keys: ${result.summary.topLevelKeys.length > 0 ? result.summary.topLevelKeys.join(", ") : "none"}`,
     `Sections: ${result.summary.sections.length}`,
@@ -137,6 +157,10 @@ export function renderConfigAuditMarkdown(result: ConfigAuditResult): string {
     `- sandbox_mode: ${formatValue(result.values.sandboxMode)}`,
     `- [windows].sandbox: ${formatValue(result.values.windowsSandbox)}`,
     `- default_permissions: ${formatValue(result.values.defaultPermissions)}`,
+    `- service_tier: ${formatValue(result.values.serviceTier)}`,
+    `- config default-service-tier: ${formatValue(result.values.configDefaultServiceTier)}`,
+    `- global default-service-tier: ${formatNullableValue(result.values.globalDefaultServiceTier)}`,
+    `- global has-user-changed-service-tier: ${formatBooleanValue(result.values.globalHasUserChangedServiceTier)}`,
     "",
     "## Findings",
     ""
@@ -156,7 +180,7 @@ export function renderConfigAuditMarkdown(result: ConfigAuditResult): string {
     "Suggested next step:",
     "",
     "- Attach this report to config, sandbox, approval, or plugin-runtime issues instead of pasting raw config with secrets.",
-    "- Back up `~/.codex/config.toml` before manually changing sandbox, permission, model, MCP, or plugin settings.",
+    "- Back up `~/.codex/config.toml` and `.codex-global-state.json` before manually changing sandbox, permission, model, MCP, plugin, or Speed settings.",
     ""
   );
 
@@ -178,15 +202,36 @@ async function resolveConfigPath(target: string): Promise<string> {
   return target;
 }
 
-async function collectFindings(configPath: string, entries: TomlEntry[]): Promise<ConfigAuditFinding[]> {
+interface GlobalStateSnapshot {
+  exists: boolean;
+  unreadable?: string;
+  defaultServiceTier?: string | null;
+  hasUserChangedServiceTier?: boolean;
+}
+
+async function collectFindings(
+  configPath: string,
+  entries: TomlEntry[],
+  globalState: GlobalStateSnapshot
+): Promise<ConfigAuditFinding[]> {
   const findings: ConfigAuditFinding[] = [];
   const model = findAssignment(entries, undefined, "model");
   const profile = findAssignment(entries, undefined, "profile");
   const sandboxMode = findAssignment(entries, undefined, "sandbox_mode");
   const windowsSandbox = findAssignment(entries, "windows", "sandbox");
   const defaultPermissions = findAssignment(entries, undefined, "default_permissions");
+  const serviceTier = findAssignment(entries, undefined, "service_tier");
+  const configDefaultServiceTier = findAssignment(entries, undefined, "default-service-tier");
   const permissionProfiles = collectPermissionProfiles(entries);
   const sections = entries.filter((entry) => entry.section && !entry.key).map((entry) => entry.section as string);
+
+  if (globalState.unreadable) {
+    findings.push({
+      severity: "warning",
+      kind: "global_state_unreadable",
+      message: `.codex-global-state.json could not be read: ${globalState.unreadable}`
+    });
+  }
 
   if (profile && typeof profile.value === "string") {
     findings.push({
@@ -212,6 +257,25 @@ async function collectFindings(configPath: string, entries: TomlEntry[]): Promis
       kind: "model_pin",
       line: model.line,
       message: `model is pinned to "${model.value}"; include this in reports about update, routing, latency, or unavailable-model regressions.`
+    });
+  }
+
+  const requestedSpeedTier = normalizeServiceTier(
+    stringValue(serviceTier?.value) ?? stringValue(configDefaultServiceTier?.value)
+  );
+  const persistedSpeedTier = normalizeServiceTier(globalState.defaultServiceTier);
+  if (
+    globalState.exists &&
+    globalState.hasUserChangedServiceTier === true &&
+    requestedSpeedTier === "fast" &&
+    persistedSpeedTier !== "fast"
+  ) {
+    findings.push({
+      severity: "warning",
+      kind: "service_tier_persistence_drift",
+      line: serviceTier?.line ?? configDefaultServiceTier?.line,
+      message:
+        `config requests Fast via ${serviceTier ? "service_tier" : "default-service-tier"}, but .codex-global-state.json has default-service-tier ${formatRawStateValue(globalState.defaultServiceTier)} while has-user-changed-service-tier is true.`
     });
   }
 
@@ -285,6 +349,36 @@ async function collectFindings(configPath: string, entries: TomlEntry[]): Promis
 
   findings.push(...(await findMissingPluginCaches(configPath, entries)));
   return findings;
+}
+
+async function readGlobalState(globalStatePath: string): Promise<GlobalStateSnapshot> {
+  try {
+    const content = await fs.readFile(globalStatePath, "utf8");
+    const parsed = JSON.parse(content) as Record<string, unknown>;
+    const atomState = objectValue(parsed["electron-persisted-atom-state"]);
+    const defaultServiceTier = firstDefined(
+      nullableStringValue(atomState?.["default-service-tier"]),
+      nullableStringValue(parsed["electron-persisted-atom-state.default-service-tier"])
+    );
+    const hasUserChangedServiceTier = firstDefined(
+      booleanValue(atomState?.["has-user-changed-service-tier"]),
+      booleanValue(parsed["electron-persisted-atom-state.has-user-changed-service-tier"])
+    );
+
+    return {
+      exists: true,
+      defaultServiceTier,
+      hasUserChangedServiceTier
+    };
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+      return { exists: false };
+    }
+    return {
+      exists: true,
+      unreadable: (error as Error).message
+    };
+  }
 }
 
 async function findMissingPluginCaches(configPath: string, entries: TomlEntry[]): Promise<ConfigAuditFinding[]> {
@@ -432,6 +526,45 @@ function stringValue(value: unknown): string | undefined {
   return typeof value === "string" ? value : undefined;
 }
 
+function nullableStringValue(value: unknown): string | null | undefined {
+  if (typeof value === "string") {
+    return value;
+  }
+  if (value === null) {
+    return null;
+  }
+  return undefined;
+}
+
+function booleanValue(value: unknown): boolean | undefined {
+  return typeof value === "boolean" ? value : undefined;
+}
+
+function objectValue(value: unknown): Record<string, unknown> | undefined {
+  if (value && typeof value === "object" && !Array.isArray(value)) {
+    return value as Record<string, unknown>;
+  }
+  return undefined;
+}
+
+function firstDefined<T>(...values: (T | undefined)[]): T | undefined {
+  return values.find((value) => value !== undefined);
+}
+
+function normalizeServiceTier(value: string | null | undefined): "fast" | "standard" | undefined {
+  if (!value) {
+    return value === null ? "standard" : undefined;
+  }
+  const normalized = value.toLowerCase();
+  if (normalized === "fast" || normalized === "priority") {
+    return "fast";
+  }
+  if (normalized === "standard" || normalized === "default" || normalized === "normal" || normalized === "flex") {
+    return "standard";
+  }
+  return undefined;
+}
+
 function statusFor(findings: ConfigAuditFinding[]): ConfigAuditStatus {
   if (findings.some((finding) => finding.severity === "error")) {
     return "fail";
@@ -441,6 +574,24 @@ function statusFor(findings: ConfigAuditFinding[]): ConfigAuditStatus {
 
 function formatValue(value: string | undefined): string {
   return value ? `\`${value}\`` : "not set";
+}
+
+function formatNullableValue(value: string | null | undefined): string {
+  if (typeof value === "string") {
+    return `\`${value}\``;
+  }
+  return value === null ? "`null`" : "not set";
+}
+
+function formatBooleanValue(value: boolean | undefined): string {
+  return typeof value === "boolean" ? `\`${value ? "true" : "false"}\`` : "not set";
+}
+
+function formatRawStateValue(value: string | null | undefined): string {
+  if (typeof value === "string") {
+    return `"${value}"`;
+  }
+  return value === null ? "null" : "unset";
 }
 
 async function pathExists(candidate: string): Promise<boolean> {

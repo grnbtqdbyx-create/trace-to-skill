@@ -682,6 +682,7 @@ test("auditCodexConfig reports risky Codex config drift", async () => {
   await writeFile(path.join(cwd, "config.toml"), [
     "profile = \"safe-auto\"",
     "model = \"gpt-5.5\"",
+    "service_tier = \"fast\"",
     "sandbox_mode = \"danger-full-access\"",
     "default_permissions = \"trusted\"",
     "",
@@ -701,6 +702,12 @@ test("auditCodexConfig reports risky Codex config drift", async () => {
     "enabled = true",
     ""
   ].join("\n"), "utf8");
+  await writeFile(path.join(cwd, ".codex-global-state.json"), JSON.stringify({
+    "electron-persisted-atom-state": {
+      "default-service-tier": null,
+      "has-user-changed-service-tier": true
+    }
+  }, null, 2), "utf8");
 
   const result = await auditCodexConfig(cwd);
   const markdown = renderConfigAuditMarkdown(result);
@@ -708,9 +715,14 @@ test("auditCodexConfig reports risky Codex config drift", async () => {
 
   assert.equal(result.status, "fail");
   assert.equal(result.summary.exists, true);
+  assert.equal(result.summary.globalStateExists, true);
   assert.equal(result.values.model, "gpt-5.5");
+  assert.equal(result.values.serviceTier, "fast");
+  assert.equal(result.values.globalDefaultServiceTier, null);
+  assert.equal(result.values.globalHasUserChangedServiceTier, true);
   assert.ok(kinds.includes("legacy_profile_config"));
   assert.ok(kinds.includes("model_pin"));
+  assert.ok(kinds.includes("service_tier_persistence_drift"));
   assert.ok(kinds.includes("danger_full_access"));
   assert.ok(kinds.includes("windows_elevated_sandbox"));
   assert.ok(kinds.includes("default_permissions_missing"));
@@ -719,6 +731,7 @@ test("auditCodexConfig reports risky Codex config drift", async () => {
   assert.ok(kinds.includes("plugin_cache_missing"));
   assert.match(markdown, /Codex Config Audit/);
   assert.match(markdown, /gpt-5\.5/);
+  assert.match(markdown, /global default-service-tier: `null`/);
 });
 
 test("auditCodexConfig passes a minimal portable config", async () => {
@@ -737,6 +750,7 @@ test("auditCodexConfig passes a minimal portable config", async () => {
   assert.equal(result.status, "pass");
   assert.equal(result.findings.length, 0);
   assert.equal(result.values.sandboxMode, "workspace-write");
+  assert.equal(result.summary.globalStateExists, false);
 });
 
 test("auditCodexPlugins reports bundled plugin cache and marketplace drift", async () => {
@@ -1603,7 +1617,7 @@ test("published JSON schemas describe CLI result contracts", async () => {
   assert.deepEqual(patchGuardSchema.required, ["generatedAt", "patch", "root", "status", "findings"]);
   assert.ok(patchGuardSchema.properties.findings);
   assert.ok(patchGuardSchema.$defs.finding);
-  assert.deepEqual(configAuditSchema.required, ["generatedAt", "target", "configPath", "status", "summary", "values", "findings"]);
+  assert.deepEqual(configAuditSchema.required, ["generatedAt", "target", "configPath", "globalStatePath", "status", "summary", "values", "findings"]);
   assert.ok(configAuditSchema.properties.values);
   assert.ok(configAuditSchema.$defs.finding);
   assert.deepEqual(diagnosticsBundleSchema.required, ["generatedAt", "target", "outputDir", "status", "privacy", "summary", "recommendedAttachments", "reports"]);
@@ -1689,7 +1703,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.equal(brief.scorecard.benchmarkStatus, "pass");
   assert.equal(brief.scorecard.benchmarkCases, 33);
   assert.equal(brief.packageName, "trace-to-skill");
-  assert.equal(brief.packageVersion, "0.1.66");
+  assert.equal(brief.packageVersion, "0.1.67");
   assert.equal(brief.license, "Apache-2.0");
   assert.ok(brief.repository?.includes("github.com/grnbtqdbyx-create/trace-to-skill"));
   assert.ok(brief.qualification.max500.length <= 500);
@@ -1697,7 +1711,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.match(markdown, /OpenAI OSS Brief/);
   assert.match(markdown, /Why This Repository Qualifies/);
   assert.match(markdown, /500-Character Version/);
-  assert.match(markdown, /npx trace-to-skill@0\.1\.66/);
+  assert.match(markdown, /npx trace-to-skill@0\.1\.67/);
 });
 
 test("scorecard-comment dry-run resolves pull request event", async () => {
