@@ -299,6 +299,27 @@ const RULES: RuleDefinition[] = [
     suggestedSkill: "codex-token-burn-triage"
   },
   {
+    kind: "codex_resource_leak",
+    severity: "high",
+    title: "Codex client resource leak or runaway process",
+    why: "Codex Desktop, app, extension, or helper processes can enter CPU/GPU/memory loops that make the local machine unusable unless reports preserve process names, versions, resource samples, log-loop signatures, and cleanup evidence.",
+    patterns: [
+      /\b(Codex|VS Code|extension|app|desktop|renderer|helper|Code Helper|Electron|WindowServer|GPU process)\b.{0,180}\b(high|sustained|runaway|spikes?|burns?|consumes?|uses?)\b.{0,120}\b(CPU|GPU|memory|RAM|battery|thermal|heat|hot|overheat|usage|utilization)\b/i,
+      /\b(CPU|GPU)\b.{0,120}\b(usage|utilization|load)\b.{0,120}\b(9\d|100|1\d\d|2\d\d|3\d\d|400)%/i,
+      /\b(Code Helper \(Renderer\)|Code Helper \(Plugin\)|Codex Helper Renderer|Codex app-server|syspolicyd|zygote|WindowServer).{0,180}\b(9\d|100|1\d\d|2\d\d|3\d\d)%/i,
+      /\borphaned\b.{0,160}\b(shell[- ]snapshot|zsh|codex|native process|subprocess|helper|process)\b/i,
+      /\b(shell[- ]snapshot|print '# Snapshot file'|\.codex\/shell_snapshots|chat_processes\.json)\b.{0,180}\b(orphan|PPID\s*1|launchd|97%|98%|99%|100%|CPU|spinning|burning)\b/i,
+      /\b(memory leak|RAM leak|renderer growth|GPU memory|IOSurface|IOAccelerator|resource leak|log flood|repeated warning loop|error flood)\b/i,
+      /\b(thread-stream-state-changed|worker_rpc_response_error|open-in-target not supported|local-environments is not supported|stable-metadata)\b.{0,180}\b(loop|repeated|thousands|high CPU|flood|no handler|error=\{\})\b/i,
+      /\bthinking\b.{0,120}\b(animation|spinner|shimmer)\b.{0,160}\b(GPU|compositor|VSync|reduce motion|70%|100%|battery|power)\b/i,
+      /\b(non[- ]?Git workspace|without \.git|not a Git repository|git repository root)\b.{0,180}\b(high CPU|renderer|Code Helper|runaway|CPU drops|CPU high)\b/i,
+      /\b(close_agent|subagent|child thread)\b.{0,180}\b(hang forever|never terminates|runaway|leak|stuck|CPU|process)\b/i
+    ],
+    suggestedRule:
+      "When reporting Codex resource leaks, capture app/extension/CLI version, OS, IDE, thread type, exact process names and PIDs, CPU/GPU/RSS samples over time, whether the process is orphaned or PPID 1, log-loop signatures, workspace git-root state, visible animations/reduce-motion state, reproduction steps, and whether closing the panel/app, killing specific PIDs, git init, rollback, or restart clears the leak.",
+    suggestedSkill: "codex-resource-leak-triage"
+  },
+  {
     kind: "quota_mismatch",
     severity: "high",
     title: "Codex quota or usage-limit mismatch",

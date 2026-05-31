@@ -21,6 +21,7 @@ Runtime: Node.js 20+
 - Codex MCP runtime failures such as cancelled non-interactive approvals, `request_user_input is not supported in exec mode`, dropped namespace or `serverName` metadata, `unsupported call: mcp__...__...`, and closed `StdioServerTransport` sessions
 - Codex resume and session-state failures such as frozen resume pickers, large rollout JSONL histories, sluggish Desktop thread rendering, dropped recent context after resume, archived chat loading failures, and `state_5.sqlite` / `goals_1.sqlite` migration drift
 - Codex token-burn and usage-drain failures such as background `write_stdin` polling, idle app usage, compaction tax, retry/tool loops, cached-token-heavy turns, fast-mode drift, subagent fan-out, and unclear usage attribution
+- Codex resource leaks and runaway local processes such as high CPU/GPU, `Code Helper`, `Codex Helper Renderer`, orphaned shell snapshots, log floods, thinking animation GPU loops, and non-Git workspace CPU loops
 - Codex quota and usage-limit mismatches where `/status` or the usage page shows remaining quota, accounts share limits unexpectedly, or 5h and weekly quotas move together
 - sensitive-file access in traces, including `.env`, private keys, package auth files, cloud credentials, local databases, and production secret manifests entering agent context
 - hallucinated files and broad over-editing
@@ -69,7 +70,7 @@ npx trace-to-skill init --comment --sarif
 ## GitHub Action
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.39
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.40
   with:
     mode: all
     doctor-threshold: "85"
@@ -115,6 +116,8 @@ npx trace-to-skill init --comment --sarif
 - Codex token burn write_stdin background polling
 - Codex cached input token usage drain
 - Codex compaction tax weekly usage depleted
+- Codex high CPU GPU resource leak shell snapshot
+- Codex Code Helper Renderer runaway process
 - Codex usage limit despite remaining quota
 - Codex quota mismatch and rate limit debugging
 - Codex exclude sensitive files from agent context

@@ -209,6 +209,7 @@ function isCodexIssueFinding(finding: Finding): boolean {
     finding.kind === "context_compaction" ||
     finding.kind === "sandbox_permission" ||
     finding.kind === "quota_mismatch" ||
+    finding.kind === "codex_resource_leak" ||
     finding.kind === "sensitive_file_access" ||
     finding.kind === "mcp_risk";
 }

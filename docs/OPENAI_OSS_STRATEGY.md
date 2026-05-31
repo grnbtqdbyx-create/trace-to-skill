@@ -34,6 +34,7 @@ Maintainers can use the tool to:
 - improve Codex workflows without locking into one provider
 - file better OpenAI/Codex issues with redacted evidence and diagnostics
 - detect when sensitive files such as `.env`, private keys, package auth files, cloud credentials, or local databases entered agent context
+- package Codex performance/resource-leak reports with process samples, log-loop signatures, and reproducible cleanup evidence
 - attribute unexpected usage drain to background polling, compaction tax, retry loops, idle app activity, or other orchestration overhead
 
 ## Current Wedge

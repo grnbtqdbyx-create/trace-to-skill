@@ -64,6 +64,14 @@ Common signals include tokens `burning very fast`, usage dropping by visible per
 
 The fix is to capture plan/workspace, client and version, model and reasoning/speed settings, fast-mode/large-context/subagent/review flags, recent `/status` and usage-dashboard deltas, local token totals including cached input/output/reasoning if available, background process ids and `write_stdin` poll cadence, compaction attempts and failures, retry/tool-loop counts, whether the app was idle, and a minimal reproduction with before/after usage percentages.
 
+## Codex Resource Leak
+
+Codex Desktop, the VS Code extension, app-server, renderer, GPU process, shell snapshot capture, or helper processes can keep consuming CPU/GPU/RAM after the useful work should be idle.
+
+Common signals include high `Code Helper (Renderer)` or `Code Helper (Plugin)` CPU, `Codex Helper Renderer`, `Codex app-server`, `syspolicyd`, `zygote`, `WindowServer`, `shell-snapshot`, `print '# Snapshot file'`, `.codex/shell_snapshots`, `chat_processes.json`, PPID 1 orphaned subprocesses, repeated `thread-stream-state-changed`, `worker_rpc_response_error`, `open-in-target not supported`, `stable-metadata`, thinking/shimmer GPU loops, and non-Git workspace CPU runaways.
+
+The fix is to capture app/extension/CLI version, OS, IDE, thread type, process names/PIDs, CPU/GPU/RSS samples over time, whether the process is orphaned, log-loop signatures, workspace Git-root state, animation/reduce-motion state, reproduction steps, and whether closing the panel/app, killing exact PIDs, `git init`, rollback, or restart clears the leak.
+
 ## Quota Mismatch
 
 Codex reports a usage-limit block even though another surface shows remaining quota, or quota state appears to be shared across accounts, consumed in parallel across 5h and weekly windows, or reset at an impossible time.

@@ -52,6 +52,7 @@ Use it when you need to:
 - **Triage Codex MCP runtime failures:** run `trace-to-skill analyze ./runs` when MCP tools are listed but Codex cancels approval, drops namespace/serverName metadata, routes to `unsupported call`, or closes stdio transport.
 - **Debug Codex resume/session state:** run `trace-to-skill analyze ./runs` when `codex resume` freezes, large JSONL histories make Desktop sluggish, recent context disappears after resume, or SQLite migration/state errors break goals.
 - **Attribute token burn:** run `trace-to-skill analyze ./runs` when Codex drains usage unexpectedly because of background polling, idle app activity, compaction loops, retry spirals, fast-mode drift, or cached-token-heavy turns.
+- **Report resource leaks:** run `trace-to-skill analyze ./runs` when Codex Desktop, VS Code extension, app-server, renderer, GPU, or orphaned helper processes keep burning CPU/GPU/memory after the work should be idle.
 - **File better OpenAI/Codex issues:** run `trace-to-skill codex-report ./runs` to turn a failed trace into a redaction-aware, copy-paste-ready issue body with evidence and diagnostics.
 - **Package quota bugs cleanly:** run `trace-to-skill analyze ./runs` on Codex traces where `/status` or the usage page shows remaining quota but the client returns `You've hit your usage limit`.
 
@@ -148,6 +149,7 @@ Trace analysis detects run-level failures:
 | Codex MCP runtime | MCP tools are configured but approval, namespace routing, unsupported callable names, or stdio transport fail at runtime |
 | Codex session state | Resume, history rendering, context compression, archived chats, or local SQLite/global-state migrations break long sessions |
 | Codex token burn | Background polling, idle app activity, compaction/replay, cached-token-heavy turns, or retry loops drain usage unexpectedly |
+| Codex resource leak | Desktop/app/extension/helper processes, shell snapshots, renderer, GPU, or log loops keep consuming local resources |
 | Quota mismatch | Codex usage dashboard, `/status`, account state, or reset timing contradicts a usage-limit block |
 | MCP risk | Tool permissions and trust boundaries are unclear |
 
@@ -351,7 +353,7 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v5
-      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.39
+      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.40
         with:
           mode: all
           doctor-threshold: "85"
@@ -400,7 +402,7 @@ Composite action usage:
 
 ```yaml
 - id: trace-to-skill
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.39
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.40
   with:
     mode: all
     doctor-threshold: "85"
@@ -442,7 +444,7 @@ Action outputs:
 
 By default, generated reports are also appended to the GitHub Actions Job Summary. Set `job-summary: "false"` to disable that UI output.
 
-Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.39` executes that release's checked-out source instead of pulling the default branch at runtime.
+Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.40` executes that release's checked-out source instead of pulling the default branch at runtime.
 
 ## Codex Skill
 

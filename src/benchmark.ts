@@ -114,6 +114,12 @@ const BENCHMARK_CASES: BenchmarkCaseDefinition[] = [
     expectedKinds: ["codex_token_burn", "weak_evidence"]
   },
   {
+    id: "codex-resource-leak",
+    title: "Codex resource leak and runaway process",
+    fixture: "fixtures/codex-resource-leak.md",
+    expectedKinds: ["codex_resource_leak", "weak_evidence"]
+  },
+  {
     id: "prompt-injection",
     title: "Untrusted PR comment prompt injection",
     fixture: "fixtures/prompt-injection.md",

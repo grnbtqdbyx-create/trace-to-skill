@@ -17,6 +17,7 @@ npx trace-to-skill codex-report redacted-runs --output openai-codex-issue.md
 | OpenAI/Codex issue cluster | Common signals | Finding kind | Best command |
 | --- | --- | --- | --- |
 | Token burn and usage drain | `tokens burning very fast`, large cached input totals, `write_stdin` empty polls, idle app usage, compaction tax, retry loops | `codex_token_burn` | `trace-to-skill codex-report ./runs` |
+| Resource leaks and runaway processes | high CPU/GPU/RAM, `Code Helper`, `Codex Helper Renderer`, orphaned `shell-snapshot`, `syspolicyd`, log floods, thinking animation GPU loops | `codex_resource_leak` | `trace-to-skill codex-report ./runs` |
 | Quota mismatch | `/status` or usage page shows quota left, but runtime says `You've hit your usage limit`; account/workspace reset or cache confusion | `quota_mismatch` | `trace-to-skill codex-report ./runs` |
 | Sensitive file exclusion | `.env`, private keys, `.npmrc`, cloud credentials, local databases, or production secret manifests entered agent context | `sensitive_file_access` | `trace-to-skill codex-report ./runs` |
 | Context compaction failures | `Error running remote compact task`, `context_length_exceeded`, compaction loops, `responses/compact` stream disconnects | `context_compaction` | `trace-to-skill analyze ./runs` |
@@ -34,6 +35,7 @@ npx trace-to-skill codex-report redacted-runs --output openai-codex-issue.md
 - Include OS, shell/terminal, IDE, model, reasoning effort, speed mode, and subscription/workspace.
 - Include the smallest redacted trace that reproduces the failure.
 - Include before/after `/status` and usage dashboard state for quota or token-burn reports.
+- Include process names/PIDs, CPU/GPU/RSS samples, log-loop signatures, and whether killing exact PIDs or closing the app clears resource leaks.
 - Include line-linked evidence rather than screenshots alone when logs are available.
 - Redact tokens, API keys, emails, local home paths, customer data, and hidden Unicode before posting publicly.
 - For sensitive-file reports, attach only redacted excerpts and the file path/class, not the original credential material.
@@ -41,6 +43,7 @@ npx trace-to-skill codex-report redacted-runs --output openai-codex-issue.md
 ## Related OpenAI/Codex Threads Used For Fixtures
 
 - Token burn and usage drain: https://github.com/openai/codex/issues/14593, https://github.com/openai/codex/issues/13733, https://github.com/openai/codex/issues/25420, https://github.com/openai/codex/issues/19585
+- Resource leaks and runaway processes: https://github.com/openai/codex/issues/16231, https://github.com/openai/codex/issues/11981, https://github.com/openai/codex/issues/16857, https://github.com/openai/codex/issues/25388
 - Session state and resume failures: https://github.com/openai/codex/issues/25430, https://github.com/openai/codex/issues/25390, https://github.com/openai/codex/issues/25394, https://github.com/openai/codex/issues/25407
 - MCP runtime failures: https://github.com/openai/codex/issues/16685, https://github.com/openai/codex/issues/18977, https://github.com/openai/codex/issues/24297, https://github.com/openai/codex/issues/23839
 - Sensitive file exclusion: https://github.com/openai/codex/issues/2847
