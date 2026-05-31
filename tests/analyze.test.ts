@@ -1684,6 +1684,7 @@ test("composite action exposes Codex readiness doctor mode", async () => {
   assert.match(action, /node "\$TRACE_TO_SKILL_CLI" doctor/);
   assert.match(action, /node "\$TRACE_TO_SKILL_CLI" lint-agents/);
   assert.match(action, /node "\$TRACE_TO_SKILL_CLI" guard-github-event/);
+  assert.match(action, /github\.event_name != 'push'/);
   assert.match(action, /node "\$TRACE_TO_SKILL_CLI" doctor-comment/);
   assert.match(action, /node "\$TRACE_TO_SKILL_CLI" benchmark/);
   assert.match(action, /node "\$TRACE_TO_SKILL_CLI" scorecard/);
@@ -1973,7 +1974,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.equal(brief.scorecard.benchmarkStatus, "pass");
   assert.equal(brief.scorecard.benchmarkCases, 33);
   assert.equal(brief.packageName, "trace-to-skill");
-  assert.equal(brief.packageVersion, "0.1.74");
+  assert.equal(brief.packageVersion, "0.1.75");
   assert.equal(brief.license, "Apache-2.0");
   assert.ok(brief.repository?.includes("github.com/grnbtqdbyx-create/trace-to-skill"));
   assert.ok(brief.qualification.max500.length <= 500);
@@ -1981,7 +1982,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.match(markdown, /OpenAI OSS Brief/);
   assert.match(markdown, /Why This Repository Qualifies/);
   assert.match(markdown, /500-Character Version/);
-  assert.match(markdown, /npx trace-to-skill@0\.1\.74/);
+  assert.match(markdown, /npx trace-to-skill@0\.1\.75/);
 });
 
 test("scorecard-comment dry-run resolves pull request event", async () => {

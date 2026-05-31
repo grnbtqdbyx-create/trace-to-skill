@@ -500,7 +500,7 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v5
-      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.74
+      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.75
         with:
           mode: all
           doctor-threshold: "85"
@@ -549,7 +549,7 @@ Composite action usage:
 
 ```yaml
 - id: trace-to-skill
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.74
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.75
   with:
     mode: all
     doctor-threshold: "85"
@@ -591,7 +591,7 @@ Action outputs:
 
 By default, generated reports are also appended to the GitHub Actions Job Summary. Set `job-summary: "false"` to disable that UI output.
 
-Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.74` executes that release's checked-out source instead of pulling the default branch at runtime.
+Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.75` executes that release's checked-out source instead of pulling the default branch at runtime.
 
 ## Codex Skill
 

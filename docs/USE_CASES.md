@@ -53,7 +53,7 @@ What it proves:
 Recommended CI surface:
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.74
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.75
   with:
     mode: all
     doctor-threshold: "85"

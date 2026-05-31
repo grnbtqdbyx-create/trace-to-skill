@@ -204,7 +204,7 @@ runs:
     - run: |
         echo "::error::untrusted GitHub event context failed with score ${{ steps.github-context.outputs.score }}/${{ inputs.context-threshold }}"
         exit 1
-      if: steps.github-context.outputs.status == 'fail' && (inputs.mode == 'github-context' || inputs.mode == 'all')
+      if: steps.github-context.outputs.status == 'fail' && github.event_name != 'push' && github.event_name != 'workflow_dispatch' && (inputs.mode == 'github-context' || inputs.mode == 'all')
       shell: bash
     - id: doctor
       run: |
