@@ -67,6 +67,7 @@ Current proof points:
 - Deeplink/OAuth launch detection for `codex://oauth_callback`, notification `type=click&tag`, AppX/MSIX protocol registration, browser-extension activation, mobile pairing links, and `codex app <path>` workspace routing regressions.
 - Connector auth-cache detection for `401 Reauthentication required`, stale `link_*` ids, `isAccessible: false`, `codex_apps_tools` / `codex_app_directory` cache state, and external MCP fallback evidence.
 - MCP discovery/config-scope detection for CLI-versus-VS Code/Desktop gaps, ignored project `.codex/config.toml`, WSL config path mismatch, `CODEX_HOME` drift, and missing `mcp__*` tool exposure.
+- Terminal output/scrollback integrity detection for streamed output that disappears, is overwritten, truncates, duplicates, misaligns, snaps to the bottom, or only survives in raw logs/transcripts.
 - Usage reset schedule drift detection for moving weekly reset anchors, saved usage loss, outage compensation resets, and `/status` versus dashboard reset discrepancies.
 - `usage-evidence` reports for scattered `/status`, reset-table, usage-limit, and token-total snippets.
 - Resource-leak detection for Codex Desktop, VS Code extension, renderer, GPU, shell snapshot, and helper processes that keep burning CPU/GPU/RAM after the useful work should be idle.
@@ -78,7 +79,7 @@ Current proof points:
 - SARIF output for GitHub code scanning.
 - Before/after eval comparison with keep/revise/reject decisions.
 - One-command repository setup via `trace-to-skill init`.
-- Public release v0.1.64.
+- Public release v0.1.65.
 - Current GitHub scorecard: 100/100 Codex-ready, benchmark passing.
 
 500-character version:

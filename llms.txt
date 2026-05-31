@@ -24,6 +24,7 @@ Runtime: Node.js 20+
 - Codex mobile and remote-control route health failures such as `Waiting for desktop`, `Directory Unavailable`, stale listeners on `127.0.0.1:14567`, stale `server_name` enrollment, empty backend environments, and incomplete helper bundles
 - Codex MCP runtime failures such as cancelled non-interactive approvals, `request_user_input is not supported in exec mode`, dropped namespace or `serverName` metadata, `unsupported call: mcp__...__...`, and closed `StdioServerTransport` sessions
 - Codex MCP discovery and config-scope mismatches where CLI `/mcp` works but VS Code, Desktop, WSL, project `.codex/config.toml`, `CODEX_HOME`, or an older conversation exposes no `mcp__*` tools
+- Codex terminal output and scrollback integrity failures where streamed lines disappear, get overwritten, truncate, duplicate, misalign, snap to the bottom, or only survive in raw logs/transcripts
 - Codex resume and session-state failures such as frozen resume pickers, large rollout JSONL histories, short `session_index.jsonl`, sluggish Desktop thread rendering, dropped recent context after resume, archived chat loading failures, and `state_5.sqlite` / `goals_1.sqlite` migration drift
 - Codex file tree and workspace navigation UI failures such as `View > Toggle File Tree` doing nothing, missing folder icons, stale floating file panels, and built-in preview failures
 - Codex Thinking or Working hangs after accepted turns, successful local tools, or open Responses streams with no streamed assistant follow-up
@@ -74,6 +75,7 @@ npx trace-to-skill demo clipboard-attachment
 npx trace-to-skill demo deeplink-launch
 npx trace-to-skill demo connector-auth-cache
 npx trace-to-skill demo mcp-discovery-mismatch
+npx trace-to-skill demo terminal-output-integrity
 npx trace-to-skill lint-agents .
 npx trace-to-skill guard-github-event "$GITHUB_EVENT_PATH"
 npx trace-to-skill guard-patch ./change.patch --root .
@@ -95,7 +97,7 @@ npx trace-to-skill init --comment --sarif
 ## GitHub Action
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.64
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.65
   with:
     mode: all
     doctor-threshold: "85"
@@ -123,6 +125,7 @@ npx trace-to-skill init --comment --sarif
 
 - Codex readiness checker for open-source repositories
 - Codex issue report demo without private traces
+- Codex terminal scrollback output integrity report
 - AGENTS.md linter for Codex and Claude Code
 - turn failed agent runs into AGENTS.md rules
 - prompt injection guard for GitHub issue and PR comments

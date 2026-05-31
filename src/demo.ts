@@ -73,6 +73,12 @@ const DEMO_SCENARIOS: DemoScenario[] = [
     description: "MCP servers work in CLI or one config scope but are absent in Desktop, VS Code, WSL, or project-local sessions."
   },
   {
+    id: "terminal-output-integrity",
+    title: "Codex terminal output integrity",
+    fixture: "fixtures/codex-terminal-output-integrity.md",
+    description: "Terminal scrollback, streamed output, or transcript rendering drops, overwrites, truncates, or makes lines inaccessible."
+  },
+  {
     id: "token-burn",
     title: "Codex token burn",
     fixture: "fixtures/codex-token-burn.md",
@@ -163,6 +169,7 @@ export function renderDemoMarkdown(result: DemoResult): string {
     "trace-to-skill demo deeplink-launch",
     "trace-to-skill demo connector-auth-cache",
     "trace-to-skill demo mcp-discovery-mismatch",
+    "trace-to-skill demo terminal-output-integrity",
     "trace-to-skill demo file-tree-ui",
     "trace-to-skill demo usage-reset-drift",
     "```",
@@ -191,6 +198,7 @@ export function renderDemoScenarioList(scenarios = listDemoScenarios()): string 
     "trace-to-skill demo deeplink-launch",
     "trace-to-skill demo connector-auth-cache",
     "trace-to-skill demo mcp-discovery-mismatch",
+    "trace-to-skill demo terminal-output-integrity",
     "trace-to-skill demo --list",
     "```",
     ""

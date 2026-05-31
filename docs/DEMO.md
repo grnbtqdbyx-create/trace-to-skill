@@ -1,10 +1,10 @@
 # trace-to-skill Demo
 
-Scenario: **Codex MCP discovery mismatch**
+Scenario: **Codex terminal output integrity**
 
-MCP servers work in CLI or one config scope but are absent in Desktop, VS Code, WSL, or project-local sessions.
+Terminal scrollback, streamed output, or transcript rendering drops, overwrites, truncates, or makes lines inaccessible.
 
-Fixture: `fixtures/codex-mcp-discovery-mismatch.md`
+Fixture: `fixtures/codex-terminal-output-integrity.md`
 
 This is a packaged public fixture, so you can try the project without collecting a private trace first.
 
@@ -14,7 +14,7 @@ This is a packaged public fixture, so you can try the project without collecting
 
 Score: **75/100**
 
-Likely failure class: **Codex MCP discovery or config-scope mismatch (codex_mcp_discovery_mismatch, high)**
+Likely failure class: **Codex terminal output or scrollback integrity failure (codex_terminal_output_integrity, high)**
 
 Agent workflow needs clearer verification, instruction, or security hardening before broad reuse.
 
@@ -23,22 +23,25 @@ Agent workflow needs clearer verification, instruction, or security hardening be
 ```md
 ### What happened?
 
-trace-to-skill detected Codex MCP discovery or config-scope mismatch (codex_mcp_discovery_mismatch). MCP servers can work in Codex CLI or one config scope while Desktop, VS Code, WSL, remote, or project-local sessions silently load another scope and expose no tools.
+trace-to-skill detected Codex terminal output or scrollback integrity failure (codex_terminal_output_integrity). When Codex TUI or terminal rendering drops, overwrites, truncates, or makes transcript lines inaccessible, users lose the evidence needed to review work, copy results, and file reliable bug reports even if the underlying log still contains the data.
 
 ### Detected failure class
 
-- codex_mcp_discovery_mismatch: Codex MCP discovery or config-scope mismatch (high)
+- codex_terminal_output_integrity: Codex terminal output or scrollback integrity failure (high)
 
 ### Evidence
 
-#### Codex MCP discovery or config-scope mismatch
-- fixtures/codex-mcp-discovery-mismatch.md:20 - MCP servers not detected in Codex VS Code extension, but working in Codex CLI.
-- fixtures/codex-mcp-discovery-mismatch.md:60 - Open config.toml in WSL environment still opens the Windows config.toml.
-- fixtures/codex-mcp-discovery-mismatch.md:63 - CODEX_HOME differs between CLI, VS Code, WSL, remote SSH, and the standalone app.
+#### Codex terminal output or scrollback integrity failure
+- fixtures/codex-terminal-output-integrity.md:3 - This fixture uses public, token-free examples of Codex terminal output, scrollback, or transcript rendering losing evidence even when logs or transaction views still contain the missing lines.
+- fixtures/codex-terminal-output-integrity.md:16 - Scrollback does not work correctly; older output disappears or cannot be accessed.
+- fixtures/codex-terminal-output-integrity.md:17 - Output is sometimes overwritten or re-rendered incorrectly.
+- fixtures/codex-terminal-output-integrity.md:19 - Scrolling during streaming output can cause content to be cut or misaligned.
+- fixtures/codex-terminal-output-integrity.md:46 - ./repro/tmux_scrollback_repro.sh
+- fixtures/codex-terminal-output-integrity.md:57 - ./repro/tmux_scrollback_repro.sh --plain
 
 ### Diagnostics to attach
 
-- When reporting Codex MCP discovery or config-scope mismatches, capture app/CLI/extension version, OS, IDE, remote/WSL/SSH state, workspace root, effective CODEX_HOME, all config files considered (`~/.codex/config.toml`, project `.codex/config.toml`, `.vscode/mcp.json`, `.mcp.json`), exact MCP sections without secrets, trust/profile/default-permissions state, `codex mcp list` and `codex mcp get <server>`, CLI versus Desktop/VS Code comparison, loaded config path or extension logs, whether moving the same server to user-global config fixes it, whether reload/restart/new conversation changes tool exposure, and whether the current session exposes any `mcp__*` tools.
+- When reporting Codex terminal output or scrollback integrity failures, capture Codex CLI/app/extension version, OS, shell, terminal emulator and version, remote/WSL/SSH/tmux/Zellij state, model, whether streaming was active, exact scroll action, whether the viewport snapped to bottom, first missing or duplicated line id, raw log/transcript/transaction evidence showing the line still exists, terminal capture such as tmux capture-pane or Windows Terminal screenshot/video, reproduction script or numbered-line harness output, control run without Codex-specific escape/history insertion, terminal dimensions and scrollback settings, whether /resume or transcript mode recovers the content, and whether downgrade or another terminal changes behavior.
 
 ### Privacy
 
@@ -47,20 +50,25 @@ trace-to-skill detected Codex MCP discovery or config-scope mismatch (codex_mcp_
 
 ## Findings
 
-### 1. Codex MCP discovery or config-scope mismatch
+### 1. Codex terminal output or scrollback integrity failure
 
 Severity: **high**
 
-MCP servers can work in Codex CLI or one config scope while Desktop, VS Code, WSL, remote, or project-local sessions silently load another scope and expose no tools.
+When Codex TUI or terminal rendering drops, overwrites, truncates, or makes transcript lines inaccessible, users lose the evidence needed to review work, copy results, and file reliable bug reports even if the underlying log still contains the data.
 
 Evidence:
-- `fixtures/codex-mcp-discovery-mismatch.md:20` MCP servers not detected in Codex VS Code extension, but working in Codex CLI.
-- `fixtures/codex-mcp-discovery-mismatch.md:60` Open config.toml in WSL environment still opens the Windows config.toml.
-- `fixtures/codex-mcp-discovery-mismatch.md:63` CODEX_HOME differs between CLI, VS Code, WSL, remote SSH, and the standalone app.
+- `fixtures/codex-terminal-output-integrity.md:3` This fixture uses public, token-free examples of Codex terminal output, scrollback, or transcript rendering losing evidence even when logs or transaction views still contain the missing lines.
+- `fixtures/codex-terminal-output-integrity.md:16` Scrollback does not work correctly; older output disappears or cannot be accessed.
+- `fixtures/codex-terminal-output-integrity.md:17` Output is sometimes overwritten or re-rendered incorrectly.
+- `fixtures/codex-terminal-output-integrity.md:19` Scrolling during streaming output can cause content to be cut or misaligned.
+- `fixtures/codex-terminal-output-integrity.md:46` ./repro/tmux_scrollback_repro.sh
+- `fixtures/codex-terminal-output-integrity.md:57` ./repro/tmux_scrollback_repro.sh --plain
+- `fixtures/codex-terminal-output-integrity.md:64` repro/tmux_scrollback_repro.sh
+- `fixtures/codex-terminal-output-integrity.md:65` repro/line_truncation_repro.md
 
 Suggested rule:
 
-> When reporting Codex MCP discovery or config-scope mismatches, capture app/CLI/extension version, OS, IDE, remote/WSL/SSH state, workspace root, effective CODEX_HOME, all config files considered (`~/.codex/config.toml`, project `.codex/config.toml`, `.vscode/mcp.json`, `.mcp.json`), exact MCP sections without secrets, trust/profile/default-permissions state, `codex mcp list` and `codex mcp get <server>`, CLI versus Desktop/VS Code comparison, loaded config path or extension logs, whether moving the same server to user-global config fixes it, whether reload/restart/new conversation changes tool exposure, and whether the current session exposes any `mcp__*` tools.
+> When reporting Codex terminal output or scrollback integrity failures, capture Codex CLI/app/extension version, OS, shell, terminal emulator and version, remote/WSL/SSH/tmux/Zellij state, model, whether streaming was active, exact scroll action, whether the viewport snapped to bottom, first missing or duplicated line id, raw log/transcript/transaction evidence showing the line still exists, terminal capture such as tmux capture-pane or Windows Terminal screenshot/video, reproduction script or numbered-line harness output, control run without Codex-specific escape/history insertion, terminal dimensions and scrollback settings, whether /resume or transcript mode recovers the content, and whether downgrade or another terminal changes behavior.
 
 
 ## Reporter Notes
@@ -81,6 +89,7 @@ Suggested rule:
 - `clipboard-attachment`: Copy as Markdown, long-paste conversion, or generated Pasted text.txt attachments break prompt and report workflows.
 - `deeplink-launch`: OAuth callbacks, notification clicks, mobile links, or `codex app <path>` external activation fail to route into Codex.
 - `connector-auth-cache`: App connectors keep stale `link_*` auth or discovery metadata after reauth-required responses.
+- `mcp-discovery-mismatch`: MCP servers work in CLI or one config scope but are absent in Desktop, VS Code, WSL, or project-local sessions.
 - `token-burn`: Usage drains from background polling, idle activity, compaction loops, retries, or cached-heavy turns.
 - `patch-overwrite`: `apply_patch` accepts `*** Add File` for an existing path, turning a create operation into a silent overwrite.
 - `sensitive-files`: Secrets, local credentials, production env files, or private databases enter agent context.
@@ -98,6 +107,7 @@ trace-to-skill demo clipboard-attachment
 trace-to-skill demo deeplink-launch
 trace-to-skill demo connector-auth-cache
 trace-to-skill demo mcp-discovery-mismatch
+trace-to-skill demo terminal-output-integrity
 trace-to-skill demo file-tree-ui
 trace-to-skill demo usage-reset-drift
 ```

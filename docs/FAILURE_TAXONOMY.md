@@ -96,6 +96,14 @@ Common signals include `Waiting for desktop`, `Directory: Unavailable`, `remote-
 
 The fix is to capture desktop/app/CLI versions, mobile OS/app version, host id, remote-control status, listener pid and executable path, bound port, cache directory id, helper bundle completeness, active `server_name` or enrollment id, workspace root, last mobile command id, and whether restarting the listener or re-pairing changes the route.
 
+## Codex Terminal Output Integrity
+
+Codex terminal output, streamed assistant text, or scrollback can become untrustworthy when visible lines disappear, get overwritten, truncate mid-stream, duplicate, misalign, or become inaccessible even though raw logs, transaction views, or transcripts still contain the missing content.
+
+Common signals include Windows Terminal scrollback losing older output, PowerShell/WSL/tmux/Zellij/Ghostty rendering differences, `missing_count`, `missing_examples`, `S-0391`, `tmux_scrollback_repro.sh`, `line_truncation_repro.md`, `vt100_history.rs`, scrolling during streaming output cutting content, approval/planner scrollback snapping back to the bottom, and Ctrl+T transcript mode failing to recover previous output.
+
+The fix is to capture Codex CLI/app/extension version, OS, shell, terminal emulator and version, WSL/SSH/tmux/Zellij state, model, whether streaming was active, exact scroll action, viewport snap behavior, first missing or duplicated line id, raw log/transcript/transaction evidence showing the line still exists, terminal capture such as `tmux capture-pane` or a screenshot/video, numbered-line harness output, control run without Codex-specific rendering, terminal dimensions and scrollback settings, `/resume` or transcript recovery behavior, and whether downgrade or another terminal changes the result.
+
 ## Codex MCP Runtime
 
 Codex MCP tools can be configured and discoverable but still fail at runtime. Common causes include non-interactive approval paths cancelling the call, elicitation not being supported in exec mode, deferred discovery replaying a call without namespace or `serverName`, routed callable names such as `mcp__node_repl__js` becoming unsupported, or stdio transports closing before a second tool call.

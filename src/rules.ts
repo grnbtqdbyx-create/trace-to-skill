@@ -415,6 +415,29 @@ const RULES: RuleDefinition[] = [
     suggestedSkill: "codex-remote-control-triage"
   },
   {
+    kind: "codex_terminal_output_integrity",
+    severity: "high",
+    title: "Codex terminal output or scrollback integrity failure",
+    why: "When Codex TUI or terminal rendering drops, overwrites, truncates, or makes transcript lines inaccessible, users lose the evidence needed to review work, copy results, and file reliable bug reports even if the underlying log still contains the data.",
+    patterns: [
+      /\b(scrollback|terminal history|pane history|transcript|previous output|earlier output)\b.{0,220}\b(missing|disappear(?:s|ed)?|inaccessible|cannot be accessed|cannot scroll|can't scroll|scroll up|snap(?:s)? back|returns? to the bottom|truncated|cut off|overwritten|duplicated|misaligned|visually corrupted)\b/i,
+      /\b(output|assistant output|assistant message|stream(?:ed|ing)? output|render(?:ed|ing)? output)\b.{0,220}\b(truncated|cut off|missing middle|missing lines?|complete lines? (?:are )?missing|disappear(?:s|ed)?|overwritten|duplicated|partially missing|swallowed|shifted|misaligned|visually corrupted)\b/i,
+      /\b(complete lines?|entire lines?|numbered stream lines?|S-\d{4})\b.{0,180}\b(missing|disappear(?:s|ed)?|not in scrollback|not in terminal history|missing_count|missing_examples)\b/i,
+      /\b(missing_count|missing_examples|capture_file|missing_file)\b.{0,180}\b(scrollback|tmux|pane history|terminal|S-\d{4}|line truncation)\b/i,
+      /\btmux_scrollback_repro\.sh\b|\bline_truncation_repro\.md\b|\bvt100_history\.rs\b/i,
+      /\bWindows Terminal\b.{0,220}\b(scrollback|scrolling|missing lines?|output|PowerShell|WSL|rendering|scroll issue|history)\b.{0,220}\b(disappear(?:s|ed)?|missing|truncated|overwritten|duplicated|cannot scroll|snap(?:s)? back|corrupted)\b/i,
+      /\b(PowerShell|WSL|Zellij|Ghostty|Alacritty|tmux|Windows Terminal|xterm|iTerm2|Terminal)\b.{0,220}\b(scrollback|scrolling|streaming output|terminal rendering|viewport)\b.{0,220}\b(disappear(?:s|ed)?|missing|truncated|overwritten|duplicated|snap(?:s)? back|corrupted|inaccessible)\b/i,
+      /\bwhile (?:the )?(?:assistant|response|reply|output) (?:is )?streaming\b.{0,260}\b(scroll(?:ed|ing)? up|mouse wheel|older visible lines|previous history|visible transcript)\b.{0,220}\b(overwrite|swallow|disappear|shift|cut|misalign)\b/i,
+      /\bscroll(?:ing)? up\b.{0,180}\b(snap(?:s)? back|always scroll down|returns? to the bottom|cannot read previous output|cannot copy the full response|viewport)\b/i,
+      /\btransaction\/log view\b.{0,180}\b(still present|contains|has the missing lines?)\b/i,
+      /\b\/resume\b.{0,160}\b(recover(?:s)? the history|restored UI|history|transcript)\b/i,
+      /\bCtrl\s*\+\s*T\b.{0,160}\b(transcript|stopped working|scroll up|approval)\b/i
+    ],
+    suggestedRule:
+      "When reporting Codex terminal output or scrollback integrity failures, capture Codex CLI/app/extension version, OS, shell, terminal emulator and version, remote/WSL/SSH/tmux/Zellij state, model, whether streaming was active, exact scroll action, whether the viewport snapped to bottom, first missing or duplicated line id, raw log/transcript/transaction evidence showing the line still exists, terminal capture such as tmux capture-pane or Windows Terminal screenshot/video, reproduction script or numbered-line harness output, control run without Codex-specific escape/history insertion, terminal dimensions and scrollback settings, whether /resume or transcript mode recovers the content, and whether downgrade or another terminal changes behavior.",
+    suggestedSkill: "codex-terminal-output-triage"
+  },
+  {
     kind: "codex_mcp_discovery_mismatch",
     severity: "high",
     title: "Codex MCP discovery or config-scope mismatch",

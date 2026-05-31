@@ -131,6 +131,12 @@ const BENCHMARK_CASES: BenchmarkCaseDefinition[] = [
     expectedKinds: ["codex_remote_control", "weak_evidence"]
   },
   {
+    id: "codex-terminal-output-integrity",
+    title: "Codex terminal output and scrollback integrity failure",
+    fixture: "fixtures/codex-terminal-output-integrity.md",
+    expectedKinds: ["codex_terminal_output_integrity", "weak_evidence"]
+  },
+  {
     id: "quota-mismatch",
     title: "Codex quota mismatch",
     fixture: "fixtures/quota-mismatch.md",
