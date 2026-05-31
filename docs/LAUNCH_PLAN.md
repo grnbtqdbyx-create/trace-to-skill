@@ -52,6 +52,8 @@ Secondary headline:
 - [x] scorecard PR comments with update-in-place marker
 - [x] discovery PR to awesome-codex-cli: https://github.com/milisp/awesome-codex-cli/pull/35
 - [x] discovery PR to awesome-harness-engineering: https://github.com/ai-boost/awesome-harness-engineering/pull/45
+- [x] discovery PR to awesome-codex-cli: https://github.com/RoggeOhta/awesome-codex-cli/pull/63
+- [x] discovery PR to awesome-codex-skills: https://github.com/ComposioHQ/awesome-codex-skills/pull/90
 
 ## Current Public Proof
 
