@@ -24,6 +24,12 @@ Codex sandbox setup, approval mode, ACL, or workspace ownership failed before to
 
 The fix is to capture the OS, Codex version, `sandbox_mode`, `approval_policy`, exact stderr, workspace ownership/ACL evidence, and whether a clean directory can run a simple command plus `apply_patch`.
 
+## Quota Mismatch
+
+Codex reports a usage-limit block even though another surface shows remaining quota, or quota state appears to be shared across accounts, consumed in parallel across 5h and weekly windows, or reset at an impossible time.
+
+The fix is to capture the subscription plan, account or workspace, client and version, model, `/status` output before and after the failed prompt, usage dashboard state, reset times, feedback/thread ID, and whether logout/login or another machine changes the result.
+
 ## Hallucinated File
 
 The trace references a missing path, missing module, or nonexistent file. The fix is usually a repository navigation rule.

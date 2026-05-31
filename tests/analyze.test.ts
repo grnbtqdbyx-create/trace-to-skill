@@ -140,6 +140,18 @@ test("analyzeTargets detects Codex sandbox permission failures", async () => {
   assert.match(finding.suggestedRule, /sandbox_mode/);
 });
 
+test("analyzeTargets detects Codex quota mismatches", async () => {
+  const result = await analyzeTargets(["fixtures/quota-mismatch.md"]);
+  const finding = result.findings.find((item) => item.kind === "quota_mismatch");
+  const evidence = finding?.evidence.map((item) => item.excerpt).join("\n") ?? "";
+
+  assert.ok(finding);
+  assert.equal(finding.severity, "high");
+  assert.match(evidence, /You've hit your usage limit/);
+  assert.match(evidence, /21% left/);
+  assert.match(finding.suggestedRule, /usage dashboard/);
+});
+
 test("redactText removes common secrets and private identifiers", () => {
   const raw = [
     "OPENAI_API_KEY=sk-proj-abcdefghijklmnopqrstuvwxyz123456",
@@ -287,6 +299,7 @@ test("package metadata points npm users back to the public project", async () =>
   assert.ok(packageJson.keywords?.includes("prompt-injection"));
   assert.ok(packageJson.keywords?.includes("context-compaction"));
   assert.ok(packageJson.keywords?.includes("sandbox-permission"));
+  assert.ok(packageJson.keywords?.includes("quota-mismatch"));
 });
 
 test("initProject rejects unsafe workflow arguments", async () => {
@@ -649,6 +662,7 @@ test("published JSON schemas describe CLI result contracts", async () => {
   assert.ok(analysisSchema.$defs.finding);
   assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("context_compaction"));
   assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("sandbox_permission"));
+  assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("quota_mismatch"));
   assert.deepEqual(agentsLintSchema.required, ["generatedAt", "root", "status", "score", "instructionFiles", "mcpConfigs", "checks", "findings", "summary"]);
   assert.ok(agentsLintSchema.properties.instructionFiles);
   assert.ok(agentsLintSchema.properties.mcpConfigs);
@@ -668,11 +682,12 @@ test("benchmark covers public fixture failure classes", async () => {
   const markdown = renderBenchmarkMarkdown(benchmark);
 
   assert.equal(benchmark.passed, true);
-  assert.equal(benchmark.cases.length, 8);
+  assert.equal(benchmark.cases.length, 9);
   assert.ok(benchmark.cases.some((item) => item.id === "clean-validated-run" && item.score === 100));
   assert.ok(benchmark.cases.some((item) => item.id === "failed-workflow" && item.detectedKinds.includes("test_failure")));
   assert.ok(benchmark.cases.some((item) => item.id === "context-compaction" && item.detectedKinds.includes("context_compaction")));
   assert.ok(benchmark.cases.some((item) => item.id === "sandbox-permission" && item.detectedKinds.includes("sandbox_permission")));
+  assert.ok(benchmark.cases.some((item) => item.id === "quota-mismatch" && item.detectedKinds.includes("quota_mismatch")));
   assert.ok(benchmark.cases.some((item) => item.id === "mcp-risk" && item.detectedKinds.includes("secret_exposure")));
   assert.ok(benchmark.cases.some((item) => item.id === "prompt-injection" && item.detectedKinds.includes("prompt_injection")));
   assert.match(markdown, /trace-to-skill Benchmark/);
@@ -689,7 +704,7 @@ test("scorecard combines doctor readiness and benchmark evidence", async () => {
   assert.equal(scorecard.doctor.status, "ready");
   assert.equal(scorecard.doctor.score, 100);
   assert.equal(scorecard.benchmark.status, "pass");
-  assert.equal(scorecard.benchmark.cases, 8);
+  assert.equal(scorecard.benchmark.cases, 9);
   assert.match(markdown, /trace-to-skill Scorecard/);
   assert.match(markdown, /Codex readiness/);
   assert.match(markdown, /Benchmark Summary/);

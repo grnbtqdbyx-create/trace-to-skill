@@ -162,6 +162,25 @@ const RULES: RuleDefinition[] = [
       "When Codex sandbox or permission setup fails, capture the OS, Codex version, sandbox_mode, approval_policy, exact stderr, workspace ownership/ACL evidence, and whether a clean directory can run a simple command plus apply_patch."
   },
   {
+    kind: "quota_mismatch",
+    severity: "high",
+    title: "Codex quota or usage-limit mismatch",
+    why: "Quota mismatch reports block paid users and are hard to triage unless the trace preserves account, plan, client, model, status output, dashboard state, and the exact limit response.",
+    patterns: [
+      /\bYou've hit your usage limit\b/i,
+      /\busage limit\b.{0,160}\b(remaining|left|despite|but|shows|dashboard|\/status)\b/i,
+      /\b(rate[- ]?limit|usage|quota)\b.{0,160}\b(incorrectly shared|shared across|wrong account|different accounts?|account switch|cached across accounts?)\b/i,
+      /\b(5h|five-hour|weekly|daily)\b.{0,80}\b(quota|limit)\b.{0,160}\b(same rate|decrease|consumed|deducted|parallel|simultaneously)\b/i,
+      /\b(5h|five-hour|weekly|daily)?\s*(quota|limit)?\b.{0,80}\b\d{1,3}%\s+left\b.{0,120}\b(resets|remaining|usage|quota|limit)\b/i,
+      /\bquota\b.{0,80}\b(disappeared|diss?appeared|missing|halved|mismatch|incorrect|glitch|moved by a few days)\b/i,
+      /\b\/status\b.{0,160}\b(0%|remaining|left|weekly|5h limit)\b/i,
+      /\bchatgpt\.com\/codex\/settings\/usage\b/i,
+      /\b429\b.{0,120}\b(Too Many Requests|rate limit|usage limit)\b/i
+    ],
+    suggestedRule:
+      "When reporting Codex quota mismatches, include the subscription plan, account/workspace, client and version, model, /status output before and after the failed prompt, usage dashboard state, reset times, feedback/thread ID, and whether logout/login or another machine changes the result."
+  },
+  {
     kind: "mcp_risk",
     severity: "high",
     title: "MCP permission or tool-risk signal",

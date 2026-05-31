@@ -65,6 +65,12 @@ const BENCHMARK_CASES: BenchmarkCaseDefinition[] = [
     expectedKinds: ["sandbox_permission", "weak_evidence"]
   },
   {
+    id: "quota-mismatch",
+    title: "Codex quota mismatch",
+    fixture: "fixtures/quota-mismatch.md",
+    expectedKinds: ["quota_mismatch", "weak_evidence"]
+  },
+  {
     id: "mcp-risk",
     title: "MCP config with secret exposure",
     fixture: "fixtures/mcp-risk.json",

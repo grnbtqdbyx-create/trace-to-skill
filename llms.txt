@@ -16,6 +16,7 @@ Runtime: Node.js 20+
 - failed tests hidden behind optimistic summaries
 - Codex context compaction failures such as remote compact stream disconnects, `context_length_exceeded`, stuck automatic compaction, and `unknown variant auto`
 - Codex sandbox and permission failures such as setup refresh errors, `os error 740`, `CodexSandboxOffline` ownership drift, ACL denial, and approval-mode downgrades
+- Codex quota and usage-limit mismatches where `/status` or the usage page shows remaining quota, accounts share limits unexpectedly, or 5h and weekly quotas move together
 - hallucinated files and broad over-editing
 - conflicting `AGENTS.md`, `CLAUDE.md`, Cursor, Copilot, or Gemini instructions
 - stale path references, missing `@file.md` includes, nested `AGENTS.md` visibility gaps, invalid UTF-8, and oversized instruction files that can make Codex follow wrong or truncated guidance
@@ -60,7 +61,7 @@ npx trace-to-skill init --comment --sarif
 ## GitHub Action
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.37
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.38
   with:
     mode: all
     doctor-threshold: "85"
@@ -90,3 +91,5 @@ npx trace-to-skill init --comment --sarif
 - Codex OSS maintainer automation evidence
 - Codex sandbox setup refresh failed
 - Windows sandbox permission failure for Codex CLI
+- Codex usage limit despite remaining quota
+- Codex quota mismatch and rate limit debugging

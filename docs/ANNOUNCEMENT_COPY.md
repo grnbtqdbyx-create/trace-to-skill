@@ -50,6 +50,7 @@ trace-to-skill checks repo readiness and scans agent traces/logs to generate:
 - a GitHub event context guard for prompt-injection checks before agents read PR/issue/comment text
 - a redaction command for privacy-preserving failed trace sharing
 - Codex sandbox setup and permission failure detection for setup refresh, ACL, ownership, and approval-mode problems
+- Codex quota mismatch detection for usage-limit, account-switching, reset-time, and rate-limit evidence
 - a Codex-native readiness auditor skill
 - an Agent Learning Report
 - suggested AGENTS.md rules

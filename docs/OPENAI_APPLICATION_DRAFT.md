@@ -47,13 +47,14 @@ Current proof points:
 - Privacy-preserving `redact` command for sharing failed traces without common tokens, emails, local paths, or hidden Unicode controls.
 - Context compaction failure detection for stuck Codex sessions and shareable support traces.
 - Sandbox and permission failure detection for Codex setup refresh, Windows `os error 740`, ACL, workspace ownership, and approval-mode drift reports.
+- Quota mismatch detection for usage-limit blocks that contradict `/status`, usage dashboard state, account switching, or reset timing.
 - MCP config capability, secret-risk, JSON/TOML static startup-input diagnostics, and Codex config drift checks.
 - `AGENTS.md` / `CLAUDE.md` contradiction detection.
 - Pull request comment reports.
 - SARIF output for GitHub code scanning.
 - Before/after eval comparison with keep/revise/reject decisions.
 - One-command repository setup via `trace-to-skill init`.
-- Public release v0.1.37.
+- Public release v0.1.38.
 - Current GitHub scorecard: 100/100 Codex-ready, benchmark passing.
 
 500-character version:

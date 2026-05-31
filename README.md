@@ -45,6 +45,7 @@ Use it when you need to:
 - **Share failed traces safely:** run `trace-to-skill redact ./runs --output redacted-runs` before publishing anonymized failure fixtures.
 - **Triage stuck Codex sessions:** run `trace-to-skill analyze ./runs` to catch context compaction failures such as compact stream disconnects, `context_length_exceeded`, and schema mismatches.
 - **Diagnose sandbox blockers:** run `trace-to-skill analyze ./runs` on Codex traces that fail with sandbox setup refresh, `os error 740`, ACL, ownership, or approval-mode permission errors.
+- **Package quota bugs cleanly:** run `trace-to-skill analyze ./runs` on Codex traces where `/status` or the usage page shows remaining quota but the client returns `You've hit your usage limit`.
 
 For copy-paste workflows, see [docs/USE_CASES.md](https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/USE_CASES.md). For crawler-friendly metadata, see [docs/DISCOVERY.md](https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/DISCOVERY.md) and [llms.txt](https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/llms.txt).
 
@@ -63,6 +64,7 @@ Open-source maintainers do not need more AI-generated noise. They need agents th
 - Can this be reported in a PR without leaking secrets?
 - Did a long Codex session fail during context compaction?
 - Did Codex sandbox setup or workspace permissions block every tool call?
+- Did quota accounting, account switching, or reset timing contradict the runtime usage-limit error?
 
 ## Example Output
 
@@ -127,6 +129,7 @@ Trace analysis detects run-level failures:
 | Prompt injection | Untrusted issue, PR, log, or web text asks the agent to ignore policy or leak secrets |
 | Context compaction | Codex compact task fails, disconnects, loops, or hits `context_length_exceeded` |
 | Sandbox permission | Codex sandbox setup, approval mode, ACL, or workspace ownership blocks tool execution |
+| Quota mismatch | Codex usage dashboard, `/status`, account state, or reset timing contradicts a usage-limit block |
 | MCP risk | Tool permissions and trust boundaries are unclear |
 
 ## Installation
@@ -315,7 +318,7 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v5
-      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.37
+      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.38
         with:
           mode: all
           doctor-threshold: "85"
@@ -364,7 +367,7 @@ Composite action usage:
 
 ```yaml
 - id: trace-to-skill
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.37
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.38
   with:
     mode: all
     doctor-threshold: "85"
@@ -406,7 +409,7 @@ Action outputs:
 
 By default, generated reports are also appended to the GitHub Actions Job Summary. Set `job-summary: "false"` to disable that UI output.
 
-Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.37` executes that release's checked-out source instead of pulling the default branch at runtime.
+Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.38` executes that release's checked-out source instead of pulling the default branch at runtime.
 
 ## Codex Skill
 

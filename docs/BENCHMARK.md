@@ -11,6 +11,7 @@ This benchmark runs the public fixture pack that ships with the repository and p
 | Codex JSONL failed session | `fixtures/codex-session.jsonl` | 50 | 3 | 1 | `premature_completion`, `test_failure`, `weak_evidence` | pass |
 | Codex context compaction failure | `fixtures/context-compaction.md` | 75 | 2 | 0 | `context_compaction`, `weak_evidence` | pass |
 | Codex sandbox permission failure | `fixtures/sandbox-permission.md` | 75 | 2 | 0 | `sandbox_permission`, `weak_evidence` | pass |
+| Codex quota mismatch | `fixtures/quota-mismatch.md` | 75 | 2 | 0 | `quota_mismatch`, `weak_evidence` | pass |
 | MCP config with secret exposure | `fixtures/mcp-risk.json` | 59 | 2 | 1 | `mcp_risk`, `secret_exposure` | pass |
 | Untrusted PR comment prompt injection | `fixtures/prompt-injection.md` | 50 | 3 | 1 | `premature_completion`, `prompt_injection`, `weak_evidence` | pass |
 | Conflicting agent instruction files | `fixtures/instruction-drift` | 84 | 1 | 0 | `ignored_instruction` | pass |

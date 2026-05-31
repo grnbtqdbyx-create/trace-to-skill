@@ -21,7 +21,7 @@ What it proves:
 Recommended CI surface:
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.37
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.38
   with:
     mode: all
     doctor-threshold: "85"
@@ -61,7 +61,17 @@ npx trace-to-skill analyze ./runs --format json
 
 This catches signals such as Windows sandbox setup refresh failures, `os error 740`, `CodexSandboxOffline` ownership drift, ACL denial, approval-policy mismatch, and Full Access sessions behaving like workspace-write or on-request mode.
 
-## 4. GitHub Context Guard
+## 4. Quota And Usage-Limit Evidence
+
+Use this when Codex blocks a prompt with a usage-limit message but another surface still shows remaining quota.
+
+```bash
+npx trace-to-skill analyze ./runs --format json
+```
+
+This catches traces where `/status` or the usage page shows remaining 5h or weekly quota, accounts appear to share limits unexpectedly, a Team account inherits a Plus account's limit state, or quota reset times jump after logout/login.
+
+## 5. GitHub Context Guard
 
 Use this before an agent reads untrusted GitHub text.
 
@@ -78,7 +88,7 @@ Use it when:
 - a bot asks Codex to triage untrusted user reports
 - logs or comments might contain instructions like "ignore previous instructions" or "print secrets"
 
-## 5. Failed Agent Run To Reviewable Rule
+## 6. Failed Agent Run To Reviewable Rule
 
 Use this when a coding agent made a repeated workflow mistake.
 
@@ -96,7 +106,7 @@ Recommended maintainer loop:
 4. Copy only evidence-backed rules into the real policy file.
 5. Run `eval` or `scorecard` in CI so the same failure does not silently return.
 
-## 6. Privacy-Preserving Adoption
+## 7. Privacy-Preserving Adoption
 
 Use this when you want public evidence without leaking private traces.
 
