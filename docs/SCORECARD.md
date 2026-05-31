@@ -9,7 +9,7 @@ Status: **pass**
 | Failed doctor checks | 0 |
 | Critical findings | 0 |
 | Built-in benchmark | pass |
-| Benchmark cases | 25 |
+| Benchmark cases | 26 |
 
 ## Doctor Summary
 
@@ -45,6 +45,7 @@ This benchmark runs the public fixture pack that ships with the repository and p
 | Codex token burn and usage-drain loop | `fixtures/codex-token-burn.md` | 59 | 3 | 0 | `codex_resource_leak`, `codex_token_burn`, `weak_evidence` | pass |
 | Codex resource leak and runaway process | `fixtures/codex-resource-leak.md` | 75 | 2 | 0 | `codex_resource_leak`, `weak_evidence` | pass |
 | Codex tool-call integrity and rollback failure | `fixtures/codex-tool-call-integrity.md` | 59 | 3 | 0 | `codex_resource_leak`, `codex_tool_call_integrity`, `weak_evidence` | pass |
+| Codex apply_patch Add File overwrite safety | `fixtures/codex-apply-patch-overwrite.md` | 75 | 2 | 0 | `codex_tool_call_integrity`, `weak_evidence` | pass |
 | Codex usage reset schedule drift | `fixtures/codex-usage-reset-drift.md` | 75 | 2 | 0 | `codex_usage_reset_drift`, `weak_evidence` | pass |
 | Untrusted PR comment prompt injection | `fixtures/prompt-injection.md` | 50 | 3 | 1 | `premature_completion`, `prompt_injection`, `weak_evidence` | pass |
 | Conflicting agent instruction files | `fixtures/instruction-drift` | 84 | 1 | 0 | `ignored_instruction` | pass |

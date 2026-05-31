@@ -54,6 +54,7 @@ trace-to-skill checks repo readiness and scans agent traces/logs to generate:
 - a zero-setup `demo` command so people can see a real Codex issue report before collecting private traces
 - Codex remote compact failure detection for `/compact`, auto-compaction, `responses/compact`, provider timeout workarounds, and long-thread recovery loss
 - Codex Windows helper path detection for bundled `rg.exe`, `node_repl`, Browser, Chrome, and Computer Use failures involving WindowsApps/MSIX paths, missing LocalCache bins, ACLs, and EFS/copyfile errors
+- a `guard-patch` command that fails generated patches when `*** Add File` would overwrite an existing file or symlink target
 - Codex sandbox setup and permission failure detection for setup refresh, ACL, ownership, and approval-mode problems
 - Codex auth/connectivity detection for token exchange, CA certificate, proxy, IPv6, Cloudflare challenge, and stream disconnect evidence
 - Codex mobile/remote-control route health detection for stale listener, stale enrollment, missing helper bundle, and `Waiting for desktop` evidence

@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdir, mkdtemp, readFile, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, symlink, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
@@ -13,6 +13,7 @@ import { analyzeGithubEventContext, extractGithubContextInputs } from "../src/gi
 import { postPullRequestComment } from "../src/github.js";
 import { initProject } from "../src/init.js";
 import { renderOssBriefMarkdown, runOssBrief } from "../src/ossBrief.js";
+import { guardPatchContent, guardPatchFile, renderPatchGuardMarkdown } from "../src/patchGuard.js";
 import { redactTargets, redactText } from "../src/redact.js";
 import { renderAgentsRules, renderCodexIssueReport, renderComparison, renderDoctorPrComment, renderPrComment, renderSarif, renderSkill } from "../src/report.js";
 import { renderScorecardMarkdown, renderScorecardPrComment, runScorecard } from "../src/scorecard.js";
@@ -394,6 +395,84 @@ test("analyzeTargets detects Codex tool-call integrity and rollback failures", a
   assert.match(evidence, /Failed to revert changes/);
   assert.match(finding.suggestedRule, /tool_call_id sequence/);
   assert.match(report, /Codex tool-call integrity or rollback failure/);
+});
+
+test("analyzeTargets detects focused Codex apply_patch overwrite failures", async () => {
+  const result = await analyzeTargets(["fixtures/codex-apply-patch-overwrite.md"]);
+  const finding = result.findings.find((item) => item.kind === "codex_tool_call_integrity");
+  const evidence = finding?.evidence.map((item) => item.excerpt).join("\n") ?? "";
+  const report = renderCodexIssueReport(result);
+
+  assert.ok(finding);
+  assert.equal(finding.severity, "high");
+  assert.match(evidence, /\*\*\* Add File/);
+  assert.match(evidence, /destructive overwrite/);
+  assert.match(report, /codex_tool_call_integrity/);
+});
+
+test("guardPatchFile rejects Add File targets that already exist", async () => {
+  const cwd = await mkdtemp(path.join(os.tmpdir(), "trace-to-skill-patch-"));
+  await writeFile(path.join(cwd, "existing.txt"), "original\n", "utf8");
+  const patchPath = path.join(cwd, "change.patch");
+  await writeFile(patchPath, [
+    "*** Begin Patch",
+    "*** Add File: existing.txt",
+    "+replacement",
+    "*** End Patch",
+    ""
+  ].join("\n"), "utf8");
+
+  const result = await guardPatchFile(patchPath, cwd);
+  const markdown = renderPatchGuardMarkdown(result);
+
+  assert.equal(result.status, "fail");
+  assert.equal(result.findings[0]?.operation, "add");
+  assert.match(result.findings[0]?.message ?? "", /already exists/);
+  assert.match(markdown, /Patch Guard/);
+  assert.match(markdown, /existing\.txt/);
+});
+
+test("guardPatchContent rejects symlink Add File targets and missing Update targets", async () => {
+  const cwd = await mkdtemp(path.join(os.tmpdir(), "trace-to-skill-patch-"));
+  await writeFile(path.join(cwd, "target.txt"), "secret\n", "utf8");
+  await symlink(path.join(cwd, "target.txt"), path.join(cwd, "linked.txt"));
+
+  const result = await guardPatchContent([
+    "*** Begin Patch",
+    "*** Add File: linked.txt",
+    "+replacement",
+    "*** Update File: missing.txt",
+    "@@",
+    "-old",
+    "+new",
+    "*** End Patch",
+    ""
+  ].join("\n"), { patch: "inline.patch", root: cwd });
+
+  assert.equal(result.status, "fail");
+  assert.equal(result.findings.length, 2);
+  assert.match(result.findings[0]?.message ?? "", /symlink/);
+  assert.match(result.findings[1]?.message ?? "", /does not exist/);
+});
+
+test("guardPatchContent passes safe create and update operations", async () => {
+  const cwd = await mkdtemp(path.join(os.tmpdir(), "trace-to-skill-patch-"));
+  await writeFile(path.join(cwd, "existing.txt"), "old\n", "utf8");
+
+  const result = await guardPatchContent([
+    "*** Begin Patch",
+    "*** Add File: new.txt",
+    "+hello",
+    "*** Update File: existing.txt",
+    "@@",
+    "-old",
+    "+new",
+    "*** End Patch",
+    ""
+  ].join("\n"), { root: cwd });
+
+  assert.equal(result.status, "pass");
+  assert.deepEqual(result.findings, []);
 });
 
 test("analyzeTargets detects Codex quota mismatches", async () => {
@@ -1015,6 +1094,11 @@ test("published JSON schemas describe CLI result contracts", async () => {
     properties: Record<string, unknown>;
     $defs: Record<string, unknown>;
   };
+  const patchGuardSchema = JSON.parse(await readFile("schemas/patch-guard-result.schema.json", "utf8")) as {
+    required: string[];
+    properties: Record<string, unknown>;
+    $defs: Record<string, unknown>;
+  };
   const redactSchema = JSON.parse(await readFile("schemas/redact-result.schema.json", "utf8")) as {
     required: string[];
     properties: Record<string, unknown>;
@@ -1053,6 +1137,9 @@ test("published JSON schemas describe CLI result contracts", async () => {
   assert.deepEqual(ossBriefSchema.required, ["generatedAt", "root", "scorecard", "qualification", "apiCredits", "evidence", "nextSteps"]);
   assert.ok(ossBriefSchema.properties.scorecard);
   assert.ok(ossBriefSchema.$defs.briefText);
+  assert.deepEqual(patchGuardSchema.required, ["generatedAt", "patch", "root", "status", "findings"]);
+  assert.ok(patchGuardSchema.properties.findings);
+  assert.ok(patchGuardSchema.$defs.finding);
   assert.deepEqual(redactSchema.required, ["generatedAt", "files", "totals"]);
   assert.ok(redactSchema.properties.files);
   assert.ok(redactSchema.$defs.redactedFile);
@@ -1063,7 +1150,7 @@ test("benchmark covers public fixture failure classes", async () => {
   const markdown = renderBenchmarkMarkdown(benchmark);
 
   assert.equal(benchmark.passed, true);
-  assert.equal(benchmark.cases.length, 25);
+  assert.equal(benchmark.cases.length, 26);
   assert.ok(benchmark.cases.some((item) => item.id === "clean-validated-run" && item.score === 100));
   assert.ok(benchmark.cases.some((item) => item.id === "failed-workflow" && item.detectedKinds.includes("test_failure")));
   assert.ok(benchmark.cases.some((item) => item.id === "context-compaction" && item.detectedKinds.includes("context_compaction")));
@@ -1082,6 +1169,7 @@ test("benchmark covers public fixture failure classes", async () => {
   assert.ok(benchmark.cases.some((item) => item.id === "codex-token-burn" && item.detectedKinds.includes("codex_token_burn")));
   assert.ok(benchmark.cases.some((item) => item.id === "codex-resource-leak" && item.detectedKinds.includes("codex_resource_leak")));
   assert.ok(benchmark.cases.some((item) => item.id === "codex-tool-call-integrity" && item.detectedKinds.includes("codex_tool_call_integrity")));
+  assert.ok(benchmark.cases.some((item) => item.id === "codex-apply-patch-overwrite" && item.detectedKinds.includes("codex_tool_call_integrity")));
   assert.ok(benchmark.cases.some((item) => item.id === "codex-usage-reset-drift" && item.detectedKinds.includes("codex_usage_reset_drift")));
   assert.ok(benchmark.cases.some((item) => item.id === "quota-mismatch" && item.detectedKinds.includes("quota_mismatch")));
   assert.ok(benchmark.cases.some((item) => item.id === "mcp-risk" && item.detectedKinds.includes("secret_exposure")));
@@ -1101,7 +1189,7 @@ test("scorecard combines doctor readiness and benchmark evidence", async () => {
   assert.equal(scorecard.doctor.status, "ready");
   assert.equal(scorecard.doctor.score, 100);
   assert.equal(scorecard.benchmark.status, "pass");
-  assert.equal(scorecard.benchmark.cases, 25);
+  assert.equal(scorecard.benchmark.cases, 26);
   assert.match(markdown, /trace-to-skill Scorecard/);
   assert.match(markdown, /Codex readiness/);
   assert.match(markdown, /Benchmark Summary/);
@@ -1117,9 +1205,9 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.equal(brief.scorecard.doctorStatus, "ready");
   assert.equal(brief.scorecard.doctorScore, 100);
   assert.equal(brief.scorecard.benchmarkStatus, "pass");
-  assert.equal(brief.scorecard.benchmarkCases, 25);
+  assert.equal(brief.scorecard.benchmarkCases, 26);
   assert.equal(brief.packageName, "trace-to-skill");
-  assert.equal(brief.packageVersion, "0.1.52");
+  assert.equal(brief.packageVersion, "0.1.53");
   assert.equal(brief.license, "Apache-2.0");
   assert.ok(brief.repository?.includes("github.com/grnbtqdbyx-create/trace-to-skill"));
   assert.ok(brief.qualification.max500.length <= 500);
@@ -1127,7 +1215,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.match(markdown, /OpenAI OSS Brief/);
   assert.match(markdown, /Why This Repository Qualifies/);
   assert.match(markdown, /500-Character Version/);
-  assert.match(markdown, /npx trace-to-skill@0\.1\.52/);
+  assert.match(markdown, /npx trace-to-skill@0\.1\.53/);
 });
 
 test("scorecard-comment dry-run resolves pull request event", async () => {

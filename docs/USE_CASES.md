@@ -11,6 +11,7 @@ npx trace-to-skill demo
 npx trace-to-skill demo --list
 npx trace-to-skill demo remote-compact
 npx trace-to-skill demo windows-helper-path
+npx trace-to-skill demo patch-overwrite
 npx trace-to-skill demo latency-regression
 ```
 
@@ -18,7 +19,7 @@ What it proves:
 
 - packaged fixtures can produce a real Codex issue report immediately
 - maintainers can inspect the output shape before sharing any private log
-- demos cover remote compact failures, Windows helper path failures, approval friction, latency, token burn, sensitive files, and prompt injection
+- demos cover remote compact failures, Windows helper path failures, patch overwrite safety, approval friction, latency, token burn, sensitive files, and prompt injection
 
 See the generated demo output in [docs/DEMO.md](DEMO.md).
 
@@ -41,7 +42,7 @@ What it proves:
 Recommended CI surface:
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.52
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.53
   with:
     mode: all
     doctor-threshold: "85"
@@ -197,7 +198,24 @@ This catches signals such as high `Code Helper (Renderer)` or `Code Helper (Plug
 
 Include process names/PIDs, CPU/GPU/RSS samples over time, log-loop snippets, workspace Git-root state, animation/reduce-motion state, and whether closing the panel/app, killing exact PIDs, `git init`, rollback, or restart clears the leak.
 
-## 16. OpenAI Codex Issue Report
+## 16. Patch Overwrite Guard
+
+Use this before applying a generated patch when you want create/update/delete semantics checked against the actual workspace.
+
+```bash
+npx trace-to-skill guard-patch ./change.patch --root .
+npx trace-to-skill guard-patch ./change.patch --root . --format json
+```
+
+This fails closed when `*** Add File` targets an existing file or symlink, `*** Update File` or `*** Delete File` targets a missing file, or `*** Move to` would overwrite an existing destination. It directly addresses Codex `apply_patch` reports where an add/create operation silently replaced existing contents.
+
+For a public demo report:
+
+```bash
+npx trace-to-skill demo patch-overwrite
+```
+
+## 17. OpenAI Codex Issue Report
 
 Use this when you want to file or update an OpenAI/Codex issue with a concise, evidence-backed report instead of pasting a full transcript.
 
@@ -210,7 +228,7 @@ The report includes the likely Codex failure class, line-linked evidence, diagno
 
 For a cluster-to-command map of current Codex issue patterns, see [CODEX_ISSUE_MAP.md](CODEX_ISSUE_MAP.md).
 
-## 17. Sensitive File Access Evidence
+## 18. Sensitive File Access Evidence
 
 Use this when a trace suggests an agent read, attached, uploaded, diffed, or indexed credential-bearing files.
 
@@ -223,7 +241,7 @@ This catches signals such as `.env`, `.env.production`, `.npmrc`, `.pypirc`, `.n
 
 Before publishing evidence, run `trace-to-skill redact` and attach only redacted excerpts plus the file path/class.
 
-## 18. GitHub Context Guard
+## 19. GitHub Context Guard
 
 Use this before an agent reads untrusted GitHub text.
 
@@ -240,7 +258,7 @@ Use it when:
 - a bot asks Codex to triage untrusted user reports
 - logs or comments might contain instructions like "ignore previous instructions" or "print secrets"
 
-## 19. Failed Agent Run To Reviewable Rule
+## 20. Failed Agent Run To Reviewable Rule
 
 Use this when a coding agent made a repeated workflow mistake.
 
@@ -258,7 +276,7 @@ Recommended maintainer loop:
 4. Copy only evidence-backed rules into the real policy file.
 5. Run `eval` or `scorecard` in CI so the same failure does not silently return.
 
-## 20. Privacy-Preserving Adoption
+## 21. Privacy-Preserving Adoption
 
 Use this when you want public evidence without leaking private traces.
 

@@ -52,6 +52,8 @@ Current proof points:
 - `codex-report` command for turning redacted failed traces into OpenAI/Codex issue-ready Markdown with likely failure class, evidence, diagnostics, and privacy notes.
 - Remote compact failure detection for `/compact` and auto-compaction `responses/compact` timeouts, stream disconnects, provider timeout workarounds, and long-thread recovery loss.
 - Windows helper path detection for bundled `rg.exe`, `node_repl.exe`, Browser, Chrome, and Computer Use helpers that resolve through blocked WindowsApps/MSIX paths, missing LocalCache bins, broken `CodexSandboxUsers` ACLs, or EFS/copyfile failures.
+- Patch overwrite guard for `apply_patch` diffs so `*** Add File` fails before replacing an existing file or symlink target.
+- Focused `patch-overwrite` demo and public fixture based on active Codex `apply_patch` overwrite reports.
 - Context compaction failure detection for stuck Codex sessions and shareable support traces.
 - Sandbox and permission failure detection for Codex setup refresh, Windows `os error 740`, ACL, workspace ownership, and approval-mode drift reports.
 - Codex file tree and workspace navigation UI detection for missing `View > Toggle File Tree`, stale floating file panels, and file-preview failures.
@@ -66,7 +68,7 @@ Current proof points:
 - SARIF output for GitHub code scanning.
 - Before/after eval comparison with keep/revise/reject decisions.
 - One-command repository setup via `trace-to-skill init`.
-- Public release v0.1.52.
+- Public release v0.1.53.
 - Current GitHub scorecard: 100/100 Codex-ready, benchmark passing.
 
 500-character version:

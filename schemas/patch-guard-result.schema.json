@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/grnbtqdbyx-create/trace-to-skill/schemas/patch-guard-result.schema.json",
+  "title": "trace-to-skill patch guard result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["generatedAt", "patch", "root", "status", "findings"],
+  "properties": {
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "patch": {
+      "type": "string"
+    },
+    "root": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["pass", "fail"]
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/finding"
+      }
+    }
+  },
+  "$defs": {
+    "finding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["operation", "severity", "line", "target", "message"],
+      "properties": {
+        "operation": {
+          "type": "string",
+          "enum": ["add", "update", "delete", "move-to"]
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["warning", "error"]
+        },
+        "line": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "target": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

@@ -168,6 +168,12 @@ const BENCHMARK_CASES: BenchmarkCaseDefinition[] = [
     expectedKinds: ["codex_tool_call_integrity", "weak_evidence"]
   },
   {
+    id: "codex-apply-patch-overwrite",
+    title: "Codex apply_patch Add File overwrite safety",
+    fixture: "fixtures/codex-apply-patch-overwrite.md",
+    expectedKinds: ["codex_tool_call_integrity", "weak_evidence"]
+  },
+  {
     id: "codex-usage-reset-drift",
     title: "Codex usage reset schedule drift",
     fixture: "fixtures/codex-usage-reset-drift.md",

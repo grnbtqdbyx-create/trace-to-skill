@@ -24,6 +24,7 @@ npx trace-to-skill scorecard .
 npx trace-to-skill oss-brief .
 npx trace-to-skill scorecard-comment . --dry-run
 npx trace-to-skill guard-github-event "$GITHUB_EVENT_PATH"
+npx trace-to-skill guard-patch ./change.patch --root .
 npx trace-to-skill comment ./runs --dry-run
 npx trace-to-skill compare --before ./runs/before --after ./runs/after
 ```
@@ -47,6 +48,7 @@ Use it when you need to:
 - **Prepare OpenAI OSS evidence:** run `trace-to-skill oss-brief .` to generate application-ready proof, 500-character summary fields, readiness score, benchmark status, license, and next steps.
 - **Harden agent instructions:** run `trace-to-skill lint-agents .` to catch missing `AGENTS.md`, conflicting tool instructions, missing includes, nested instruction drift, encoding issues, and risky MCP config.
 - **Protect agent context:** run `trace-to-skill guard-github-event "$GITHUB_EVENT_PATH"` before feeding issue, PR, comment, discussion, check-run, or commit text into an agent.
+- **Prevent unsafe patch overwrites:** run `trace-to-skill guard-patch ./change.patch --root .` before applying generated patches so `*** Add File` cannot silently replace an existing file or symlink target.
 - **Share failed traces safely:** run `trace-to-skill redact ./runs --output redacted-runs` before publishing anonymized failure fixtures.
 - **Catch sensitive file access:** run `trace-to-skill analyze ./runs` when an agent trace includes `.env`, private keys, `.npmrc`, cloud credentials, local databases, or production secret manifests.
 - **Report remote compact failures:** run `trace-to-skill codex-report ./runs` when `/compact` or auto-compaction fails with `responses/compact` timeouts, stream disconnects, provider timeout workarounds, or long-thread recovery loss.
@@ -65,7 +67,7 @@ Use it when you need to:
 - **Attribute token burn:** run `trace-to-skill analyze ./runs` when Codex drains usage unexpectedly because of background polling, idle app activity, compaction loops, retry spirals, fast-mode drift, or cached-token-heavy turns.
 - **Report usage reset drift:** run `trace-to-skill analyze ./runs` when weekly or 5-hour reset times move unexpectedly, saved usage is lost, or `/status` and the dashboard disagree about the reset anchor.
 - **Report resource leaks:** run `trace-to-skill analyze ./runs` when Codex Desktop, VS Code extension, app-server, renderer, GPU, or orphaned helper processes keep burning CPU/GPU/memory after the work should be idle.
-- **Catch tool-call integrity failures:** run `trace-to-skill analyze ./runs` when `apply_patch`, rollback/undo, subagent shutdown, or `tool_call_id` protocol failures threaten file safety or strand a session.
+- **Catch tool-call integrity failures:** run `trace-to-skill analyze ./runs` when `apply_patch`, `*** Add File` overwrite behavior, rollback/undo, subagent shutdown, or `tool_call_id` protocol failures threaten file safety or strand a session.
 - **File better OpenAI/Codex issues:** run `trace-to-skill codex-report ./runs` to turn a failed trace into a redaction-aware, copy-paste-ready issue body with evidence and diagnostics.
 - **Package quota bugs cleanly:** run `trace-to-skill analyze ./runs` on Codex traces where `/status` or the usage page shows remaining quota but the client returns `You've hit your usage limit`.
 
@@ -87,6 +89,8 @@ Open-source maintainers do not need more AI-generated noise. They need agents th
 - Did a long Codex session fail during context compaction?
 - Did `/compact` or auto-compaction fail against the remote `responses/compact` endpoint, forcing a new thread or provider-timeout workaround?
 - Did Codex Desktop on Windows expose `rg`, `node_repl`, Browser, Chrome, or Computer Use helper paths that were discoverable but not executable?
+- Did an `apply_patch` create operation actually overwrite an existing file or symlink target?
+- Can a generated patch be guarded before it touches the workspace?
 - Did Codex sandbox setup or workspace permissions block every tool call?
 - Did quota accounting, account switching, or reset timing contradict the runtime usage-limit error?
 - Did an MCP tool appear in `tools/list` but fail at Codex runtime because approval, namespace routing, or stdio lifecycle broke?
@@ -208,6 +212,8 @@ Try a packaged public demo before collecting private traces:
 trace-to-skill demo
 trace-to-skill demo --list
 trace-to-skill demo latency-regression
+trace-to-skill demo patch-overwrite
+trace-to-skill guard-patch ./change.patch --root .
 trace-to-skill demo --format json
 ```
 
@@ -369,6 +375,7 @@ Stable machine-readable contracts are published with the npm package and release
 - [`schemas/redact-result.schema.json`](schemas/redact-result.schema.json) describes `trace-to-skill redact --format json`.
 - [`schemas/scorecard-result.schema.json`](schemas/scorecard-result.schema.json) describes `trace-to-skill scorecard --format json`.
 - [`schemas/oss-brief-result.schema.json`](schemas/oss-brief-result.schema.json) describes `trace-to-skill oss-brief --format json`.
+- [`schemas/patch-guard-result.schema.json`](schemas/patch-guard-result.schema.json) describes `trace-to-skill guard-patch --format json`.
 
 These schemas let downstream Codex workflows, dashboards, and CI bots consume reports without scraping Markdown.
 
@@ -400,7 +407,7 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v5
-      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.52
+      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.53
         with:
           mode: all
           doctor-threshold: "85"
@@ -449,7 +456,7 @@ Composite action usage:
 
 ```yaml
 - id: trace-to-skill
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.52
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.53
   with:
     mode: all
     doctor-threshold: "85"
@@ -491,7 +498,7 @@ Action outputs:
 
 By default, generated reports are also appended to the GitHub Actions Job Summary. Set `job-summary: "false"` to disable that UI output.
 
-Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.52` executes that release's checked-out source instead of pulling the default branch at runtime.
+Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.53` executes that release's checked-out source instead of pulling the default branch at runtime.
 
 ## Codex Skill
 

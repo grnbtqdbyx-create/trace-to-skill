@@ -10,6 +10,7 @@ import { analyzeGithubEventContext } from "./githubContext.js";
 import { postPullRequestComment } from "./github.js";
 import { initProject } from "./init.js";
 import { renderOssBriefMarkdown, runOssBrief } from "./ossBrief.js";
+import { guardPatchFile, renderPatchGuardMarkdown } from "./patchGuard.js";
 import { redactTargets } from "./redact.js";
 import { renderAgentsRules, renderCodexIssueReport, renderComparison, renderDoctorMarkdown, renderDoctorPrComment, renderMarkdown, renderPrComment, renderSarif, renderSkill } from "./report.js";
 import { renderScorecardMarkdown, renderScorecardPrComment, runScorecard } from "./scorecard.js";
@@ -163,6 +164,20 @@ async function main(): Promise<void> {
     const output = format === "json" ? `${JSON.stringify(result, null, 2)}\n` : renderAnalysis(result, "markdown");
     await writeOutput(output, parsed.flags.output);
     process.exitCode = evalResult.passed ? 0 : 1;
+    return;
+  }
+
+  if (parsed.command === "guard-patch") {
+    const patchPath = parsed.targets[0];
+    if (!patchPath) {
+      throw new Error("guard-patch requires a patch file path.");
+    }
+
+    const result = await guardPatchFile(patchPath, stringFlag(parsed.flags.root) ?? process.cwd());
+    const format = String(parsed.flags.format ?? "markdown");
+    const output = format === "json" ? `${JSON.stringify(result, null, 2)}\n` : renderPatchGuardMarkdown(result);
+    await writeOutput(output, parsed.flags.output);
+    process.exitCode = result.status === "pass" ? 0 : 1;
     return;
   }
 
@@ -349,6 +364,7 @@ Usage:
   trace-to-skill scorecard-comment [repo-dir] [--threshold 85] [--dry-run] [--token $GITHUB_TOKEN]
   trace-to-skill oss-brief [repo-dir] [--threshold 85] [--format markdown|json] [--output docs/OPENAI_OSS_BRIEF.md]
   trace-to-skill guard-github-event [event.json] [--threshold 80] [--format markdown|json] [--output report.md]
+  trace-to-skill guard-patch <patch-file> [--root repo-dir] [--format markdown|json] [--output report.md]
   trace-to-skill comment <trace-file-or-dir> [--dry-run] [--token $GITHUB_TOKEN]
   trace-to-skill compare --before <old-run> --after <new-run> [--format markdown|json]
   trace-to-skill doctor [repo-dir] [--threshold 85] [--format markdown|json|comment] [--output report.md]
@@ -369,6 +385,7 @@ Examples:
   trace-to-skill scorecard-comment . --threshold 85
   trace-to-skill oss-brief . --output docs/OPENAI_OSS_BRIEF.md
   trace-to-skill guard-github-event "$GITHUB_EVENT_PATH"
+  trace-to-skill guard-patch ./change.patch --root .
   trace-to-skill comment ./runs
   trace-to-skill compare --before ./runs/before --after ./runs/after
   trace-to-skill doctor . --threshold 85

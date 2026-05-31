@@ -49,6 +49,12 @@ const DEMO_SCENARIOS: DemoScenario[] = [
     description: "Usage drains from background polling, idle activity, compaction loops, retries, or cached-heavy turns."
   },
   {
+    id: "patch-overwrite",
+    title: "Codex apply_patch overwrite safety",
+    fixture: "fixtures/codex-apply-patch-overwrite.md",
+    description: "`apply_patch` accepts `*** Add File` for an existing path, turning a create operation into a silent overwrite."
+  },
+  {
     id: "sensitive-files",
     title: "Sensitive file access",
     fixture: "fixtures/sensitive-file-access.md",
@@ -121,6 +127,7 @@ export function renderDemoMarkdown(result: DemoResult): string {
     "trace-to-skill demo --list",
     "trace-to-skill demo remote-compact",
     "trace-to-skill demo windows-helper-path",
+    "trace-to-skill demo patch-overwrite",
     "trace-to-skill demo file-tree-ui",
     "trace-to-skill demo usage-reset-drift",
     "```",
@@ -142,6 +149,7 @@ export function renderDemoScenarioList(scenarios = listDemoScenarios()): string 
     "trace-to-skill demo",
     "trace-to-skill demo remote-compact",
     "trace-to-skill demo windows-helper-path",
+    "trace-to-skill demo patch-overwrite",
     "trace-to-skill demo latency-regression",
     "trace-to-skill demo --list",
     "```",
