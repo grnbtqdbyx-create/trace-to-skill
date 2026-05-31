@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { lintAgents, renderAgentsLintMarkdown } from "../src/agentsLint.js";
-import { analyzeTargets } from "../src/analyze.js";
+import { analyzeInputs, analyzeTargets } from "../src/analyze.js";
 import { renderBenchmarkMarkdown, runBenchmark } from "../src/benchmark.js";
 import { doctorRepo } from "../src/doctor.js";
 import { compareAnalyses, evaluate } from "../src/eval.js";
@@ -246,6 +246,18 @@ test("extractGithubContextInputs keeps supported event fields scoped", () => {
   assert.deepEqual(inputs.map((input) => input.path), ["github-event/pull_request", "github-event/comment"]);
   assert.match(inputs[0].content, /title: Update docs/);
   assert.match(inputs[1].content, /body: Looks good/);
+});
+
+test("guard-github-event does not flag ordinary detector commit messages", async () => {
+  const result = analyzeInputs(extractGithubContextInputs({
+    commits: [
+      { message: "Detect Codex remote control route failures" },
+      { message: "Detect Codex auth connectivity failures" }
+    ]
+  }));
+
+  assert.equal(result.findings.some((finding) => finding.kind === "codex_remote_control"), false);
+  assert.equal(result.findings.some((finding) => finding.kind === "codex_connectivity"), false);
 });
 
 test("compareAnalyses keeps improved runs and renders a decision", async () => {

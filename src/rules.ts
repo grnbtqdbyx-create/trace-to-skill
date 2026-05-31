@@ -190,7 +190,8 @@ const RULES: RuleDefinition[] = [
     title: "Codex remote-control route health failure",
     why: "Codex mobile, SSH remote, and desktop remote-control failures can look connected while commands route through stale listeners, stale enrollments, missing helper bundles, or mismatched workspace/session state.",
     patterns: [
-      /\bremote[- ]control\b.{0,180}\b(stale|listener|server_name|enrollment|connected|route|14567|websocket|waiting for desktop|Directory Unavailable)\b/i,
+      /\bremote[- ]control\b.{0,180}\b(stale|listener|server_name|enrollment|14567|websocket|waiting for desktop|Directory Unavailable)\b/i,
+      /\bremote[- ]control\b.{0,100}\bconnected\b.{0,100}\b(stale|weak|not enough|cannot|failed|missing)\b/i,
       /\bWaiting for desktop\b/i,
       /\bDirectory:\s*Unavailable\b/i,
       /\b127\.0\.0\.1:14567\b/i,
