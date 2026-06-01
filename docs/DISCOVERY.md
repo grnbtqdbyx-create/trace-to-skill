@@ -98,6 +98,7 @@ npx trace-to-skill plugin-audit ~/.codex --app /Applications/Codex.app --format 
 npx trace-to-skill diagnostics-bundle ~/.codex --output codex-diagnostics
 npx trace-to-skill usage-evidence ./usage-notes.md --output usage-evidence.md
 npx trace-to-skill process-audit ./process-notes.md --output process-audit.md
+npx trace-to-skill issue-map --repo openai/codex --limit 100 --output codex-issue-map.md
 npx trace-to-skill issue-map codex-issues.json --output codex-issue-map.md
 npx trace-to-skill checkpoint . --output .trace-to-skill/checkpoints/before-codex
 npx trace-to-skill redact ./runs --output redacted-runs

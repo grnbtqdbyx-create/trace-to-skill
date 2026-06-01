@@ -412,12 +412,14 @@ See this repository's current brief in [docs/OPENAI_OSS_BRIEF.md](docs/OPENAI_OS
 Mine public GitHub issue demand into a maintainer pain map:
 
 ```bash
+trace-to-skill issue-map --repo openai/codex --limit 100 --output codex-issue-map.md
+trace-to-skill issue-map --repo openai/codex --format json
 gh issue list --repo openai/codex --state open --limit 100 --json number,title,body,url,labels,comments,createdAt,updatedAt > codex-issues.json
 trace-to-skill issue-map codex-issues.json --output codex-issue-map.md
 trace-to-skill issue-map codex-issues.json --format json
 ```
 
-`issue-map` reads JSON exported by `gh issue list` or `gh search issues`, analyzes each issue with the same deterministic failure detectors, and ranks clusters by issue count, comment count, reactions, and severity. Use it to decide what people are actively asking for on GitHub before adding the next fixture, Codex report template, diagnostic bundle, or OpenAI-ready support artifact.
+`issue-map` can fetch a public GitHub repository directly through the GitHub REST API, or read JSON exported by `gh issue list` / `gh search issues`. It analyzes each issue with the same deterministic failure detectors and ranks clusters by issue count, comment count, reactions, and severity. Use it to decide what people are actively asking for on GitHub before adding the next fixture, Codex report template, diagnostic bundle, or OpenAI-ready support artifact.
 
 To map a Codex problem to the right failure class and report command, see [docs/CODEX_ISSUE_MAP.md](docs/CODEX_ISSUE_MAP.md).
 
@@ -532,7 +534,7 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v5
-      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.86
+      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.87
         with:
           mode: all
           doctor-threshold: "85"
@@ -581,7 +583,7 @@ Composite action usage:
 
 ```yaml
 - id: trace-to-skill
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.86
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.87
   with:
     mode: all
     doctor-threshold: "85"
@@ -595,15 +597,16 @@ Composite action usage:
 - run: echo "Codex readiness score is ${{ steps.trace-to-skill.outputs.doctor-score }}"
 ```
 
-Issue-map action usage for a committed or downloaded GitHub issue export:
+Issue-map action usage for direct GitHub issue demand mining:
 
 ```yaml
 - id: codex-issue-map
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.86
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.87
   with:
     mode: issue-map
-    issue-map-path: codex-issues.json
+    issue-map-repo: openai/codex
     job-summary: "true"
+    github-token: ${{ github.token }}
 - run: echo "Top Codex issue cluster is ${{ steps.codex-issue-map.outputs.issue-map-top-kind }}"
 ```
 
@@ -640,7 +643,7 @@ Action outputs:
 
 By default, generated reports are also appended to the GitHub Actions Job Summary. Set `job-summary: "false"` to disable that UI output.
 
-Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.86` executes that release's checked-out source instead of pulling the default branch at runtime.
+Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.87` executes that release's checked-out source instead of pulling the default branch at runtime.
 
 ## Codex Skill
 

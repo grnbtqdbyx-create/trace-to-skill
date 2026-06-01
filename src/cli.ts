@@ -10,7 +10,7 @@ import { createDiagnosticsBundle, renderDiagnosticsBundleMarkdown } from "./diag
 import { doctorRepo } from "./doctor.js";
 import { compareAnalyses, evaluate } from "./eval.js";
 import { analyzeGithubEventContext } from "./githubContext.js";
-import { buildIssueMap, renderIssueMapMarkdown } from "./issueMap.js";
+import { buildGithubIssueMap, buildIssueMap, renderIssueMapMarkdown } from "./issueMap.js";
 import { postPullRequestComment } from "./github.js";
 import { initProject } from "./init.js";
 import { auditLspReadiness, renderLspAuditMarkdown } from "./lspAudit.js";
@@ -211,9 +211,18 @@ async function main(): Promise<void> {
   }
 
   if (parsed.command === "issue-map") {
-    const result = await buildIssueMap(parsed.targets, {
+    const issueMapOptions = {
       top: numberFlag(parsed.flags.top)
-    });
+    };
+    const repo = stringFlag(parsed.flags.repo);
+    const result = repo ?
+      await buildGithubIssueMap(repo, {
+        ...issueMapOptions,
+        state: githubIssueStateFlag(parsed.flags.state),
+        limit: numberFlag(parsed.flags.limit),
+        token: stringFlag(parsed.flags.token)
+      }) :
+      await buildIssueMap(parsed.targets, issueMapOptions);
     const format = String(parsed.flags.format ?? "markdown");
     const output = format === "json" ? `${JSON.stringify(result, null, 2)}\n` : renderIssueMapMarkdown(result);
     await writeOutput(output, parsed.flags.output);
@@ -419,6 +428,18 @@ function byteFlag(value: string | boolean | undefined, multiplier: number): numb
   return parsed * multiplier;
 }
 
+function githubIssueStateFlag(value: string | boolean | undefined): "open" | "closed" | "all" | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+
+  if (value === "open" || value === "closed" || value === "all") {
+    return value;
+  }
+
+  throw new Error("--state must be one of: open, closed, all");
+}
+
 function doctorPassed(result: Awaited<ReturnType<typeof doctorRepo>>, threshold: number | undefined): boolean {
   if (result.checks.some((check) => check.status === "fail")) {
     return false;
@@ -505,6 +526,7 @@ Usage:
   trace-to-skill scorecard-comment [repo-dir] [--threshold 85] [--dry-run] [--token $GITHUB_TOKEN]
   trace-to-skill oss-brief [repo-dir] [--threshold 85] [--format markdown|json] [--output docs/OPENAI_OSS_BRIEF.md]
   trace-to-skill issue-map <github-issues.json-or-md> [--top 12] [--format markdown|json] [--output codex-issue-map.md]
+  trace-to-skill issue-map --repo openai/codex [--state open|closed|all] [--limit 100] [--token $GITHUB_TOKEN] [--format markdown|json]
   trace-to-skill guard-github-event [event.json] [--threshold 80] [--format markdown|json] [--output report.md]
   trace-to-skill guard-patch <patch-file> [--root repo-dir] [--format markdown|json] [--output report.md]
   trace-to-skill session-audit [codex-home-or-sessions-dir] [--large-mb 10] [--huge-line-kb 512] [--format markdown|json]
@@ -538,6 +560,7 @@ Examples:
   trace-to-skill oss-brief . --output docs/OPENAI_OSS_BRIEF.md
   gh issue list --repo openai/codex --state open --limit 100 --json number,title,body,url,labels,comments,createdAt,updatedAt > codex-issues.json
   trace-to-skill issue-map codex-issues.json --output codex-issue-map.md
+  trace-to-skill issue-map --repo openai/codex --limit 100 --output codex-issue-map.md
   trace-to-skill guard-github-event "$GITHUB_EVENT_PATH"
   trace-to-skill guard-patch ./change.patch --root .
   trace-to-skill session-audit ~/.codex --format json

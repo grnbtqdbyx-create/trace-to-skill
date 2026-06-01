@@ -15,7 +15,7 @@ import { createDiagnosticsBundle, renderDiagnosticsBundleMarkdown } from "../src
 import { doctorRepo } from "../src/doctor.js";
 import { compareAnalyses, evaluate } from "../src/eval.js";
 import { analyzeGithubEventContext, extractGithubContextInputs } from "../src/githubContext.js";
-import { buildIssueMap, renderIssueMapMarkdown } from "../src/issueMap.js";
+import { buildGithubIssueMap, buildIssueMap, renderIssueMapMarkdown } from "../src/issueMap.js";
 import { postPullRequestComment } from "../src/github.js";
 import { initProject } from "../src/init.js";
 import { auditLspReadiness, renderLspAuditMarkdown } from "../src/lspAudit.js";
@@ -1251,6 +1251,59 @@ test("issue-map ranks GitHub issue exports by detected Codex failure classes", a
   assert.match(markdown, /gh issue list --repo openai\/codex/);
 });
 
+test("issue-map fetches repository issues from GitHub-compatible API", async () => {
+  const originalFetch = globalThis.fetch;
+  const requests: string[] = [];
+  globalThis.fetch = async (input, init) => {
+    requests.push(String(input));
+    assert.equal((init?.headers as Record<string, string>).Authorization, "Bearer test-token");
+    return new Response(JSON.stringify([
+      {
+        number: 14593,
+        title: "Burning tokens very fast",
+        body: "Codex is burning tokens very fast while idle with weekly usage drain, compaction loops, retries, background polling, and cached input tokens replaying.",
+        html_url: "https://github.com/openai/codex/issues/14593",
+        labels: [{ name: "bug" }, { name: "rate-limits" }],
+        comments: 593,
+        reactions: { total_count: 41 },
+        updated_at: "2026-06-01T00:00:00Z"
+      },
+      {
+        number: 1,
+        title: "Pull request should be ignored",
+        body: "This PR mentions token burn but should not count as an issue.",
+        html_url: "https://github.com/openai/codex/pull/1",
+        pull_request: { html_url: "https://github.com/openai/codex/pull/1" },
+        labels: [],
+        comments: 100
+      }
+    ]), {
+      status: 200,
+      headers: { "content-type": "application/json" }
+    });
+  };
+
+  try {
+    const result = await buildGithubIssueMap("openai/codex", {
+      apiBaseUrl: "https://api.example.test",
+      limit: 25,
+      state: "open",
+      token: "test-token"
+    });
+
+    assert.equal(result.sources[0], "github:openai/codex");
+    assert.equal(result.issueCount, 1);
+    assert.equal(result.matchedIssueCount, 1);
+    assert.equal(result.summaries[0]?.kind, "codex_token_burn");
+    assert.match(requests[0] ?? "", /state=open/);
+    assert.match(requests[0] ?? "", /sort=comments/);
+    assert.match(requests[0] ?? "", /direction=desc/);
+    assert.match(requests[0] ?? "", /per_page=25/);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
 test("process audit packages Codex process polling and high CPU evidence", () => {
   const result = auditProcessEvidenceFromInputs([
     {
@@ -1848,6 +1901,7 @@ test("composite action exposes Codex readiness doctor mode", async () => {
   assert.match(action, /trace-to-skill-issue-map\.json/);
   assert.match(action, /mode:/);
   assert.match(action, /issue-map-path:/);
+  assert.match(action, /issue-map-repo:/);
   assert.match(action, /context-threshold:/);
   assert.match(action, /doctor-threshold:/);
   assert.match(action, /doctor-comment:/);
@@ -1874,6 +1928,7 @@ test("composite action exposes Codex readiness doctor mode", async () => {
   assert.match(action, /node "\$TRACE_TO_SKILL_CLI" doctor-comment/);
   assert.match(action, /node "\$TRACE_TO_SKILL_CLI" benchmark/);
   assert.match(action, /node "\$TRACE_TO_SKILL_CLI" issue-map/);
+  assert.match(action, /issue-map --repo "\$\{\{ inputs\.issue-map-repo \}\}"/);
   assert.match(action, /node "\$TRACE_TO_SKILL_CLI" scorecard/);
   assert.match(action, /node "\$TRACE_TO_SKILL_CLI" scorecard-comment/);
   assert.match(action, /inputs\.mode == 'agents-lint' \|\| inputs\.mode == 'all'/);
@@ -2196,7 +2251,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.equal(brief.scorecard.benchmarkStatus, "pass");
   assert.equal(brief.scorecard.benchmarkCases, 38);
   assert.equal(brief.packageName, "trace-to-skill");
-  assert.equal(brief.packageVersion, "0.1.86");
+  assert.equal(brief.packageVersion, "0.1.87");
   assert.equal(brief.license, "Apache-2.0");
   assert.ok(brief.repository?.includes("github.com/grnbtqdbyx-create/trace-to-skill"));
   assert.ok(brief.qualification.max500.length <= 500);
@@ -2204,7 +2259,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.match(markdown, /OpenAI OSS Brief/);
   assert.match(markdown, /Why This Repository Qualifies/);
   assert.match(markdown, /500-Character Version/);
-  assert.match(markdown, /npx trace-to-skill@0\.1\.86/);
+  assert.match(markdown, /npx trace-to-skill@0\.1\.87/);
 });
 
 test("scorecard-comment dry-run resolves pull request event", async () => {

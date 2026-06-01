@@ -33,6 +33,10 @@ inputs:
     description: GitHub issue export JSON or Markdown path to map with "issue-map" mode.
     required: false
     default: codex-issues.json
+  issue-map-repo:
+    description: Optional owner/repo to fetch directly in "issue-map" mode instead of reading issue-map-path.
+    required: false
+    default: ""
   threshold:
     description: Minimum passing score.
     required: false
@@ -328,8 +332,13 @@ runs:
     - id: issue-map
       run: |
         set -euo pipefail
-        node "$TRACE_TO_SKILL_CLI" issue-map "${{ inputs.issue-map-path }}" --format json --output trace-to-skill-issue-map.json
-        node "$TRACE_TO_SKILL_CLI" issue-map "${{ inputs.issue-map-path }}" --output trace-to-skill-issue-map.md
+        if [ -n "${{ inputs.issue-map-repo }}" ]; then
+          node "$TRACE_TO_SKILL_CLI" issue-map --repo "${{ inputs.issue-map-repo }}" --token "${{ inputs.github-token }}" --format json --output trace-to-skill-issue-map.json
+          node "$TRACE_TO_SKILL_CLI" issue-map --repo "${{ inputs.issue-map-repo }}" --token "${{ inputs.github-token }}" --output trace-to-skill-issue-map.md
+        else
+          node "$TRACE_TO_SKILL_CLI" issue-map "${{ inputs.issue-map-path }}" --format json --output trace-to-skill-issue-map.json
+          node "$TRACE_TO_SKILL_CLI" issue-map "${{ inputs.issue-map-path }}" --output trace-to-skill-issue-map.md
+        fi
         node --input-type=module <<'NODE'
         import { appendFileSync, readFileSync } from "node:fs";
         const report = JSON.parse(readFileSync("trace-to-skill-issue-map.json", "utf8"));

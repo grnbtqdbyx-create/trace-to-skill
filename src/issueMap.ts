@@ -7,6 +7,13 @@ export interface IssueMapOptions {
   top?: number;
 }
 
+export interface GithubIssueMapOptions extends IssueMapOptions {
+  state?: "open" | "closed" | "all";
+  limit?: number;
+  token?: string;
+  apiBaseUrl?: string;
+}
+
 export interface IssueMapIssue {
   id: string;
   title: string;
@@ -58,12 +65,16 @@ interface RawIssue {
   title?: unknown;
   body?: unknown;
   url?: unknown;
+  html_url?: unknown;
   labels?: unknown;
   comments?: unknown;
   commentsCount?: unknown;
   reactions?: unknown;
   updatedAt?: unknown;
   createdAt?: unknown;
+  updated_at?: unknown;
+  created_at?: unknown;
+  pull_request?: unknown;
 }
 
 interface NormalizedIssue {
@@ -97,28 +108,74 @@ export async function buildIssueMap(targets: string[], options: IssueMapOptions 
     throw new Error("issue-map requires at least one GitHub issue export file.");
   }
 
-  const issues: IssueMapIssue[] = [];
+  const normalizedIssues: NormalizedIssue[] = [];
   for (const target of targets) {
     const source = path.resolve(target);
     const raw = await readFile(source, "utf8");
-    const normalized = parseIssueExport(raw, target);
+    normalizedIssues.push(...parseIssueExport(raw, target));
+  }
 
-    for (const issue of normalized) {
-      const input: TraceInput = {
-        path: `${target}${issue.id.startsWith("#") ? issue.id : `#${issue.id}`}`,
-        content: renderIssueTrace(issue)
-      };
-      issues.push({
-        id: issue.id,
-        title: issue.title,
-        url: issue.url,
-        labels: issue.labels,
-        comments: issue.comments,
-        reactions: issue.reactions,
-        updatedAt: issue.updatedAt,
-        analysis: analyzeInputs([input])
-      });
-    }
+  return buildIssueMapFromNormalized(normalizedIssues, targets, options);
+}
+
+export async function buildGithubIssueMap(repo: string, options: GithubIssueMapOptions = {}): Promise<IssueMapResult> {
+  const match = repo.match(/^([A-Za-z0-9_.-]+)\/([A-Za-z0-9_.-]+)$/);
+  if (!match) {
+    throw new Error("--repo must use the owner/name format, for example openai/codex.");
+  }
+
+  const [, owner, name] = match;
+  const limit = Math.min(Math.max(options.limit ?? 100, 1), 100);
+  const state = options.state ?? "open";
+  const apiBaseUrl = options.apiBaseUrl ?? "https://api.github.com";
+  const url = new URL(`${apiBaseUrl.replace(/\/$/, "")}/repos/${owner}/${name}/issues`);
+  url.searchParams.set("state", state);
+  url.searchParams.set("sort", "comments");
+  url.searchParams.set("direction", "desc");
+  url.searchParams.set("per_page", String(limit));
+
+  const headers: Record<string, string> = {
+    "Accept": "application/vnd.github+json",
+    "User-Agent": "trace-to-skill",
+    "X-GitHub-Api-Version": "2022-11-28"
+  };
+  const token = options.token ?? process.env.GITHUB_TOKEN;
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  const response = await fetch(url, { headers });
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(`GitHub issues request failed: ${response.status} ${response.statusText}${body ? `: ${body.slice(0, 240)}` : ""}`);
+  }
+
+  const rawIssues = (await response.json()) as unknown;
+  const issues = extractIssueArray(rawIssues)
+    .filter((issue) => !asRecord(issue.pull_request))
+    .slice(0, limit)
+    .map((issue, index) => normalizeIssue(issue, `github:${repo}`, index));
+
+  return buildIssueMapFromNormalized(issues, [`github:${repo}`], options);
+}
+
+function buildIssueMapFromNormalized(normalized: NormalizedIssue[], sources: string[], options: IssueMapOptions): IssueMapResult {
+  const issues: IssueMapIssue[] = [];
+  for (const issue of normalized) {
+    const input: TraceInput = {
+      path: `${issue.id.startsWith("#") ? issue.id : `#${issue.id}`}`,
+      content: renderIssueTrace(issue)
+    };
+    issues.push({
+      id: issue.id,
+      title: issue.title,
+      url: issue.url,
+      labels: issue.labels,
+      comments: issue.comments,
+      reactions: issue.reactions,
+      updatedAt: issue.updatedAt,
+      analysis: analyzeInputs([input])
+    });
   }
 
   const summaryByKind = new Map<FindingKind, IssueMapKindSummary>();
@@ -175,7 +232,7 @@ export async function buildIssueMap(targets: string[], options: IssueMapOptions 
 
   return {
     generatedAt: new Date().toISOString(),
-    sources: targets,
+    sources,
     issueCount: issues.length,
     matchedIssueCount: matchedIssues.size,
     unmatchedIssueCount: issues.length - matchedIssues.size,
@@ -198,9 +255,10 @@ export function renderIssueMapMarkdown(result: IssueMapResult): string {
     `Matched issues: **${result.matchedIssueCount}**`,
     `Unmatched issues: **${result.unmatchedIssueCount}**`,
     "",
-    "This report maps exported GitHub issues onto deterministic `trace-to-skill` failure classes. Export issues with `gh issue list` or `gh search issues`, then use the highest-priority clusters to decide which fixtures, docs, or support reports to build next.",
+    "This report maps GitHub issues onto deterministic `trace-to-skill` failure classes. Fetch a repository directly with `--repo`, or export issues with `gh issue list` / `gh search issues` and pass the JSON file.",
     "",
     "```bash",
+    "trace-to-skill issue-map --repo openai/codex --output codex-issue-map.md",
     "gh issue list --repo openai/codex --state open --limit 100 --json number,title,body,url,labels,comments,createdAt,updatedAt > codex-issues.json",
     "trace-to-skill issue-map codex-issues.json --output codex-issue-map.md",
     "```",
@@ -305,12 +363,12 @@ function normalizeIssue(value: RawIssue, source: string, index: number): Normali
     id: number ? `#${number}` : `${path.basename(source)}:${index + 1}`,
     title,
     body: stringValue(value.body) ?? "",
-    url: stringValue(value.url),
+    url: stringValue(value.html_url ?? value.url),
     labels,
     comments,
     commentBodies,
     reactions: normalizeReactions(value.reactions),
-    updatedAt: stringValue(value.updatedAt ?? value.createdAt)
+    updatedAt: stringValue(value.updatedAt ?? value.updated_at ?? value.createdAt ?? value.created_at)
   };
 }
 
@@ -379,6 +437,11 @@ function normalizeReactions(value: unknown): number {
   const totalCount = numberValue(object.totalCount);
   if (totalCount !== undefined) {
     return totalCount;
+  }
+
+  const totalCountSnake = numberValue(object.total_count);
+  if (totalCountSnake !== undefined) {
+    return totalCountSnake;
   }
 
   return Object.values(object).reduce<number>((total, candidate) => total + (numberValue(candidate) ?? 0), 0);
