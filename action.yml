@@ -260,16 +260,18 @@ runs:
         echo "TRACE_TO_SKILL_CLI=$GITHUB_ACTION_PATH/dist/src/cli.js" >> "$GITHUB_ENV"
       shell: bash
     - run: |
-        case "${{ inputs.mode }}" in
+        case "$INPUT_MODE" in
           traces|agents-lint|github-context|doctor|benchmark|issue-map|issue-heat|duplicate-audit|both|all) ;;
           *) echo "::error::mode must be one of: traces, agents-lint, github-context, doctor, benchmark, issue-map, issue-heat, duplicate-audit, both, all"; exit 1 ;;
         esac
+      env:
+        INPUT_MODE: ${{ inputs.mode }}
       shell: bash
     - id: agents-lint
       run: |
         set -euo pipefail
-        node "$TRACE_TO_SKILL_CLI" lint-agents "${{ inputs.doctor-path }}" --format json --output agents-lint-report.json || true
-        node "$TRACE_TO_SKILL_CLI" lint-agents "${{ inputs.doctor-path }}" --output agents-lint-report.md || true
+        node "$TRACE_TO_SKILL_CLI" lint-agents "$INPUT_DOCTOR_PATH" --format json --output agents-lint-report.json || true
+        node "$TRACE_TO_SKILL_CLI" lint-agents "$INPUT_DOCTOR_PATH" --output agents-lint-report.md || true
         node --input-type=module <<'NODE'
         import { appendFileSync, readFileSync } from "node:fs";
         const report = JSON.parse(readFileSync("agents-lint-report.json", "utf8"));
@@ -281,6 +283,8 @@ runs:
         ].join("\n");
         appendFileSync(process.env.GITHUB_OUTPUT, `${output}\n`);
         NODE
+      env:
+        INPUT_DOCTOR_PATH: ${{ inputs.doctor-path }}
       if: inputs.mode == 'agents-lint' || inputs.mode == 'all'
       shell: bash
     - run: |
@@ -299,12 +303,12 @@ runs:
     - id: github-context
       run: |
         set -euo pipefail
-        node "$TRACE_TO_SKILL_CLI" guard-github-event "$GITHUB_EVENT_PATH" --threshold "${{ inputs.context-threshold }}" --format json --output github-context-report.json || true
-        node "$TRACE_TO_SKILL_CLI" guard-github-event "$GITHUB_EVENT_PATH" --threshold "${{ inputs.context-threshold }}" --output github-context-report.md || true
+        node "$TRACE_TO_SKILL_CLI" guard-github-event "$GITHUB_EVENT_PATH" --threshold "$INPUT_CONTEXT_THRESHOLD" --format json --output github-context-report.json || true
+        node "$TRACE_TO_SKILL_CLI" guard-github-event "$GITHUB_EVENT_PATH" --threshold "$INPUT_CONTEXT_THRESHOLD" --output github-context-report.md || true
         node --input-type=module <<'NODE'
         import { appendFileSync, readFileSync } from "node:fs";
         const report = JSON.parse(readFileSync("github-context-report.json", "utf8"));
-        const thresholdText = "${{ inputs.context-threshold }}";
+        const thresholdText = process.env.INPUT_CONTEXT_THRESHOLD ?? "";
         if (!/^[0-9]{1,3}$/.test(thresholdText)) {
           console.error("::error::context-threshold must be an integer between 1 and 100");
           process.exit(1);
@@ -324,6 +328,8 @@ runs:
         ].join("\n");
         appendFileSync(process.env.GITHUB_OUTPUT, `${output}\n`);
         NODE
+      env:
+        INPUT_CONTEXT_THRESHOLD: ${{ inputs.context-threshold }}
       if: inputs.mode == 'github-context' || inputs.mode == 'all'
       shell: bash
     - run: |
@@ -335,19 +341,21 @@ runs:
       if: always() && inputs.job-summary == 'true' && (inputs.mode == 'github-context' || inputs.mode == 'all')
       shell: bash
     - run: |
-        echo "::error::untrusted GitHub event context failed with score ${{ steps.github-context.outputs.score }}/${{ inputs.context-threshold }}"
+        echo "::error::untrusted GitHub event context failed with score ${{ steps.github-context.outputs.score }}/$INPUT_CONTEXT_THRESHOLD"
         exit 1
+      env:
+        INPUT_CONTEXT_THRESHOLD: ${{ inputs.context-threshold }}
       if: steps.github-context.outputs.status == 'fail' && github.event_name != 'push' && github.event_name != 'workflow_dispatch' && (inputs.mode == 'github-context' || inputs.mode == 'all')
       shell: bash
     - id: doctor
       run: |
         set -euo pipefail
-        node "$TRACE_TO_SKILL_CLI" doctor "${{ inputs.doctor-path }}" --format json --output codex-readiness-report.json
-        node "$TRACE_TO_SKILL_CLI" doctor "${{ inputs.doctor-path }}" --output codex-readiness-report.md
+        node "$TRACE_TO_SKILL_CLI" doctor "$INPUT_DOCTOR_PATH" --format json --output codex-readiness-report.json
+        node "$TRACE_TO_SKILL_CLI" doctor "$INPUT_DOCTOR_PATH" --output codex-readiness-report.md
         node --input-type=module <<'NODE'
         import { readFileSync } from "node:fs";
         const report = JSON.parse(readFileSync("codex-readiness-report.json", "utf8"));
-        const thresholdText = "${{ inputs.doctor-threshold }}";
+        const thresholdText = process.env.INPUT_DOCTOR_THRESHOLD ?? "";
         if (!/^[0-9]{1,3}$/.test(thresholdText)) {
           console.error("::error::doctor-threshold must be an integer between 1 and 100");
           process.exit(1);
@@ -370,6 +378,9 @@ runs:
         ].join("\n");
         await import("node:fs").then(({ appendFileSync }) => appendFileSync(process.env.GITHUB_OUTPUT, `${output}\n`));
         NODE
+      env:
+        INPUT_DOCTOR_PATH: ${{ inputs.doctor-path }}
+        INPUT_DOCTOR_THRESHOLD: ${{ inputs.doctor-threshold }}
       if: inputs.mode == 'doctor' || inputs.mode == 'both' || inputs.mode == 'all'
       shell: bash
     - run: |
@@ -380,18 +391,26 @@ runs:
         } >> "$GITHUB_STEP_SUMMARY"
       if: always() && inputs.job-summary == 'true' && (inputs.mode == 'doctor' || inputs.mode == 'both' || inputs.mode == 'all')
       shell: bash
-    - run: node "$TRACE_TO_SKILL_CLI" doctor-comment "${{ inputs.doctor-path }}" --threshold "${{ inputs.doctor-threshold }}" --token "${{ inputs.github-token }}"
+    - run: node "$TRACE_TO_SKILL_CLI" doctor-comment "$INPUT_DOCTOR_PATH" --threshold "$INPUT_DOCTOR_THRESHOLD" --token "$INPUT_GITHUB_TOKEN"
+      env:
+        INPUT_DOCTOR_PATH: ${{ inputs.doctor-path }}
+        INPUT_DOCTOR_THRESHOLD: ${{ inputs.doctor-threshold }}
+        INPUT_GITHUB_TOKEN: ${{ inputs.github-token }}
       if: always() && github.event_name == 'pull_request' && inputs.doctor-comment == 'true' && (inputs.mode == 'doctor' || inputs.mode == 'both' || inputs.mode == 'all')
       shell: bash
     - run: |
-        echo "::error::Codex readiness doctor status is ${{ steps.doctor.outputs.status }} with score ${{ steps.doctor.outputs.score }}/${{ inputs.doctor-threshold }}"
+        echo "::error::Codex readiness doctor status is ${{ steps.doctor.outputs.status }} with score ${{ steps.doctor.outputs.score }}/$INPUT_DOCTOR_THRESHOLD"
         exit 1
+      env:
+        INPUT_DOCTOR_THRESHOLD: ${{ inputs.doctor-threshold }}
       if: steps.doctor.outputs.status == 'needs-attention' && (inputs.mode == 'doctor' || inputs.mode == 'both' || inputs.mode == 'all')
       shell: bash
     - id: agent-report
       run: |
-        node "$TRACE_TO_SKILL_CLI" analyze "${{ inputs.traces }}" --output agent-learning-report.md
+        node "$TRACE_TO_SKILL_CLI" analyze "$INPUT_TRACES" --output agent-learning-report.md
         echo "report=agent-learning-report.md" >> "$GITHUB_OUTPUT"
+      env:
+        INPUT_TRACES: ${{ inputs.traces }}
       if: inputs.mode == 'traces' || inputs.mode == 'both' || inputs.mode == 'all'
       shell: bash
     - run: |
@@ -402,10 +421,16 @@ runs:
         } >> "$GITHUB_STEP_SUMMARY"
       if: always() && inputs.job-summary == 'true' && (inputs.mode == 'traces' || inputs.mode == 'both' || inputs.mode == 'all')
       shell: bash
-    - run: node "$TRACE_TO_SKILL_CLI" comment "${{ inputs.traces }}" --token "${{ inputs.github-token }}"
+    - run: node "$TRACE_TO_SKILL_CLI" comment "$INPUT_TRACES" --token "$INPUT_GITHUB_TOKEN"
+      env:
+        INPUT_TRACES: ${{ inputs.traces }}
+        INPUT_GITHUB_TOKEN: ${{ inputs.github-token }}
       if: github.event_name == 'pull_request' && inputs.comment == 'true' && (inputs.mode == 'traces' || inputs.mode == 'both' || inputs.mode == 'all')
       shell: bash
-    - run: node "$TRACE_TO_SKILL_CLI" eval "${{ inputs.traces }}" --threshold "${{ inputs.threshold }}"
+    - run: node "$TRACE_TO_SKILL_CLI" eval "$INPUT_TRACES" --threshold "$INPUT_THRESHOLD"
+      env:
+        INPUT_TRACES: ${{ inputs.traces }}
+        INPUT_THRESHOLD: ${{ inputs.threshold }}
       if: inputs.mode == 'traces' || inputs.mode == 'both' || inputs.mode == 'all'
       shell: bash
     - id: benchmark
@@ -442,12 +467,12 @@ runs:
     - id: issue-map
       run: |
         set -euo pipefail
-        if [ -n "${{ inputs.issue-map-repo }}" ]; then
-          node "$TRACE_TO_SKILL_CLI" issue-map --repo "${{ inputs.issue-map-repo }}" --state "${{ inputs.issue-map-state }}" --limit "${{ inputs.issue-map-limit }}" --token "${{ inputs.github-token }}" --format json --output trace-to-skill-issue-map.json
-          node "$TRACE_TO_SKILL_CLI" issue-map --repo "${{ inputs.issue-map-repo }}" --state "${{ inputs.issue-map-state }}" --limit "${{ inputs.issue-map-limit }}" --token "${{ inputs.github-token }}" --output trace-to-skill-issue-map.md
+        if [ -n "$INPUT_ISSUE_MAP_REPO" ]; then
+          node "$TRACE_TO_SKILL_CLI" issue-map --repo "$INPUT_ISSUE_MAP_REPO" --state "$INPUT_ISSUE_MAP_STATE" --limit "$INPUT_ISSUE_MAP_LIMIT" --token "$INPUT_GITHUB_TOKEN" --format json --output trace-to-skill-issue-map.json
+          node "$TRACE_TO_SKILL_CLI" issue-map --repo "$INPUT_ISSUE_MAP_REPO" --state "$INPUT_ISSUE_MAP_STATE" --limit "$INPUT_ISSUE_MAP_LIMIT" --token "$INPUT_GITHUB_TOKEN" --output trace-to-skill-issue-map.md
         else
-          node "$TRACE_TO_SKILL_CLI" issue-map "${{ inputs.issue-map-path }}" --format json --output trace-to-skill-issue-map.json
-          node "$TRACE_TO_SKILL_CLI" issue-map "${{ inputs.issue-map-path }}" --output trace-to-skill-issue-map.md
+          node "$TRACE_TO_SKILL_CLI" issue-map "$INPUT_ISSUE_MAP_PATH" --format json --output trace-to-skill-issue-map.json
+          node "$TRACE_TO_SKILL_CLI" issue-map "$INPUT_ISSUE_MAP_PATH" --output trace-to-skill-issue-map.md
         fi
         node --input-type=module <<'NODE'
         import { appendFileSync, readFileSync } from "node:fs";
@@ -461,6 +486,12 @@ runs:
         ].join("\n");
         appendFileSync(process.env.GITHUB_OUTPUT, `${output}\n`);
         NODE
+      env:
+        INPUT_ISSUE_MAP_PATH: ${{ inputs.issue-map-path }}
+        INPUT_ISSUE_MAP_REPO: ${{ inputs.issue-map-repo }}
+        INPUT_ISSUE_MAP_STATE: ${{ inputs.issue-map-state }}
+        INPUT_ISSUE_MAP_LIMIT: ${{ inputs.issue-map-limit }}
+        INPUT_GITHUB_TOKEN: ${{ inputs.github-token }}
       if: inputs.mode == 'issue-map'
       shell: bash
     - run: |
@@ -473,30 +504,38 @@ runs:
       shell: bash
     - run: |
         set -euo pipefail
-        if [ -z "${{ inputs.issue-map-comment-issue }}" ]; then
+        if [ -z "$INPUT_ISSUE_MAP_COMMENT_ISSUE" ]; then
           echo "::error::issue-map-comment-issue is required when issue-map-comment is true"
           exit 1
         fi
-        comment_args=(--issue-number "${{ inputs.issue-map-comment-issue }}" --token "${{ inputs.github-token }}")
-        if [ -n "${{ inputs.issue-map-comment-repository }}" ]; then
-          comment_args+=(--comment-repository "${{ inputs.issue-map-comment-repository }}")
+        comment_args=(--issue-number "$INPUT_ISSUE_MAP_COMMENT_ISSUE" --token "$INPUT_GITHUB_TOKEN")
+        if [ -n "$INPUT_ISSUE_MAP_COMMENT_REPOSITORY" ]; then
+          comment_args+=(--comment-repository "$INPUT_ISSUE_MAP_COMMENT_REPOSITORY")
         fi
-        if [ -n "${{ inputs.issue-map-repo }}" ]; then
-          node "$TRACE_TO_SKILL_CLI" issue-map-comment --repo "${{ inputs.issue-map-repo }}" --state "${{ inputs.issue-map-state }}" --limit "${{ inputs.issue-map-limit }}" "${comment_args[@]}"
+        if [ -n "$INPUT_ISSUE_MAP_REPO" ]; then
+          node "$TRACE_TO_SKILL_CLI" issue-map-comment --repo "$INPUT_ISSUE_MAP_REPO" --state "$INPUT_ISSUE_MAP_STATE" --limit "$INPUT_ISSUE_MAP_LIMIT" "${comment_args[@]}"
         else
-          node "$TRACE_TO_SKILL_CLI" issue-map-comment "${{ inputs.issue-map-path }}" "${comment_args[@]}"
+          node "$TRACE_TO_SKILL_CLI" issue-map-comment "$INPUT_ISSUE_MAP_PATH" "${comment_args[@]}"
         fi
+      env:
+        INPUT_ISSUE_MAP_PATH: ${{ inputs.issue-map-path }}
+        INPUT_ISSUE_MAP_REPO: ${{ inputs.issue-map-repo }}
+        INPUT_ISSUE_MAP_STATE: ${{ inputs.issue-map-state }}
+        INPUT_ISSUE_MAP_LIMIT: ${{ inputs.issue-map-limit }}
+        INPUT_ISSUE_MAP_COMMENT_ISSUE: ${{ inputs.issue-map-comment-issue }}
+        INPUT_ISSUE_MAP_COMMENT_REPOSITORY: ${{ inputs.issue-map-comment-repository }}
+        INPUT_GITHUB_TOKEN: ${{ inputs.github-token }}
       if: inputs.mode == 'issue-map' && inputs.issue-map-comment == 'true'
       shell: bash
     - id: issue-heat
       run: |
         set -euo pipefail
-        if [ -n "${{ inputs.issue-heat-repo }}" ]; then
-          node "$TRACE_TO_SKILL_CLI" issue-heat --repo "${{ inputs.issue-heat-repo }}" --state "${{ inputs.issue-heat-state }}" --limit "${{ inputs.issue-heat-limit }}" --window-hours "${{ inputs.issue-heat-window-hours }}" --token "${{ inputs.github-token }}" --format json --output trace-to-skill-issue-heat.json
-          node "$TRACE_TO_SKILL_CLI" issue-heat --repo "${{ inputs.issue-heat-repo }}" --state "${{ inputs.issue-heat-state }}" --limit "${{ inputs.issue-heat-limit }}" --window-hours "${{ inputs.issue-heat-window-hours }}" --token "${{ inputs.github-token }}" --output trace-to-skill-issue-heat.md
+        if [ -n "$INPUT_ISSUE_HEAT_REPO" ]; then
+          node "$TRACE_TO_SKILL_CLI" issue-heat --repo "$INPUT_ISSUE_HEAT_REPO" --state "$INPUT_ISSUE_HEAT_STATE" --limit "$INPUT_ISSUE_HEAT_LIMIT" --window-hours "$INPUT_ISSUE_HEAT_WINDOW_HOURS" --token "$INPUT_GITHUB_TOKEN" --format json --output trace-to-skill-issue-heat.json
+          node "$TRACE_TO_SKILL_CLI" issue-heat --repo "$INPUT_ISSUE_HEAT_REPO" --state "$INPUT_ISSUE_HEAT_STATE" --limit "$INPUT_ISSUE_HEAT_LIMIT" --window-hours "$INPUT_ISSUE_HEAT_WINDOW_HOURS" --token "$INPUT_GITHUB_TOKEN" --output trace-to-skill-issue-heat.md
         else
-          node "$TRACE_TO_SKILL_CLI" issue-heat "${{ inputs.issue-heat-path }}" --window-hours "${{ inputs.issue-heat-window-hours }}" --format json --output trace-to-skill-issue-heat.json
-          node "$TRACE_TO_SKILL_CLI" issue-heat "${{ inputs.issue-heat-path }}" --window-hours "${{ inputs.issue-heat-window-hours }}" --output trace-to-skill-issue-heat.md
+          node "$TRACE_TO_SKILL_CLI" issue-heat "$INPUT_ISSUE_HEAT_PATH" --window-hours "$INPUT_ISSUE_HEAT_WINDOW_HOURS" --format json --output trace-to-skill-issue-heat.json
+          node "$TRACE_TO_SKILL_CLI" issue-heat "$INPUT_ISSUE_HEAT_PATH" --window-hours "$INPUT_ISSUE_HEAT_WINDOW_HOURS" --output trace-to-skill-issue-heat.md
         fi
         node --input-type=module <<'NODE'
         import { appendFileSync, readFileSync } from "node:fs";
@@ -511,6 +550,13 @@ runs:
         ].join("\n");
         appendFileSync(process.env.GITHUB_OUTPUT, `${output}\n`);
         NODE
+      env:
+        INPUT_ISSUE_HEAT_PATH: ${{ inputs.issue-heat-path }}
+        INPUT_ISSUE_HEAT_REPO: ${{ inputs.issue-heat-repo }}
+        INPUT_ISSUE_HEAT_STATE: ${{ inputs.issue-heat-state }}
+        INPUT_ISSUE_HEAT_LIMIT: ${{ inputs.issue-heat-limit }}
+        INPUT_ISSUE_HEAT_WINDOW_HOURS: ${{ inputs.issue-heat-window-hours }}
+        INPUT_GITHUB_TOKEN: ${{ inputs.github-token }}
       if: inputs.mode == 'issue-heat'
       shell: bash
     - run: |
@@ -523,38 +569,47 @@ runs:
       shell: bash
     - run: |
         set -euo pipefail
-        if [ -z "${{ inputs.issue-heat-comment-issue }}" ]; then
+        if [ -z "$INPUT_ISSUE_HEAT_COMMENT_ISSUE" ]; then
           echo "::error::issue-heat-comment-issue is required when issue-heat-comment is true"
           exit 1
         fi
-        comment_args=(--issue-number "${{ inputs.issue-heat-comment-issue }}" --token "${{ inputs.github-token }}")
-        if [ -n "${{ inputs.issue-heat-comment-repository }}" ]; then
-          comment_args+=(--comment-repository "${{ inputs.issue-heat-comment-repository }}")
+        comment_args=(--issue-number "$INPUT_ISSUE_HEAT_COMMENT_ISSUE" --token "$INPUT_GITHUB_TOKEN")
+        if [ -n "$INPUT_ISSUE_HEAT_COMMENT_REPOSITORY" ]; then
+          comment_args+=(--comment-repository "$INPUT_ISSUE_HEAT_COMMENT_REPOSITORY")
         fi
-        if [ -n "${{ inputs.issue-heat-repo }}" ]; then
-          node "$TRACE_TO_SKILL_CLI" issue-heat-comment --repo "${{ inputs.issue-heat-repo }}" --state "${{ inputs.issue-heat-state }}" --limit "${{ inputs.issue-heat-limit }}" --window-hours "${{ inputs.issue-heat-window-hours }}" "${comment_args[@]}"
+        if [ -n "$INPUT_ISSUE_HEAT_REPO" ]; then
+          node "$TRACE_TO_SKILL_CLI" issue-heat-comment --repo "$INPUT_ISSUE_HEAT_REPO" --state "$INPUT_ISSUE_HEAT_STATE" --limit "$INPUT_ISSUE_HEAT_LIMIT" --window-hours "$INPUT_ISSUE_HEAT_WINDOW_HOURS" "${comment_args[@]}"
         else
-          node "$TRACE_TO_SKILL_CLI" issue-heat-comment "${{ inputs.issue-heat-path }}" --window-hours "${{ inputs.issue-heat-window-hours }}" "${comment_args[@]}"
+          node "$TRACE_TO_SKILL_CLI" issue-heat-comment "$INPUT_ISSUE_HEAT_PATH" --window-hours "$INPUT_ISSUE_HEAT_WINDOW_HOURS" "${comment_args[@]}"
         fi
+      env:
+        INPUT_ISSUE_HEAT_PATH: ${{ inputs.issue-heat-path }}
+        INPUT_ISSUE_HEAT_REPO: ${{ inputs.issue-heat-repo }}
+        INPUT_ISSUE_HEAT_STATE: ${{ inputs.issue-heat-state }}
+        INPUT_ISSUE_HEAT_LIMIT: ${{ inputs.issue-heat-limit }}
+        INPUT_ISSUE_HEAT_WINDOW_HOURS: ${{ inputs.issue-heat-window-hours }}
+        INPUT_ISSUE_HEAT_COMMENT_ISSUE: ${{ inputs.issue-heat-comment-issue }}
+        INPUT_ISSUE_HEAT_COMMENT_REPOSITORY: ${{ inputs.issue-heat-comment-repository }}
+        INPUT_GITHUB_TOKEN: ${{ inputs.github-token }}
       if: inputs.mode == 'issue-heat' && inputs.issue-heat-comment == 'true'
       shell: bash
     - id: duplicate-audit
       run: |
         set -euo pipefail
         duplicate_args=()
-        if [ -n "${{ inputs.duplicate-audit-candidates }}" ]; then
-          duplicate_args+=(--candidates "${{ inputs.duplicate-audit-candidates }}")
+        if [ -n "$INPUT_DUPLICATE_AUDIT_CANDIDATES" ]; then
+          duplicate_args+=(--candidates "$INPUT_DUPLICATE_AUDIT_CANDIDATES")
         fi
-        if [ -n "${{ inputs.duplicate-audit-repo }}" ]; then
-          if [ -z "${{ inputs.duplicate-audit-issue }}" ]; then
+        if [ -n "$INPUT_DUPLICATE_AUDIT_REPO" ]; then
+          if [ -z "$INPUT_DUPLICATE_AUDIT_ISSUE" ]; then
             echo "::error::duplicate-audit-issue is required when duplicate-audit-repo is set"
             exit 1
           fi
-          node "$TRACE_TO_SKILL_CLI" duplicate-audit --repo "${{ inputs.duplicate-audit-repo }}" --issue "${{ inputs.duplicate-audit-issue }}" "${duplicate_args[@]}" --token "${{ inputs.github-token }}" --format json --output trace-to-skill-duplicate-audit.json
-          node "$TRACE_TO_SKILL_CLI" duplicate-audit --repo "${{ inputs.duplicate-audit-repo }}" --issue "${{ inputs.duplicate-audit-issue }}" "${duplicate_args[@]}" --token "${{ inputs.github-token }}" --output trace-to-skill-duplicate-audit.md
+          node "$TRACE_TO_SKILL_CLI" duplicate-audit --repo "$INPUT_DUPLICATE_AUDIT_REPO" --issue "$INPUT_DUPLICATE_AUDIT_ISSUE" "${duplicate_args[@]}" --token "$INPUT_GITHUB_TOKEN" --format json --output trace-to-skill-duplicate-audit.json
+          node "$TRACE_TO_SKILL_CLI" duplicate-audit --repo "$INPUT_DUPLICATE_AUDIT_REPO" --issue "$INPUT_DUPLICATE_AUDIT_ISSUE" "${duplicate_args[@]}" --token "$INPUT_GITHUB_TOKEN" --output trace-to-skill-duplicate-audit.md
         else
-          node "$TRACE_TO_SKILL_CLI" duplicate-audit "${{ inputs.duplicate-audit-path }}" --format json --output trace-to-skill-duplicate-audit.json
-          node "$TRACE_TO_SKILL_CLI" duplicate-audit "${{ inputs.duplicate-audit-path }}" --output trace-to-skill-duplicate-audit.md
+          node "$TRACE_TO_SKILL_CLI" duplicate-audit "$INPUT_DUPLICATE_AUDIT_PATH" --format json --output trace-to-skill-duplicate-audit.json
+          node "$TRACE_TO_SKILL_CLI" duplicate-audit "$INPUT_DUPLICATE_AUDIT_PATH" --output trace-to-skill-duplicate-audit.md
         fi
         node --input-type=module <<'NODE'
         import { appendFileSync, readFileSync } from "node:fs";
@@ -571,6 +626,12 @@ runs:
         ].join("\n");
         appendFileSync(process.env.GITHUB_OUTPUT, `${output}\n`);
         NODE
+      env:
+        INPUT_DUPLICATE_AUDIT_PATH: ${{ inputs.duplicate-audit-path }}
+        INPUT_DUPLICATE_AUDIT_REPO: ${{ inputs.duplicate-audit-repo }}
+        INPUT_DUPLICATE_AUDIT_ISSUE: ${{ inputs.duplicate-audit-issue }}
+        INPUT_DUPLICATE_AUDIT_CANDIDATES: ${{ inputs.duplicate-audit-candidates }}
+        INPUT_GITHUB_TOKEN: ${{ inputs.github-token }}
       if: inputs.mode == 'duplicate-audit'
       shell: bash
     - run: |
@@ -584,8 +645,8 @@ runs:
     - id: scorecard
       run: |
         set -euo pipefail
-        node "$TRACE_TO_SKILL_CLI" scorecard "${{ inputs.doctor-path }}" --threshold "${{ inputs.doctor-threshold }}" --format json --output trace-to-skill-scorecard.json
-        node "$TRACE_TO_SKILL_CLI" scorecard "${{ inputs.doctor-path }}" --threshold "${{ inputs.doctor-threshold }}" --output trace-to-skill-scorecard.md
+        node "$TRACE_TO_SKILL_CLI" scorecard "$INPUT_DOCTOR_PATH" --threshold "$INPUT_DOCTOR_THRESHOLD" --format json --output trace-to-skill-scorecard.json
+        node "$TRACE_TO_SKILL_CLI" scorecard "$INPUT_DOCTOR_PATH" --threshold "$INPUT_DOCTOR_THRESHOLD" --output trace-to-skill-scorecard.md
         node --input-type=module <<'NODE'
         import { appendFileSync, readFileSync } from "node:fs";
         const report = JSON.parse(readFileSync("trace-to-skill-scorecard.json", "utf8"));
@@ -596,6 +657,9 @@ runs:
         ].join("\n");
         appendFileSync(process.env.GITHUB_OUTPUT, `${output}\n`);
         NODE
+      env:
+        INPUT_DOCTOR_PATH: ${{ inputs.doctor-path }}
+        INPUT_DOCTOR_THRESHOLD: ${{ inputs.doctor-threshold }}
       if: inputs.mode == 'all'
       shell: bash
     - run: |
@@ -606,7 +670,11 @@ runs:
         } >> "$GITHUB_STEP_SUMMARY"
       if: always() && inputs.job-summary == 'true' && inputs.mode == 'all'
       shell: bash
-    - run: node "$TRACE_TO_SKILL_CLI" scorecard-comment "${{ inputs.doctor-path }}" --threshold "${{ inputs.doctor-threshold }}" --token "${{ inputs.github-token }}"
+    - run: node "$TRACE_TO_SKILL_CLI" scorecard-comment "$INPUT_DOCTOR_PATH" --threshold "$INPUT_DOCTOR_THRESHOLD" --token "$INPUT_GITHUB_TOKEN"
+      env:
+        INPUT_DOCTOR_PATH: ${{ inputs.doctor-path }}
+        INPUT_DOCTOR_THRESHOLD: ${{ inputs.doctor-threshold }}
+        INPUT_GITHUB_TOKEN: ${{ inputs.github-token }}
       if: always() && github.event_name == 'pull_request' && inputs.scorecard-comment == 'true' && inputs.mode == 'all'
       shell: bash
     - run: |

@@ -7,7 +7,8 @@ This repository builds `trace-to-skill`, a CLI that turns failed AI coding-agent
 - Keep runtime dependencies at zero unless a new dependency removes substantial complexity.
 - Every detector must include a fixture and a `node:test` test.
 - Every finding must include line-level evidence and a maintainer-readable suggested rule.
-- Do not add network calls to the CLI runtime.
+- Default CLI analysis must stay offline and deterministic.
+- Network access is allowed only for explicit GitHub-facing commands, such as `--repo` issue mining or `comment`/`*-comment` commands that require a GitHub token.
 - Redact secrets in any trace excerpt before printing or writing reports.
 - Before claiming completion, run `npm run check` and report the result.
 

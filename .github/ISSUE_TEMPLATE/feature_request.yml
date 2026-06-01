@@ -1,0 +1,45 @@
+name: Feature request
+description: Propose a maintainer workflow that trace-to-skill should make easier.
+title: "[feature]: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Good feature requests describe a repeated maintainer workflow, the evidence users can provide, and the report or guardrail that would save time.
+  - type: textarea
+    id: workflow
+    attributes:
+      label: maintainer workflow
+      description: What repeated review, triage, release, security, or agent-debugging task should this improve?
+    validations:
+      required: true
+  - type: textarea
+    id: users
+    attributes:
+      label: Who needs this?
+      description: Describe the user or maintainer role and where they would run it.
+    validations:
+      required: true
+  - type: textarea
+    id: input
+    attributes:
+      label: Input evidence
+      description: What trace, issue export, GitHub event, config, or fixture would the command consume?
+    validations:
+      required: true
+  - type: textarea
+    id: output
+    attributes:
+      label: Desired output
+      description: Should this produce a finding, Markdown report, PR comment, JSON schema, or Action output?
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: acceptance evidence
+      description: What fixture, `node:test`, CLI smoke command, or Action proof would show the feature is ready?
+    validations:
+      required: true

@@ -1,0 +1,60 @@
+name: Bug report
+description: Report a trace-to-skill failure with redacted, maintainer-readable evidence.
+title: "[bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve trace-to-skill. Please redact secrets before attaching traces, logs, or GitHub event payloads.
+  - type: input
+    id: version
+    attributes:
+      label: trace-to-skill version
+      description: Run `trace-to-skill --help` or check `npm ls trace-to-skill`.
+      placeholder: "0.1.109"
+    validations:
+      required: true
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Affected surface
+      options:
+        - CLI
+        - GitHub Action
+        - JSON schema
+        - Markdown report
+        - npm package
+        - Documentation
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What did you expect trace-to-skill to report, reject, or write?
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: Include the command, exit code, and the smallest useful output excerpt.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: redacted trace or fixture
+      description: Attach a minimal redacted trace, GitHub event JSON, or fixture snippet that reproduces the issue.
+      render: text
+    validations:
+      required: false
+  - type: textarea
+    id: validation
+    attributes:
+      label: Validation tried
+      description: Commands already run, such as `npm run check`, `trace-to-skill analyze`, or the failing Action run URL.
+    validations:
+      required: false

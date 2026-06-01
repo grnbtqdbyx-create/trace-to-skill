@@ -61,7 +61,7 @@ What it proves:
 Recommended CI surface:
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.108
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.109
   with:
     mode: all
     doctor-threshold: "85"
@@ -74,7 +74,7 @@ Recommended CI surface:
 Duplicate-audit Action mode can also run from CI when you want a stable job summary for Codex Action duplicate suggestions:
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.108
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.109
   with:
     mode: duplicate-audit
     duplicate-audit-repo: openai/codex

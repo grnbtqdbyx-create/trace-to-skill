@@ -559,7 +559,7 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v5
-      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.108
+      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.109
         with:
           mode: all
           doctor-threshold: "85"
@@ -608,7 +608,7 @@ Composite action usage:
 
 ```yaml
 - id: trace-to-skill
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.108
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.109
   with:
     mode: all
     doctor-threshold: "85"
@@ -626,7 +626,7 @@ Issue-map action usage for direct GitHub issue demand mining:
 
 ```yaml
 - id: codex-issue-map
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.108
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.109
   with:
     mode: issue-map
     issue-map-repo: openai/codex
@@ -643,7 +643,7 @@ Issue-heat action usage for recency-weighted GitHub issue movement:
 
 ```yaml
 - id: codex-issue-heat
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.108
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.109
   with:
     mode: issue-heat
     issue-heat-repo: openai/codex
@@ -661,7 +661,7 @@ Duplicate-audit action usage for checking Codex Action duplicate suggestions:
 
 ```yaml
 - id: codex-duplicate-audit
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.108
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.109
   with:
     mode: duplicate-audit
     duplicate-audit-repo: openai/codex
@@ -719,7 +719,7 @@ Action outputs:
 
 By default, generated reports are also appended to the GitHub Actions Job Summary. Set `job-summary: "false"` to disable that UI output.
 
-Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.108` executes that release's checked-out source instead of pulling the default branch at runtime.
+Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.109` executes that release's checked-out source instead of pulling the default branch at runtime.
 
 ## Codex Skill
 

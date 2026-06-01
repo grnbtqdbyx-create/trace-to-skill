@@ -2416,9 +2416,9 @@ test("composite action exposes Codex readiness doctor mode", async () => {
   assert.match(action, /node "\$TRACE_TO_SKILL_CLI" duplicate-audit/);
   assert.match(action, /inputs\.issue-map-comment == 'true'/);
   assert.match(action, /inputs\.issue-heat-comment == 'true'/);
-  assert.match(action, /issue-map --repo "\$\{\{ inputs\.issue-map-repo \}\}" --state "\$\{\{ inputs\.issue-map-state \}\}" --limit "\$\{\{ inputs\.issue-map-limit \}\}"/);
-  assert.match(action, /issue-heat --repo "\$\{\{ inputs\.issue-heat-repo \}\}" --state "\$\{\{ inputs\.issue-heat-state \}\}" --limit "\$\{\{ inputs\.issue-heat-limit \}\}" --window-hours "\$\{\{ inputs\.issue-heat-window-hours \}\}"/);
-  assert.match(action, /duplicate-audit --repo "\$\{\{ inputs\.duplicate-audit-repo \}\}" --issue "\$\{\{ inputs\.duplicate-audit-issue \}\}"/);
+  assert.match(action, /issue-map --repo "\$INPUT_ISSUE_MAP_REPO" --state "\$INPUT_ISSUE_MAP_STATE" --limit "\$INPUT_ISSUE_MAP_LIMIT"/);
+  assert.match(action, /issue-heat --repo "\$INPUT_ISSUE_HEAT_REPO" --state "\$INPUT_ISSUE_HEAT_STATE" --limit "\$INPUT_ISSUE_HEAT_LIMIT" --window-hours "\$INPUT_ISSUE_HEAT_WINDOW_HOURS"/);
+  assert.match(action, /duplicate-audit --repo "\$INPUT_DUPLICATE_AUDIT_REPO" --issue "\$INPUT_DUPLICATE_AUDIT_ISSUE"/);
   assert.match(action, /node "\$TRACE_TO_SKILL_CLI" scorecard/);
   assert.match(action, /node "\$TRACE_TO_SKILL_CLI" scorecard-comment/);
   assert.match(action, /inputs\.mode == 'agents-lint' \|\| inputs\.mode == 'all'/);
@@ -2432,6 +2432,45 @@ test("composite action exposes Codex readiness doctor mode", async () => {
   assert.match(action, /always\(\) && github\.event_name == 'pull_request' && inputs\.scorecard-comment == 'true'/);
   assert.match(action, /github\.event_name == 'pull_request' && inputs\.comment == 'true'/);
   assert.match(action, /mode must be one of: traces, agents-lint, github-context, doctor, benchmark, issue-map, issue-heat, duplicate-audit, both, all/);
+});
+
+test("composite action keeps user-controlled inputs out of shell scripts", async () => {
+  const action = await readFile("action.yml", "utf8");
+  const runBlocks = [...action.matchAll(/^\s*run:\s*(?:\|\s*\n([\s\S]*?)(?=^\s*(?:if:|shell:|env:|- id:|- run:|- uses:|outputs:|runs:)\b))/gm)]
+    .map((match) => match[1])
+    .join("\n");
+  const riskyInputs = [
+    "doctor-path",
+    "doctor-threshold",
+    "threshold",
+    "context-threshold",
+    "traces",
+    "github-token",
+    "issue-map-path",
+    "issue-map-repo",
+    "issue-map-state",
+    "issue-map-limit",
+    "issue-map-comment-issue",
+    "issue-map-comment-repository",
+    "issue-heat-path",
+    "issue-heat-repo",
+    "issue-heat-state",
+    "issue-heat-limit",
+    "issue-heat-window-hours",
+    "issue-heat-comment-issue",
+    "issue-heat-comment-repository",
+    "duplicate-audit-path",
+    "duplicate-audit-repo",
+    "duplicate-audit-issue",
+    "duplicate-audit-candidates"
+  ];
+
+  for (const input of riskyInputs) {
+    assert.equal(runBlocks.includes(`\${{ inputs.${input} }}`), false, `${input} should be passed through env, not interpolated into bash`);
+  }
+
+  assert.match(action, /INPUT_DOCTOR_PATH:\s*\$\{\{ inputs\.doctor-path \}\}/);
+  assert.match(action, /INPUT_DUPLICATE_AUDIT_CANDIDATES:\s*\$\{\{ inputs\.duplicate-audit-candidates \}\}/);
 });
 
 test("repository dogfoods the local Codex readiness action", async () => {
@@ -2463,6 +2502,27 @@ test("repository dogfoods the local Codex readiness action", async () => {
   assert.match(workflow, /mode: duplicate-audit/);
   assert.match(workflow, /duplicate-audit-path: fixtures\/codex-duplicate-audit\.json/);
   assert.match(workflow, /steps\.duplicate-audit\.outputs\.duplicate-audit-top-verdict/);
+});
+
+test("repository exposes contributor intake and scoped network policy", async () => {
+  const agents = await readFile("AGENTS.md", "utf8");
+  const bugReport = await readFile(".github/ISSUE_TEMPLATE/bug_report.yml", "utf8");
+  const featureRequest = await readFile(".github/ISSUE_TEMPLATE/feature_request.yml", "utf8");
+  const prTemplate = await readFile(".github/pull_request_template.md", "utf8");
+
+  assert.match(agents, /Default CLI analysis must stay offline/i);
+  assert.match(agents, /Network access is allowed only for explicit GitHub-facing commands/i);
+  assert.match(agents, /--repo/i);
+  assert.match(agents, /comment/i);
+  assert.match(bugReport, /name: Bug report/);
+  assert.match(bugReport, /trace-to-skill version/);
+  assert.match(bugReport, /redacted trace or fixture/);
+  assert.match(featureRequest, /name: Feature request/);
+  assert.match(featureRequest, /maintainer workflow/);
+  assert.match(featureRequest, /acceptance evidence/);
+  assert.match(prTemplate, /## Summary/);
+  assert.match(prTemplate, /npm run check/);
+  assert.match(prTemplate, /Public surface/);
 });
 
 test("repository publishes npm through trusted publishing workflow", async () => {
@@ -2783,7 +2843,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.equal(brief.scorecard.benchmarkStatus, "pass");
   assert.equal(brief.scorecard.benchmarkCases, 46);
   assert.equal(brief.packageName, "trace-to-skill");
-  assert.equal(brief.packageVersion, "0.1.108");
+  assert.equal(brief.packageVersion, "0.1.109");
   assert.equal(brief.license, "Apache-2.0");
   assert.ok(brief.repository?.includes("github.com/grnbtqdbyx-create/trace-to-skill"));
   assert.ok(brief.qualification.max500.length <= 500);
@@ -2791,7 +2851,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.match(markdown, /OpenAI OSS Brief/);
   assert.match(markdown, /Why This Repository Qualifies/);
   assert.match(markdown, /500-Character Version/);
-  assert.match(markdown, /npx trace-to-skill@0\.1\.108/);
+  assert.match(markdown, /npx trace-to-skill@0\.1\.109/);
   assert.match(markdown, /GitHub Issue Heat/);
   assert.match(markdown, /Duplicate triage/);
   assert.match(markdown, /hot-issue detection/);
