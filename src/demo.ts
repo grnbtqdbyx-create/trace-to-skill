@@ -25,6 +25,12 @@ const DEMO_SCENARIOS: DemoScenario[] = [
     description: "Long sessions break when `/compact` or auto-compaction times out, disconnects, or fails at `responses/compact`."
   },
   {
+    id: "context-fork-bloat",
+    title: "Codex context fork bloat",
+    fixture: "fixtures/codex-context-fork-bloat.md",
+    description: "Conversation forks duplicate parent transcript blocks, inflate token usage, or break prompt-cache lineage before new work happens."
+  },
+  {
     id: "windows-helper-path",
     title: "Codex Windows helper path failure",
     fixture: "fixtures/codex-windows-helper-path.md",
@@ -180,6 +186,7 @@ export function renderDemoMarkdown(result: DemoResult): string {
     "```bash",
     "trace-to-skill demo --list",
     "trace-to-skill demo remote-compact",
+    "trace-to-skill demo context-fork-bloat",
     "trace-to-skill demo windows-helper-path",
     "trace-to-skill demo patch-overwrite",
     "trace-to-skill demo thinking-hang",
@@ -211,6 +218,7 @@ export function renderDemoScenarioList(scenarios = listDemoScenarios()): string 
     "```bash",
     "trace-to-skill demo",
     "trace-to-skill demo remote-compact",
+    "trace-to-skill demo context-fork-bloat",
     "trace-to-skill demo windows-helper-path",
     "trace-to-skill demo patch-overwrite",
     "trace-to-skill demo latency-regression",

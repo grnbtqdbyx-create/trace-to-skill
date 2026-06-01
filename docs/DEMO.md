@@ -82,6 +82,7 @@ Suggested rule:
 ## Other Demo Scenarios
 
 - `remote-compact`: Long sessions break when `/compact` or auto-compaction times out, disconnects, or fails at `responses/compact`.
+- `context-fork-bloat`: Conversation forks duplicate parent transcript blocks, inflate token usage, or break prompt-cache lineage before new work happens.
 - `windows-helper-path`: Windows Desktop exposes bundled rg/node/plugin helpers from WindowsApps or missing LocalCache paths that cannot execute.
 - `approval-friction`: Repeated approval prompts, Approve for this session misses, and noisy trusted MCP tool approvals.
 - `latency-regression`: Fast mode feels like Standard, with long thinking, search, read, or compaction stalls.
@@ -103,6 +104,7 @@ Suggested rule:
 ```bash
 trace-to-skill demo --list
 trace-to-skill demo remote-compact
+trace-to-skill demo context-fork-bloat
 trace-to-skill demo windows-helper-path
 trace-to-skill demo patch-overwrite
 trace-to-skill demo thinking-hang

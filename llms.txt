@@ -34,6 +34,7 @@ Runtime: Node.js 20+
 - Codex clipboard, copy/export, long paste, and generated `Pasted text.txt` attachment regressions that break prompt, `/goal`, preview/edit, or support-report workflows
 - Codex deeplink, OAuth callback, notification click, browser-extension activation, mobile pairing, and `codex app <path>` launch regressions
 - Codex app connector stale auth/cache regressions such as `401 Reauthentication required`, unchanged `link_*`, `isAccessible: false`, and broken `codex_apps_tools` metadata
+- Codex context fork bloat and prompt-cache lineage failures where conversation forks duplicate parent transcript blocks, inflate `input_tokens`, change `prompt_cache_key`, drop cache hit rate, or leak `fork_context` subagent history into child context before new work happens
 - Codex token-burn, prompt-cache collapse, and usage-drain failures such as rapid drain experiments (`1% in 4 minutes`, `22 credits`, `70% weekly in a day`), `input_tokens` / `cached_input_tokens` / `prompt_cache_key` rows, websocket reconnect cache drops, background `write_stdin` polling, idle app usage, compaction tax, retry/tool loops, cached-token-heavy turns, fast-mode drift, subagent fan-out, and unclear usage attribution
 - Codex process evidence packaging for Windows PowerShell/pwsh CIM polling, high-CPU helpers, stale process-manager entries, and renderer runaways
 - Codex usage reset schedule drift such as weekly reset dates moving, `reset_at` jumping, saved usage disappearing, outage compensation resets changing the anchor, and `/status` disagreeing with enforcement
@@ -82,6 +83,7 @@ npx trace-to-skill demo thinking-hang
 npx trace-to-skill demo clipboard-attachment
 npx trace-to-skill demo deeplink-launch
 npx trace-to-skill demo connector-auth-cache
+npx trace-to-skill demo context-fork-bloat
 npx trace-to-skill demo mcp-discovery-mismatch
 npx trace-to-skill demo mcp-streamable-http
 npx trace-to-skill demo hooks-runtime
@@ -113,7 +115,7 @@ npx trace-to-skill init --comment --sarif
 ## GitHub Action
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.81
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.82
   with:
     mode: all
     doctor-threshold: "85"

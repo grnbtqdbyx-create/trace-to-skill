@@ -120,6 +120,14 @@ Common signals include `user cancelled MCP tool call`, `request_user_input is no
 
 The fix is to capture the Codex version, MCP server name and transport, tool name, exposed callable name, whether `tools/list` and manual `tools/call` succeed, `approval_policy`, sandbox mode, exec or interactive mode, elicitation setting, namespace or `serverName` metadata, exact `item.started` / `item.completed` JSONL, stderr or backpressure evidence, and whether restarting or reinitializing the transport changes the result.
 
+## Codex Context Fork Bloat
+
+Codex conversation forks can accidentally carry more context than the user can see. When a fork duplicates parent transcript blocks, repeats tool transcripts, or breaks prompt-cache lineage, users see higher token use and poorer cache behavior before any new work happens.
+
+Common signals include a forked conversation carrying the full parent transcript plus duplicate context blocks, repeated parent turns after a fork boundary, `input_tokens` or `cached_input_tokens` jumping after a short follow-up, `prompt_cache_key` changing despite mostly identical inherited content, cache hit rate drops, duplicated tool transcript blocks, `fork_context` subagent history entering the child context again, and old parent work being summarized instead of the delegated prompt.
+
+The fix is to capture Codex app/CLI/extension version, surface, model, fork source thread id, forked thread id, fork action timestamp, fork boundary marker, `input_tokens` and `cached_input_tokens` before and after the fork, `prompt_cache_key` before and after, cache hit rate, duplicated parent-turn or tool-transcript examples with line ids, whether new files were read before the token jump, compaction state, subagent or `fork_context` history, minimal reproduction steps, and whether a fresh thread or non-fork continuation avoids the bloat.
+
 ## Codex Streamable HTTP MCP
 
 Streamable HTTP and SSE MCP servers can be reachable and still fail inside Codex before or during tool calls. This is different from discovery mismatch because the server may initialize or expose tools, and different from stdio runtime failure because the failure sits in HTTP framing, JSON-RPC parsing, session reuse, auth expectations, or reconnect behavior.

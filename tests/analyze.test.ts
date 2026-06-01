@@ -287,6 +287,7 @@ test("demo command runs packaged scenarios without private traces", async () => 
 
   assert.ok(scenarios.some((scenario) => scenario.id === "approval-friction"));
   assert.ok(scenarios.some((scenario) => scenario.id === "remote-compact"));
+  assert.ok(scenarios.some((scenario) => scenario.id === "context-fork-bloat"));
   assert.ok(scenarios.some((scenario) => scenario.id === "windows-helper-path"));
   assert.ok(scenarios.some((scenario) => scenario.id === "latency-regression"));
   assert.ok(scenarios.some((scenario) => scenario.id === "thinking-hang"));
@@ -316,6 +317,7 @@ test("demo command runs packaged scenarios without private traces", async () => 
   assert.match(list, /terminal-output-integrity/);
   assert.match(list, /subagent-lifecycle/);
   assert.match(list, /remote-compact/);
+  assert.match(list, /context-fork-bloat/);
   assert.match(list, /windows-helper-path/);
   assert.match(list, /file-tree-ui/);
   assert.match(list, /usage-reset-drift/);
@@ -478,6 +480,24 @@ test("analyzeTargets detects Codex hooks runtime failures", async () => {
   assert.match(finding.suggestedRule, /hooks.json/);
   assert.match(finding.suggestedRule, /matcher/);
   assert.match(report, /codex_hooks_runtime/);
+});
+
+test("analyzeTargets detects Codex context fork bloat", async () => {
+  const result = await analyzeTargets(["fixtures/codex-context-fork-bloat.md"]);
+  const finding = result.findings.find((item) => item.kind === "codex_context_fork_bloat");
+  const evidence = finding?.evidence.map((item) => item.excerpt).join("\n") ?? "";
+  const report = renderCodexIssueReport(result);
+
+  assert.ok(finding);
+  assert.equal(finding.severity, "high");
+  assert.match(evidence, /conversation fork from an existing long thread/);
+  assert.match(evidence, /prompt size to grow from 118k tokens to 289k tokens/);
+  assert.match(evidence, /repeated parent conversation turns after the fork boundary/);
+  assert.match(evidence, /`prompt_cache_key` changes/);
+  assert.match(evidence, /`fork_context` subagent inherited parent intent/);
+  assert.match(finding.suggestedRule, /fork boundary/);
+  assert.match(finding.suggestedRule, /prompt_cache_key/);
+  assert.match(report, /codex_context_fork_bloat/);
 });
 
 test("analyzeTargets detects Codex MCP discovery and config-scope mismatches", async () => {
@@ -1438,6 +1458,8 @@ test("package metadata points npm users back to the public project", async () =>
   assert.ok(packageJson.keywords?.includes("openai-codex"));
   assert.ok(packageJson.keywords?.includes("prompt-injection"));
   assert.ok(packageJson.keywords?.includes("context-compaction"));
+  assert.ok(packageJson.keywords?.includes("codex-context-fork"));
+  assert.ok(packageJson.keywords?.includes("context-bloat"));
   assert.ok(packageJson.keywords?.includes("sandbox-permission"));
   assert.ok(packageJson.keywords?.includes("codex-connectivity"));
   assert.ok(packageJson.keywords?.includes("codex-remote-compact"));
@@ -1917,6 +1939,7 @@ test("published JSON schemas describe CLI result contracts", async () => {
   assert.ok(analysisSchema.properties.score);
   assert.ok(analysisSchema.$defs.finding);
   assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("context_compaction"));
+  assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("codex_context_fork_bloat"));
   assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("codex_latest_turn_drift"));
   assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("codex_latency_regression"));
   assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("codex_thinking_hang"));
@@ -2016,10 +2039,11 @@ test("benchmark covers public fixture failure classes", async () => {
   const markdown = renderBenchmarkMarkdown(benchmark);
 
   assert.equal(benchmark.passed, true);
-  assert.equal(benchmark.cases.length, 35);
+  assert.equal(benchmark.cases.length, 36);
   assert.ok(benchmark.cases.some((item) => item.id === "clean-validated-run" && item.score === 100));
   assert.ok(benchmark.cases.some((item) => item.id === "failed-workflow" && item.detectedKinds.includes("test_failure")));
   assert.ok(benchmark.cases.some((item) => item.id === "context-compaction" && item.detectedKinds.includes("context_compaction")));
+  assert.ok(benchmark.cases.some((item) => item.id === "codex-context-fork-bloat" && item.detectedKinds.includes("codex_context_fork_bloat")));
   assert.ok(benchmark.cases.some((item) => item.id === "codex-remote-compact" && item.detectedKinds.includes("codex_remote_compact")));
   assert.ok(benchmark.cases.some((item) => item.id === "codex-latest-turn-drift" && item.detectedKinds.includes("codex_latest_turn_drift")));
   assert.ok(benchmark.cases.some((item) => item.id === "codex-latency-regression" && item.detectedKinds.includes("codex_latency_regression")));
@@ -2064,7 +2088,7 @@ test("scorecard combines doctor readiness and benchmark evidence", async () => {
   assert.equal(scorecard.doctor.status, "ready");
   assert.equal(scorecard.doctor.score, 100);
   assert.equal(scorecard.benchmark.status, "pass");
-  assert.equal(scorecard.benchmark.cases, 35);
+  assert.equal(scorecard.benchmark.cases, 36);
   assert.match(markdown, /trace-to-skill Scorecard/);
   assert.match(markdown, /Codex readiness/);
   assert.match(markdown, /Benchmark Summary/);
@@ -2080,9 +2104,9 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.equal(brief.scorecard.doctorStatus, "ready");
   assert.equal(brief.scorecard.doctorScore, 100);
   assert.equal(brief.scorecard.benchmarkStatus, "pass");
-  assert.equal(brief.scorecard.benchmarkCases, 35);
+  assert.equal(brief.scorecard.benchmarkCases, 36);
   assert.equal(brief.packageName, "trace-to-skill");
-  assert.equal(brief.packageVersion, "0.1.81");
+  assert.equal(brief.packageVersion, "0.1.82");
   assert.equal(brief.license, "Apache-2.0");
   assert.ok(brief.repository?.includes("github.com/grnbtqdbyx-create/trace-to-skill"));
   assert.ok(brief.qualification.max500.length <= 500);
@@ -2090,7 +2114,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.match(markdown, /OpenAI OSS Brief/);
   assert.match(markdown, /Why This Repository Qualifies/);
   assert.match(markdown, /500-Character Version/);
-  assert.match(markdown, /npx trace-to-skill@0\.1\.81/);
+  assert.match(markdown, /npx trace-to-skill@0\.1\.82/);
 });
 
 test("scorecard-comment dry-run resolves pull request event", async () => {

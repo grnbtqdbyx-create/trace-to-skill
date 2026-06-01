@@ -71,6 +71,7 @@ Use it when you need to:
 - **Share failed traces safely:** run `trace-to-skill redact ./runs --output redacted-runs` before publishing anonymized failure fixtures.
 - **Catch sensitive file access:** run `trace-to-skill analyze ./runs` when an agent trace includes `.env`, private keys, `.npmrc`, cloud credentials, local databases, or production secret manifests.
 - **Report remote compact failures:** run `trace-to-skill codex-report ./runs` when `/compact` or auto-compaction fails with `responses/compact` timeouts, stream disconnects, provider timeout workarounds, or long-thread recovery loss.
+- **Diagnose context fork bloat:** run `trace-to-skill codex-report ./runs` when a conversation fork duplicates parent transcript blocks, inflates `input_tokens`, changes `prompt_cache_key`, or loses prompt-cache lineage before new work happens.
 - **Diagnose Windows helper path failures:** run `trace-to-skill codex-report ./runs` when Codex Desktop resolves `rg.exe`, `node_repl.exe`, Browser, Chrome, or Computer Use helpers through blocked WindowsApps/MSIX paths, missing LocalCache bins, or broken `CodexSandboxUsers` ACLs.
 - **Triage stuck Codex sessions:** run `trace-to-skill analyze ./runs` to catch context compaction failures such as compact stream disconnects, `context_length_exceeded`, and schema mismatches.
 - **Catch latest-turn drift:** run `trace-to-skill analyze ./runs` when Codex answers an older prompt, repeats a previous response, forgets recent edits after compaction, or leaks raw tool payload text into chat.
@@ -211,6 +212,7 @@ Trace analysis detects run-level failures:
 | Hidden Unicode | Invisible instruction or code-review manipulation |
 | Prompt injection | Untrusted issue, PR, log, or web text asks the agent to ignore policy or leak secrets |
 | Context compaction | Codex compact task fails, disconnects, loops, or hits `context_length_exceeded` |
+| Codex context fork bloat | Conversation forks duplicate parent turns, inflate token counts, break prompt-cache lineage, or mix `fork_context` history into child context |
 | Codex latest-turn drift | Long or compacted conversations answer stale prompts, redo old tasks, forget recent edits, or expose raw tool payloads |
 | Codex latency regression | Model/runtime routing, thinking stalls, search/read, or compaction latency makes simple tasks take minutes or hours |
 | Codex thinking hang | A turn, tool call, or Responses stream appears accepted but no assistant follow-up arrives while the UI stays on Thinking/Working |
@@ -266,6 +268,7 @@ Try a packaged public demo before collecting private traces:
 ```bash
 trace-to-skill demo
 trace-to-skill demo --list
+trace-to-skill demo context-fork-bloat
 trace-to-skill demo latency-regression
 trace-to-skill demo thinking-hang
 trace-to-skill demo clipboard-attachment
@@ -509,7 +512,7 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v5
-      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.81
+      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.82
         with:
           mode: all
           doctor-threshold: "85"
@@ -558,7 +561,7 @@ Composite action usage:
 
 ```yaml
 - id: trace-to-skill
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.81
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.82
   with:
     mode: all
     doctor-threshold: "85"
@@ -600,7 +603,7 @@ Action outputs:
 
 By default, generated reports are also appended to the GitHub Actions Job Summary. Set `job-summary: "false"` to disable that UI output.
 
-Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.81` executes that release's checked-out source instead of pulling the default branch at runtime.
+Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.82` executes that release's checked-out source instead of pulling the default branch at runtime.
 
 ## Codex Skill
 

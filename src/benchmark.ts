@@ -65,6 +65,12 @@ const BENCHMARK_CASES: BenchmarkCaseDefinition[] = [
     expectedKinds: ["context_compaction", "weak_evidence"]
   },
   {
+    id: "codex-context-fork-bloat",
+    title: "Codex conversation fork context bloat",
+    fixture: "fixtures/codex-context-fork-bloat.md",
+    expectedKinds: ["codex_context_fork_bloat", "weak_evidence"]
+  },
+  {
     id: "codex-latest-turn-drift",
     title: "Codex latest-turn drift after compaction",
     fixture: "fixtures/codex-latest-turn-drift.md",

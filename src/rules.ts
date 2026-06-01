@@ -174,6 +174,25 @@ const RULES: RuleDefinition[] = [
       "When Codex compaction fails, capture the compact error, model/app version, thread state, and whether the session is recoverable before continuing or reporting success."
   },
   {
+    kind: "codex_context_fork_bloat",
+    severity: "high",
+    title: "Codex conversation fork context bloat",
+    why: "Conversation forks should preserve useful working state without duplicating parent transcript blocks, breaking prompt-cache lineage, or inflating token usage before new work happens.",
+    patterns: [
+      /\bconversation fork\b.{0,240}\b(context bloat|context bloats?|full parent transcript|duplicate context|prompt size|input_tokens|cached_input_tokens|long thread)\b/i,
+      /\bforked conversation\b.{0,240}\b(full parent transcript|duplicate context|repeated parent|fork boundary|prompt size|token(?:s)?|input_tokens|cached_input_tokens)\b/i,
+      /\bprompt size\b.{0,180}\b(grow|grew|jump(?:ed)?|inflate(?:d)?|bloat(?:ed)?)\b.{0,180}\b(after|following)\b.{0,80}\b(fork|conversation fork)\b/i,
+      /\b(repeated parent conversation turns?|duplicate inherited history|same tool transcript)\b.{0,220}\b(fork boundary|forked child|forked conversation|child context|parent transcript)\b/i,
+      /\bfork boundary\b.{0,220}\b(repeated|duplicate|parent turns?|tool transcript|child context|prompt size|input_tokens)\b/i,
+      /\bprompt_cache_key\b.{0,220}\b(changes?|changed|new|drops?|cache hit rate|cached-token miss|lineage)\b.{0,180}\b(fork|forked|inherited|parent context|conversation)\b/i,
+      /\bfork_context\b.{0,220}\b(subagent|parent intent|inherited parent|delegated prompt|duplicated context|old parent work)\b/i,
+      /\b(input_tokens|cached_input_tokens|cached tokens?)\b.{0,220}\b(jump|grew|grow|increase|bloats?|bloat|fork|forked|duplicate context)\b/i
+    ],
+    suggestedRule:
+      "When reporting Codex context-fork bloat, capture Codex app/CLI/extension version, surface, model, fork source thread id, forked thread id, fork action timestamp, fork boundary marker, input_tokens and cached_input_tokens before and after the fork, prompt_cache_key before and after, cache hit rate, duplicated parent-turn or tool-transcript examples with line ids, whether new files were read before the token jump, compaction state, subagent/fork_context history, minimal reproduction steps, and whether a fresh thread or non-fork continuation avoids the bloat.",
+    suggestedSkill: "codex-context-fork-bloat-triage"
+  },
+  {
     kind: "codex_latest_turn_drift",
     severity: "high",
     title: "Codex responded to an older turn instead of the latest request",
