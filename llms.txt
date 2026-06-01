@@ -146,7 +146,7 @@ gh issue list --repo openai/codex --state all --limit 100 --json number,title,bo
 ## GitHub Action
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.106
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.108
   with:
     mode: all
     doctor-threshold: "85"
@@ -159,7 +159,7 @@ gh issue list --repo openai/codex --state all --limit 100 --json number,title,bo
 ## Weekly Codex Issue Radar
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.106
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.108
   with:
     mode: issue-map
     issue-map-repo: openai/codex
@@ -168,6 +168,18 @@ gh issue list --repo openai/codex --state all --limit 100 --json number,title,bo
     issue-map-comment: "true"
     issue-map-comment-issue: "8"
     job-summary: "true"
+    github-token: ${{ github.token }}
+```
+
+Duplicate audit Action mode:
+
+```yaml
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.108
+  with:
+    mode: duplicate-audit
+    duplicate-audit-repo: openai/codex
+    duplicate-audit-issue: "25507"
+    duplicate-audit-candidates: "25391,25488"
     github-token: ${{ github.token }}
 ```
 

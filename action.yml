@@ -6,7 +6,7 @@ branding:
   color: green
 inputs:
   mode:
-    description: Run "traces", "agents-lint", "github-context", "doctor", "benchmark", "issue-map", "issue-heat", "both", or "all".
+    description: Run "traces", "agents-lint", "github-context", "doctor", "benchmark", "issue-map", "issue-heat", "duplicate-audit", "both", or "all".
     required: false
     default: traces
   doctor-path:
@@ -87,6 +87,22 @@ inputs:
     default: ""
   issue-heat-comment-repository:
     description: Optional owner/repo that receives the issue-heat comment. Defaults to the workflow repository.
+    required: false
+    default: ""
+  duplicate-audit-path:
+    description: Duplicate audit export JSON path to audit with "duplicate-audit" mode.
+    required: false
+    default: duplicate-audit.json
+  duplicate-audit-repo:
+    description: Optional owner/repo to fetch directly in "duplicate-audit" mode instead of reading duplicate-audit-path.
+    required: false
+    default: ""
+  duplicate-audit-issue:
+    description: GitHub issue number to audit when duplicate-audit-repo is set.
+    required: false
+    default: ""
+  duplicate-audit-candidates:
+    description: Optional comma-separated candidate issue numbers for duplicate-audit mode.
     required: false
     default: ""
   threshold:
@@ -206,6 +222,30 @@ outputs:
   issue-heat-json:
     description: Path to the JSON issue-heat report.
     value: ${{ steps.issue-heat.outputs.json }}
+  duplicate-audit-candidates:
+    description: Number of duplicate-audit candidates checked.
+    value: ${{ steps.duplicate-audit.outputs.candidates }}
+  duplicate-audit-likely:
+    description: Number of likely duplicate candidates.
+    value: ${{ steps.duplicate-audit.outputs.likely }}
+  duplicate-audit-related:
+    description: Number of related but not exact duplicate candidates.
+    value: ${{ steps.duplicate-audit.outputs.related }}
+  duplicate-audit-needs-review:
+    description: Number of duplicate candidates needing human review.
+    value: ${{ steps.duplicate-audit.outputs.needs-review }}
+  duplicate-audit-weak:
+    description: Number of weak duplicate matches.
+    value: ${{ steps.duplicate-audit.outputs.weak }}
+  duplicate-audit-top-verdict:
+    description: Highest-confidence duplicate-audit verdict.
+    value: ${{ steps.duplicate-audit.outputs.top-verdict }}
+  duplicate-audit-report:
+    description: Path to the Markdown duplicate-audit report.
+    value: ${{ steps.duplicate-audit.outputs.report }}
+  duplicate-audit-json:
+    description: Path to the JSON duplicate-audit report.
+    value: ${{ steps.duplicate-audit.outputs.json }}
 runs:
   using: composite
   steps:
@@ -221,8 +261,8 @@ runs:
       shell: bash
     - run: |
         case "${{ inputs.mode }}" in
-          traces|agents-lint|github-context|doctor|benchmark|issue-map|issue-heat|both|all) ;;
-          *) echo "::error::mode must be one of: traces, agents-lint, github-context, doctor, benchmark, issue-map, issue-heat, both, all"; exit 1 ;;
+          traces|agents-lint|github-context|doctor|benchmark|issue-map|issue-heat|duplicate-audit|both|all) ;;
+          *) echo "::error::mode must be one of: traces, agents-lint, github-context, doctor, benchmark, issue-map, issue-heat, duplicate-audit, both, all"; exit 1 ;;
         esac
       shell: bash
     - id: agents-lint
@@ -497,6 +537,49 @@ runs:
           node "$TRACE_TO_SKILL_CLI" issue-heat-comment "${{ inputs.issue-heat-path }}" --window-hours "${{ inputs.issue-heat-window-hours }}" "${comment_args[@]}"
         fi
       if: inputs.mode == 'issue-heat' && inputs.issue-heat-comment == 'true'
+      shell: bash
+    - id: duplicate-audit
+      run: |
+        set -euo pipefail
+        duplicate_args=()
+        if [ -n "${{ inputs.duplicate-audit-candidates }}" ]; then
+          duplicate_args+=(--candidates "${{ inputs.duplicate-audit-candidates }}")
+        fi
+        if [ -n "${{ inputs.duplicate-audit-repo }}" ]; then
+          if [ -z "${{ inputs.duplicate-audit-issue }}" ]; then
+            echo "::error::duplicate-audit-issue is required when duplicate-audit-repo is set"
+            exit 1
+          fi
+          node "$TRACE_TO_SKILL_CLI" duplicate-audit --repo "${{ inputs.duplicate-audit-repo }}" --issue "${{ inputs.duplicate-audit-issue }}" "${duplicate_args[@]}" --token "${{ inputs.github-token }}" --format json --output trace-to-skill-duplicate-audit.json
+          node "$TRACE_TO_SKILL_CLI" duplicate-audit --repo "${{ inputs.duplicate-audit-repo }}" --issue "${{ inputs.duplicate-audit-issue }}" "${duplicate_args[@]}" --token "${{ inputs.github-token }}" --output trace-to-skill-duplicate-audit.md
+        else
+          node "$TRACE_TO_SKILL_CLI" duplicate-audit "${{ inputs.duplicate-audit-path }}" --format json --output trace-to-skill-duplicate-audit.json
+          node "$TRACE_TO_SKILL_CLI" duplicate-audit "${{ inputs.duplicate-audit-path }}" --output trace-to-skill-duplicate-audit.md
+        fi
+        node --input-type=module <<'NODE'
+        import { appendFileSync, readFileSync } from "node:fs";
+        const report = JSON.parse(readFileSync("trace-to-skill-duplicate-audit.json", "utf8"));
+        const output = [
+          `candidates=${report.summary.candidateCount}`,
+          `likely=${report.summary.likelyDuplicates}`,
+          `related=${report.summary.relatedNotDuplicates}`,
+          `needs-review=${report.summary.needsHumanReview}`,
+          `weak=${report.summary.weakMatches}`,
+          `top-verdict=${report.candidates[0]?.verdict ?? ""}`,
+          "report=trace-to-skill-duplicate-audit.md",
+          "json=trace-to-skill-duplicate-audit.json"
+        ].join("\n");
+        appendFileSync(process.env.GITHUB_OUTPUT, `${output}\n`);
+        NODE
+      if: inputs.mode == 'duplicate-audit'
+      shell: bash
+    - run: |
+        {
+          echo "## trace-to-skill Duplicate Audit"
+          echo
+          cat trace-to-skill-duplicate-audit.md
+        } >> "$GITHUB_STEP_SUMMARY"
+      if: always() && inputs.job-summary == 'true' && inputs.mode == 'duplicate-audit'
       shell: bash
     - id: scorecard
       run: |

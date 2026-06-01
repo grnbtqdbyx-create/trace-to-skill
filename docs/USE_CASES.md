@@ -61,13 +61,25 @@ What it proves:
 Recommended CI surface:
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.106
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.108
   with:
     mode: all
     doctor-threshold: "85"
     doctor-comment: "true"
     scorecard-comment: "true"
     job-summary: "true"
+    github-token: ${{ github.token }}
+```
+
+Duplicate-audit Action mode can also run from CI when you want a stable job summary for Codex Action duplicate suggestions:
+
+```yaml
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.108
+  with:
+    mode: duplicate-audit
+    duplicate-audit-repo: openai/codex
+    duplicate-audit-issue: "25507"
+    duplicate-audit-candidates: "25391,25488"
     github-token: ${{ github.token }}
 ```
 

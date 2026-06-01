@@ -59,3 +59,15 @@ jobs:
           echo "Issue-heat considered: ${{ steps.issue-heat.outputs.issue-heat-considered }}"
           echo "Issue-heat matched: ${{ steps.issue-heat.outputs.issue-heat-matched }}"
           echo "Issue-heat top kind: ${{ steps.issue-heat.outputs.issue-heat-top-kind }}"
+      - id: duplicate-audit
+        uses: ./
+        with:
+          mode: duplicate-audit
+          duplicate-audit-path: fixtures/codex-duplicate-audit.json
+          job-summary: "true"
+      - name: Show duplicate-audit outputs
+        run: |
+          echo "Duplicate-audit candidates: ${{ steps.duplicate-audit.outputs.duplicate-audit-candidates }}"
+          echo "Duplicate-audit likely: ${{ steps.duplicate-audit.outputs.duplicate-audit-likely }}"
+          echo "Duplicate-audit related: ${{ steps.duplicate-audit.outputs.duplicate-audit-related }}"
+          echo "Duplicate-audit top verdict: ${{ steps.duplicate-audit.outputs.duplicate-audit-top-verdict }}"

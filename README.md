@@ -559,7 +559,7 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v5
-      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.106
+      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.108
         with:
           mode: all
           doctor-threshold: "85"
@@ -608,7 +608,7 @@ Composite action usage:
 
 ```yaml
 - id: trace-to-skill
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.106
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.108
   with:
     mode: all
     doctor-threshold: "85"
@@ -626,7 +626,7 @@ Issue-map action usage for direct GitHub issue demand mining:
 
 ```yaml
 - id: codex-issue-map
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.106
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.108
   with:
     mode: issue-map
     issue-map-repo: openai/codex
@@ -643,7 +643,7 @@ Issue-heat action usage for recency-weighted GitHub issue movement:
 
 ```yaml
 - id: codex-issue-heat
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.106
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.108
   with:
     mode: issue-heat
     issue-heat-repo: openai/codex
@@ -655,6 +655,21 @@ Issue-heat action usage for recency-weighted GitHub issue movement:
     job-summary: "true"
     github-token: ${{ github.token }}
 - run: echo "Hottest recent Codex issue cluster is ${{ steps.codex-issue-heat.outputs.issue-heat-top-kind }}"
+```
+
+Duplicate-audit action usage for checking Codex Action duplicate suggestions:
+
+```yaml
+- id: codex-duplicate-audit
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.108
+  with:
+    mode: duplicate-audit
+    duplicate-audit-repo: openai/codex
+    duplicate-audit-issue: "25507"
+    duplicate-audit-candidates: "25391,25488"
+    job-summary: "true"
+    github-token: ${{ github.token }}
+- run: echo "Top duplicate verdict is ${{ steps.codex-duplicate-audit.outputs.duplicate-audit-top-verdict }}"
 ```
 
 Action outputs:
@@ -687,10 +702,20 @@ Action outputs:
 | `issue-map-top-kind` | Highest-priority issue-map failure class |
 | `issue-map-report` | Markdown issue-map report path |
 | `issue-map-json` | JSON issue-map report path |
+| `issue-heat-issues` | Number of GitHub issues fetched by issue-heat mode |
+| `issue-heat-top-kind` | Hottest recent issue failure class |
+| `issue-heat-report` | Markdown issue-heat report path |
+| `issue-heat-json` | JSON issue-heat report path |
+| `duplicate-audit-candidates` | Number of duplicate candidates checked |
+| `duplicate-audit-likely` | Number of likely duplicate candidates |
+| `duplicate-audit-related` | Number of related but not exact duplicate candidates |
+| `duplicate-audit-top-verdict` | Highest-confidence duplicate audit verdict |
+| `duplicate-audit-report` | Markdown duplicate-audit report path |
+| `duplicate-audit-json` | JSON duplicate-audit report path |
 
 By default, generated reports are also appended to the GitHub Actions Job Summary. Set `job-summary: "false"` to disable that UI output.
 
-Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.106` executes that release's checked-out source instead of pulling the default branch at runtime.
+Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.108` executes that release's checked-out source instead of pulling the default branch at runtime.
 
 ## Codex Skill
 
