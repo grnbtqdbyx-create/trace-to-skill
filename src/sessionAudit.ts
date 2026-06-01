@@ -7,6 +7,17 @@ import readline from "node:readline";
 
 export type SessionAuditStatus = "pass" | "warn" | "fail";
 export type SessionAuditSeverity = "warning" | "error";
+export type SessionAuditSubagentSignalKind =
+  | "spawn_agent"
+  | "wait_agent"
+  | "close_agent"
+  | "thread_spawn_edges"
+  | "agent_thread_limit"
+  | "stale_subagent_ui"
+  | "child_recent_thread"
+  | "compaction_lost_subagents"
+  | "no_agents_completed"
+  | "subagent_notification";
 
 export interface SessionAuditOptions {
   largeFileBytes?: number;
@@ -42,9 +53,16 @@ export interface SessionAuditStateFile {
 
 export interface SessionAuditFinding {
   severity: SessionAuditSeverity;
-  kind: "large_rollout" | "huge_jsonl_line" | "json_parse_error" | "short_session_index" | "unindexed_rollout_thread" | "bloated_index_title" | "state_file_present";
+  kind: "large_rollout" | "huge_jsonl_line" | "json_parse_error" | "short_session_index" | "unindexed_rollout_thread" | "bloated_index_title" | "subagent_lifecycle_signal" | "state_file_present";
   path?: string;
   message: string;
+}
+
+export interface SessionAuditSubagentSignal {
+  path: string;
+  kind: SessionAuditSubagentSignalKind;
+  count: number;
+  note: string;
 }
 
 export interface SessionAuditThread {
@@ -84,10 +102,13 @@ export interface SessionAuditResult {
     indexedThreads: number;
     unindexedRolloutThreads: number;
     bloatedIndexTitles: number;
+    subagentSignalFiles: number;
+    subagentSignals: number;
     projectRoots: number;
   };
   files: SessionAuditFile[];
   threads: SessionAuditThread[];
+  subagentSignals: SessionAuditSubagentSignal[];
   stateFiles: SessionAuditStateFile[];
   findings: SessionAuditFinding[];
 }
@@ -113,8 +134,9 @@ export async function auditCodexSessions(target = defaultCodexHome(), options: S
   const sessionIndex = files.find((file) => path.basename(file.path) === "session_index.jsonl");
   const indexEntries = sessionIndex ? await readSessionIndex(path.join(root, sessionIndex.path)) : new Map<string, SessionIndexEntry>();
   const threads = buildThreads(files, indexEntries);
+  const subagentSignals = buildSubagentSignals(files);
   const stateFiles = await Promise.all(discovered.stateFiles.map((file) => stateFileInfo(file, root)));
-  const findings = buildFindings(files, threads, stateFiles, thresholds);
+  const findings = buildFindings(files, threads, subagentSignals, stateFiles, thresholds);
   const rolloutFiles = files.filter((file) => path.basename(file.path).startsWith("rollout-")).length;
   const projectKeys = new Set(threads.map((thread) => thread.cwdHash).filter(Boolean));
   const summary = {
@@ -129,6 +151,8 @@ export async function auditCodexSessions(target = defaultCodexHome(), options: S
     indexedThreads: threads.filter((thread) => thread.indexed).length,
     unindexedRolloutThreads: threads.filter((thread) => !thread.indexed).length,
     bloatedIndexTitles: threads.filter((thread) => (thread.indexTitleSignals?.length ?? 0) > 0).length,
+    subagentSignalFiles: new Set(subagentSignals.map((signal) => signal.path)).size,
+    subagentSignals: subagentSignals.reduce((sum, signal) => sum + signal.count, 0),
     projectRoots: projectKeys.size
   };
 
@@ -140,6 +164,7 @@ export async function auditCodexSessions(target = defaultCodexHome(), options: S
     summary,
     files: files.sort((a, b) => b.sizeBytes - a.sizeBytes),
     threads,
+    subagentSignals,
     stateFiles,
     findings
   };
@@ -162,6 +187,8 @@ export function renderSessionAuditMarkdown(result: SessionAuditResult): string {
     `Indexed threads: ${result.summary.indexedThreads}`,
     `Unindexed rollout threads: ${result.summary.unindexedRolloutThreads}`,
     `Bloated index titles: ${result.summary.bloatedIndexTitles}`,
+    `Subagent lifecycle signal files: ${result.summary.subagentSignalFiles}`,
+    `Subagent lifecycle signals: ${result.summary.subagentSignals}`,
     ""
   ];
 
@@ -198,6 +225,24 @@ export function renderSessionAuditMarkdown(result: SessionAuditResult): string {
     }
     lines.push("");
     lines.push("This table intentionally avoids printing full workspace paths. `cwdHash` is a short hash of the original path so related threads can be grouped without exposing local directories.", "");
+  }
+
+  lines.push("## Subagent Lifecycle Signals", "");
+  if (result.subagentSignals.length === 0) {
+    lines.push("No subagent lifecycle signals found in rollout JSONL files.", "");
+  } else {
+    lines.push("| File | Signal | Count | Note |");
+    lines.push("| --- | --- | ---: | --- |");
+    for (const signal of result.subagentSignals.slice(0, 25)) {
+      lines.push([
+        `\`${signal.path}\``,
+        `\`${signal.kind}\``,
+        `${signal.count}`,
+        signal.note
+      ].map(escapeCell).join(" | ").replace(/^/, "| ").replace(/$/, " |"));
+    }
+    lines.push("");
+    lines.push("This section prints only coarse signal names and counts, not raw private transcript lines.", "");
   }
 
   lines.push("## Largest JSONL Files", "");
@@ -333,6 +378,7 @@ async function stateFileInfo(filePath: string, root: string): Promise<SessionAud
 function buildFindings(
   files: SessionAuditFile[],
   threads: SessionAuditThread[],
+  subagentSignals: SessionAuditSubagentSignal[],
   stateFiles: SessionAuditStateFile[],
   thresholds: { largeFileBytes: number; hugeLineBytes: number }
 ): SessionAuditFinding[] {
@@ -398,6 +444,15 @@ function buildFindings(
     });
   }
 
+  for (const signal of subagentSignals.filter((item) => isSubagentWarningSignal(item.kind)).slice(0, 10)) {
+    findings.push({
+      severity: "warning",
+      kind: "subagent_lifecycle_signal",
+      path: signal.path,
+      message: `${signal.kind} appeared ${signal.count} time(s). ${signal.note}`
+    });
+  }
+
   for (const stateFile of stateFiles.filter((file) => file.path.endsWith(".sqlite"))) {
     findings.push({
       severity: "warning",
@@ -408,6 +463,27 @@ function buildFindings(
   }
 
   return findings;
+}
+
+function buildSubagentSignals(files: SessionAuditFile[]): SessionAuditSubagentSignal[] {
+  const signals: SessionAuditSubagentSignal[] = [];
+  for (const file of files) {
+    for (const kind of SUBAGENT_SIGNAL_KINDS) {
+      const count = file.signalCounts[kind] ?? 0;
+      if (count === 0) {
+        continue;
+      }
+
+      signals.push({
+        path: file.path,
+        kind,
+        count,
+        note: SUBAGENT_SIGNAL_NOTES[kind]
+      });
+    }
+  }
+
+  return signals.sort((a, b) => a.path.localeCompare(b.path) || a.kind.localeCompare(b.kind));
 }
 
 interface SessionIndexEntry {
@@ -507,13 +583,53 @@ function countRawSignals(line: string, signalCounts: Record<string, number>): vo
     ["tool_call", /tool_call/g],
     ["thread_resume", /thread\/resume/g],
     ["thread_goal", /thread\/goal\/get|thread_goals/g],
-    ["item_not_found", /Item not found in turn state/g]
+    ["item_not_found", /Item not found in turn state/g],
+    ["spawn_agent", /\bspawn_agent\b/g],
+    ["wait_agent", /\bwait_agent\b/g],
+    ["close_agent", /\bclose_agent\b/g],
+    ["thread_spawn_edges", /\bthread_spawn_edges\b|\bspawn edges?\b/gi],
+    ["agent_thread_limit", /\bagent thread limit reached\b|\bagents\.max_threads\b|\bspawn quota\b/gi],
+    ["stale_subagent_ui", /\b(stale|orphan(?:ed)?|zombie)\s+subagents?\b|\bSubagents panel\b.{0,120}\b(stale|visible|shows?|listed)\b/gi],
+    ["child_recent_thread", /\bsubagent child threads?\b.{0,160}\b(top-level|recent conversations?|sidebar)\b/gi],
+    ["compaction_lost_subagents", /\bsubagents?\b.{0,160}\b(compaction|compact(?:ed|ion)?|not aware|forgot|cannot list)\b/gi],
+    ["no_agents_completed", /\bNo agents completed yet\b/g],
+    ["subagent_notification", /<subagent_notification>|\bsubagent notification\b/gi]
   ] as const) {
     const matches = line.match(pattern);
     if (matches) {
       signalCounts[key] = (signalCounts[key] ?? 0) + matches.length;
     }
   }
+}
+
+const SUBAGENT_SIGNAL_KINDS: SessionAuditSubagentSignalKind[] = [
+  "spawn_agent",
+  "wait_agent",
+  "close_agent",
+  "thread_spawn_edges",
+  "agent_thread_limit",
+  "stale_subagent_ui",
+  "child_recent_thread",
+  "compaction_lost_subagents",
+  "no_agents_completed",
+  "subagent_notification"
+];
+
+const SUBAGENT_SIGNAL_NOTES: Record<SessionAuditSubagentSignalKind, string> = {
+  spawn_agent: "Subagent spawn attempts are present; compare with wait/close and quota evidence.",
+  wait_agent: "Subagent wait/readback calls are present; stale waits can diverge from UI state.",
+  close_agent: "Subagent close calls are present; check for not_found, pending, or still-visible cards.",
+  thread_spawn_edges: "Persisted spawn-edge evidence is present; include status counts when filing lifecycle bugs.",
+  agent_thread_limit: "Spawn quota or agent thread limit evidence is present.",
+  stale_subagent_ui: "Stale or still-visible subagent UI/cache evidence is present.",
+  child_recent_thread: "Child subagent threads may be surfacing as recent/top-level conversations.",
+  compaction_lost_subagents: "Compaction or resume may have hidden prior subagent ids from the parent.",
+  no_agents_completed: "Parent/readback reported no completed agents despite subagent activity.",
+  subagent_notification: "Subagent notification events are present; compare them with wait_agent results."
+};
+
+function isSubagentWarningSignal(kind: SessionAuditSubagentSignalKind): boolean {
+  return kind !== "spawn_agent" && kind !== "wait_agent";
 }
 
 function countParsedRecord(parsed: unknown, recordTypes: Record<string, number>, signalCounts: Record<string, number>): void {

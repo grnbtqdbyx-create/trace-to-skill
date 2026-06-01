@@ -26,7 +26,7 @@ export { redactTargets, redactText } from "./redact.js";
 export { renderAgentsRules, renderCodexIssueReport, renderComparison, renderDoctorMarkdown, renderDoctorPrComment, renderMarkdown, renderPrComment, renderSarif, renderSkill } from "./report.js";
 export { renderScorecardMarkdown, renderScorecardPrComment, runScorecard } from "./scorecard.js";
 export { auditCodexSessions, renderSessionAuditMarkdown } from "./sessionAudit.js";
-export type { SessionAuditFile, SessionAuditFinding, SessionAuditOptions, SessionAuditResult, SessionAuditSeverity, SessionAuditStateFile, SessionAuditStatus } from "./sessionAudit.js";
+export type { SessionAuditFile, SessionAuditFinding, SessionAuditOptions, SessionAuditResult, SessionAuditSeverity, SessionAuditStateFile, SessionAuditStatus, SessionAuditSubagentSignal, SessionAuditSubagentSignalKind } from "./sessionAudit.js";
 export { auditSensitivePaths, buildSensitiveIgnoreFiles, normalizeSensitiveIgnoreTarget, renderSensitiveAuditMarkdown, renderSensitiveIgnoreFile } from "./sensitiveAudit.js";
 export type { SensitiveAuditFinding, SensitiveAuditFindingKind, SensitiveAuditResult, SensitiveAuditSeverity, SensitiveAuditStatus, SensitiveIgnoreFile, SensitiveIgnoreTarget } from "./sensitiveAudit.js";
 export { buildUsageEvidence, buildUsageEvidenceFromInputs, renderUsageEvidenceMarkdown } from "./usageEvidence.js";

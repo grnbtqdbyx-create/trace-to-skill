@@ -4,7 +4,7 @@
   "title": "trace-to-skill Codex session audit result",
   "type": "object",
   "additionalProperties": false,
-  "required": ["generatedAt", "root", "status", "thresholds", "summary", "files", "threads", "stateFiles", "findings"],
+  "required": ["generatedAt", "root", "status", "thresholds", "summary", "files", "threads", "subagentSignals", "stateFiles", "findings"],
   "properties": {
     "generatedAt": {
       "type": "string",
@@ -33,6 +33,12 @@
       "type": "array",
       "items": {
         "$ref": "#/$defs/thread"
+      }
+    },
+    "subagentSignals": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/subagentSignal"
       }
     },
     "stateFiles": {
@@ -67,7 +73,7 @@
     "summary": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["jsonlFiles", "totalBytes", "largeFiles", "hugeLineFiles", "parseErrorFiles", "rolloutThreads", "indexedThreads", "unindexedRolloutThreads", "bloatedIndexTitles", "projectRoots"],
+      "required": ["jsonlFiles", "totalBytes", "largeFiles", "hugeLineFiles", "parseErrorFiles", "rolloutThreads", "indexedThreads", "unindexedRolloutThreads", "bloatedIndexTitles", "subagentSignalFiles", "subagentSignals", "projectRoots"],
       "properties": {
         "jsonlFiles": {
           "type": "integer",
@@ -110,6 +116,14 @@
           "minimum": 0
         },
         "bloatedIndexTitles": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "subagentSignalFiles": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "subagentSignals": {
           "type": "integer",
           "minimum": 0
         },
@@ -243,6 +257,38 @@
         }
       }
     },
+    "subagentSignal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "kind", "count", "note"],
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "spawn_agent",
+            "wait_agent",
+            "close_agent",
+            "thread_spawn_edges",
+            "agent_thread_limit",
+            "stale_subagent_ui",
+            "child_recent_thread",
+            "compaction_lost_subagents",
+            "no_agents_completed",
+            "subagent_notification"
+          ]
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "note": {
+          "type": "string"
+        }
+      }
+    },
     "stateFile": {
       "type": "object",
       "additionalProperties": false,
@@ -271,7 +317,7 @@
         },
         "kind": {
           "type": "string",
-          "enum": ["large_rollout", "huge_jsonl_line", "json_parse_error", "short_session_index", "unindexed_rollout_thread", "bloated_index_title", "state_file_present"]
+          "enum": ["large_rollout", "huge_jsonl_line", "json_parse_error", "short_session_index", "unindexed_rollout_thread", "bloated_index_title", "subagent_lifecycle_signal", "state_file_present"]
         },
         "path": {
           "type": "string"

@@ -644,6 +644,13 @@ test("auditCodexSessions reports large rollout, huge lines, parse errors, and sh
   await writeFile(path.join(cwd, "session_index.jsonl"), `${JSON.stringify({ id: "019eaaa", thread_name: bloatedTitle, updated_at: "2026-05-31T10:01:00Z" })}\n`, "utf8");
   await writeFile(path.join(sessionDir, "rollout-2026-05-31T10-00-00-019eaaa.jsonl"), [
     JSON.stringify({ type: "session_meta", timestamp: "2026-05-31T10:00:00Z", payload: { id: "019eaaa", cwd: "/Users/test/VisibleProject", originator: "Codex Desktop", cli_version: "0.135.0-alpha.1", timestamp: "2026-05-31T10:00:00Z" } }),
+    JSON.stringify({ type: "response_item", item: { type: "function_call", name: "spawn_agent" } }),
+    JSON.stringify({ type: "response_item", item: { type: "function_call", name: "wait_agent" } }),
+    JSON.stringify({ type: "response_item", item: { type: "function_call", name: "close_agent" } }),
+    JSON.stringify({ type: "event_msg", msg: "thread_spawn_edges status count: closed=549, open=3" }),
+    JSON.stringify({ type: "event_msg", msg: "collab spawn failed: agent thread limit reached" }),
+    JSON.stringify({ type: "event_msg", msg: "Subagents panel still shows stale subagent cards after close_agent returned not_found" }),
+    JSON.stringify({ type: "event_msg", msg: "subagent child threads appear as top-level recent conversations after compaction" }),
     JSON.stringify({ type: "response_item", item: { type: "function_call", name: "shell" } }),
     JSON.stringify({ type: "event_msg", msg: "thread/resume took 7760 ms" }),
     "not-json",
@@ -667,6 +674,11 @@ test("auditCodexSessions reports large rollout, huge lines, parse errors, and sh
   assert.equal(result.summary.indexedThreads, 1);
   assert.equal(result.summary.unindexedRolloutThreads, 1);
   assert.equal(result.summary.bloatedIndexTitles, 1);
+  assert.equal(result.summary.subagentSignalFiles, 1);
+  assert.ok(result.summary.subagentSignals >= 6);
+  assert.ok(result.subagentSignals.some((signal) => signal.kind === "thread_spawn_edges"));
+  assert.ok(result.subagentSignals.some((signal) => signal.kind === "agent_thread_limit"));
+  assert.ok(result.subagentSignals.some((signal) => signal.kind === "stale_subagent_ui"));
   assert.equal(result.threads.find((thread) => thread.id === "019eaaa")?.indexed, true);
   assert.ok((result.threads.find((thread) => thread.id === "019eaaa")?.indexTitleBytes ?? 0) > 240);
   assert.ok(result.threads.find((thread) => thread.id === "019eaaa")?.indexTitleSignals?.includes("long_title"));
@@ -680,9 +692,13 @@ test("auditCodexSessions reports large rollout, huge lines, parse errors, and sh
   assert.ok(result.findings.some((finding) => finding.kind === "short_session_index"));
   assert.ok(result.findings.some((finding) => finding.kind === "unindexed_rollout_thread"));
   assert.ok(result.findings.some((finding) => finding.kind === "bloated_index_title"));
+  assert.ok(result.findings.some((finding) => finding.kind === "subagent_lifecycle_signal"));
   assert.ok(result.findings.some((finding) => finding.kind === "state_file_present"));
   assert.match(markdown, /Codex Session Audit/);
   assert.match(markdown, /Recoverable Thread Index/);
+  assert.match(markdown, /Subagent lifecycle signal files: 1/);
+  assert.match(markdown, /Subagent Lifecycle Signals/);
+  assert.match(markdown, /agent_thread_limit/);
   assert.match(markdown, /Bloated index titles: 1/);
   assert.match(markdown, /bloated_index_title/);
   assert.match(markdown, /codex resume 019ebbb/);
@@ -707,6 +723,7 @@ test("auditCodexSessions passes small healthy session directories", async () => 
   assert.equal(result.status, "pass");
   assert.equal(result.summary.jsonlFiles, 1);
   assert.equal(result.summary.rolloutThreads, 1);
+  assert.equal(result.summary.subagentSignals, 0);
   assert.equal(result.findings.length, 0);
 });
 
@@ -1892,13 +1909,16 @@ test("published JSON schemas describe CLI result contracts", async () => {
   assert.deepEqual(pluginAuditSchema.required, ["generatedAt", "target", "status", "environment", "summary", "plugins", "marketplaces", "helperApps", "findings"]);
   assert.ok(pluginAuditSchema.properties.plugins);
   assert.ok(pluginAuditSchema.$defs.finding);
-  assert.deepEqual(sessionAuditSchema.required, ["generatedAt", "root", "status", "thresholds", "summary", "files", "threads", "stateFiles", "findings"]);
+  assert.deepEqual(sessionAuditSchema.required, ["generatedAt", "root", "status", "thresholds", "summary", "files", "threads", "subagentSignals", "stateFiles", "findings"]);
   assert.ok(sessionAuditSchema.properties.summary);
   assert.ok(sessionAuditSchema.properties.threads);
+  assert.ok(sessionAuditSchema.properties.subagentSignals);
   assert.ok(sessionAuditSchema.$defs.file);
   assert.ok(sessionAuditSchema.$defs.thread);
+  assert.ok(sessionAuditSchema.$defs.subagentSignal);
   assert.ok((sessionAuditSchema.$defs.finding as { properties: { kind: { enum: string[] } } }).properties.kind.enum.includes("unindexed_rollout_thread"));
   assert.ok((sessionAuditSchema.$defs.finding as { properties: { kind: { enum: string[] } } }).properties.kind.enum.includes("bloated_index_title"));
+  assert.ok((sessionAuditSchema.$defs.finding as { properties: { kind: { enum: string[] } } }).properties.kind.enum.includes("subagent_lifecycle_signal"));
   assert.deepEqual(usageEvidenceSchema.required, ["generatedAt", "status", "inputs", "summary", "snapshots", "tokenUsage", "drainExperiments", "receipt", "findings", "checklist"]);
   assert.ok(usageEvidenceSchema.properties.receipt);
   assert.ok(usageEvidenceSchema.properties.drainExperiments);
@@ -1998,7 +2018,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.equal(brief.scorecard.benchmarkStatus, "pass");
   assert.equal(brief.scorecard.benchmarkCases, 33);
   assert.equal(brief.packageName, "trace-to-skill");
-  assert.equal(brief.packageVersion, "0.1.77");
+  assert.equal(brief.packageVersion, "0.1.78");
   assert.equal(brief.license, "Apache-2.0");
   assert.ok(brief.repository?.includes("github.com/grnbtqdbyx-create/trace-to-skill"));
   assert.ok(brief.qualification.max500.length <= 500);
@@ -2006,7 +2026,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.match(markdown, /OpenAI OSS Brief/);
   assert.match(markdown, /Why This Repository Qualifies/);
   assert.match(markdown, /500-Character Version/);
-  assert.match(markdown, /npx trace-to-skill@0\.1\.77/);
+  assert.match(markdown, /npx trace-to-skill@0\.1\.78/);
 });
 
 test("scorecard-comment dry-run resolves pull request event", async () => {
