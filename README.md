@@ -96,6 +96,7 @@ Use it when you need to:
 - **Diagnose sandbox blockers:** run `trace-to-skill analyze ./runs` on Codex traces that fail with sandbox setup refresh, `os error 740`, ACL, ownership, or approval-mode permission errors.
 - **Debug Codex auth/connectivity:** run `trace-to-skill analyze ./runs` on logs with `token_exchange_failed`, `auth.openai.com/oauth/token`, Cloudflare challenge, proxy/CA, IPv6, or stream disconnect symptoms.
 - **Triage remote SSH workspaces:** run `trace-to-skill codex-report ./runs` when Codex Desktop remote connections, Settings > Connections, `remote_connections`, SSH hosts, local tunnels, remote app-server, model lists, or remote folder browsing fail.
+- **Map platform availability demand:** run `trace-to-skill demo platform-availability` when users need Codex Desktop on macOS Intel or Linux, a Universal build, package-format support, or a JetBrains IDE extension.
 - **Prove remote-control route health:** run `trace-to-skill analyze ./runs` when Codex mobile/remote sessions show `Waiting for desktop`, `Directory Unavailable`, stale listener/cache, missing helper bundle, or stale enrollment symptoms.
 - **Triage Codex MCP runtime failures:** run `trace-to-skill analyze ./runs` when MCP tools are listed but Codex cancels approval, drops namespace/serverName metadata, routes to `unsupported call`, or closes stdio transport.
 - **Debug Codex plugin runtime failures:** run `trace-to-skill analyze ./runs` when Browser, Computer Use, Chrome, connectors, or bundled plugins are advertised but fail with missing native pipe paths, plugin-list schema errors, or stale plugin cache state.
@@ -542,7 +543,7 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v5
-      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.98
+      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.99
         with:
           mode: all
           doctor-threshold: "85"
@@ -591,7 +592,7 @@ Composite action usage:
 
 ```yaml
 - id: trace-to-skill
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.98
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.99
   with:
     mode: all
     doctor-threshold: "85"
@@ -609,7 +610,7 @@ Issue-map action usage for direct GitHub issue demand mining:
 
 ```yaml
 - id: codex-issue-map
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.98
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.99
   with:
     mode: issue-map
     issue-map-repo: openai/codex
@@ -655,7 +656,7 @@ Action outputs:
 
 By default, generated reports are also appended to the GitHub Actions Job Summary. Set `job-summary: "false"` to disable that UI output.
 
-Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.98` executes that release's checked-out source instead of pulling the default branch at runtime.
+Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.99` executes that release's checked-out source instead of pulling the default branch at runtime.
 
 ## Codex Skill
 

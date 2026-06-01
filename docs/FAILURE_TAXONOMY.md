@@ -168,6 +168,14 @@ Common signals include `Remote Development in Codex Desktop App`, `Remote SSH`, 
 
 The fix is to capture Codex Desktop version, remote Codex CLI/app-server version, local OS, remote OS/architecture, SSH alias from `~/.ssh/config`, whether `[features].remote_connections = true` is set, Settings > Connections visibility, selected host/path, remote workspace path, whether the remote filesystem is the source of truth, exact tunnel/app-server error, codex-server pid and restart result, remote PATH/auth/proxy/API reachability, model list differences versus local, fs/getMetadata or folder listing errors, ForwardAgent/proxy requirements, and whether reconnect/resume or a clean host works.
 
+## Codex Platform Availability
+
+Codex adoption can be blocked before a session starts when the official Desktop app, packaged build, or IDE extension does not exist for the user's platform, architecture, distro, or IDE ecosystem even though another Codex surface such as the CLI works.
+
+Common signals include macOS Intel `x86_64`, `uname -m => x86_64`, `Codex.app` from a `.dmg` showing a prohibited icon, incompatible architecture or can't-run-on-this-Mac messages, requests for an x86_64 or Universal build, CLI working on the same machine, Linux desktop app requests for Ubuntu, Arch, NixOS, Fedora, Debian, Wayland, X11, AppImage, Flatpak, Snap, `.deb`, or `.rpm`, and JetBrains/PyCharm/IntelliJ/WebStorm extension requests.
+
+The fix is to capture the requested surface, platform and architecture, install artifact, exact error and screenshot text, Codex CLI version and whether CLI works on the same machine, package format or marketplace desired, IDE name/version, demand evidence such as comments/reactions or signup forms, and whether docs, release notes, or roadmap state the support policy.
+
 ## Codex Subagent Prompt Leakage
 
 Codex MultiAgentV2 child agents can fail the task boundary even when the parent asks for isolated children. When `spawn_agent` with `fork_turns: "none"` records the delegated task as an assistant/commentary JSON envelope, or a same-turn parallel child sees a sibling prompt, independent review, QA, and security lanes are no longer independent.

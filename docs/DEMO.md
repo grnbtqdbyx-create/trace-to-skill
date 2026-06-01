@@ -1,10 +1,10 @@
 # trace-to-skill Demo
 
-Scenario: **Codex CLI no-response or all-model hang**
+Scenario: **Codex platform availability gap**
 
-Codex CLI accepts prompts but produces no streaming output, no error, no timeout, or hangs during command execution.
+Codex Desktop, Linux app, or JetBrains extension demand is blocked by unsupported architecture, OS, package, or IDE surface.
 
-Fixture: `fixtures/codex-cli-no-response.md`
+Fixture: `fixtures/codex-platform-availability.md`
 
 This is a packaged public fixture, so you can try the project without collecting a private trace first.
 
@@ -14,7 +14,7 @@ This is a packaged public fixture, so you can try the project without collecting
 
 Score: **75/100**
 
-Likely failure class: **Codex thinking or stream hang (codex_thinking_hang, high)**
+Likely failure class: **Codex platform availability or unsupported surface (codex_platform_availability, high)**
 
 Agent workflow needs clearer verification, instruction, or security hardening before broad reuse.
 
@@ -23,25 +23,25 @@ Agent workflow needs clearer verification, instruction, or security hardening be
 ```md
 ### What happened?
 
-trace-to-skill detected Codex thinking or stream hang (codex_thinking_hang). Codex can accept a turn, finish local tool calls, or keep a Responses request open while the UI/CLI remains on Thinking or Working with no streamed follow-up, making users interrupt healthy runs or lose long-session context.
+trace-to-skill detected Codex platform availability or unsupported surface (codex_platform_availability). Codex adoption is blocked when the CLI works but the official Desktop app, IDE extension, or packaged build is unavailable for a user's platform, architecture, distro, or IDE ecosystem.
 
 ### Detected failure class
 
-- codex_thinking_hang: Codex thinking or stream hang (high)
+- codex_platform_availability: Codex platform availability or unsupported surface (high)
 
 ### Evidence
 
-#### Codex thinking or stream hang
-- fixtures/codex-cli-no-response.md:1 - # Codex CLI No-Response Hang
-- fixtures/codex-cli-no-response.md:3 - Public issue cluster: All models - Codex CLI hangs indefinitely on all prompts, no response generated.
-- fixtures/codex-cli-no-response.md:7 - - Codex CLI accepts prompts and displays them, but no streaming output begins.
-- fixtures/codex-cli-no-response.md:8 - - All models tested, including `gpt-5.4 high`, `gpt-5.3-codex`, and `gpt-5.1-codex-max`, show no response, no error, and no timeout.
-- fixtures/codex-cli-no-response.md:9 - - The status bar remains `gpt-5.4 high - 100% left`; no tokens are being consumed while the prompt is stuck.
-- fixtures/codex-cli-no-response.md:10 - - A `status.openai.com/incidents` status incident note says Codex CLI hanging or no response may come from unhealthy clusters and rerouted traffic.
+#### Codex platform availability or unsupported surface
+- fixtures/codex-platform-availability.md:3 - Public issue cluster: Codex Desktop App macOS Intel support, Codex desktop app for Linux, and JetBrains IDE extension demand.
+- fixtures/codex-platform-availability.md:7 - - A user requests macOS Intel x86_64 support for the Codex Desktop App or a Universal build with arm64 + x86_64.
+- fixtures/codex-platform-availability.md:8 - - Environment evidence: Intel Mac, `uname -m => x86_64`, macOS 13/14/15, Codex `.dmg`, and `Codex.app`.
+- fixtures/codex-platform-availability.md:9 - - When the `.dmg` is mounted, `Codex.app` shows the prohibited symbol and macOS says the app can't run on this Mac because of incompatible architecture.
+- fixtures/codex-platform-availability.md:10 - - Codex CLI works fine on the same machine, but the desktop app cannot launch: `which codex => /usr/local/bin/codex` and `codex --version => codex-cli 0.58.0`.
+- fixtures/codex-platform-availability.md:16 - - Users ask for an official Codex desktop app on Linux because they want the app experience on Ubuntu, Arch, NixOS, Fedora, Debian, Wayland, and X11 desktops.
 
 ### Diagnostics to attach
 
-- When reporting Codex thinking or CLI no-response hangs, capture app/CLI/extension version, OS/terminal such as WSL, model and reasoning/speed settings, subscription/workspace, turn/thread id, prompt timestamp, whether the prompt is accepted but no streaming output/error/timeout appears, status bar or usage percent such as 100% left, `turn/start` or `task_started` timestamp, last successful tool-call output, first `response_item` or assistant timestamp if it eventually appears, `RUST_LOG`/SSE evidence including unhandled responses events, transport (`responses_http` or websocket), `time.busy`/`time.idle` close metrics, reconnect or stream-disconnect lines, status incident link or cluster mitigation note if relevant, MCP/subagent state, whether stop/Ctrl+C/interrupt works, and whether a new thread, logout/login, downgrade, API billing path, or minimal config without MCPs recovers.
+- When reporting Codex platform availability gaps, capture requested surface (Desktop app, IDE extension, or packaged build), platform and architecture such as macOS Intel x86_64 or Linux distro/window system, install artifact and version, exact launch/install error, screenshot text such as prohibited icon or incompatible architecture, CLI version and whether CLI works on the same machine, alternative surfaces tried, package format requested, ecosystem workflow such as JetBrains/PyCharm/IntelliJ, demand evidence from comments/reactions or signup forms, and whether docs/release notes state the support policy.
 
 ### Privacy
 
@@ -50,25 +50,25 @@ trace-to-skill detected Codex thinking or stream hang (codex_thinking_hang). Cod
 
 ## Findings
 
-### 1. Codex thinking or stream hang
+### 1. Codex platform availability or unsupported surface
 
 Severity: **high**
 
-Codex can accept a turn, finish local tool calls, or keep a Responses request open while the UI/CLI remains on Thinking or Working with no streamed follow-up, making users interrupt healthy runs or lose long-session context.
+Codex adoption is blocked when the CLI works but the official Desktop app, IDE extension, or packaged build is unavailable for a user's platform, architecture, distro, or IDE ecosystem.
 
 Evidence:
-- `fixtures/codex-cli-no-response.md:1` # Codex CLI No-Response Hang
-- `fixtures/codex-cli-no-response.md:3` Public issue cluster: All models - Codex CLI hangs indefinitely on all prompts, no response generated.
-- `fixtures/codex-cli-no-response.md:7` - Codex CLI accepts prompts and displays them, but no streaming output begins.
-- `fixtures/codex-cli-no-response.md:8` - All models tested, including `gpt-5.4 high`, `gpt-5.3-codex`, and `gpt-5.1-codex-max`, show no response, no error, and no timeout.
-- `fixtures/codex-cli-no-response.md:9` - The status bar remains `gpt-5.4 high - 100% left`; no tokens are being consumed while the prompt is stuck.
-- `fixtures/codex-cli-no-response.md:10` - A `status.openai.com/incidents` status incident note says Codex CLI hanging or no response may come from unhealthy clusters and rerouted traffic.
-- `fixtures/codex-cli-no-response.md:12` - In another report, Codex hangs during terminal command execution; basic shell commands get stuck, it does half the job then stuck, and the VS Code client remains on Thinking or Working.
-- `fixtures/codex-cli-no-response.md:17` The `codex exec --sandbox read-only --model gpt-5.3-codex 'ping'` run has no output and hangs after MCP startup with `unhandled responses event` SSE lines:
+- `fixtures/codex-platform-availability.md:3` Public issue cluster: Codex Desktop App macOS Intel support, Codex desktop app for Linux, and JetBrains IDE extension demand.
+- `fixtures/codex-platform-availability.md:7` - A user requests macOS Intel x86_64 support for the Codex Desktop App or a Universal build with arm64 + x86_64.
+- `fixtures/codex-platform-availability.md:8` - Environment evidence: Intel Mac, `uname -m => x86_64`, macOS 13/14/15, Codex `.dmg`, and `Codex.app`.
+- `fixtures/codex-platform-availability.md:9` - When the `.dmg` is mounted, `Codex.app` shows the prohibited symbol and macOS says the app can't run on this Mac because of incompatible architecture.
+- `fixtures/codex-platform-availability.md:10` - Codex CLI works fine on the same machine, but the desktop app cannot launch: `which codex => /usr/local/bin/codex` and `codex --version => codex-cli 0.58.0`.
+- `fixtures/codex-platform-availability.md:16` - Users ask for an official Codex desktop app on Linux because they want the app experience on Ubuntu, Arch, NixOS, Fedora, Debian, Wayland, and X11 desktops.
+- `fixtures/codex-platform-availability.md:21` ## JetBrains IDE Extension
+- `fixtures/codex-platform-availability.md:23` - Users request an official Codex extension or plugin for JetBrains IDEs such as PyCharm, IntelliJ, WebStorm, CLion, and Rider.
 
 Suggested rule:
 
-> When reporting Codex thinking or CLI no-response hangs, capture app/CLI/extension version, OS/terminal such as WSL, model and reasoning/speed settings, subscription/workspace, turn/thread id, prompt timestamp, whether the prompt is accepted but no streaming output/error/timeout appears, status bar or usage percent such as 100% left, `turn/start` or `task_started` timestamp, last successful tool-call output, first `response_item` or assistant timestamp if it eventually appears, `RUST_LOG`/SSE evidence including unhandled responses events, transport (`responses_http` or websocket), `time.busy`/`time.idle` close metrics, reconnect or stream-disconnect lines, status incident link or cluster mitigation note if relevant, MCP/subagent state, whether stop/Ctrl+C/interrupt works, and whether a new thread, logout/login, downgrade, API billing path, or minimal config without MCPs recovers.
+> When reporting Codex platform availability gaps, capture requested surface (Desktop app, IDE extension, or packaged build), platform and architecture such as macOS Intel x86_64 or Linux distro/window system, install artifact and version, exact launch/install error, screenshot text such as prohibited icon or incompatible architecture, CLI version and whether CLI works on the same machine, alternative surfaces tried, package format requested, ecosystem workflow such as JetBrains/PyCharm/IntelliJ, demand evidence from comments/reactions or signup forms, and whether docs/release notes state the support policy.
 
 
 ## Reporter Notes
@@ -89,6 +89,7 @@ Suggested rule:
 - `latency-regression`: Fast mode feels like Standard, with long thinking, search, read, or compaction stalls.
 - `model-routing-mismatch`: Codex shows one selected model while SSE response evidence shows a different server-side model was used.
 - `thinking-hang`: A turn or tool call completes, but the session stays on Thinking or Working with no streamed follow-up.
+- `cli-no-response`: Codex CLI accepts prompts but produces no streaming output, no error, no timeout, or hangs during command execution.
 - `clipboard-attachment`: Copy as Markdown, long-paste conversion, or generated Pasted text.txt attachments break prompt and report workflows.
 - `deeplink-launch`: OAuth callbacks, notification clicks, mobile links, or `codex app <path>` external activation fail to route into Codex.
 - `connector-auth-cache`: App connectors keep stale `link_*` auth or discovery metadata after reauth-required responses.
@@ -128,6 +129,7 @@ trace-to-skill demo subagent-lifecycle
 trace-to-skill demo usage-bucket-confusion
 trace-to-skill demo context-visibility
 trace-to-skill demo remote-connection
+trace-to-skill demo platform-availability
 trace-to-skill demo file-tree-ui
 trace-to-skill demo usage-reset-drift
 ```

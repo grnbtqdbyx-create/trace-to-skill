@@ -42,6 +42,7 @@ This benchmark runs the public fixture pack that ships with the repository and p
 | Codex usage bucket scope and percentage confusion | `fixtures/codex-usage-bucket-confusion.md` | 59 | 3 | 0 | `codex_token_burn`, `codex_usage_bucket_confusion`, `weak_evidence` | pass |
 | Codex context or token usage indicator missing | `fixtures/codex-context-visibility.md` | 75 | 2 | 0 | `codex_context_visibility`, `weak_evidence` | pass |
 | Codex remote connection or SSH workspace failure | `fixtures/codex-remote-connection.md` | 75 | 2 | 0 | `codex_remote_connection`, `weak_evidence` | pass |
+| Codex platform availability and unsupported surface demand | `fixtures/codex-platform-availability.md` | 75 | 2 | 0 | `codex_platform_availability`, `weak_evidence` | pass |
 | Codex token burn and usage-drain loop | `fixtures/codex-token-burn.md` | 75 | 2 | 0 | `codex_token_burn`, `weak_evidence` | pass |
 | Codex resource leak and runaway process | `fixtures/codex-resource-leak.md` | 75 | 2 | 0 | `codex_resource_leak`, `weak_evidence` | pass |
 | Codex tool-call integrity and rollback failure | `fixtures/codex-tool-call-integrity.md` | 43 | 4 | 0 | `codex_resource_leak`, `codex_subagent_lifecycle`, `codex_tool_call_integrity`, `weak_evidence` | pass |

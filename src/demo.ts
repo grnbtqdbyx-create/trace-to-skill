@@ -145,6 +145,12 @@ const DEMO_SCENARIOS: DemoScenario[] = [
     description: "Desktop remote SSH workspaces, Settings > Connections, remote app-server, tunnel, or remote filesystem evidence breaks."
   },
   {
+    id: "platform-availability",
+    title: "Codex platform availability gap",
+    fixture: "fixtures/codex-platform-availability.md",
+    description: "Codex Desktop, Linux app, or JetBrains extension demand is blocked by unsupported architecture, OS, package, or IDE surface."
+  },
+  {
     id: "token-burn",
     title: "Codex token burn",
     fixture: "fixtures/codex-token-burn.md",
@@ -245,6 +251,7 @@ export function renderDemoMarkdown(result: DemoResult): string {
     "trace-to-skill demo usage-bucket-confusion",
     "trace-to-skill demo context-visibility",
     "trace-to-skill demo remote-connection",
+    "trace-to-skill demo platform-availability",
     "trace-to-skill demo file-tree-ui",
     "trace-to-skill demo usage-reset-drift",
     "```",
@@ -283,6 +290,7 @@ export function renderDemoScenarioList(scenarios = listDemoScenarios()): string 
     "trace-to-skill demo usage-bucket-confusion",
     "trace-to-skill demo context-visibility",
     "trace-to-skill demo remote-connection",
+    "trace-to-skill demo platform-availability",
     "trace-to-skill demo --list",
     "```",
     ""

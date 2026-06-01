@@ -521,6 +521,26 @@ const RULES: RuleDefinition[] = [
     suggestedSkill: "codex-remote-connection-triage"
   },
   {
+    kind: "codex_platform_availability",
+    severity: "high",
+    title: "Codex platform availability or unsupported surface",
+    why: "Codex adoption is blocked when the CLI works but the official Desktop app, IDE extension, or packaged build is unavailable for a user's platform, architecture, distro, or IDE ecosystem.",
+    patterns: [
+      /\b(Codex Desktop App|Codex desktop app|Codex\.app|desktop GUI app)\b.{0,220}\b(macOS Intel|Intel Mac|x86_64|Universal build|universal app|arm64 \+ x86_64|Apple Silicon only|incompatible architecture|prohibited symbol|can't run on this Mac|cannot run on this Mac)\b/i,
+      /\b(macOS Intel|Intel Mac|x86_64|Universal build|arm64 \+ x86_64|Apple Silicon only)\b.{0,220}\b(Codex Desktop|Codex\.app|\.dmg|desktop app|GUI app|prohibited icon|incompatible|support)\b/i,
+      /\b(uname -m|arch)\b.{0,120}\bx86_64\b.{0,220}\b(Codex Desktop|Codex\.app|\.dmg|prohibited|incompatible|cannot launch|can't launch)\b/i,
+      /\b(Codex CLI works|CLI works|codex --version|which codex)\b.{0,220}\b(same machine|same Mac|Intel Mac|desktop app|Codex\.app|GUI app)\b.{0,220}\b(does not|doesn't|can't|cannot|incompatible|prohibited)\b/i,
+      /\b(Codex desktop app|Codex Desktop|Codex app)\b.{0,160}\b(for Linux|on Linux|Linux desktop|Linux app|Linux release|Linux package|Ubuntu|Arch|NixOS|Fedora|Debian|Wayland|X11|AppImage|Flatpak|Snap|AUR|rpm|deb)\b/i,
+      /\b(Linux desktop|Ubuntu|Arch|NixOS|Fedora|Debian|Wayland|X11)\b.{0,220}\b(Codex desktop app|Codex Desktop|Codex app|official app|release|package)\b/i,
+      /\b(JetBrains|PyCharm|IntelliJ|WebStorm|CLion|Rider)\b.{0,220}\b(Codex extension|official Codex extension|IDE extension|plugin|native extension|terminal integration|version control integration)\b/i,
+      /\b(Codex extension|official extension|IDE plugin|native plugin)\b.{0,220}\b(JetBrains|PyCharm|IntelliJ|WebStorm|CLion|Rider)\b/i,
+      /\b(explicit statement|docs|release notes|roadmap|not planned|support is not planned|signup form|notify when they release)\b.{0,220}\b(Intel|x86_64|Linux|JetBrains|platform|desktop app|Codex app)\b/i
+    ],
+    suggestedRule:
+      "When reporting Codex platform availability gaps, capture requested surface (Desktop app, IDE extension, or packaged build), platform and architecture such as macOS Intel x86_64 or Linux distro/window system, install artifact and version, exact launch/install error, screenshot text such as prohibited icon or incompatible architecture, CLI version and whether CLI works on the same machine, alternative surfaces tried, package format requested, ecosystem workflow such as JetBrains/PyCharm/IntelliJ, demand evidence from comments/reactions or signup forms, and whether docs/release notes state the support policy.",
+    suggestedSkill: "codex-platform-availability-triage"
+  },
+  {
     kind: "codex_terminal_output_integrity",
     severity: "high",
     title: "Codex terminal output or scrollback integrity failure",

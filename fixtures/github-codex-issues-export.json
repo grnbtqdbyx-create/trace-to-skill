@@ -157,6 +157,44 @@
     "updatedAt": "2026-05-14T21:25:03Z"
   },
   {
+    "number": 10410,
+    "title": "Codex Desktop App: macOS Intel (x86_64) support",
+    "body": "Request macOS Intel x86_64 support for the Codex Desktop App or a Universal build. Environment: Intel Mac, uname -m => x86_64, Codex .dmg, Codex.app. The app shows the prohibited symbol and macOS says it can't run on this Mac due to incompatible architecture, suggesting Apple Silicon only. Codex CLI works fine on the same machine with which codex and codex --version, so this is specifically for the desktop GUI app. Users ask for an explicit docs or release notes statement if Intel support is not planned.",
+    "url": "https://github.com/openai/codex/issues/10410",
+    "labels": [
+      { "name": "enhancement" },
+      { "name": "app" }
+    ],
+    "commentsCount": 190,
+    "reactions": { "totalCount": 377 },
+    "updatedAt": "2026-04-22T01:13:54Z"
+  },
+  {
+    "number": 11023,
+    "title": "Codex desktop app for Linux",
+    "body": "Users request an official Codex desktop app for Linux. Comments mention Ubuntu, Arch, NixOS, Wayland, distro packages, AUR package experiments, and a signup form to be notified when Linux or Windows releases. Users want an official app release and support policy instead of relying on community packages.",
+    "url": "https://github.com/openai/codex/issues/11023",
+    "labels": [
+      { "name": "enhancement" },
+      { "name": "app" }
+    ],
+    "commentsCount": 68,
+    "reactions": { "totalCount": 537 },
+    "updatedAt": "2026-05-31T23:27:54Z"
+  },
+  {
+    "number": 4313,
+    "title": "Extension for JetBrains IDEs (PyCharm, IntelliJ, etc.)",
+    "body": "Request an official Codex extension for JetBrains IDEs including PyCharm, IntelliJ, WebStorm, CLion, and Rider. Desired capabilities include Codex terminal integration, version control integration, PR title and summary generation, commit message generation, code review, inline suggestions, refactoring, documentation, and multi-language project support. Users want Codex in their normal IDE workflow with shared context instead of switching to VS Code or a separate terminal.",
+    "url": "https://github.com/openai/codex/issues/4313",
+    "labels": [
+      { "name": "enhancement" }
+    ],
+    "commentsCount": 70,
+    "reactions": { "totalCount": 454 },
+    "updatedAt": "2026-02-27T22:41:04Z"
+  },
+  {
     "number": 14048,
     "title": "All models - Codex CLI hangs indefinitely on all prompts, no response generated",
     "body": "Codex CLI accepts prompts but produces massively delayed response. It hangs indefinitely with no streaming output, no error, no timeout, all prompt types fail, status bar says gpt-5.4 high - 100% left, and no tokens are consumed. RUST_LOG codex exec ping shows unhandled responses event response.in_progress, response.content_part.added, response.output_text.done, response.content_part.done; other runs stop after mcp startup: no servers. Ctrl-C and /exit do not respond for minutes.",

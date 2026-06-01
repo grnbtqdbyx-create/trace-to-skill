@@ -252,6 +252,12 @@ const BENCHMARK_CASES: BenchmarkCaseDefinition[] = [
     expectedKinds: ["codex_remote_connection", "weak_evidence"]
   },
   {
+    id: "codex-platform-availability",
+    title: "Codex platform availability and unsupported surface demand",
+    fixture: "fixtures/codex-platform-availability.md",
+    expectedKinds: ["codex_platform_availability", "weak_evidence"]
+  },
+  {
     id: "codex-token-burn",
     title: "Codex token burn and usage-drain loop",
     fixture: "fixtures/codex-token-burn.md",

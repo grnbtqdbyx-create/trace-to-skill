@@ -367,6 +367,13 @@ function roadmapAction(kind: FindingKind): { targetArtifact: string; command: st
     };
   }
 
+  if (kind === "codex_platform_availability") {
+    return {
+      targetArtifact: "Platform availability fixture and support-policy evidence report",
+      command: "trace-to-skill codex-report ./runs --output openai-codex-platform-availability.md"
+    };
+  }
+
   if (kind === "codex_context_visibility") {
     return {
       targetArtifact: "Context visibility fixture and Desktop UI evidence report",

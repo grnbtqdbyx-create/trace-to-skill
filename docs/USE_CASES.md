@@ -59,7 +59,7 @@ What it proves:
 Recommended CI surface:
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.98
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.99
   with:
     mode: all
     doctor-threshold: "85"
@@ -361,7 +361,20 @@ This catches signals such as `Remote Development in Codex Desktop App`, missing 
 
 Include Codex Desktop version, remote Codex CLI/app-server version, local OS, remote OS/architecture, selected SSH host/path, whether the remote filesystem is the source of truth, exact tunnel/app-server/folder-listing/model-list/auth/proxy error, process evidence such as `ps -ef | rg 'codex app-server|openai.chatgpt.*/codex'` when available, and whether killing codex-server, reinstalling remote Codex, reconnecting, or trying a clean host changes the result.
 
-## 18.3. Codex CLI No-Response Evidence
+## 18.3. Codex Platform Availability Evidence
+
+Use this when Codex demand is blocked by unsupported architecture, OS, package format, or IDE surface, such as macOS Intel Desktop support, Linux Desktop app support, or a JetBrains extension.
+
+```bash
+npx trace-to-skill demo platform-availability
+npx trace-to-skill codex-report ./runs --output openai-codex-platform-availability.md
+```
+
+This catches signals such as `macOS Intel`, `x86_64`, Universal build requests, `Codex.app` showing the prohibited icon, incompatible architecture, CLI working on the same machine while the Desktop app cannot launch, Linux desktop app requests for Ubuntu/Arch/NixOS/Wayland/package formats, and JetBrains/PyCharm/IntelliJ plugin demand.
+
+Include requested surface, platform and architecture, install artifact, exact launch/install error, screenshot text, CLI version and whether CLI works on the same machine, package format, IDE/version, linked issue, comments/reactions, signup form, and whether docs/release notes state whether support is planned.
+
+## 18.4. Codex CLI No-Response Evidence
 
 Use this when Codex CLI accepts prompts but produces no streaming output, no error, no timeout, or hangs during command execution.
 

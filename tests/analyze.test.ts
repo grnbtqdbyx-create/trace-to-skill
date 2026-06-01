@@ -356,6 +356,7 @@ test("demo command runs packaged scenarios without private traces", async () => 
   assert.ok(scenarios.some((scenario) => scenario.id === "usage-bucket-confusion"));
   assert.ok(scenarios.some((scenario) => scenario.id === "context-visibility"));
   assert.ok(scenarios.some((scenario) => scenario.id === "remote-connection"));
+  assert.ok(scenarios.some((scenario) => scenario.id === "platform-availability"));
   assert.ok(scenarios.some((scenario) => scenario.id === "file-tree-ui"));
   assert.ok(scenarios.some((scenario) => scenario.id === "usage-reset-drift"));
   assert.equal(result.scenario.id, "approval-friction");
@@ -379,6 +380,7 @@ test("demo command runs packaged scenarios without private traces", async () => 
   assert.match(list, /usage-bucket-confusion/);
   assert.match(list, /context-visibility/);
   assert.match(list, /remote-connection/);
+  assert.match(list, /platform-availability/);
   assert.match(list, /remote-compact/);
   assert.match(list, /context-fork-bloat/);
   assert.match(list, /subagent-prompt-leakage/);
@@ -716,6 +718,25 @@ test("analyzeTargets detects Codex remote connection and SSH workspace failures"
   assert.match(finding.suggestedRule, /remote filesystem is the source of truth/);
   assert.match(finding.suggestedRule, /codex app-server/);
   assert.match(report, /codex_remote_connection/);
+});
+
+test("analyzeTargets detects Codex platform availability gaps", async () => {
+  const result = await analyzeTargets(["fixtures/codex-platform-availability.md"]);
+  const finding = result.findings.find((item) => item.kind === "codex_platform_availability");
+  const evidence = finding?.evidence.map((item) => item.excerpt).join("\n") ?? "";
+  const report = renderCodexIssueReport(result);
+
+  assert.ok(finding);
+  assert.equal(finding.severity, "high");
+  assert.match(evidence, /macOS Intel x86_64 support/);
+  assert.match(evidence, /Universal build/);
+  assert.match(evidence, /prohibited symbol/);
+  assert.match(evidence, /Codex CLI works fine on the same machine/);
+  assert.match(evidence, /official Codex desktop app on Linux/);
+  assert.match(evidence, /JetBrains IDEs/);
+  assert.match(finding.suggestedRule, /support policy/);
+  assert.match(finding.suggestedRule, /CLI works/);
+  assert.match(report, /codex_platform_availability/);
 });
 
 test("analyzeTargets detects Codex token burn and usage-drain loops", async () => {
@@ -1352,21 +1373,21 @@ test("issue-map ranks GitHub issue exports by detected Codex failure classes", a
   const markdown = renderIssueMapMarkdown(result);
   const kinds = result.summaries.map((summary) => summary.kind);
 
-  assert.equal(result.issueCount, 17);
+  assert.equal(result.issueCount, 20);
   assert.ok(result.matchedIssueCount >= 5);
   assert.ok(kinds.includes("codex_token_burn"));
   assert.ok(kinds.includes("codex_thinking_hang"));
+  assert.ok(kinds.includes("codex_platform_availability"));
   assert.ok(kinds.includes("codex_context_visibility"));
   assert.ok(kinds.includes("codex_remote_connection"));
   assert.ok(kinds.includes("codex_auth_verification"));
   assert.ok(kinds.includes("codex_model_routing_mismatch"));
   assert.ok(kinds.includes("codex_remote_compact"));
   assert.ok(kinds.includes("codex_mcp_discovery_mismatch"));
-  assert.ok(kinds.includes("codex_usage_bucket_confusion"));
-  assert.equal(result.summaries[0]?.kind, "codex_remote_connection");
-  assert.equal(result.roadmap[0]?.kind, "codex_remote_connection");
-  assert.match(result.roadmap[0]?.targetArtifact ?? "", /Remote connection/);
-  assert.match(result.roadmap[0]?.command ?? "", /remote-connection/);
+  assert.equal(result.summaries[0]?.kind, "codex_platform_availability");
+  assert.equal(result.roadmap[0]?.kind, "codex_platform_availability");
+  assert.match(result.roadmap[0]?.targetArtifact ?? "", /Platform availability/);
+  assert.match(result.roadmap[0]?.command ?? "", /platform-availability/);
   assert.match(markdown, /GitHub Issue Pain Map/);
   assert.match(markdown, /Maintainer Roadmap/);
   assert.match(markdown, /Usage evidence fixture/);
@@ -1377,6 +1398,9 @@ test("issue-map ranks GitHub issue exports by detected Codex failure classes", a
   assert.match(markdown, /#11189 GPT-5\.3-Codex being routed to GPT-5\.2/);
   assert.match(markdown, /#23794 Codex Desktop no longer shows visible context\/token usage indicator/);
   assert.match(markdown, /#10450 Remote Development in Codex Desktop App/);
+  assert.match(markdown, /#10410 Codex Desktop App: macOS Intel \(x86_64\) support/);
+  assert.match(markdown, /#11023 Codex desktop app for Linux/);
+  assert.match(markdown, /#4313 Extension for JetBrains IDEs \(PyCharm, IntelliJ, etc\.\)/);
   assert.match(markdown, /#14048 All models - Codex CLI hangs indefinitely on all prompts, no response generated/);
   assert.match(markdown, /#7156 Codex hangs during cli command execution/);
   assert.match(markdown, /gh issue list --repo openai\/codex/);
@@ -1449,9 +1473,9 @@ test("issue-map reads GitHub issue exports from stdin", async () => {
   };
 
   assert.deepEqual(result.sources, ["stdin"]);
-  assert.equal(result.issueCount, 17);
-  assert.equal(result.roadmap[0]?.kind, "codex_remote_connection");
-  assert.match(result.roadmap[0]?.command ?? "", /remote-connection/);
+  assert.equal(result.issueCount, 20);
+  assert.equal(result.roadmap[0]?.kind, "codex_platform_availability");
+  assert.match(result.roadmap[0]?.command ?? "", /platform-availability/);
 });
 
 test("process audit packages Codex process polling and high CPU evidence", () => {
@@ -1748,6 +1772,10 @@ test("package metadata points npm users back to the public project", async () =>
   assert.ok(packageJson.keywords?.includes("codex-windows-helper"));
   assert.ok(packageJson.keywords?.includes("codex-remote-control"));
   assert.ok(packageJson.keywords?.includes("codex-remote-connection"));
+  assert.ok(packageJson.keywords?.includes("codex-platform"));
+  assert.ok(packageJson.keywords?.includes("codex-macos-intel"));
+  assert.ok(packageJson.keywords?.includes("codex-linux"));
+  assert.ok(packageJson.keywords?.includes("codex-jetbrains"));
   assert.ok(packageJson.keywords?.includes("remote-ssh"));
   assert.ok(packageJson.keywords?.includes("codex-mcp"));
   assert.ok(packageJson.keywords?.includes("mcp-runtime"));
@@ -2279,6 +2307,7 @@ test("published JSON schemas describe CLI result contracts", async () => {
   assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("codex_connectivity"));
   assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("codex_remote_control"));
   assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("codex_remote_connection"));
+  assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("codex_platform_availability"));
   assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("codex_terminal_output_integrity"));
   assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("codex_subagent_lifecycle"));
   assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("codex_mcp_discovery_mismatch"));
@@ -2376,7 +2405,7 @@ test("benchmark covers public fixture failure classes", async () => {
   const markdown = renderBenchmarkMarkdown(benchmark);
 
   assert.equal(benchmark.passed, true);
-  assert.equal(benchmark.cases.length, 43);
+  assert.equal(benchmark.cases.length, 44);
   assert.ok(benchmark.cases.some((item) => item.id === "clean-validated-run" && item.score === 100));
   assert.ok(benchmark.cases.some((item) => item.id === "failed-workflow" && item.detectedKinds.includes("test_failure")));
   assert.ok(benchmark.cases.some((item) => item.id === "context-compaction" && item.detectedKinds.includes("context_compaction")));
@@ -2398,6 +2427,7 @@ test("benchmark covers public fixture failure classes", async () => {
   assert.ok(benchmark.cases.some((item) => item.id === "codex-connectivity" && item.detectedKinds.includes("codex_connectivity")));
   assert.ok(benchmark.cases.some((item) => item.id === "codex-remote-control" && item.detectedKinds.includes("codex_remote_control")));
   assert.ok(benchmark.cases.some((item) => item.id === "codex-remote-connection" && item.detectedKinds.includes("codex_remote_connection")));
+  assert.ok(benchmark.cases.some((item) => item.id === "codex-platform-availability" && item.detectedKinds.includes("codex_platform_availability")));
   assert.ok(benchmark.cases.some((item) => item.id === "codex-terminal-output-integrity" && item.detectedKinds.includes("codex_terminal_output_integrity")));
   assert.ok(benchmark.cases.some((item) => item.id === "codex-subagent-lifecycle" && item.detectedKinds.includes("codex_subagent_lifecycle")));
   assert.ok(benchmark.cases.some((item) => item.id === "codex-mcp-runtime" && item.detectedKinds.includes("codex_mcp_runtime")));
@@ -2432,7 +2462,7 @@ test("scorecard combines doctor readiness and benchmark evidence", async () => {
   assert.equal(scorecard.doctor.status, "ready");
   assert.equal(scorecard.doctor.score, 100);
   assert.equal(scorecard.benchmark.status, "pass");
-  assert.equal(scorecard.benchmark.cases, 43);
+  assert.equal(scorecard.benchmark.cases, 44);
   assert.match(markdown, /trace-to-skill Scorecard/);
   assert.match(markdown, /Codex readiness/);
   assert.match(markdown, /Benchmark Summary/);
@@ -2448,9 +2478,9 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.equal(brief.scorecard.doctorStatus, "ready");
   assert.equal(brief.scorecard.doctorScore, 100);
   assert.equal(brief.scorecard.benchmarkStatus, "pass");
-  assert.equal(brief.scorecard.benchmarkCases, 43);
+  assert.equal(brief.scorecard.benchmarkCases, 44);
   assert.equal(brief.packageName, "trace-to-skill");
-  assert.equal(brief.packageVersion, "0.1.98");
+  assert.equal(brief.packageVersion, "0.1.99");
   assert.equal(brief.license, "Apache-2.0");
   assert.ok(brief.repository?.includes("github.com/grnbtqdbyx-create/trace-to-skill"));
   assert.ok(brief.qualification.max500.length <= 500);
@@ -2458,7 +2488,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.match(markdown, /OpenAI OSS Brief/);
   assert.match(markdown, /Why This Repository Qualifies/);
   assert.match(markdown, /500-Character Version/);
-  assert.match(markdown, /npx trace-to-skill@0\.1\.98/);
+  assert.match(markdown, /npx trace-to-skill@0\.1\.99/);
   assert.match(markdown, /Weekly Codex Issue Radar/);
 });
 
