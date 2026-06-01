@@ -395,6 +395,13 @@ function roadmapAction(kind: FindingKind): { targetArtifact: string; command: st
     };
   }
 
+  if (kind === "codex_subagent_orchestration") {
+    return {
+      targetArtifact: "Subagent orchestration fixture and configuration evidence report",
+      command: "trace-to-skill codex-report ./runs --output openai-codex-subagent-orchestration.md"
+    };
+  }
+
   if (kind === "codex_subagent_lifecycle" || kind === "codex_subagent_prompt_leakage") {
     return {
       targetArtifact: "Subagent lifecycle fixture and session audit",

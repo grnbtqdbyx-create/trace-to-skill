@@ -195,6 +195,32 @@
     "updatedAt": "2026-02-27T22:41:04Z"
   },
   {
+    "number": 2604,
+    "title": "Subagent Support",
+    "body": "Request for official subagent functionality in Codex. Users want agent registry and persistence, TUI integration for agent creation, prompt templating for agent definitions, agent selection interface, /agents management command, agent switching, active-agent visual indicators, context isolation, and specialized agent archetypes like code-reviewer, architect, debugger, documentation, and test-writer. Comments discuss headless codex exec workaround subagents, parallel jobs, timeout handling, and preserving context.",
+    "url": "https://github.com/openai/codex/issues/2604",
+    "labels": [
+      { "name": "enhancement" },
+      { "name": "subagent" }
+    ],
+    "commentsCount": 103,
+    "reactions": { "totalCount": 415 },
+    "updatedAt": "2026-04-11T18:21:20Z"
+  },
+  {
+    "number": 11701,
+    "title": "Subagent configuration and orchestration",
+    "body": "Users request subagent configuration and orchestration so model and reasoning_effort can be configured per agent in ~/.codex/config.toml, agents_config.toml, or repo-level .agents/subagents/explore_agent.md files. Pain point: one global model or reasoning setting sacrifices planning quality, speed, and cost. Requests include /agents -> list, /agents -> config, enable/disable subagents, planner/explorer/implementer roles, Spark as fast explorer, per-agent permissions, read_only, MCP tool allowlists, repo-level overrides, user-level defaults, and whether instruction files append to or override AGENTS.md.",
+    "url": "https://github.com/openai/codex/issues/11701",
+    "labels": [
+      { "name": "enhancement" },
+      { "name": "subagent" }
+    ],
+    "commentsCount": 69,
+    "reactions": { "totalCount": 53 },
+    "updatedAt": "2026-04-11T18:21:16Z"
+  },
+  {
     "number": 14048,
     "title": "All models - Codex CLI hangs indefinitely on all prompts, no response generated",
     "body": "Codex CLI accepts prompts but produces massively delayed response. It hangs indefinitely with no streaming output, no error, no timeout, all prompt types fail, status bar says gpt-5.4 high - 100% left, and no tokens are consumed. RUST_LOG codex exec ping shows unhandled responses event response.in_progress, response.content_part.added, response.output_text.done, response.content_part.done; other runs stop after mcp startup: no servers. Ctrl-C and /exit do not respond for minutes.",

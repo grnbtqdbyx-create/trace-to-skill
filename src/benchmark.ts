@@ -77,6 +77,12 @@ const BENCHMARK_CASES: BenchmarkCaseDefinition[] = [
     expectedKinds: ["codex_subagent_prompt_leakage", "weak_evidence"]
   },
   {
+    id: "codex-subagent-orchestration",
+    title: "Codex subagent orchestration and configuration gap",
+    fixture: "fixtures/codex-subagent-orchestration.md",
+    expectedKinds: ["codex_subagent_orchestration", "weak_evidence"]
+  },
+  {
     id: "codex-latest-turn-drift",
     title: "Codex latest-turn drift after compaction",
     fixture: "fixtures/codex-latest-turn-drift.md",

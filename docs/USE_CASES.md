@@ -12,6 +12,7 @@ npx trace-to-skill demo --list
 npx trace-to-skill demo remote-compact
 npx trace-to-skill demo context-fork-bloat
 npx trace-to-skill demo subagent-prompt-leakage
+npx trace-to-skill demo subagent-orchestration
 npx trace-to-skill demo windows-helper-path
 npx trace-to-skill demo patch-overwrite
 npx trace-to-skill demo latency-regression
@@ -34,7 +35,7 @@ What it proves:
 
 - packaged fixtures can produce a real Codex issue report immediately
 - maintainers can inspect the output shape before sharing any private log
-- demos cover remote compact failures, context fork bloat, subagent prompt leakage, usage bucket confusion, Windows helper path failures, patch overwrite safety, approval friction, latency, Thinking hangs, clipboard/attachment regressions, deeplink/OAuth launch regressions, connector auth-cache regressions, MCP discovery/config-scope mismatches, Streamable HTTP MCP parse/handshake failures, hooks runtime failures, terminal output/scrollback integrity, subagent lifecycle drift, token burn, sensitive files, and prompt injection
+- demos cover remote compact failures, context fork bloat, subagent prompt leakage, subagent orchestration/configuration demand, usage bucket confusion, Windows helper path failures, patch overwrite safety, approval friction, latency, Thinking hangs, clipboard/attachment regressions, deeplink/OAuth launch regressions, connector auth-cache regressions, MCP discovery/config-scope mismatches, Streamable HTTP MCP parse/handshake failures, hooks runtime failures, terminal output/scrollback integrity, subagent lifecycle drift, token burn, sensitive files, and prompt injection
 - `sensitive-audit` scans filenames and paths before an agent run, without reading file contents, so teams can build `.agentignore`, `.aiexclude`, `.codexignore`, `.gitignore`, or sandbox permission profiles from a concrete repo report
 - `lsp-audit` scans repo language signals and PATH availability so teams know which language servers are ready before asking Codex for symbol-aware edits
 
@@ -59,7 +60,7 @@ What it proves:
 Recommended CI surface:
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.99
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.100
   with:
     mode: all
     doctor-threshold: "85"
@@ -224,6 +225,19 @@ npx trace-to-skill codex-report ./runs --output openai-codex-subagent-prompt-lea
 This catches signals such as delegated `spawn_agent` messages recorded as assistant/commentary JSON envelopes, child rollout lines containing `recipient` or `trigger_turn`, same-turn `multi_tool_use.parallel` child prompts leaking into sibling child rollouts, generic workspace acknowledgements instead of assigned outputs, unexpected child tool calls from leaked sibling prompts, and `wait_agent` or `close_agent` reporting completion despite the wrong task.
 
 Include Codex Desktop/app/CLI version, MultiAgentV2 state, OS, model, parent thread id, child thread ids, exact `spawn_agent` arguments, `fork_turns`, role/profile, whether `multi_tool_use.parallel` or same-turn parallel spawning was used, redacted child rollout line order, first user/task message, assistant/commentary envelope lines, sibling prompt excerpts, `wait_agent` and `close_agent` results, unexpected child tool calls, and sequential single-child versus parallel-child controls.
+
+## 10.1. Codex Subagent Orchestration Evidence
+
+Use this when users ask for official subagent support, per-agent model/reasoning config, role definitions, MCP tool scoping, permissions, context isolation, or repo-level subagent files.
+
+```bash
+npx trace-to-skill demo subagent-orchestration
+npx trace-to-skill codex-report ./runs --output openai-codex-subagent-orchestration.md
+```
+
+This catches signals such as official subagent functionality, agent registry and persistence, TUI agent creation, `/agents`, active-agent indicators, code-reviewer/architect/debugger/documentation/test-writer roles, `reasoning_effort` per helper, `agents_config.toml`, `~/.codex/config.toml`, `.agents/subagents/*.md`, repo/user overrides, MCP tool allowlists, `read_only`, sandbox settings, and orchestrator/planner/explorer workflows that need different models or context budgets.
+
+Include Codex app/CLI/TUI version, whether built-in `spawn_agent` or `/agents` exists, the desired role definitions, per-agent model/reasoning/speed settings, config-file shape, repo-level versus user-level override expectations, instruction-file behavior versus `AGENTS.md`, permission/sandbox/read-only settings, MCP allowlist or denylist expectations, context-isolation requirements, planner/explorer/implementer/reviewer examples, and any current headless `codex exec` workaround logs, timeout settings, and cost notes.
 
 ## 11. Codex Usage Evidence Packaging
 

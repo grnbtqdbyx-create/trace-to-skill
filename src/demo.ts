@@ -37,6 +37,12 @@ const DEMO_SCENARIOS: DemoScenario[] = [
     description: "MultiAgentV2 child agents receive assistant/commentary prompt envelopes or sibling prompts despite `fork_turns: \"none\"`."
   },
   {
+    id: "subagent-orchestration",
+    title: "Codex subagent orchestration and configuration gap",
+    fixture: "fixtures/codex-subagent-orchestration.md",
+    description: "Official subagent support, per-agent model/reasoning config, role definitions, MCP tool scoping, and repo-level orchestration are missing or unclear."
+  },
+  {
     id: "windows-helper-path",
     title: "Codex Windows helper path failure",
     fixture: "fixtures/codex-windows-helper-path.md",
@@ -236,6 +242,7 @@ export function renderDemoMarkdown(result: DemoResult): string {
     "trace-to-skill demo remote-compact",
     "trace-to-skill demo context-fork-bloat",
     "trace-to-skill demo subagent-prompt-leakage",
+    "trace-to-skill demo subagent-orchestration",
     "trace-to-skill demo windows-helper-path",
     "trace-to-skill demo patch-overwrite",
     "trace-to-skill demo thinking-hang",
@@ -274,6 +281,7 @@ export function renderDemoScenarioList(scenarios = listDemoScenarios()): string 
     "trace-to-skill demo remote-compact",
     "trace-to-skill demo context-fork-bloat",
     "trace-to-skill demo subagent-prompt-leakage",
+    "trace-to-skill demo subagent-orchestration",
     "trace-to-skill demo windows-helper-path",
     "trace-to-skill demo patch-overwrite",
     "trace-to-skill demo latency-regression",

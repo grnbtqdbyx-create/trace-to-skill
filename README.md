@@ -78,6 +78,7 @@ Use it when you need to:
 - **Report remote compact failures:** run `trace-to-skill codex-report ./runs` when `/compact` or auto-compaction fails with `responses/compact` timeouts, stream disconnects, provider timeout workarounds, or long-thread recovery loss.
 - **Diagnose context fork bloat:** run `trace-to-skill codex-report ./runs` when a conversation fork duplicates parent transcript blocks, inflates `input_tokens`, changes `prompt_cache_key`, or loses prompt-cache lineage before new work happens.
 - **Catch subagent prompt leakage:** run `trace-to-skill codex-report ./runs` when `spawn_agent` with `fork_turns: "none"` records the delegated task as an assistant/commentary envelope or a parallel child sees a sibling prompt.
+- **Map subagent orchestration demand:** run `trace-to-skill demo subagent-orchestration` when users ask for official subagents, per-agent model/reasoning config, role definitions, MCP tool scoping, or repo-level subagent files.
 - **Diagnose Windows helper path failures:** run `trace-to-skill codex-report ./runs` when Codex Desktop resolves `rg.exe`, `node_repl.exe`, Browser, Chrome, or Computer Use helpers through blocked WindowsApps/MSIX paths, missing LocalCache bins, or broken `CodexSandboxUsers` ACLs.
 - **Triage stuck Codex sessions:** run `trace-to-skill analyze ./runs` to catch context compaction failures such as compact stream disconnects, `context_length_exceeded`, and schema mismatches.
 - **Catch latest-turn drift:** run `trace-to-skill analyze ./runs` when Codex answers an older prompt, repeats a previous response, forgets recent edits after compaction, or leaks raw tool payload text into chat.
@@ -224,6 +225,7 @@ Trace analysis detects run-level failures:
 | Context compaction | Codex compact task fails, disconnects, loops, or hits `context_length_exceeded` |
 | Codex context fork bloat | Conversation forks duplicate parent turns, inflate token counts, break prompt-cache lineage, or mix `fork_context` history into child context |
 | Codex subagent prompt leakage | MultiAgentV2 children receive assistant/commentary prompt envelopes or sibling prompts despite `fork_turns: "none"` |
+| Codex subagent orchestration | Official subagent support, role definitions, per-agent model/reasoning config, MCP tool scoping, repo/user overrides, or context isolation are missing or unclear |
 | Codex latest-turn drift | Long or compacted conversations answer stale prompts, redo old tasks, forget recent edits, or expose raw tool payloads |
 | Codex latency regression | Model/runtime routing, thinking stalls, search/read, or compaction latency makes simple tasks take minutes or hours |
 | Codex thinking hang | A turn, tool call, or Responses stream appears accepted but no assistant follow-up arrives while the UI stays on Thinking/Working |
@@ -283,6 +285,7 @@ trace-to-skill demo
 trace-to-skill demo --list
 trace-to-skill demo context-fork-bloat
 trace-to-skill demo subagent-prompt-leakage
+trace-to-skill demo subagent-orchestration
 trace-to-skill demo latency-regression
 trace-to-skill demo thinking-hang
 trace-to-skill demo clipboard-attachment
@@ -543,7 +546,7 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v5
-      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.99
+      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.100
         with:
           mode: all
           doctor-threshold: "85"
@@ -592,7 +595,7 @@ Composite action usage:
 
 ```yaml
 - id: trace-to-skill
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.99
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.100
   with:
     mode: all
     doctor-threshold: "85"
@@ -610,7 +613,7 @@ Issue-map action usage for direct GitHub issue demand mining:
 
 ```yaml
 - id: codex-issue-map
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.99
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.100
   with:
     mode: issue-map
     issue-map-repo: openai/codex
@@ -656,7 +659,7 @@ Action outputs:
 
 By default, generated reports are also appended to the GitHub Actions Job Summary. Set `job-summary: "false"` to disable that UI output.
 
-Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.99` executes that release's checked-out source instead of pulling the default branch at runtime.
+Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.100` executes that release's checked-out source instead of pulling the default branch at runtime.
 
 ## Codex Skill
 

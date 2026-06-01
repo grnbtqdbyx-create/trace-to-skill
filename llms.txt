@@ -90,6 +90,7 @@ npx trace-to-skill demo connector-auth-cache
 npx trace-to-skill demo auth-verification
 npx trace-to-skill demo context-fork-bloat
 npx trace-to-skill demo subagent-prompt-leakage
+npx trace-to-skill demo subagent-orchestration
 npx trace-to-skill demo usage-bucket-confusion
 npx trace-to-skill demo context-visibility
 npx trace-to-skill demo remote-connection
@@ -134,7 +135,7 @@ gh issue list --repo openai/codex --state all --limit 100 --json number,title,bo
 ## GitHub Action
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.99
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.100
   with:
     mode: all
     doctor-threshold: "85"
@@ -147,7 +148,7 @@ gh issue list --repo openai/codex --state all --limit 100 --json number,title,bo
 ## Weekly Codex Issue Radar
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.99
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.100
   with:
     mode: issue-map
     issue-map-repo: openai/codex

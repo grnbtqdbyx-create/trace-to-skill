@@ -184,6 +184,14 @@ Common signals include `spawn_agent` arguments with `fork_turns: "none"`, the in
 
 The fix is to capture Codex Desktop/app/CLI version, MultiAgentV2 state, OS, model, parent thread id, child thread ids, exact `spawn_agent` arguments, `fork_turns`, role/profile, whether `multi_tool_use.parallel` or same-turn parallel spawning was used, redacted child rollout line order, first user/task message, assistant/commentary envelope lines, sibling prompt excerpts, `wait_agent` and `close_agent` results, unexpected child tool calls, and sequential single-child versus parallel-child controls.
 
+## Codex Subagent Orchestration
+
+Codex users are asking for official subagent orchestration, not only bug fixes around existing child sessions. The missing capability is a supported way to create role-specific helpers, isolate context, configure model and reasoning per helper, scope MCP tools and permissions, and keep user-level and repo-level subagent definitions predictable.
+
+Common signals include requests for official subagent functionality, `agent registry` or persistent agent storage, TUI agent creation, `/agents`, agent switching, active-agent indicators, code-reviewer/architect/debugger/documentation/test-writer roles, `Subagent configuration and orchestration`, per-agent model or `reasoning_effort`, `agents_config.toml`, `~/.codex/config.toml`, `.agents/subagents/*.md`, repo-level overrides, user-level defaults, `read_only`, sandbox settings, MCP tool allowlists, and planner/explorer/implementer workflows that mix larger planner models with faster exploration agents.
+
+The fix is to capture the requested workflow, Codex app/CLI/TUI version, whether built-in `spawn_agent` or `/agents` exists, desired role definitions, per-agent model/reasoning/speed settings, config-file shape, repo-level versus user-level override behavior, whether instruction files append to or override `AGENTS.md`, permission and sandbox settings, MCP allowlist or denylist expectations, context-isolation needs, examples of planner/explorer/implementer/reviewer roles, and whether current `codex exec` workarounds preserve logs, timeouts, and cost.
+
 ## Codex Streamable HTTP MCP
 
 Streamable HTTP and SSE MCP servers can be reachable and still fail inside Codex before or during tool calls. This is different from discovery mismatch because the server may initialize or expose tools, and different from stdio runtime failure because the failure sits in HTTP framing, JSON-RPC parsing, session reuse, auth expectations, or reconnect behavior.

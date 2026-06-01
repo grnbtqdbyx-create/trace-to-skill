@@ -1,10 +1,10 @@
 # trace-to-skill Demo
 
-Scenario: **Codex platform availability gap**
+Scenario: **Codex subagent orchestration and configuration gap**
 
-Codex Desktop, Linux app, or JetBrains extension demand is blocked by unsupported architecture, OS, package, or IDE surface.
+Official subagent support, per-agent model/reasoning config, role definitions, MCP tool scoping, and repo-level orchestration are missing or unclear.
 
-Fixture: `fixtures/codex-platform-availability.md`
+Fixture: `fixtures/codex-subagent-orchestration.md`
 
 This is a packaged public fixture, so you can try the project without collecting a private trace first.
 
@@ -14,7 +14,7 @@ This is a packaged public fixture, so you can try the project without collecting
 
 Score: **75/100**
 
-Likely failure class: **Codex platform availability or unsupported surface (codex_platform_availability, high)**
+Likely failure class: **Codex subagent orchestration or configuration gap (codex_subagent_orchestration, high)**
 
 Agent workflow needs clearer verification, instruction, or security hardening before broad reuse.
 
@@ -23,25 +23,25 @@ Agent workflow needs clearer verification, instruction, or security hardening be
 ```md
 ### What happened?
 
-trace-to-skill detected Codex platform availability or unsupported surface (codex_platform_availability). Codex adoption is blocked when the CLI works but the official Desktop app, IDE extension, or packaged build is unavailable for a user's platform, architecture, distro, or IDE ecosystem.
+trace-to-skill detected Codex subagent orchestration or configuration gap (codex_subagent_orchestration). Users want official subagent functionality that can isolate context, specialize roles, and configure model, reasoning, permissions, MCP tools, and repo-level instructions per helper instead of forcing one global agent configuration.
 
 ### Detected failure class
 
-- codex_platform_availability: Codex platform availability or unsupported surface (high)
+- codex_subagent_orchestration: Codex subagent orchestration or configuration gap (high)
 
 ### Evidence
 
-#### Codex platform availability or unsupported surface
-- fixtures/codex-platform-availability.md:3 - Public issue cluster: Codex Desktop App macOS Intel support, Codex desktop app for Linux, and JetBrains IDE extension demand.
-- fixtures/codex-platform-availability.md:7 - - A user requests macOS Intel x86_64 support for the Codex Desktop App or a Universal build with arm64 + x86_64.
-- fixtures/codex-platform-availability.md:8 - - Environment evidence: Intel Mac, `uname -m => x86_64`, macOS 13/14/15, Codex `.dmg`, and `Codex.app`.
-- fixtures/codex-platform-availability.md:9 - - When the `.dmg` is mounted, `Codex.app` shows the prohibited symbol and macOS says the app can't run on this Mac because of incompatible architecture.
-- fixtures/codex-platform-availability.md:10 - - Codex CLI works fine on the same machine, but the desktop app cannot launch: `which codex => /usr/local/bin/codex` and `codex --version => codex-cli 0.58.0`.
-- fixtures/codex-platform-availability.md:16 - - Users ask for an official Codex desktop app on Linux because they want the app experience on Ubuntu, Arch, NixOS, Fedora, Debian, Wayland, and X11 desktops.
+#### Codex subagent orchestration or configuration gap
+- fixtures/codex-subagent-orchestration.md:3 - Public issue cluster: Subagent Support and Subagent configuration and orchestration.
+- fixtures/codex-subagent-orchestration.md:5 - ## Official Subagent Support
+- fixtures/codex-subagent-orchestration.md:7 - - Users request official subagent functionality in Codex instead of prompt-only or headless CLI workarounds.
+- fixtures/codex-subagent-orchestration.md:8 - - The requested system includes an agent registry, persistent agent storage, TUI integration for agent creation, prompt templating for agent definitions, and an agent selection interface.
+- fixtures/codex-subagent-orchestration.md:9 - - Expected subagent benefits include specialized expertise, context isolation, workflow optimization, separate concerns, focused conversations, and less context switching.
+- fixtures/codex-subagent-orchestration.md:15 - - Users want subagent configuration and orchestration so each helper can use a different model, `reasoning_effort`, permission profile, and MCP tool set.
 
 ### Diagnostics to attach
 
-- When reporting Codex platform availability gaps, capture requested surface (Desktop app, IDE extension, or packaged build), platform and architecture such as macOS Intel x86_64 or Linux distro/window system, install artifact and version, exact launch/install error, screenshot text such as prohibited icon or incompatible architecture, CLI version and whether CLI works on the same machine, alternative surfaces tried, package format requested, ecosystem workflow such as JetBrains/PyCharm/IntelliJ, demand evidence from comments/reactions or signup forms, and whether docs/release notes state the support policy.
+- When reporting Codex subagent orchestration gaps, capture the requested subagent workflow, Codex app/CLI/TUI version, whether built-in `spawn_agent` or `/agents` exists, desired role definitions, per-agent model/reasoning/speed settings, `agents_config.toml` or `~/.codex/config.toml` shape, repo-level versus user-level override needs, instruction-file behavior versus AGENTS.md, permission/sandbox/read-only settings, MCP tool allowlist/denylist expectations, context-isolation requirements, examples of planner/explorer/implementer/reviewer roles, and whether current workarounds such as headless `codex exec` subagents preserve logs, timeouts, and cost.
 
 ### Privacy
 
@@ -50,25 +50,25 @@ trace-to-skill detected Codex platform availability or unsupported surface (code
 
 ## Findings
 
-### 1. Codex platform availability or unsupported surface
+### 1. Codex subagent orchestration or configuration gap
 
 Severity: **high**
 
-Codex adoption is blocked when the CLI works but the official Desktop app, IDE extension, or packaged build is unavailable for a user's platform, architecture, distro, or IDE ecosystem.
+Users want official subagent functionality that can isolate context, specialize roles, and configure model, reasoning, permissions, MCP tools, and repo-level instructions per helper instead of forcing one global agent configuration.
 
 Evidence:
-- `fixtures/codex-platform-availability.md:3` Public issue cluster: Codex Desktop App macOS Intel support, Codex desktop app for Linux, and JetBrains IDE extension demand.
-- `fixtures/codex-platform-availability.md:7` - A user requests macOS Intel x86_64 support for the Codex Desktop App or a Universal build with arm64 + x86_64.
-- `fixtures/codex-platform-availability.md:8` - Environment evidence: Intel Mac, `uname -m => x86_64`, macOS 13/14/15, Codex `.dmg`, and `Codex.app`.
-- `fixtures/codex-platform-availability.md:9` - When the `.dmg` is mounted, `Codex.app` shows the prohibited symbol and macOS says the app can't run on this Mac because of incompatible architecture.
-- `fixtures/codex-platform-availability.md:10` - Codex CLI works fine on the same machine, but the desktop app cannot launch: `which codex => /usr/local/bin/codex` and `codex --version => codex-cli 0.58.0`.
-- `fixtures/codex-platform-availability.md:16` - Users ask for an official Codex desktop app on Linux because they want the app experience on Ubuntu, Arch, NixOS, Fedora, Debian, Wayland, and X11 desktops.
-- `fixtures/codex-platform-availability.md:21` ## JetBrains IDE Extension
-- `fixtures/codex-platform-availability.md:23` - Users request an official Codex extension or plugin for JetBrains IDEs such as PyCharm, IntelliJ, WebStorm, CLion, and Rider.
+- `fixtures/codex-subagent-orchestration.md:3` Public issue cluster: Subagent Support and Subagent configuration and orchestration.
+- `fixtures/codex-subagent-orchestration.md:5` ## Official Subagent Support
+- `fixtures/codex-subagent-orchestration.md:7` - Users request official subagent functionality in Codex instead of prompt-only or headless CLI workarounds.
+- `fixtures/codex-subagent-orchestration.md:8` - The requested system includes an agent registry, persistent agent storage, TUI integration for agent creation, prompt templating for agent definitions, and an agent selection interface.
+- `fixtures/codex-subagent-orchestration.md:9` - Expected subagent benefits include specialized expertise, context isolation, workflow optimization, separate concerns, focused conversations, and less context switching.
+- `fixtures/codex-subagent-orchestration.md:15` - Users want subagent configuration and orchestration so each helper can use a different model, `reasoning_effort`, permission profile, and MCP tool set.
+- `fixtures/codex-subagent-orchestration.md:16` - A common desired split is a strong planner/orchestrator model with faster explorer or implementation subagents such as Spark for scoped tasks.
+- `fixtures/codex-subagent-orchestration.md:18` - Requested config surfaces include `~/.codex/config.toml`, `agents_config.toml`, and repo-level files such as `.agents/subagents/explore_agent.md`.
 
 Suggested rule:
 
-> When reporting Codex platform availability gaps, capture requested surface (Desktop app, IDE extension, or packaged build), platform and architecture such as macOS Intel x86_64 or Linux distro/window system, install artifact and version, exact launch/install error, screenshot text such as prohibited icon or incompatible architecture, CLI version and whether CLI works on the same machine, alternative surfaces tried, package format requested, ecosystem workflow such as JetBrains/PyCharm/IntelliJ, demand evidence from comments/reactions or signup forms, and whether docs/release notes state the support policy.
+> When reporting Codex subagent orchestration gaps, capture the requested subagent workflow, Codex app/CLI/TUI version, whether built-in `spawn_agent` or `/agents` exists, desired role definitions, per-agent model/reasoning/speed settings, `agents_config.toml` or `~/.codex/config.toml` shape, repo-level versus user-level override needs, instruction-file behavior versus AGENTS.md, permission/sandbox/read-only settings, MCP tool allowlist/denylist expectations, context-isolation requirements, examples of planner/explorer/implementer/reviewer roles, and whether current workarounds such as headless `codex exec` subagents preserve logs, timeouts, and cost.
 
 
 ## Reporter Notes
@@ -102,6 +102,7 @@ Suggested rule:
 - `usage-bucket-confusion`: Usage popovers show 5h and weekly percentages without clear remaining/used, rolling/calendar, or account/workspace scope.
 - `context-visibility`: Desktop context or token usage indicators disappear, leaving long-session compaction pressure invisible.
 - `remote-connection`: Desktop remote SSH workspaces, Settings > Connections, remote app-server, tunnel, or remote filesystem evidence breaks.
+- `platform-availability`: Codex Desktop, Linux app, or JetBrains extension demand is blocked by unsupported architecture, OS, package, or IDE surface.
 - `token-burn`: Usage drains from background polling, idle activity, compaction loops, retries, or cached-heavy turns.
 - `patch-overwrite`: `apply_patch` accepts `*** Add File` for an existing path, turning a create operation into a silent overwrite.
 - `sensitive-files`: Secrets, local credentials, production env files, or private databases enter agent context.
@@ -114,6 +115,7 @@ trace-to-skill demo --list
 trace-to-skill demo remote-compact
 trace-to-skill demo context-fork-bloat
 trace-to-skill demo subagent-prompt-leakage
+trace-to-skill demo subagent-orchestration
 trace-to-skill demo windows-helper-path
 trace-to-skill demo patch-overwrite
 trace-to-skill demo thinking-hang

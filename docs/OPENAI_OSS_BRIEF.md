@@ -3,14 +3,14 @@
 | Field | Value |
 | --- | --- |
 | Repository | https://github.com/grnbtqdbyx-create/trace-to-skill |
-| Package | trace-to-skill@0.1.99 |
+| Package | trace-to-skill@0.1.100 |
 | License | Apache-2.0 |
 | Codex readiness | ready (100/100) |
-| Benchmark | pass, 44 cases |
+| Benchmark | pass, 45 cases |
 
 ## Why This Repository Qualifies
 
-trace-to-skill helps open-source maintainers adopt Codex safely by turning failed coding-agent runs into evidence-backed rules, reusable workflows, CI gates, and a weekly Codex Issue Radar for live GitHub issue demand. It supports real maintenance work: PR review, issue triage, release quality, MCP risk, prompt-injection defense, privacy-preserving trace sharing, and repeat failure reduction. The repository is ready, scores 100/100 on the local Codex readiness doctor, and ships a deterministic benchmark with 44 public fixture cases.
+trace-to-skill helps open-source maintainers adopt Codex safely by turning failed coding-agent runs into evidence-backed rules, reusable workflows, CI gates, and a weekly Codex Issue Radar for live GitHub issue demand. It supports real maintenance work: PR review, issue triage, release quality, MCP risk, prompt-injection defense, privacy-preserving trace sharing, and repeat failure reduction. The repository is ready, scores 100/100 on the local Codex readiness doctor, and ships a deterministic benchmark with 45 public fixture cases.
 
 ### 500-Character Version
 
@@ -27,10 +27,10 @@ API credits would power optional maintainer workflows on top of the local determ
 ## Evidence
 
 - Public repository: https://github.com/grnbtqdbyx-create/trace-to-skill
-- One-command package: npx trace-to-skill@0.1.99
+- One-command package: npx trace-to-skill@0.1.100
 - Open-source license: Apache-2.0
 - Codex readiness doctor: ready, 100/100, 0 failed checks.
-- Public fixture benchmark: pass, 44 cases.
+- Public fixture benchmark: pass, 45 cases.
 - GitHub issue demand mining: issue-map fetches or reads piped GitHub CLI issue JSON, then ranks OpenAI/Codex issues by failure class, comments, reactions, evidence gaps, and Maintainer Roadmap next artifacts.
 - Weekly Codex Issue Radar: init --issue-map-repo owner/name scaffolds a scheduled Action that fetches live GitHub issues and publishes the pain map to the job summary or a stable tracking issue comment.
 - Maintainer control: generated rules are suggestions, evidence is line-linked, and secrets can be redacted before sharing.

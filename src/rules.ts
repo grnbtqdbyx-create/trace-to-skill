@@ -213,6 +213,30 @@ const RULES: RuleDefinition[] = [
     suggestedSkill: "codex-subagent-prompt-boundary-triage"
   },
   {
+    kind: "codex_subagent_orchestration",
+    severity: "high",
+    title: "Codex subagent orchestration or configuration gap",
+    why: "Users want official subagent functionality that can isolate context, specialize roles, and configure model, reasoning, permissions, MCP tools, and repo-level instructions per helper instead of forcing one global agent configuration.",
+    patterns: [
+      /\bSubagent Support\b|\bofficial subagent functionality\b|\bsubagent functionality\b.{0,180}\b(Codex|CLI|TUI|agent registry|agent management)\b/i,
+      /\b(subagents?|sub-agents?)\b.{0,220}\b(specialized expertise|context isolation|workflow optimization|user productivity|separate concerns|focused conversations)\b/i,
+      /\b(agent registry|agent storage|agents_store\.rs|agent definitions?|agent selection interface|agent management command)\b.{0,220}\b(Codex|subagent|TUI|prompt templating|creation workflow|switching)\b/i,
+      /\b\/agents\b.{0,180}\b(agent creation|agent switching|agent management|active-agent|subagent configuration|list|config|enable|disable)\b/i,
+      /\b(code-reviewer|architect|debugger|documentation|test-writer)\b.{0,180}\b(subagent|agent archetype|agent type|role|specialized)\b/i,
+      /\b(subagent configuration|Subagent configuration and orchestration|per-agent model|per agent model|per-agent reasoning|per agent reasoning)\b/i,
+      /\b(per-agent|per agent|agent_type|agents_config\.toml)\b.{0,220}\b(model|reasoning_effort|reasoning level|service tier|speed)\b/i,
+      /\b(model|reasoning_effort|reasoning level|service tier|speed)\b.{0,220}\b(per-agent|per agent|agent_type|agents_config\.toml)\b/i,
+      /\bagents_config\.toml\b|\b~\/\.codex\/config\.toml\b.{0,160}\b(subagents?|sub-agents?|per-agent|agent_type|reasoning_effort)\b/i,
+      /\b(\.agents\/subagents\/[^\s]+\.md|subagent definition files?|instructions_file|repo-level overrides?|user-level|AGENTS\.md)\b.{0,220}\b(subagents?|agents?|instructions|configuration)\b/i,
+      /\b(MCP tools?|permissions?|read_only|sandbox|config per agent|enable|disable|pass all|only specified)\b.{0,220}\b(subagents?|sub-agents?|agents_config|agent_type|per-agent)\b/i,
+      /\b(orchestrator|planning|planner|explorer|implementer|reviewer|Spark)\b.{0,220}\b(subagents?|sub-agents?|agent_type|per-agent|model|reasoning|context window)\b/i,
+      /\bcodex --yolo exec\b.{0,220}\b(subagents?|parallel|timeout|logs?|cost|workarounds?)\b/i
+    ],
+    suggestedRule:
+      "When reporting Codex subagent orchestration gaps, capture the requested subagent workflow, Codex app/CLI/TUI version, whether built-in `spawn_agent` or `/agents` exists, desired role definitions, per-agent model/reasoning/speed settings, `agents_config.toml` or `~/.codex/config.toml` shape, repo-level versus user-level override needs, instruction-file behavior versus AGENTS.md, permission/sandbox/read-only settings, MCP tool allowlist/denylist expectations, context-isolation requirements, examples of planner/explorer/implementer/reviewer roles, and whether current workarounds such as headless `codex exec` subagents preserve logs, timeouts, and cost.",
+    suggestedSkill: "codex-subagent-orchestration-triage"
+  },
+  {
     kind: "codex_latest_turn_drift",
     severity: "high",
     title: "Codex responded to an older turn instead of the latest request",

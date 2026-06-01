@@ -339,6 +339,7 @@ test("demo command runs packaged scenarios without private traces", async () => 
   assert.ok(scenarios.some((scenario) => scenario.id === "remote-compact"));
   assert.ok(scenarios.some((scenario) => scenario.id === "context-fork-bloat"));
   assert.ok(scenarios.some((scenario) => scenario.id === "subagent-prompt-leakage"));
+  assert.ok(scenarios.some((scenario) => scenario.id === "subagent-orchestration"));
   assert.ok(scenarios.some((scenario) => scenario.id === "windows-helper-path"));
   assert.ok(scenarios.some((scenario) => scenario.id === "latency-regression"));
   assert.ok(scenarios.some((scenario) => scenario.id === "model-routing-mismatch"));
@@ -384,6 +385,7 @@ test("demo command runs packaged scenarios without private traces", async () => 
   assert.match(list, /remote-compact/);
   assert.match(list, /context-fork-bloat/);
   assert.match(list, /subagent-prompt-leakage/);
+  assert.match(list, /subagent-orchestration/);
   assert.match(list, /windows-helper-path/);
   assert.match(list, /file-tree-ui/);
   assert.match(list, /usage-reset-drift/);
@@ -599,6 +601,27 @@ test("analyzeTargets detects Codex subagent prompt leakage", async () => {
   assert.match(finding.suggestedRule, /fork_turns/);
   assert.match(finding.suggestedRule, /sibling prompt/);
   assert.match(report, /codex_subagent_prompt_leakage/);
+});
+
+test("analyzeTargets detects Codex subagent orchestration gaps", async () => {
+  const result = await analyzeTargets(["fixtures/codex-subagent-orchestration.md"]);
+  const finding = result.findings.find((item) => item.kind === "codex_subagent_orchestration");
+  const evidence = finding?.evidence.map((item) => item.excerpt).join("\n") ?? "";
+  const report = renderCodexIssueReport(result);
+
+  assert.ok(finding);
+  assert.equal(finding.severity, "high");
+  assert.match(evidence, /official subagent functionality/);
+  assert.match(evidence, /agent registry/);
+  assert.match(evidence, /context isolation/);
+  assert.match(evidence, /reasoning_effort/);
+  assert.match(evidence, /agents_config\.toml/);
+  assert.match(evidence, /\.agents\/subagents\/explore_agent\.md/);
+  assert.match(evidence, /MCP tool set/);
+  assert.match(finding.suggestedRule, /MCP tool allowlist/);
+  assert.match(finding.suggestedRule, /AGENTS\.md/);
+  assert.match(finding.suggestedRule, /headless `codex exec`/);
+  assert.match(report, /codex_subagent_orchestration/);
 });
 
 test("analyzeTargets detects Codex MCP discovery and config-scope mismatches", async () => {
@@ -1373,17 +1396,17 @@ test("issue-map ranks GitHub issue exports by detected Codex failure classes", a
   const markdown = renderIssueMapMarkdown(result);
   const kinds = result.summaries.map((summary) => summary.kind);
 
-  assert.equal(result.issueCount, 20);
+  assert.equal(result.issueCount, 22);
   assert.ok(result.matchedIssueCount >= 5);
   assert.ok(kinds.includes("codex_token_burn"));
   assert.ok(kinds.includes("codex_thinking_hang"));
+  assert.ok(kinds.includes("codex_subagent_orchestration"));
   assert.ok(kinds.includes("codex_platform_availability"));
   assert.ok(kinds.includes("codex_context_visibility"));
   assert.ok(kinds.includes("codex_remote_connection"));
   assert.ok(kinds.includes("codex_auth_verification"));
   assert.ok(kinds.includes("codex_model_routing_mismatch"));
   assert.ok(kinds.includes("codex_remote_compact"));
-  assert.ok(kinds.includes("codex_mcp_discovery_mismatch"));
   assert.equal(result.summaries[0]?.kind, "codex_platform_availability");
   assert.equal(result.roadmap[0]?.kind, "codex_platform_availability");
   assert.match(result.roadmap[0]?.targetArtifact ?? "", /Platform availability/);
@@ -1401,6 +1424,8 @@ test("issue-map ranks GitHub issue exports by detected Codex failure classes", a
   assert.match(markdown, /#10410 Codex Desktop App: macOS Intel \(x86_64\) support/);
   assert.match(markdown, /#11023 Codex desktop app for Linux/);
   assert.match(markdown, /#4313 Extension for JetBrains IDEs \(PyCharm, IntelliJ, etc\.\)/);
+  assert.match(markdown, /#2604 Subagent Support/);
+  assert.match(markdown, /#11701 Subagent configuration and orchestration/);
   assert.match(markdown, /#14048 All models - Codex CLI hangs indefinitely on all prompts, no response generated/);
   assert.match(markdown, /#7156 Codex hangs during cli command execution/);
   assert.match(markdown, /gh issue list --repo openai\/codex/);
@@ -1473,7 +1498,7 @@ test("issue-map reads GitHub issue exports from stdin", async () => {
   };
 
   assert.deepEqual(result.sources, ["stdin"]);
-  assert.equal(result.issueCount, 20);
+  assert.equal(result.issueCount, 22);
   assert.equal(result.roadmap[0]?.kind, "codex_platform_availability");
   assert.match(result.roadmap[0]?.command ?? "", /platform-availability/);
 });
@@ -1760,6 +1785,10 @@ test("package metadata points npm users back to the public project", async () =>
   assert.ok(packageJson.keywords?.includes("context-bloat"));
   assert.ok(packageJson.keywords?.includes("codex-subagent-prompt"));
   assert.ok(packageJson.keywords?.includes("subagent-prompt-leak"));
+  assert.ok(packageJson.keywords?.includes("codex-subagent-orchestration"));
+  assert.ok(packageJson.keywords?.includes("codex-subagent-config"));
+  assert.ok(packageJson.keywords?.includes("agents-config"));
+  assert.ok(packageJson.keywords?.includes("agent-orchestration"));
   assert.ok(packageJson.keywords?.includes("codex-cli-hang"));
   assert.ok(packageJson.keywords?.includes("codex-no-response"));
   assert.ok(packageJson.keywords?.includes("codex-cli-no-response"));
@@ -2294,6 +2323,7 @@ test("published JSON schemas describe CLI result contracts", async () => {
   assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("context_compaction"));
   assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("codex_context_fork_bloat"));
   assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("codex_subagent_prompt_leakage"));
+  assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("codex_subagent_orchestration"));
   assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("codex_latest_turn_drift"));
   assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("codex_model_routing_mismatch"));
   assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("codex_latency_regression"));
@@ -2405,12 +2435,13 @@ test("benchmark covers public fixture failure classes", async () => {
   const markdown = renderBenchmarkMarkdown(benchmark);
 
   assert.equal(benchmark.passed, true);
-  assert.equal(benchmark.cases.length, 44);
+  assert.equal(benchmark.cases.length, 45);
   assert.ok(benchmark.cases.some((item) => item.id === "clean-validated-run" && item.score === 100));
   assert.ok(benchmark.cases.some((item) => item.id === "failed-workflow" && item.detectedKinds.includes("test_failure")));
   assert.ok(benchmark.cases.some((item) => item.id === "context-compaction" && item.detectedKinds.includes("context_compaction")));
   assert.ok(benchmark.cases.some((item) => item.id === "codex-context-fork-bloat" && item.detectedKinds.includes("codex_context_fork_bloat")));
   assert.ok(benchmark.cases.some((item) => item.id === "codex-subagent-prompt-leakage" && item.detectedKinds.includes("codex_subagent_prompt_leakage")));
+  assert.ok(benchmark.cases.some((item) => item.id === "codex-subagent-orchestration" && item.detectedKinds.includes("codex_subagent_orchestration")));
   assert.ok(benchmark.cases.some((item) => item.id === "codex-remote-compact" && item.detectedKinds.includes("codex_remote_compact")));
   assert.ok(benchmark.cases.some((item) => item.id === "codex-latest-turn-drift" && item.detectedKinds.includes("codex_latest_turn_drift")));
   assert.ok(benchmark.cases.some((item) => item.id === "codex-model-routing-mismatch" && item.detectedKinds.includes("codex_model_routing_mismatch")));
@@ -2462,7 +2493,7 @@ test("scorecard combines doctor readiness and benchmark evidence", async () => {
   assert.equal(scorecard.doctor.status, "ready");
   assert.equal(scorecard.doctor.score, 100);
   assert.equal(scorecard.benchmark.status, "pass");
-  assert.equal(scorecard.benchmark.cases, 44);
+  assert.equal(scorecard.benchmark.cases, 45);
   assert.match(markdown, /trace-to-skill Scorecard/);
   assert.match(markdown, /Codex readiness/);
   assert.match(markdown, /Benchmark Summary/);
@@ -2478,9 +2509,9 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.equal(brief.scorecard.doctorStatus, "ready");
   assert.equal(brief.scorecard.doctorScore, 100);
   assert.equal(brief.scorecard.benchmarkStatus, "pass");
-  assert.equal(brief.scorecard.benchmarkCases, 44);
+  assert.equal(brief.scorecard.benchmarkCases, 45);
   assert.equal(brief.packageName, "trace-to-skill");
-  assert.equal(brief.packageVersion, "0.1.99");
+  assert.equal(brief.packageVersion, "0.1.100");
   assert.equal(brief.license, "Apache-2.0");
   assert.ok(brief.repository?.includes("github.com/grnbtqdbyx-create/trace-to-skill"));
   assert.ok(brief.qualification.max500.length <= 500);
@@ -2488,7 +2519,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.match(markdown, /OpenAI OSS Brief/);
   assert.match(markdown, /Why This Repository Qualifies/);
   assert.match(markdown, /500-Character Version/);
-  assert.match(markdown, /npx trace-to-skill@0\.1\.99/);
+  assert.match(markdown, /npx trace-to-skill@0\.1\.100/);
   assert.match(markdown, /Weekly Codex Issue Radar/);
 });
 
