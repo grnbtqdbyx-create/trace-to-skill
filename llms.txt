@@ -67,6 +67,7 @@ failed agent run -> failure class -> evidence-backed AGENTS.md/SKILL.md suggesti
 - README: https://github.com/grnbtqdbyx-create/trace-to-skill#readme
 - Use cases: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/USE_CASES.md
 - Codex Issue Radar demo: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/CODEX_ISSUE_RADAR.md
+- Codex surface support matrix: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/CODEX_SURFACE_MATRIX.md
 - Codex issue map: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/CODEX_ISSUE_MAP.md
 - Discovery summary: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/DISCOVERY.md
 - Demo output: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/DEMO.md
@@ -113,6 +114,7 @@ npx trace-to-skill diagnostics-bundle ~/.codex --output codex-diagnostics
 npx trace-to-skill usage-doctor ./usage-notes.md --output usage-evidence.md
 npx trace-to-skill process-audit ./process-notes.md --output process-audit.md
 npx trace-to-skill issue-map --repo openai/codex --state all --limit 100 --output codex-issue-radar.md
+npx trace-to-skill surface-matrix --repo openai/codex --state all --limit 100 --output codex-surface-matrix.md
 npx trace-to-skill issue-map-comment --repo openai/codex --issue-number 8 --comment-repository owner/name --dry-run
 npx trace-to-skill init --issue-map-repo openai/codex --issue-map-state all --issue-map-limit 100
 npx trace-to-skill issue-map codex-issues.json --output codex-issue-map.md
@@ -137,7 +139,7 @@ gh issue list --repo openai/codex --state all --limit 100 --json number,title,bo
 ## GitHub Action
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.103
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.104
   with:
     mode: all
     doctor-threshold: "85"
@@ -150,7 +152,7 @@ gh issue list --repo openai/codex --state all --limit 100 --json number,title,bo
 ## Weekly Codex Issue Radar
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.103
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.104
   with:
     mode: issue-map
     issue-map-repo: openai/codex

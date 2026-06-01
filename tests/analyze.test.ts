@@ -28,6 +28,7 @@ import { renderAgentsRules, renderCodexIssueReport, renderComparison, renderDoct
 import { renderScorecardMarkdown, renderScorecardPrComment, runScorecard } from "../src/scorecard.js";
 import { auditCodexSessions, renderSessionAuditMarkdown } from "../src/sessionAudit.js";
 import { auditSensitivePaths, renderSensitiveAuditMarkdown, renderSensitiveIgnoreFile } from "../src/sensitiveAudit.js";
+import { buildSurfaceMatrix, renderSurfaceMatrixMarkdown } from "../src/surfaceMatrix.js";
 import { buildUsageEvidence, buildUsageEvidenceFromInputs, renderUsageEvidenceMarkdown } from "../src/usageEvidence.js";
 
 const execFileAsync = promisify(execFile);
@@ -1550,6 +1551,41 @@ test("issue-map reads GitHub issue exports from stdin", async () => {
   assert.match(result.roadmap[0]?.command ?? "", /platform-availability/);
 });
 
+test("surface-matrix turns issue-map output into Codex support surface rows", async () => {
+  const issueMap = await buildIssueMap(["fixtures/github-codex-issues-export.json"], { top: 12 });
+  const result = buildSurfaceMatrix(issueMap);
+  const markdown = renderSurfaceMatrixMarkdown(result);
+  const surfaces = result.rows.map((row) => row.surface);
+
+  assert.equal(result.issueCount, 23);
+  assert.ok(surfaces.includes("Desktop app, packaged builds, and IDE ecosystems"));
+  assert.ok(surfaces.includes("Remote SSH, cloud, WSL, container, and GPU workspaces"));
+  assert.ok(result.rows.some((row) => row.kind === "codex_platform_availability" && row.status === "blocked" && row.reactions >= 1000));
+  assert.ok(result.rows.some((row) => row.kind === "codex_remote_connection" && row.bestCommand.includes("remote-connection")));
+  assert.ok(result.rows.every((row) => row.evidenceChecklist.length > 0));
+  assert.match(markdown, /Codex Surface Support Matrix/);
+  assert.match(markdown, /macOS Intel/);
+  assert.match(markdown, /Remote Development in Codex Desktop App/);
+  assert.match(markdown, /support-policy evidence/);
+});
+
+test("surface-matrix command reads GitHub issue exports from stdin", async () => {
+  const { stdout } = await execFileAsync("sh", [
+    "-c",
+    "cat fixtures/github-codex-issues-export.json | node dist/src/cli.js surface-matrix - --format json"
+  ]);
+  const result = JSON.parse(stdout) as {
+    sources: string[];
+    issueCount: number;
+    rows: Array<{ kind: string; status: string; bestCommand: string }>;
+  };
+
+  assert.deepEqual(result.sources, ["stdin"]);
+  assert.equal(result.issueCount, 23);
+  assert.ok(result.rows.some((row) => row.kind === "codex_platform_availability" && row.status === "blocked"));
+  assert.ok(result.rows.some((row) => row.kind === "codex_remote_connection" && /remote-connection/.test(row.bestCommand)));
+});
+
 test("process audit packages Codex process polling and high CPU evidence", () => {
   const result = auditProcessEvidenceFromInputs([
     {
@@ -1853,6 +1889,9 @@ test("package metadata points npm users back to the public project", async () =>
   assert.ok(packageJson.keywords?.includes("codex-linux"));
   assert.ok(packageJson.keywords?.includes("codex-jetbrains"));
   assert.ok(packageJson.keywords?.includes("remote-ssh"));
+  assert.ok(packageJson.keywords?.includes("surface-matrix"));
+  assert.ok(packageJson.keywords?.includes("codex-support-matrix"));
+  assert.ok(packageJson.keywords?.includes("remote-development"));
   assert.ok(packageJson.keywords?.includes("codex-mcp"));
   assert.ok(packageJson.keywords?.includes("mcp-runtime"));
   assert.ok(packageJson.keywords?.includes("codex-mcp-streamable-http"));
@@ -2573,7 +2612,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.equal(brief.scorecard.benchmarkStatus, "pass");
   assert.equal(brief.scorecard.benchmarkCases, 46);
   assert.equal(brief.packageName, "trace-to-skill");
-  assert.equal(brief.packageVersion, "0.1.103");
+  assert.equal(brief.packageVersion, "0.1.104");
   assert.equal(brief.license, "Apache-2.0");
   assert.ok(brief.repository?.includes("github.com/grnbtqdbyx-create/trace-to-skill"));
   assert.ok(brief.qualification.max500.length <= 500);
@@ -2581,7 +2620,9 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.match(markdown, /OpenAI OSS Brief/);
   assert.match(markdown, /Why This Repository Qualifies/);
   assert.match(markdown, /500-Character Version/);
-  assert.match(markdown, /npx trace-to-skill@0\.1\.103/);
+  assert.match(markdown, /npx trace-to-skill@0\.1\.104/);
+  assert.match(markdown, /Surface support matrix/);
+  assert.match(markdown, /surface support planning/);
   assert.match(markdown, /Weekly Codex Issue Radar/);
   assert.match(markdown, /Usage doctor/);
   assert.match(markdown, /token-burn attribution/);

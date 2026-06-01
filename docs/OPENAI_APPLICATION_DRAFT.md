@@ -66,6 +66,7 @@ Current proof points:
 - Context compaction failure detection for stuck Codex sessions and shareable support traces.
 - Sandbox and permission failure detection for Codex setup refresh, Windows `os error 740`, ACL, workspace ownership, and approval-mode drift reports.
 - Codex file tree and workspace navigation UI detection for missing `View > Toggle File Tree`, stale floating file panels, and file-preview failures.
+- Codex surface support matrix for blocked versus degraded surfaces across Desktop platform builds, remote SSH/cloud workspaces, MCP visibility, plugin runtime, file-tree navigation, and context visibility.
 - Token-burn attribution via `usage-doctor` for prompt-cache collapse, rapid drain experiments, background polling, idle app activity, compaction/replay overhead, retry loops, cached-token-heavy turns, fast-mode drift, and subagent fan-out, with confidence-ranked buckets and next evidence to collect.
 - Process-audit evidence packaging for Codex Desktop/extension high CPU, Windows PowerShell/pwsh CIM polling, stale process-manager entries, and runaway helpers without posting raw full-machine process dumps.
 - Thinking-hang detection for accepted turns, successful local tool calls, delayed first `response_item`, `responses_http` `time.busy` / `time.idle`, stop/interrupt failures, MCP state, and subagent parent/child lifecycle evidence.
@@ -91,7 +92,7 @@ Current proof points:
 - SARIF output for GitHub code scanning.
 - Before/after eval comparison with keep/revise/reject decisions.
 - One-command repository setup via `trace-to-skill init`.
-- Public release v0.1.103.
+- Public release v0.1.104.
 - Current GitHub scorecard: 100/100 Codex-ready, benchmark passing.
 
 500-character version:

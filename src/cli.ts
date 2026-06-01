@@ -23,6 +23,7 @@ import { renderAgentsRules, renderCodexIssueReport, renderComparison, renderDoct
 import { renderScorecardMarkdown, renderScorecardPrComment, runScorecard } from "./scorecard.js";
 import { auditCodexSessions, renderSessionAuditMarkdown } from "./sessionAudit.js";
 import { auditSensitivePaths, normalizeSensitiveIgnoreTarget, renderSensitiveAuditMarkdown, renderSensitiveIgnoreFile } from "./sensitiveAudit.js";
+import { buildSurfaceMatrix, renderSurfaceMatrixMarkdown } from "./surfaceMatrix.js";
 import { buildUsageEvidence, renderUsageEvidenceMarkdown } from "./usageEvidence.js";
 
 interface ParsedArgs {
@@ -253,6 +254,26 @@ async function main(): Promise<void> {
       reportName: "trace-to-skill issue-map report"
     });
     process.stdout.write(`${message}\n`);
+    return;
+  }
+
+  if (parsed.command === "surface-matrix") {
+    const issueMapOptions = {
+      top: numberFlag(parsed.flags.top)
+    };
+    const repo = stringFlag(parsed.flags.repo);
+    const issueMap = repo ?
+      await buildGithubIssueMap(repo, {
+        ...issueMapOptions,
+        state: githubIssueStateFlag(parsed.flags.state),
+        limit: numberFlag(parsed.flags.limit),
+        token: stringFlag(parsed.flags.token)
+      }) :
+      await buildIssueMapFromCliTargets(parsed.targets, issueMapOptions);
+    const result = buildSurfaceMatrix(issueMap);
+    const format = String(parsed.flags.format ?? "markdown");
+    const output = format === "json" ? `${JSON.stringify(result, null, 2)}\n` : renderSurfaceMatrixMarkdown(result);
+    await writeOutput(output, parsed.flags.output);
     return;
   }
 
@@ -609,8 +630,10 @@ Usage:
   trace-to-skill scorecard-comment [repo-dir] [--threshold 85] [--dry-run] [--token $GITHUB_TOKEN]
   trace-to-skill oss-brief [repo-dir] [--threshold 85] [--format markdown|json] [--output docs/OPENAI_OSS_BRIEF.md]
   trace-to-skill issue-map <github-issues.json-or-md> [--top 12] [--format markdown|json] [--output codex-issue-map.md]
+  trace-to-skill surface-matrix <github-issues.json-or-md> [--top 12] [--format markdown|json] [--output codex-surface-matrix.md]
   gh issue list --repo openai/codex --json number,title,body,url,labels,comments,updatedAt | trace-to-skill issue-map - [--format markdown|json]
   trace-to-skill issue-map --repo openai/codex [--state open|closed|all] [--limit 100] [--token $GITHUB_TOKEN] [--format markdown|json]
+  trace-to-skill surface-matrix --repo openai/codex [--state open|closed|all] [--limit 100] [--token $GITHUB_TOKEN] [--format markdown|json]
   trace-to-skill issue-map-comment --repo openai/codex --issue-number 8 [--comment-repository owner/repo] [--state open|closed|all] [--limit 100] [--dry-run] [--token $GITHUB_TOKEN]
   trace-to-skill guard-github-event [event.json] [--threshold 80] [--format markdown|json] [--output report.md]
   trace-to-skill guard-patch <patch-file> [--root repo-dir] [--format markdown|json] [--output report.md]
@@ -641,6 +664,7 @@ Examples:
   trace-to-skill lsp-audit .
   trace-to-skill eval ./runs --threshold 80
   trace-to-skill benchmark
+  trace-to-skill surface-matrix --repo openai/codex --output codex-surface-matrix.md
   trace-to-skill scorecard .
   trace-to-skill scorecard-comment . --threshold 85
   trace-to-skill oss-brief . --output docs/OPENAI_OSS_BRIEF.md

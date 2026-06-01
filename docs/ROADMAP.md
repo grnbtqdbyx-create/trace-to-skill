@@ -36,6 +36,7 @@
 - `redact` for privacy-preserving trace sharing before public issue reports or fixtures
 - `codex-report` for turning redacted traces into OpenAI/Codex issue-ready Markdown with line-linked evidence and diagnostics
 - Codex token-burn attribution for prompt-cache collapse, rapid drain experiments, background polling, idle app usage, compaction tax, retry loops, cached-token-heavy turns, and fast-mode/subagent drift via `usage-doctor` confidence buckets
+- `surface-matrix` for turning Codex issue demand into blocked/degraded surface support rows across platform availability, remote workspaces, MCP visibility, plugin runtime, file-tree navigation, and context visibility
 
 ## v0.2
 

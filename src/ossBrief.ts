@@ -48,7 +48,7 @@ export async function runOssBrief(target = process.cwd(), threshold = 85): Promi
 
   const qualificationLong = [
     `${projectName} helps open-source maintainers adopt Codex safely by turning failed coding-agent runs into evidence-backed rules, reusable workflows, CI gates, and a weekly Codex Issue Radar for live GitHub issue demand.`,
-    `It supports real maintenance work: PR review, issue triage, release quality, MCP risk, prompt-injection defense, token-burn attribution, privacy-preserving trace sharing, sensitive-file policy coverage, and repeat failure reduction.`,
+    `It supports real maintenance work: PR review, issue triage, release quality, MCP risk, surface support planning, prompt-injection defense, token-burn attribution, privacy-preserving trace sharing, sensitive-file policy coverage, and repeat failure reduction.`,
     `The repository is ${scorecard.doctor.status}, scores ${scorecard.doctor.score}/100 on the local Codex readiness doctor, and ships a deterministic benchmark with ${scorecard.benchmark.cases} public fixture cases.`
   ].join(" ");
 
@@ -174,6 +174,7 @@ function buildEvidence(
     `Codex readiness doctor: ${scorecard.doctor.status}, ${scorecard.doctor.score}/100, ${scorecard.doctor.failedChecks} failed checks.`,
     `Public fixture benchmark: ${scorecard.benchmark.status}, ${scorecard.benchmark.cases} cases.`,
     "GitHub issue demand mining: issue-map fetches or reads piped GitHub CLI issue JSON, then ranks OpenAI/Codex issues by failure class, comments, reactions, evidence gaps, and Maintainer Roadmap next artifacts.",
+    "Surface support matrix: surface-matrix turns Codex platform, remote workspace, MCP, plugin, file-tree, and context-visibility demand into blocked/degraded rows with support-policy questions.",
     "Weekly Codex Issue Radar: init --issue-map-repo owner/name scaffolds a scheduled Action that fetches live GitHub issues and publishes the pain map to the job summary or a stable tracking issue comment.",
     "Usage doctor: usage-doctor separates token-burn reports into quota-window accounting, rapid-drain repros, prompt-cache collapse, cached-context replay, and orchestration overhead buckets with confidence and next evidence.",
     "Sensitive-file preflight: sensitive-audit reports filename/path-only findings, recommended .codexignore/.agentignore/.aiexclude candidates, and project policy coverage without reading secret contents.",

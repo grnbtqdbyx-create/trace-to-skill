@@ -42,6 +42,7 @@ trace-to-skill checks repo readiness and scans agent traces/logs to generate:
 - JSON schemas for deterministic CLI report contracts
 - crawler-friendly `llms.txt` and discovery metadata
 - a public Codex issue map that links active issue clusters to the right report command
+- a Codex surface support matrix for blocked/degraded Desktop, remote workspace, MCP, plugin, file-tree, and context-visibility demand
 - a maintainer adoption guide with privacy checklist and PR template
 - a built-in fixture benchmark and public scorecard
 - GitHub Action benchmark and all-in-one modes
@@ -130,6 +131,7 @@ npx trace-to-skill plugin-audit ~/.codex --app /Applications/Codex.app --format 
 npx trace-to-skill diagnostics-bundle ~/.codex --output codex-diagnostics
 npx trace-to-skill usage-doctor ./usage-notes.md --output usage-evidence.md
 npx trace-to-skill process-audit ./process-notes.md --output process-audit.md
+npx trace-to-skill surface-matrix --repo openai/codex --state all --limit 100 --output codex-surface-matrix.md
 npx trace-to-skill checkpoint . --output .trace-to-skill/checkpoints/before-codex
 npx trace-to-skill doctor-comment . --threshold 85 --dry-run
 
@@ -138,6 +140,7 @@ I’m especially looking for anonymized failed agent traces and feedback from OS
 Repo: https://github.com/grnbtqdbyx-create/trace-to-skill
 npm: https://www.npmjs.com/package/trace-to-skill
 Codex Issue Radar demo: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/CODEX_ISSUE_RADAR.md
+Codex surface support matrix: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/CODEX_SURFACE_MATRIX.md
 Codex issue map: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/CODEX_ISSUE_MAP.md
 Demo output: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/DEMO.md
 ```

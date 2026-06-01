@@ -64,6 +64,7 @@ Secondary headline:
 - [x] Codex issue map linking active issue clusters to deterministic report commands
 - [x] Maintainer Roadmap in issue-map output with next artifact and command recommendations
 - [x] Live Codex Issue Radar demo generated from public `openai/codex` issues
+- [x] Codex surface support matrix for blocked/degraded platform, remote workspace, MCP, plugin, file-tree, and context-visibility demand
 - [x] Sensitive-file access detector for `.env`, private keys, package auth files, cloud credentials, and local databases
 - [x] Codex file tree/workspace navigation UI detector for `View > Toggle File Tree`, stale file panels, and preview failures
 
@@ -71,10 +72,11 @@ Secondary headline:
 
 - Repository: https://github.com/grnbtqdbyx-create/trace-to-skill
 - npm: https://www.npmjs.com/package/trace-to-skill
-- Latest release: https://github.com/grnbtqdbyx-create/trace-to-skill/releases/tag/v0.1.103
+- Latest release: https://github.com/grnbtqdbyx-create/trace-to-skill/releases/tag/v0.1.104
 - CI: passing on `main`
 - Codex issue map: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/CODEX_ISSUE_MAP.md
 - Codex Issue Radar demo: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/CODEX_ISSUE_RADAR.md
+- Codex surface support matrix: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/CODEX_SURFACE_MATRIX.md
 - Demo: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/DEMO.md
 - Profile README: https://github.com/grnbtqdbyx-create/grnbtqdbyx-create
 

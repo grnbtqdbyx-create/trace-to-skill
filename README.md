@@ -39,7 +39,7 @@ Package a failed run into a better OpenAI/Codex issue:
 npx trace-to-skill codex-report ./runs --output openai-codex-issue.md
 ```
 
-See the live generated example: [docs/CODEX_ISSUE_RADAR.md](docs/CODEX_ISSUE_RADAR.md). For the full command catalog, use [docs/USE_CASES.md](docs/USE_CASES.md).
+See the live generated example: [docs/CODEX_ISSUE_RADAR.md](docs/CODEX_ISSUE_RADAR.md) and the surface support matrix: [docs/CODEX_SURFACE_MATRIX.md](docs/CODEX_SURFACE_MATRIX.md). For the full command catalog, use [docs/USE_CASES.md](docs/USE_CASES.md).
 
 AI coding agents are getting good enough to change real repositories, but they still repeat the same workflow mistakes: claiming success without tests, ignoring repo instructions, over-editing, inventing files, leaking secrets into traces, or enabling risky MCP tools.
 
@@ -99,6 +99,7 @@ Use it when you need to:
 - **Debug Codex auth/connectivity:** run `trace-to-skill analyze ./runs` on logs with `token_exchange_failed`, `auth.openai.com/oauth/token`, Cloudflare challenge, proxy/CA, IPv6, or stream disconnect symptoms.
 - **Triage remote SSH workspaces:** run `trace-to-skill codex-report ./runs` when Codex Desktop remote connections, Settings > Connections, `remote_connections`, SSH hosts, local tunnels, remote app-server, model lists, or remote folder browsing fail.
 - **Map platform availability demand:** run `trace-to-skill demo platform-availability` when users need Codex Desktop on macOS Intel or Linux, a Universal build, package-format support, or a JetBrains IDE extension.
+- **Publish a Codex surface support matrix:** run `trace-to-skill surface-matrix --repo openai/codex --state all --limit 100` to turn platform, remote, MCP, plugin, file-tree, and context-visibility demand into blocked/degraded surface rows with support-policy questions and evidence checklists.
 - **Prove remote-control route health:** run `trace-to-skill analyze ./runs` when Codex mobile/remote sessions show `Waiting for desktop`, `Directory Unavailable`, stale listener/cache, missing helper bundle, or stale enrollment symptoms.
 - **Triage Codex MCP runtime failures:** run `trace-to-skill analyze ./runs` when MCP tools are listed but Codex cancels approval, drops namespace/serverName metadata, routes to `unsupported call`, or closes stdio transport.
 - **Debug Codex plugin runtime failures:** run `trace-to-skill analyze ./runs` when Browser, Computer Use, Chrome, connectors, or bundled plugins are advertised but fail with missing native pipe paths, plugin-list schema errors, or stale plugin cache state.
@@ -112,7 +113,7 @@ Use it when you need to:
 - **File better OpenAI/Codex issues:** run `trace-to-skill codex-report ./runs` to turn a failed trace into a redaction-aware, copy-paste-ready issue body with evidence and diagnostics.
 - **Package quota bugs cleanly:** run `trace-to-skill analyze ./runs` on Codex traces where `/status` or the usage page shows remaining quota but the client returns `You've hit your usage limit`.
 
-For copy-paste workflows, see [docs/USE_CASES.md](https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/USE_CASES.md). For live Codex issue demand, see [docs/CODEX_ISSUE_RADAR.md](https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/CODEX_ISSUE_RADAR.md), [docs/CODEX_ISSUE_MAP.md](https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/CODEX_ISSUE_MAP.md), and [docs/CODEX_GITHUB_ISSUE_PAIN_MAP.md](https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/CODEX_GITHUB_ISSUE_PAIN_MAP.md). For crawler-friendly metadata, see [docs/DISCOVERY.md](https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/DISCOVERY.md) and [llms.txt](https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/llms.txt).
+For copy-paste workflows, see [docs/USE_CASES.md](https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/USE_CASES.md). For live Codex issue demand, see [docs/CODEX_ISSUE_RADAR.md](https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/CODEX_ISSUE_RADAR.md), [docs/CODEX_SURFACE_MATRIX.md](https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/CODEX_SURFACE_MATRIX.md), [docs/CODEX_ISSUE_MAP.md](https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/CODEX_ISSUE_MAP.md), and [docs/CODEX_GITHUB_ISSUE_PAIN_MAP.md](https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/CODEX_GITHUB_ISSUE_PAIN_MAP.md). For crawler-friendly metadata, see [docs/DISCOVERY.md](https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/DISCOVERY.md) and [llms.txt](https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/llms.txt).
 
 ## Why This Exists
 
@@ -436,7 +437,7 @@ gh issue list --repo openai/codex --state all --limit 100 --json number,title,bo
 
 `issue-map` can fetch a public GitHub repository directly through the GitHub REST API, read JSON exported by `gh issue list` / `gh search issues`, or consume piped GitHub CLI JSON through `issue-map -`. It analyzes each issue with the same deterministic failure detectors, ranks clusters by issue count, comment count, reactions, and severity, then emits a Maintainer Roadmap with the next artifact and command to run. Use it to decide what people are actively asking for on GitHub before adding the next fixture, Codex report template, diagnostic bundle, or OpenAI-ready support artifact.
 
-For a live generated radar, see [docs/CODEX_ISSUE_RADAR.md](docs/CODEX_ISSUE_RADAR.md). To map a Codex problem to the right failure class and report command, see [docs/CODEX_ISSUE_MAP.md](docs/CODEX_ISSUE_MAP.md).
+For a live generated radar, see [docs/CODEX_ISSUE_RADAR.md](docs/CODEX_ISSUE_RADAR.md). For blocked/degraded surfaces, see [docs/CODEX_SURFACE_MATRIX.md](docs/CODEX_SURFACE_MATRIX.md). To map a Codex problem to the right failure class and report command, see [docs/CODEX_ISSUE_MAP.md](docs/CODEX_ISSUE_MAP.md).
 
 Create a local pre-agent workspace checkpoint:
 
@@ -549,7 +550,7 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v5
-      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.103
+      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.104
         with:
           mode: all
           doctor-threshold: "85"
@@ -598,7 +599,7 @@ Composite action usage:
 
 ```yaml
 - id: trace-to-skill
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.103
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.104
   with:
     mode: all
     doctor-threshold: "85"
@@ -616,7 +617,7 @@ Issue-map action usage for direct GitHub issue demand mining:
 
 ```yaml
 - id: codex-issue-map
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.103
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.104
   with:
     mode: issue-map
     issue-map-repo: openai/codex
@@ -662,7 +663,7 @@ Action outputs:
 
 By default, generated reports are also appended to the GitHub Actions Job Summary. Set `job-summary: "false"` to disable that UI output.
 
-Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.103` executes that release's checked-out source instead of pulling the default branch at runtime.
+Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.104` executes that release's checked-out source instead of pulling the default branch at runtime.
 
 ## Codex Skill
 
