@@ -91,7 +91,7 @@ Current proof points:
 - SARIF output for GitHub code scanning.
 - Before/after eval comparison with keep/revise/reject decisions.
 - One-command repository setup via `trace-to-skill init`.
-- Public release v0.1.92.
+- Public release v0.1.93.
 - Current GitHub scorecard: 100/100 Codex-ready, benchmark passing.
 
 500-character version:

@@ -682,7 +682,8 @@ const RULES: RuleDefinition[] = [
     why: "Unexpected Codex usage drain can come from background polling, idle app activity, compaction/retry overhead, subagent fan-out, fast-mode drift, or repeated cached-context turns, and reports need attribution evidence instead of only a quota percentage.",
     patterns: [
       /\btokens?\b.{0,120}\b(burning|burned|burnt|burn through|burning very fast|draining|drain|usage drop|usage drops)\b/i,
-      /\busage\b.{0,160}\b(burn(?:ing|ed)?|drain(?:ing|ed)?|deplet(?:e|ed|ing)|consum(?:e|ed|ing) (?:very )?fast|drops? by \d{1,3}%|dropped to \d{1,3}%)\b/i,
+      /\busage\b.{0,160}\b(burn(?:ing|ed)?|drain(?:ing|ed)?|deplet(?:e|ed|ing)|consum(?:e|ed|ing) (?:very )?fast|drops? by \d{1,3}%|dropped to \d{1,3}%|dropp(?:ed|ing) (?:way )?too quickly)\b/i,
+      /\b(usage limit|rate[- ]?limit|quota|credits?)\b.{0,180}\b(dropp(?:ed|ing) (?:way )?too quickly|consum(?:e|ed|ing)|burn(?:ed|ing)?|drain(?:ed|ing)?|deplet(?:e|ed|ing))\b/i,
       /\bweekly (?:usage|limit|allowance)\b.{0,180}\b(deplet(?:e|ed|ing)|burn(?:ed|ing)?|drain(?:ed|ing)?|exhaust(?:ed|ing)?|almost fully depleted)\b/i,
       /\b5[- ]?hour\b.{0,160}\b(limit|usage)\b.{0,160}\b(0%|consumed|used all|drain|burn)\b/i,
       /\b(input|cached input|output|reasoning|total)\s*=\s*[\d,]+\b.{0,160}\b(cached|tokens?|usage|burn|drain)\b/i,
