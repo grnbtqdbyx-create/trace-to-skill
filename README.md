@@ -8,9 +8,38 @@
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Node](https://img.shields.io/badge/node-%3E%3D20-339933.svg)](package.json)
 
-Codex Issue Radar and maintainer-readiness tooling for open-source projects using AI coding agents.
+**Turn failed AI coding-agent runs into reusable rules — not repeated mistakes.**
 
-`trace-to-skill` turns live GitHub issue demand, failed Codex/agent runs, and repository readiness checks into evidence-backed reports, `AGENTS.md` rules, `SKILL.md` workflows, and CI gates.
+Codex Issue Radar and maintainer-readiness tooling for open-source projects using AI coding agents. `trace-to-skill` turns live GitHub issue demand, failed Codex/agent runs, and repository readiness checks into evidence-backed reports, `AGENTS.md` rules, `SKILL.md` workflows, and CI gates — with **zero runtime dependencies**.
+
+> ⚡ **Try it in one command — no setup, no traces required:** `npx trace-to-skill demo`
+
+## Highlights
+
+- 🔍 **Live Codex issue radar** — rank real maintainer pain from GitHub issues by deterministic failure class, comments, reactions, and recency.
+- 🧪 **Failure → reusable rule** — turn failed Codex / Claude / Cursor / Copilot runs into `AGENTS.md` rules and `SKILL.md` workflows.
+- ✅ **CI readiness gate** — score whether a repo is agent-ready and post a reviewer-friendly PR comment.
+- 🔒 **Safety audits** — flag leaked secrets, sensitive paths, risky MCP tools, and unsafe patch overwrites before they reach an agent.
+- 📦 **Zero runtime dependencies** — one CLI + GitHub Action, Apache-2.0, Node ≥ 20.
+
+<details>
+<summary><b>Table of contents</b></summary>
+
+- [Start Here](#start-here)
+- [Fast Use Cases](#fast-use-cases)
+- [Why This Exists](#why-this-exists)
+- [Example Output](#example-output)
+- [What It Detects](#what-it-detects)
+- [Installation](#installation)
+- [CLI](#cli)
+- [Supported Inputs](#supported-inputs)
+- [JSON Schemas](#json-schemas)
+- [GitHub Action](#github-action)
+- [Codex Skill](#codex-skill)
+- [Contributing](#contributing)
+- [License](#license)
+
+</details>
 
 ## Start Here
 
@@ -63,6 +92,10 @@ Use it when you need to:
 - **Mine GitHub issue demand:** run `trace-to-skill issue-map --repo openai/codex` or pass an exported issue JSON file to rank maintainer pain by deterministic failure class, comments, reactions, and evidence gaps.
 - **See what is heating up right now:** run `trace-to-skill issue-heat --repo openai/codex --state open --limit 100 --window-hours 24` to rank recent GitHub issue movement by recency, comments, labels, reactions, severity, and the first support command to run.
 - **Install a weekly issue radar:** run `trace-to-skill init --issue-map-repo owner/name` to add a scheduled GitHub Action that turns the repo's hottest issues into a Codex failure-class report in the job summary.
+
+<details>
+<summary><b>Show 50+ more use cases</b> — instruction hardening, config/plugin/session audits, usage &amp; quota forensics, MCP &amp; sandbox triage, surface matrices, and more</summary>
+
 - **Harden agent instructions:** run `trace-to-skill lint-agents .` to catch missing `AGENTS.md`, conflicting tool instructions, missing includes, nested instruction drift, encoding issues, and risky MCP config.
 - **Protect agent context:** run `trace-to-skill guard-github-event "$GITHUB_EVENT_PATH"` before feeding issue, PR, comment, discussion, check-run, or commit text into an agent.
 - **Prevent unsafe patch overwrites:** run `trace-to-skill guard-patch ./change.patch --root .` before applying generated patches so `*** Add File` cannot silently replace an existing file or symlink target.
@@ -115,6 +148,8 @@ Use it when you need to:
 - **Catch tool-call integrity failures:** run `trace-to-skill analyze ./runs` when `apply_patch`, `*** Add File` overwrite behavior, rollback/undo, subagent shutdown, or `tool_call_id` protocol failures threaten file safety or strand a session.
 - **File better OpenAI/Codex issues:** run `trace-to-skill codex-report ./runs` to turn a failed trace into a redaction-aware, copy-paste-ready issue body with evidence and diagnostics.
 - **Package quota bugs cleanly:** run `trace-to-skill analyze ./runs` on Codex traces where `/status` or the usage page shows remaining quota but the client returns `You've hit your usage limit`.
+
+</details>
 
 For copy-paste workflows, see [docs/USE_CASES.md](https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/USE_CASES.md). For live Codex issue demand, see [docs/CODEX_ISSUE_RADAR.md](https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/CODEX_ISSUE_RADAR.md), [docs/CODEX_SURFACE_MATRIX.md](https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/CODEX_SURFACE_MATRIX.md), [docs/CODEX_ISSUE_MAP.md](https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/CODEX_ISSUE_MAP.md), and [docs/CODEX_GITHUB_ISSUE_PAIN_MAP.md](https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/CODEX_GITHUB_ISSUE_PAIN_MAP.md). For crawler-friendly metadata, see [docs/DISCOVERY.md](https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/DISCOVERY.md) and [llms.txt](https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/llms.txt).
 
