@@ -25,6 +25,7 @@ npx trace-to-skill eval ./runs --threshold 80
 npx trace-to-skill benchmark
 npx trace-to-skill scorecard .
 npx trace-to-skill oss-brief .
+npx trace-to-skill issue-map codex-issues.json --output codex-issue-map.md
 npx trace-to-skill scorecard-comment . --dry-run
 npx trace-to-skill guard-github-event "$GITHUB_EVENT_PATH"
 npx trace-to-skill guard-patch ./change.patch --root .
@@ -56,6 +57,7 @@ Use it when you need to:
 - **Gate Codex-ready PRs:** run `trace-to-skill scorecard .` in CI and post a reviewer-friendly readiness comment.
 - **Try it before collecting traces:** run `trace-to-skill demo` to generate a real Codex issue report from packaged public fixtures in one command.
 - **Prepare OpenAI OSS evidence:** run `trace-to-skill oss-brief .` to generate application-ready proof, 500-character summary fields, readiness score, benchmark status, license, and next steps.
+- **Mine GitHub issue demand:** export OpenAI/Codex issues with `gh issue list` or `gh search issues`, then run `trace-to-skill issue-map codex-issues.json` to rank maintainer pain by deterministic failure class, comments, reactions, and evidence gaps.
 - **Harden agent instructions:** run `trace-to-skill lint-agents .` to catch missing `AGENTS.md`, conflicting tool instructions, missing includes, nested instruction drift, encoding issues, and risky MCP config.
 - **Protect agent context:** run `trace-to-skill guard-github-event "$GITHUB_EVENT_PATH"` before feeding issue, PR, comment, discussion, check-run, or commit text into an agent.
 - **Prevent unsafe patch overwrites:** run `trace-to-skill guard-patch ./change.patch --root .` before applying generated patches so `*** Add File` cannot silently replace an existing file or symlink target.
@@ -103,7 +105,7 @@ Use it when you need to:
 - **File better OpenAI/Codex issues:** run `trace-to-skill codex-report ./runs` to turn a failed trace into a redaction-aware, copy-paste-ready issue body with evidence and diagnostics.
 - **Package quota bugs cleanly:** run `trace-to-skill analyze ./runs` on Codex traces where `/status` or the usage page shows remaining quota but the client returns `You've hit your usage limit`.
 
-For copy-paste workflows, see [docs/USE_CASES.md](https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/USE_CASES.md). For Codex issue clusters, see [docs/CODEX_ISSUE_MAP.md](https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/CODEX_ISSUE_MAP.md). For crawler-friendly metadata, see [docs/DISCOVERY.md](https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/DISCOVERY.md) and [llms.txt](https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/llms.txt).
+For copy-paste workflows, see [docs/USE_CASES.md](https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/USE_CASES.md). For Codex issue clusters, see [docs/CODEX_ISSUE_MAP.md](https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/CODEX_ISSUE_MAP.md) and [docs/CODEX_GITHUB_ISSUE_PAIN_MAP.md](https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/CODEX_GITHUB_ISSUE_PAIN_MAP.md). For crawler-friendly metadata, see [docs/DISCOVERY.md](https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/DISCOVERY.md) and [llms.txt](https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/llms.txt).
 
 ## Why This Exists
 
@@ -129,6 +131,7 @@ Open-source maintainers do not need more AI-generated noise. They need agents th
 - Can I attach one safe diagnostics folder to OpenAI without posting raw `config.toml`, SQLite state, local logs, or transcripts?
 - Can I prove a project thread still exists on disk and get the `codex resume <id>` command when Desktop search/sidebar hides it?
 - Can I report Codex high-CPU or PowerShell polling without posting a full raw process dump?
+- Which public Codex issue clusters are heating up on GitHub, and which failure class should become the next fixture, report, or OpenAI-ready support artifact?
 - Can I create a local checkpoint before an agent run so untracked dirty files are not lost if I need a manual rewind?
 - Which files in this repo should be excluded from agent context before Codex, Claude, Cursor, or Gemini reads the workspace?
 - Which language servers should be installed before Codex attempts symbol-aware navigation, diagnostics, rename, or go-to-definition work?
@@ -406,6 +409,16 @@ trace-to-skill oss-brief . --output docs/OPENAI_OSS_BRIEF.md
 
 See this repository's current brief in [docs/OPENAI_OSS_BRIEF.md](docs/OPENAI_OSS_BRIEF.md).
 
+Mine public GitHub issue demand into a maintainer pain map:
+
+```bash
+gh issue list --repo openai/codex --state open --limit 100 --json number,title,body,url,labels,comments,createdAt,updatedAt > codex-issues.json
+trace-to-skill issue-map codex-issues.json --output codex-issue-map.md
+trace-to-skill issue-map codex-issues.json --format json
+```
+
+`issue-map` reads JSON exported by `gh issue list` or `gh search issues`, analyzes each issue with the same deterministic failure detectors, and ranks clusters by issue count, comment count, reactions, and severity. Use it to decide what people are actively asking for on GitHub before adding the next fixture, Codex report template, diagnostic bundle, or OpenAI-ready support artifact.
+
 To map a Codex problem to the right failure class and report command, see [docs/CODEX_ISSUE_MAP.md](docs/CODEX_ISSUE_MAP.md).
 
 Create a local pre-agent workspace checkpoint:
@@ -518,7 +531,7 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v5
-      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.84
+      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.85
         with:
           mode: all
           doctor-threshold: "85"
@@ -567,7 +580,7 @@ Composite action usage:
 
 ```yaml
 - id: trace-to-skill
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.84
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.85
   with:
     mode: all
     doctor-threshold: "85"
@@ -609,7 +622,7 @@ Action outputs:
 
 By default, generated reports are also appended to the GitHub Actions Job Summary. Set `job-summary: "false"` to disable that UI output.
 
-Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.84` executes that release's checked-out source instead of pulling the default branch at runtime.
+Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.85` executes that release's checked-out source instead of pulling the default branch at runtime.
 
 ## Codex Skill
 

@@ -10,6 +10,7 @@ import { createDiagnosticsBundle, renderDiagnosticsBundleMarkdown } from "./diag
 import { doctorRepo } from "./doctor.js";
 import { compareAnalyses, evaluate } from "./eval.js";
 import { analyzeGithubEventContext } from "./githubContext.js";
+import { buildIssueMap, renderIssueMapMarkdown } from "./issueMap.js";
 import { postPullRequestComment } from "./github.js";
 import { initProject } from "./init.js";
 import { auditLspReadiness, renderLspAuditMarkdown } from "./lspAudit.js";
@@ -206,6 +207,16 @@ async function main(): Promise<void> {
     const output = format === "json" ? `${JSON.stringify(result, null, 2)}\n` : renderOssBriefMarkdown(result);
     await writeOutput(output, parsed.flags.output);
     process.exitCode = result.scorecard.passed ? 0 : 1;
+    return;
+  }
+
+  if (parsed.command === "issue-map") {
+    const result = await buildIssueMap(parsed.targets, {
+      top: numberFlag(parsed.flags.top)
+    });
+    const format = String(parsed.flags.format ?? "markdown");
+    const output = format === "json" ? `${JSON.stringify(result, null, 2)}\n` : renderIssueMapMarkdown(result);
+    await writeOutput(output, parsed.flags.output);
     return;
   }
 
@@ -493,6 +504,7 @@ Usage:
   trace-to-skill scorecard [repo-dir] [--threshold 85] [--format markdown|json] [--output docs/SCORECARD.md]
   trace-to-skill scorecard-comment [repo-dir] [--threshold 85] [--dry-run] [--token $GITHUB_TOKEN]
   trace-to-skill oss-brief [repo-dir] [--threshold 85] [--format markdown|json] [--output docs/OPENAI_OSS_BRIEF.md]
+  trace-to-skill issue-map <github-issues.json-or-md> [--top 12] [--format markdown|json] [--output codex-issue-map.md]
   trace-to-skill guard-github-event [event.json] [--threshold 80] [--format markdown|json] [--output report.md]
   trace-to-skill guard-patch <patch-file> [--root repo-dir] [--format markdown|json] [--output report.md]
   trace-to-skill session-audit [codex-home-or-sessions-dir] [--large-mb 10] [--huge-line-kb 512] [--format markdown|json]
@@ -524,6 +536,8 @@ Examples:
   trace-to-skill scorecard .
   trace-to-skill scorecard-comment . --threshold 85
   trace-to-skill oss-brief . --output docs/OPENAI_OSS_BRIEF.md
+  gh issue list --repo openai/codex --state open --limit 100 --json number,title,body,url,labels,comments,createdAt,updatedAt > codex-issues.json
+  trace-to-skill issue-map codex-issues.json --output codex-issue-map.md
   trace-to-skill guard-github-event "$GITHUB_EVENT_PATH"
   trace-to-skill guard-patch ./change.patch --root .
   trace-to-skill session-audit ~/.codex --format json

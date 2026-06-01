@@ -98,6 +98,7 @@ npx trace-to-skill plugin-audit ~/.codex --app /Applications/Codex.app --format 
 npx trace-to-skill diagnostics-bundle ~/.codex --output codex-diagnostics
 npx trace-to-skill usage-evidence ./usage-notes.md --output usage-evidence.md
 npx trace-to-skill process-audit ./process-notes.md --output process-audit.md
+npx trace-to-skill issue-map codex-issues.json --output codex-issue-map.md
 npx trace-to-skill checkpoint . --output .trace-to-skill/checkpoints/before-codex
 npx trace-to-skill redact ./runs --output redacted-runs
 npx trace-to-skill analyze ./runs --format json
@@ -122,12 +123,14 @@ npx trace-to-skill suggest ./runs --target agents-md
 - `trace-to-skill diagnostics-bundle --format json`
 - `trace-to-skill usage-evidence --format json`
 - `trace-to-skill process-audit --format json`
+- `trace-to-skill issue-map --format json`
 - `trace-to-skill checkpoint --format json`
 - SARIF from `trace-to-skill analyze --format sarif`
 - OpenAI/Codex issue-ready Markdown from `trace-to-skill codex-report`
 - Packaged zero-setup Codex issue-report demo from `trace-to-skill demo`
 - OpenAI OSS support/application brief from `trace-to-skill oss-brief`
 - Codex issue-cluster mapping in `docs/CODEX_ISSUE_MAP.md`
+- GitHub issue demand mining in `docs/CODEX_GITHUB_ISSUE_PAIN_MAP.md`
 - GitHub Action outputs for doctor, AGENTS lint, GitHub context guard, benchmark, and scorecard modes
 
 ## Schema Contracts

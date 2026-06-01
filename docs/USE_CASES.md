@@ -59,7 +59,7 @@ What it proves:
 Recommended CI surface:
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.84
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.85
   with:
     mode: all
     doctor-threshold: "85"
@@ -69,7 +69,24 @@ Recommended CI surface:
     github-token: ${{ github.token }}
 ```
 
-## 3. AGENTS.md And MCP Hygiene
+## 3. GitHub Issue Demand Mining
+
+Use this when you want to see what Codex users are actually complaining about on GitHub before choosing the next fixture, report template, or diagnostic helper.
+
+```bash
+gh issue list --repo openai/codex --state open --limit 100 --json number,title,body,url,labels,comments,createdAt,updatedAt > codex-issues.json
+npx trace-to-skill issue-map codex-issues.json --output codex-issue-map.md
+npx trace-to-skill issue-map codex-issues.json --format json
+```
+
+What it proves:
+
+- public issue clusters can be ranked without private telemetry
+- high-comment pain points are mapped to deterministic failure classes such as token burn, remote compact, MCP discovery, usage buckets, context drift, sandbox, and resource leaks
+- maintainers get example issue links and evidence-rule prompts for the next support artifact
+- OSS builders can show that new work is grounded in real GitHub demand instead of generic agent demos
+
+## 4. AGENTS.md And MCP Hygiene
 
 Use this before giving Codex broad repository access.
 
@@ -89,7 +106,7 @@ This checks:
 
 The goal is not to ban powerful tools. The goal is to make trust boundaries visible before an agent acts.
 
-## 4. Language-Server Readiness Before Agent Edits
+## 5. Language-Server Readiness Before Agent Edits
 
 Use this when a repo wants Codex to navigate definitions, references, diagnostics, or rename/refactor flows, but language-server setup differs across machines.
 
@@ -107,7 +124,7 @@ What it proves:
 
 It does not auto-install anything or grant new permissions; it is a readiness report.
 
-## 5. Sandbox And Permission Failure Triage
+## 6. Sandbox And Permission Failure Triage
 
 Use this when Codex cannot start tools, apply patches, or write to the workspace because sandbox setup or permissions fail.
 
@@ -128,7 +145,7 @@ For Codex App reports where Speed resets from Fast to Standard after restart, in
 
 `diagnostics-bundle` combines the config, plugin, and session summaries into a metadata-only support folder with a manifest and README. Use it when OpenAI asks for more evidence but raw `config.toml`, SQLite state, rollout JSONL, and local logs should not be posted publicly.
 
-## 6. Codex Auth And Connectivity Triage
+## 7. Codex Auth And Connectivity Triage
 
 Use this when Codex cannot log in, exchange an auth token, stream a response, or connect through a container, proxy, VPN, corporate CA, IPv6 network, or Cloudflare challenge.
 
@@ -138,7 +155,7 @@ npx trace-to-skill analyze ./runs --format json
 
 This catches signals such as `token_exchange_failed`, `auth.openai.com/oauth/token`, `codex_login::server`, `cf-mitigated: challenge`, missing `ca-certificates`, `update-ca-certificates`, `CODEX_CA_CERTIFICATE`, IPv6 fallback evidence, proxy/MITM TLS failures, and `stream disconnected before completion` on `chatgpt.com/backend-api/codex/responses`.
 
-## 7. Codex Remote Compact Failure Triage
+## 8. Codex Remote Compact Failure Triage
 
 Use this when `/compact` or auto-compaction fails during a long Codex session and the user cannot continue without recreating context.
 
@@ -148,7 +165,7 @@ npx trace-to-skill codex-report ./runs --output openai-codex-compact-issue.md
 
 This catches signals such as `Error running remote compact task`, `timeout waiting for child process to exit`, `stream disconnected before completion`, `responses/compact`, `tcp_user_timeout`, `stream_idle_timeout_ms`, provider-id timeout workarounds, Azure provider config drift, and long-running tasks broken by failed compaction.
 
-## 8. Codex Context Fork Bloat Evidence
+## 9. Codex Context Fork Bloat Evidence
 
 Use this when a conversation fork carries duplicate parent context, inflates token counts, or breaks prompt-cache lineage before new work happens.
 
@@ -162,7 +179,7 @@ This catches signals such as forked conversations carrying the full parent trans
 
 Include Codex app/CLI/extension version, surface, model, fork source thread id, forked thread id, fork action timestamp, fork boundary marker, `input_tokens` and `cached_input_tokens` before and after the fork, `prompt_cache_key` before and after, cache hit rate, duplicated parent-turn or tool-transcript examples with line ids, whether new files were read before the token jump, compaction state, subagent or `fork_context` history, minimal reproduction steps, and whether a fresh thread or non-fork continuation avoids the bloat.
 
-## 9. Codex Subagent Prompt Leakage Evidence
+## 10. Codex Subagent Prompt Leakage Evidence
 
 Use this when `spawn_agent` child tasks are not isolated, especially with `fork_turns: "none"` or same-turn parallel subagent spawning.
 
@@ -176,7 +193,7 @@ This catches signals such as delegated `spawn_agent` messages recorded as assist
 
 Include Codex Desktop/app/CLI version, MultiAgentV2 state, OS, model, parent thread id, child thread ids, exact `spawn_agent` arguments, `fork_turns`, role/profile, whether `multi_tool_use.parallel` or same-turn parallel spawning was used, redacted child rollout line order, first user/task message, assistant/commentary envelope lines, sibling prompt excerpts, `wait_agent` and `close_agent` results, unexpected child tool calls, and sequential single-child versus parallel-child controls.
 
-## 10. Codex Usage Evidence Packaging
+## 11. Codex Usage Evidence Packaging
 
 Use this when a Codex usage issue has scattered evidence across `/status`, dashboard notes, reset tables, token totals, prompt-cache rows, cached input, and local overhead clues.
 
@@ -196,7 +213,7 @@ The receipt separates:
 - orchestration-overhead signals that may burn usage without accepted work
 - suspected cause buckets to keep public reports comparable
 
-## 11. Codex Usage Bucket Scope Evidence
+## 12. Codex Usage Bucket Scope Evidence
 
 Use this when Codex usage UI shows 5h and weekly percentages but does not explain the accounting scope.
 
@@ -210,7 +227,7 @@ This catches signals such as `Usage remaining`, `5h 97%`, `Weekly 95%`, reset da
 
 Include subscription plan, account/workspace, app/CLI version, surface, timestamp, screenshot or redacted popover text, 5h percentage, weekly percentage, reset time/date, whether values are used or remaining, whether weekly is rolling or calendar-based, whether weekly includes app/CLI/cloud/review usage, `/status` output, usage dashboard state, and whether other devices or workspaces show the same values.
 
-## 12. Codex Windows Helper Path Triage
+## 13. Codex Windows Helper Path Triage
 
 Use this when Codex Desktop on Windows discovers bundled tools or plugin helpers but cannot execute them from the integrated terminal, tool runner, Browser, Chrome, Computer Use, or node_repl path.
 
@@ -220,7 +237,7 @@ npx trace-to-skill codex-report ./runs --output openai-codex-windows-helper-issu
 
 This catches signals such as `Program 'rg.exe' failed to run`, `Access is denied`, `WindowsApps\OpenAI.Codex...\app\resources`, missing `%LOCALAPPDATA%\OpenAI\Codex\bin`, missing MSIX LocalCache helper bins, `CodexSandboxUsers` ACL/RX problems, `copyfile` failures from WindowsApps bundled plugin manifests, EFS/Application Protected attributes, `windows sandbox failed: spawn setup refresh`, `missing-helper-path`, and unavailable Browser/Chrome/Computer Use plugin helpers.
 
-## 13. Codex Mobile And Remote-Control Route Health
+## 14. Codex Mobile And Remote-Control Route Health
 
 Use this when Codex mobile, SSH remote, or desktop remote-control says it is connected but commands do not reach the expected host, workspace, or app-server.
 
@@ -230,7 +247,7 @@ npx trace-to-skill analyze ./runs --format json
 
 This catches signals such as `Waiting for desktop`, `Directory: Unavailable`, stale `server_name` enrollment, stale remote-control listener, `127.0.0.1:14567`, missing cached helper files such as `codex-windows-sandbox-setup.exe` or `codex-command-runner.exe`, empty backend environments, stale Android session lists, and temporary recovery after re-pairing or listener restart.
 
-## 14. Codex Terminal Output And Scrollback Integrity
+## 15. Codex Terminal Output And Scrollback Integrity
 
 Use this when Codex terminal output, streamed assistant text, or scrollback becomes untrustworthy even though raw logs, transcripts, or transaction views still contain the missing lines.
 
@@ -244,7 +261,7 @@ This catches signals such as Windows Terminal scrollback lines disappearing, str
 
 Include the Codex CLI/app/extension version, OS, shell, terminal emulator and version, WSL/SSH/tmux/Zellij state, model, whether streaming was active, exact scroll action, terminal dimensions and scrollback settings, first missing or duplicated line id, raw log/transcript proof, terminal capture, numbered-line harness output, control run, `/resume` or transcript recovery behavior, and whether another terminal or downgrade changes the result.
 
-## 15. Codex Subagent Lifecycle And State Reconciliation
+## 16. Codex Subagent Lifecycle And State Reconciliation
 
 Use this when subagents appear completed, closed, stale, or interrupted but Codex cannot reconcile UI state, live handles, persisted spawn edges, parent discoverability, and active spawn quota.
 
@@ -258,7 +275,7 @@ This catches signals such as completed subagents remaining visible in the Subage
 
 Include Codex app/CLI/extension version, OS, surface, model, subscription/workspace, root thread id, subagent ids/nicknames/roles, spawn/close/list commands, `close_agent` results, `list_agents` or `/agents` output, `thread_spawn_edges` status counts, `agents.max_threads` or registry quota evidence, recent-list/sidebar behavior, child-thread archive/top-level status, last-progress or halt reason, MCP server state, compaction/resume timing, redacted UI evidence, restart/reload behavior, and whether stale agents are UI-only or still block spawns.
 
-## 16. Codex MCP Runtime Triage
+## 17. Codex MCP Runtime Triage
 
 Use this when MCP tools are configured and visible, but Codex cannot actually call them at runtime.
 
@@ -269,7 +286,7 @@ npx trace-to-skill config-audit ~/.codex --format json
 
 This catches signals such as `user cancelled MCP tool call`, `request_user_input is not supported in exec mode`, `Approve app tool call?`, `tool_call_mcp_elicitation`, routed callable names like `mcp__node_repl__js` becoming `unsupported call`, deferred discovery dropping namespace or `serverName`, `tools/list` succeeding while Codex routing fails, and stdio transport lifecycle failures such as `Transport closed`, `stdin_end`, `stdin_close`, `transport_close`, or stderr backpressure.
 
-## 17. Codex Resume And Session State Triage
+## 18. Codex Resume And Session State Triage
 
 Use this when long Codex sessions become difficult to resume, Desktop history rendering gets sluggish, or local state migrations break goals/projects/history.
 
@@ -286,7 +303,7 @@ This catches signals such as `codex resume` picker hangs, `codex resume <id>` wo
 
 For mixed resume, crash, config, plugin, or history issues, `diagnostics-bundle` writes the session, config, and plugin reports together with a checklist of files not to attach publicly.
 
-## 18. Codex File Tree UI Evidence
+## 19. Codex File Tree UI Evidence
 
 Use this when Codex Desktop cannot reveal project files through the native file tree, folder icon, floating file panel, or built-in preview.
 
@@ -297,7 +314,7 @@ npx trace-to-skill codex-report ./runs --output openai-codex-issue.md
 
 This catches signals such as `View > Toggle File Tree` doing nothing, `Cmd+Shift+E` or `Ctrl+Shift+E` having no visible effect, the folder icon disappearing, the floating file panel showing stale or unclickable entries after add/rename/delete operations, and `.doc`, `.pdf`, or `.ppt` previews failing until restart.
 
-## 19. Codex Token Burn Attribution
+## 20. Codex Token Burn Attribution
 
 Use this when Codex usage drains faster than expected and the trace needs to separate useful model work from orchestration overhead.
 
@@ -310,7 +327,7 @@ This catches signals such as tokens `burning very fast`, usage dropping by visib
 
 For public reports, prefer `usage-evidence` first so the quota-window, local-token, and orchestration-overhead layers are visible separately.
 
-## 20. Usage Reset Drift Evidence
+## 21. Usage Reset Drift Evidence
 
 Use this when Codex reset timing changes unexpectedly or users lose the ability to plan paid usage.
 
@@ -321,7 +338,7 @@ npx trace-to-skill codex-report ./runs --output openai-codex-issue.md
 
 This catches signals such as weekly reset dates moving from one date to another, `reset_at` jumping after the first prompt, saved weekly usage being wiped or pushed into the next window, outage compensation resets changing the anchor, `/status` and dashboard disagreement, and requests for deterministic reset schedules or rollover of unused prior-window usage.
 
-## 21. Quota And Usage-Limit Evidence
+## 22. Quota And Usage-Limit Evidence
 
 Use this when Codex blocks a prompt with a usage-limit message but another surface still shows remaining quota.
 
@@ -331,7 +348,7 @@ npx trace-to-skill analyze ./runs --format json
 
 This catches traces where `/status` or the usage page shows remaining 5h or weekly quota, accounts appear to share limits unexpectedly, a Team account inherits a Plus account's limit state, or quota reset times jump after logout/login.
 
-## 22. Codex Resource Leak Evidence
+## 23. Codex Resource Leak Evidence
 
 Use this when Codex Desktop, the VS Code extension, renderer, app-server, GPU process, shell snapshot, or helper process keeps burning local resources after the useful work should be idle.
 
@@ -353,7 +370,7 @@ npx trace-to-skill process-audit ./process-notes.md --format json
 
 `process-audit` packages Task Manager, System Informer, `Get-CimInstance`, `ps`, `top`, or handwritten process measurement snippets into a smaller public report. It detects PowerShell/pwsh CIM polling such as `Get-CimInstance Win32_Process`, high-CPU Codex/helper/renderer samples, stale `process_manager/chat_processes.json` mentions, and runaway helper signals without inspecting live processes or asking users to post full raw process dumps.
 
-## 23. Codex Thinking Hang Evidence
+## 24. Codex Thinking Hang Evidence
 
 Use this when Codex accepts a prompt, finishes a local tool call, or keeps a Responses stream open but the UI/CLI remains on Thinking or Working with no visible assistant follow-up.
 
@@ -367,7 +384,7 @@ This catches signals such as `turn/start`, `task_started`, a completed local too
 
 Include the Codex version, OS, model and reasoning/speed settings, turn or thread id, prompt timestamp, last successful tool output, first `response_item` timestamp, `responses_http` or websocket transport evidence, `time.busy` / `time.idle`, MCP/subagent state, stop/interrupt behavior, and whether a new thread or minimal config recovers.
 
-## 24. Codex Clipboard And Pasted-Text Attachment Evidence
+## 25. Codex Clipboard And Pasted-Text Attachment Evidence
 
 Use this when copy/export, long pasted prompts, or generated `Pasted text.txt` attachments break Codex prompt, `/goal`, or support-report workflows.
 
@@ -381,7 +398,7 @@ This catches signals such as `Copy as Markdown` disappearing from the Copy menu,
 
 Include app version, OS, surface, exact copy menu items, source text size, paste action, visible editor text, generated attachment name/path/size, `pasted-text-attachments.json` or fileAttachments metadata, command path such as `/goal`, preview/edit/revert actions tried, clipboard payload format, and whether paste-as-text, opt-out, explicit file reference, or downgrade changes behavior.
 
-## 25. Codex Deeplink And External Launch Evidence
+## 26. Codex Deeplink And External Launch Evidence
 
 Use this when OAuth callbacks, notification clicks, browser extension activation, mobile pairing, or CLI app-open commands fail to route back into Codex.
 
@@ -395,7 +412,7 @@ This catches signals such as `codex://oauth_callback?code=...` opening an Electr
 
 Include app/CLI/extension version, OS/build, install source, package id/path, affected surface, exact redacted URI shape, browser and connector/plugin name, error dialog text, whether the app was already running, AppX/MSIX evidence such as AppUserModelID and DelegateExecute, HKCU/HKCR `codex` keys, command-line arguments, repair/reinstall/re-register attempts, and whether manual `codex://test` or `Start-Process` reproduces.
 
-## 26. Codex App Connector Auth Cache Evidence
+## 27. Codex App Connector Auth Cache Evidence
 
 Use this when Codex app connectors appear installed but keep stale auth or discovery metadata after a reauth-required response.
 
@@ -409,7 +426,7 @@ This catches signals such as `401: "Server returned 401: 'Reauthentication requi
 
 Include app/CLI version, OS, connector/plugin name and id, installed plugin root, exact tool name, redacted `codex_apps_tools` and `codex_app_directory` metadata, `link_*` id before/after reconnect, `isAccessible` state, restart/remove/re-add/cache-clear/sign-in attempts, ChatGPT app page state, and whether an external MCP workaround succeeds.
 
-## 27. Codex MCP Discovery And Config Scope Evidence
+## 28. Codex MCP Discovery And Config Scope Evidence
 
 Use this when MCP servers work in Codex CLI or one config scope but are missing in VS Code, Desktop, WSL, remote sessions, project-local config, or an older conversation.
 
@@ -423,7 +440,7 @@ This catches signals such as `MCP servers not detected in Codex VS Code extensio
 
 Include app/CLI/extension version, OS, IDE, remote/WSL/SSH state, workspace root, effective `CODEX_HOME`, all config files considered (`~/.codex/config.toml`, project `.codex/config.toml`, `.vscode/mcp.json`, `.mcp.json`), redacted MCP sections, trust/profile/default-permissions state, `codex mcp list`, `codex mcp get <server>`, CLI-versus-Desktop/VS Code comparison, loaded config path/log lines, whether moving the same server to user-global config fixes it, and whether the current session exposes `mcp__*` tools.
 
-## 28. Codex Streamable HTTP MCP Evidence
+## 29. Codex Streamable HTTP MCP Evidence
 
 Use this when a Streamable HTTP or SSE MCP server is reachable but Codex fails during JSON-RPC parsing, handshake, auth gating, stale session reuse, or reconnect.
 
@@ -437,7 +454,7 @@ This catches signals such as Penpot `JsonRpcMessage deserialize` or response-par
 
 Include Codex version, MCP server name, transport URL without secrets, initialize/tools/list/tools/call results, HTTP status, `Content-Type`, SSE event framing, JSON-RPC message shape, session id before and after reconnect or server restart, auth/OAuth expectations, User-Agent/header requirements, exact parse/deserialize error, whether curl or another MCP client succeeds, and whether restarting Codex or reinitializing the transport recovers.
 
-## 29. Codex Hooks Runtime Evidence
+## 30. Codex Hooks Runtime Evidence
 
 Use this when Codex hooks duplicate, stop firing, emit stale deprecation warnings, behave differently across CLI/Desktop/Code Mode/Windows, or become hard to inspect in settings.
 
@@ -451,7 +468,7 @@ This catches signals such as duplicate Hooks entries for one tool call, `PostToo
 
 Include Codex app/CLI/extension version, OS, surface, shell or Desktop route, `[features].hooks` and `hooks.json` snippets without secrets, hook event type, matcher, handler command/name, expected versus observed fire count, duplicate event ids, exact deprecation warning, trust state, live-edit/rate-limit/auto-restore timing, Code Mode `exec` versus normal CLI comparison, linked-worktree cwd, Hooks settings UI screenshot if relevant, and whether restart/reload/new session restores behavior.
 
-## 30. Patch Overwrite Guard
+## 31. Patch Overwrite Guard
 
 Use this before applying a generated patch when you want create/update/delete semantics checked against the actual workspace.
 
@@ -468,7 +485,7 @@ For a public demo report:
 npx trace-to-skill demo patch-overwrite
 ```
 
-## 31. Sensitive Path Preflight Before Agent Runs
+## 32. Sensitive Path Preflight Before Agent Runs
 
 Use this before giving an AI coding agent a repository.
 
@@ -483,7 +500,7 @@ This finds sensitive-looking paths such as `.env`, `.env.*`, `.npmrc`, `.pypirc`
 
 The output includes a stable JSON schema plus recommended exclude globs that can seed `.agentignore`, `.aiexclude`, `.codexignore`, `.gitignore`, local sandbox permission profiles, or team security review checklists. `--format ignore` renders a reviewable generated file candidate and still does not mutate the repo. It is a preflight report, not a sandbox boundary.
 
-## 32. Workspace Checkpoint Before Agent Runs
+## 33. Workspace Checkpoint Before Agent Runs
 
 Use this before giving Codex, Claude, Cursor, or another coding agent a dirty repository where untracked local work matters.
 
@@ -496,7 +513,7 @@ This writes a local checkpoint bundle with `status.txt`, staged and unstaged bin
 
 This is useful for OpenAI/Codex `/undo` and `/rewind` discussions where users need workspace protection beyond conversation rewind, especially when untracked files are outside normal commit history.
 
-## 33. OpenAI Codex Issue Report
+## 34. OpenAI Codex Issue Report
 
 Use this when you want to file or update an OpenAI/Codex issue with a concise, evidence-backed report instead of pasting a full transcript.
 
@@ -509,7 +526,7 @@ The report includes the likely Codex failure class, line-linked evidence, diagno
 
 For a cluster-to-command map of current Codex issue patterns, see [CODEX_ISSUE_MAP.md](CODEX_ISSUE_MAP.md).
 
-## 34. Sensitive File Access Evidence
+## 35. Sensitive File Access Evidence
 
 Use this when a trace suggests an agent read, attached, uploaded, diffed, or indexed credential-bearing files.
 
@@ -522,7 +539,7 @@ This catches signals such as `.env`, `.env.production`, `.npmrc`, `.pypirc`, `.n
 
 Before publishing evidence, run `trace-to-skill redact` and attach only redacted excerpts plus the file path/class.
 
-## 35. GitHub Context Guard
+## 36. GitHub Context Guard
 
 Use this before an agent reads untrusted GitHub text.
 
@@ -539,7 +556,7 @@ Use it when:
 - a bot asks Codex to triage untrusted user reports
 - logs or comments might contain instructions like "ignore previous instructions" or "print secrets"
 
-## 36. Failed Agent Run To Reviewable Rule
+## 37. Failed Agent Run To Reviewable Rule
 
 Use this when a coding agent made a repeated workflow mistake.
 
@@ -557,7 +574,7 @@ Recommended maintainer loop:
 4. Copy only evidence-backed rules into the real policy file.
 5. Run `eval` or `scorecard` in CI so the same failure does not silently return.
 
-## 37. Privacy-Preserving Adoption
+## 38. Privacy-Preserving Adoption
 
 Use this when you want public evidence without leaking private traces.
 

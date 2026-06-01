@@ -15,6 +15,7 @@ import { createDiagnosticsBundle, renderDiagnosticsBundleMarkdown } from "../src
 import { doctorRepo } from "../src/doctor.js";
 import { compareAnalyses, evaluate } from "../src/eval.js";
 import { analyzeGithubEventContext, extractGithubContextInputs } from "../src/githubContext.js";
+import { buildIssueMap, renderIssueMapMarkdown } from "../src/issueMap.js";
 import { postPullRequestComment } from "../src/github.js";
 import { initProject } from "../src/init.js";
 import { auditLspReadiness, renderLspAuditMarkdown } from "../src/lspAudit.js";
@@ -1233,6 +1234,23 @@ test("buildUsageEvidenceFromInputs parses JSONL-style usage snapshots", () => {
   assert.equal(result.snapshots[1]?.window, "5h");
 });
 
+test("issue-map ranks GitHub issue exports by detected Codex failure classes", async () => {
+  const result = await buildIssueMap(["fixtures/github-codex-issues-export.json"], { top: 8 });
+  const markdown = renderIssueMapMarkdown(result);
+  const kinds = result.summaries.map((summary) => summary.kind);
+
+  assert.equal(result.issueCount, 5);
+  assert.ok(result.matchedIssueCount >= 4);
+  assert.ok(kinds.includes("codex_token_burn"));
+  assert.ok(kinds.includes("codex_remote_compact"));
+  assert.ok(kinds.includes("codex_mcp_discovery_mismatch"));
+  assert.ok(kinds.includes("codex_usage_bucket_confusion"));
+  assert.equal(result.summaries[0]?.kind, "codex_token_burn");
+  assert.match(markdown, /GitHub Issue Pain Map/);
+  assert.match(markdown, /#14593 Burning tokens very fast/);
+  assert.match(markdown, /gh issue list --repo openai\/codex/);
+});
+
 test("process audit packages Codex process polling and high CPU evidence", () => {
   const result = auditProcessEvidenceFromInputs([
     {
@@ -2154,7 +2172,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.equal(brief.scorecard.benchmarkStatus, "pass");
   assert.equal(brief.scorecard.benchmarkCases, 38);
   assert.equal(brief.packageName, "trace-to-skill");
-  assert.equal(brief.packageVersion, "0.1.84");
+  assert.equal(brief.packageVersion, "0.1.85");
   assert.equal(brief.license, "Apache-2.0");
   assert.ok(brief.repository?.includes("github.com/grnbtqdbyx-create/trace-to-skill"));
   assert.ok(brief.qualification.max500.length <= 500);
@@ -2162,7 +2180,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.match(markdown, /OpenAI OSS Brief/);
   assert.match(markdown, /Why This Repository Qualifies/);
   assert.match(markdown, /500-Character Version/);
-  assert.match(markdown, /npx trace-to-skill@0\.1\.84/);
+  assert.match(markdown, /npx trace-to-skill@0\.1\.85/);
 });
 
 test("scorecard-comment dry-run resolves pull request event", async () => {

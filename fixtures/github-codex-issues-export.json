@@ -1,0 +1,71 @@
+[
+  {
+    "number": 14593,
+    "title": "Burning tokens very fast",
+    "body": "Codex is burning tokens very fast while idle. Weekly usage drops 70% in one day with repeated compaction loops, retries, background polling, and no accepted edits. /status disagrees with the dashboard and cached input tokens keep replaying.",
+    "url": "https://github.com/openai/codex/issues/14593",
+    "labels": [
+      { "name": "bug" },
+      { "name": "rate-limits" }
+    ],
+    "commentsCount": 593,
+    "reactions": { "totalCount": 41 },
+    "updatedAt": "2026-06-01T00:00:00Z"
+  },
+  {
+    "number": 14860,
+    "title": "Error running remote compact task",
+    "body": "The long Codex session fails during /compact. The client prints Error running remote compact task, responses/compact, stream disconnected before completion, and timeout waiting for child process to exit. A provider config workaround only changes the failure timing.",
+    "url": "https://github.com/openai/codex/issues/14860",
+    "labels": [
+      { "name": "bug" },
+      { "name": "context" }
+    ],
+    "commentsCount": 90,
+    "reactions": { "+1": 15 },
+    "updatedAt": "2026-05-31T22:00:00Z"
+  },
+  {
+    "number": 6465,
+    "title": "MCP servers not detected in Codex VS Code extension but working in Codex CLI",
+    "body": "MCP servers not detected in the VS Code extension or Desktop, but working in Codex CLI from ~/.codex/config.toml. tools/list is empty in one surface, project .codex/config.toml is ignored, and serverName metadata is missing.",
+    "url": "https://github.com/openai/codex/issues/6465",
+    "labels": [
+      { "name": "bug" },
+      { "name": "extension" },
+      { "name": "mcp" }
+    ],
+    "comments": [
+      { "body": "I can reproduce this across WSL and Desktop with the same config scope mismatch." }
+    ],
+    "commentsCount": 55,
+    "reactions": { "totalCount": 8 },
+    "updatedAt": "2026-05-30T20:00:00Z"
+  },
+  {
+    "number": 25471,
+    "title": "Codex usage popover shows confusing remaining percentages for 5h vs weekly buckets",
+    "body": "Usage remaining shows 5h 97% and Weekly 95% Jun 7. The popover does not say whether the percentages are percent remaining or percent used, whether weekly is rolling 7-day or calendar week, or whether app, CLI, cloud tasks, reviews, devices, and workspaces share the same pool.",
+    "url": "https://github.com/openai/codex/issues/25471",
+    "labels": [
+      { "name": "enhancement" },
+      { "name": "rate-limits" },
+      { "name": "app" }
+    ],
+    "commentsCount": 1,
+    "reactions": 2,
+    "updatedAt": "2026-06-01T01:00:00Z"
+  },
+  {
+    "number": 99999,
+    "title": "Add a fun launch animation",
+    "body": "This is a cosmetic request with no evidence of a failed agent run.",
+    "url": "https://github.com/openai/codex/issues/99999",
+    "labels": [
+      { "name": "enhancement" }
+    ],
+    "commentsCount": 0,
+    "reactions": 0,
+    "updatedAt": "2026-05-01T00:00:00Z"
+  }
+]

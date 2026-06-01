@@ -11,6 +11,8 @@ export type { DiagnosticsBundleOptions, DiagnosticsBundleReport, DiagnosticsBund
 export { doctorRepo } from "./doctor.js";
 export { compareAnalyses, evaluate } from "./eval.js";
 export { analyzeGithubEventContext, extractGithubContextInputs } from "./githubContext.js";
+export { buildIssueMap, renderIssueMapMarkdown } from "./issueMap.js";
+export type { IssueMapIssue, IssueMapKindSummary, IssueMapOptions, IssueMapResult } from "./issueMap.js";
 export { postPullRequestComment } from "./github.js";
 export { initProject } from "./init.js";
 export { auditLspReadiness, renderLspAuditMarkdown } from "./lspAudit.js";

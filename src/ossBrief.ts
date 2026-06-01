@@ -48,13 +48,13 @@ export async function runOssBrief(target = process.cwd(), threshold = 85): Promi
 
   const qualificationLong = [
     `${projectName} helps open-source maintainers adopt Codex safely by turning failed coding-agent runs into evidence-backed rules, reusable workflows, and CI gates.`,
-    `It supports real maintenance work: PR review, issue triage, release quality, MCP risk, prompt-injection defense, privacy-preserving trace sharing, and repeat failure reduction.`,
+    `It supports real maintenance work: PR review, GitHub issue demand mining, release quality, MCP risk, prompt-injection defense, privacy-preserving trace sharing, and repeat failure reduction.`,
     `The repository is ${scorecard.doctor.status}, scores ${scorecard.doctor.score}/100 on the local Codex readiness doctor, and ships a deterministic benchmark with ${scorecard.benchmark.cases} public fixture cases.`
   ].join(" ");
 
   const apiCreditsLong = [
     "API credits would power optional maintainer workflows on top of the local deterministic scanner:",
-    "classifying failed Codex sessions, generating candidate AGENTS.md rules or SKILL.md workflows, comparing before/after runs, and producing PR-ready triage reports.",
+    "classifying failed Codex sessions, mining public GitHub issue clusters, generating candidate AGENTS.md rules or SKILL.md workflows, comparing before/after runs, and producing PR-ready triage reports.",
     "The local CLI remains free, dependency-light, and usable without API credits."
   ].join(" ");
 
@@ -173,6 +173,7 @@ function buildEvidence(
     license ? `Open-source license: ${license}` : "Add an OSI-approved license such as Apache-2.0 or MIT.",
     `Codex readiness doctor: ${scorecard.doctor.status}, ${scorecard.doctor.score}/100, ${scorecard.doctor.failedChecks} failed checks.`,
     `Public fixture benchmark: ${scorecard.benchmark.status}, ${scorecard.benchmark.cases} cases.`,
+    "GitHub issue demand mining: issue-map ranks exported OpenAI/Codex issues by failure class, comments, reactions, and evidence gaps.",
     "Maintainer control: generated rules are suggestions, evidence is line-linked, and secrets can be redacted before sharing."
   ];
 }
