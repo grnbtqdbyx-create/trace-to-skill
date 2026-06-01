@@ -703,12 +703,16 @@ Action outputs:
 | `issue-map-report` | Markdown issue-map report path |
 | `issue-map-json` | JSON issue-map report path |
 | `issue-heat-issues` | Number of GitHub issues fetched by issue-heat mode |
+| `issue-heat-considered` | Number of recent issues considered after filters |
+| `issue-heat-matched` | Number of recent issues matched to known failure classes |
 | `issue-heat-top-kind` | Hottest recent issue failure class |
 | `issue-heat-report` | Markdown issue-heat report path |
 | `issue-heat-json` | JSON issue-heat report path |
 | `duplicate-audit-candidates` | Number of duplicate candidates checked |
 | `duplicate-audit-likely` | Number of likely duplicate candidates |
 | `duplicate-audit-related` | Number of related but not exact duplicate candidates |
+| `duplicate-audit-needs-review` | Number of duplicate candidates needing human review |
+| `duplicate-audit-weak` | Number of weak duplicate matches |
 | `duplicate-audit-top-verdict` | Highest-confidence duplicate audit verdict |
 | `duplicate-audit-report` | Markdown duplicate-audit report path |
 | `duplicate-audit-json` | JSON duplicate-audit report path |
