@@ -37,7 +37,7 @@ What it proves:
 - packaged fixtures can produce a real Codex issue report immediately
 - maintainers can inspect the output shape before sharing any private log
 - demos cover remote compact failures, context fork bloat, subagent prompt leakage, subagent orchestration/configuration demand, usage bucket confusion, Windows helper path failures, patch overwrite safety, approval friction, latency, Thinking hangs, clipboard/attachment regressions, deeplink/OAuth launch regressions, connector auth-cache regressions, MCP discovery/config-scope mismatches, Streamable HTTP MCP parse/handshake failures, hooks contract gaps, hooks runtime failures, terminal output/scrollback integrity, subagent lifecycle drift, token burn, sensitive files, and prompt injection
-- `sensitive-audit` scans filenames and paths before an agent run, without reading file contents, so teams can build `.agentignore`, `.aiexclude`, `.codexignore`, `.gitignore`, or sandbox permission profiles from a concrete repo report
+- `sensitive-audit` scans filenames and paths before an agent run, without reading file contents, so teams can build `.agentignore`, `.aiexclude`, `.codexignore`, `.gitignore`, or sandbox permission profiles from a concrete repo report and see whether existing project ignore files cover the recommended patterns
 - `lsp-audit` scans repo language signals and PATH availability so teams know which language servers are ready before asking Codex for symbol-aware edits
 
 See the generated demo output in [docs/DEMO.md](DEMO.md).
@@ -61,7 +61,7 @@ What it proves:
 Recommended CI surface:
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.101
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.102
   with:
     mode: all
     doctor-threshold: "85"
@@ -610,7 +610,7 @@ npx trace-to-skill sensitive-audit . --format ignore --ignore-target codexignore
 
 This finds sensitive-looking paths such as `.env`, `.env.*`, `.npmrc`, `.pypirc`, `.aws/**`, `.ssh/**`, `.kube/**`, `.docker/**`, private keys, certificates, local databases, mobile signing files, and secret manifests without reading file contents or following symlink targets.
 
-The output includes a stable JSON schema plus recommended exclude globs that can seed `.agentignore`, `.aiexclude`, `.codexignore`, `.gitignore`, local sandbox permission profiles, or team security review checklists. `--format ignore` renders a reviewable generated file candidate and still does not mutate the repo. It is a preflight report, not a sandbox boundary.
+The output includes a stable JSON schema plus recommended exclude globs that can seed `.agentignore`, `.aiexclude`, `.codexignore`, `.gitignore`, local sandbox permission profiles, or team security review checklists. It also reports project policy coverage: whether `.codexignore`, `.agentignore`, `.aiexclude`, or `.gitignore` already exists and which recommended patterns each file covers or misses. `--format ignore` renders a reviewable generated file candidate and still does not mutate the repo. It is a preflight report, not a sandbox boundary; `.gitignore` coverage is useful hygiene evidence but not proof of a Codex read-deny boundary.
 
 ## 33. Workspace Checkpoint Before Agent Runs
 

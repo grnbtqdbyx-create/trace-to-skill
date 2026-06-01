@@ -4,7 +4,7 @@
   "title": "trace-to-skill sensitive path audit result",
   "type": "object",
   "additionalProperties": false,
-  "required": ["generatedAt", "root", "status", "summary", "findings", "recommendedExcludes", "ignoreFiles"],
+  "required": ["generatedAt", "root", "status", "summary", "findings", "recommendedExcludes", "ignoreFiles", "policyCoverage"],
   "properties": {
     "generatedAt": {
       "type": "string",
@@ -37,6 +37,9 @@
       "items": {
         "$ref": "#/$defs/ignoreFile"
       }
+    },
+    "policyCoverage": {
+      "$ref": "#/$defs/policyCoverage"
     }
   },
   "$defs": {
@@ -122,6 +125,90 @@
           "items": {
             "type": "string"
           }
+        }
+      }
+    },
+    "policyCoverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["summary", "files", "notes"],
+      "properties": {
+        "summary": {
+          "$ref": "#/$defs/policyCoverageSummary"
+        },
+        "files": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/policyCoverageFile"
+          }
+        },
+        "notes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "policyCoverageSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["checkedFiles", "existingFiles", "recommendedPatterns", "coveredPatterns", "missingPatterns"],
+      "properties": {
+        "checkedFiles": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "existingFiles": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "recommendedPatterns": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "coveredPatterns": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "missingPatterns": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "policyCoverageFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["target", "filename", "path", "exists", "coveredPatterns", "missingPatterns", "note"],
+      "properties": {
+        "target": {
+          "type": "string",
+          "enum": ["agentignore", "codexignore", "aiexclude", "gitignore"]
+        },
+        "filename": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "exists": {
+          "type": "boolean"
+        },
+        "coveredPatterns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "missingPatterns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "note": {
+          "type": "string"
         }
       }
     }

@@ -51,7 +51,7 @@ Current proof points:
 - Codex-native `codex-readiness-auditor` skill for repeatable maintainer audits.
 - GitHub event context guard for scanning PR, issue, comment, discussion, check-run, and commit text before Codex acts on it.
 - Privacy-preserving `redact` command for sharing failed traces without common tokens, emails, local paths, or hidden Unicode controls.
-- Read-only `sensitive-audit` command that reports sensitive-looking paths and emits reviewable `.agentignore`, `.codexignore`, `.aiexclude`, or `.gitignore` candidates before an agent run without reading file contents.
+- Read-only `sensitive-audit` command that reports sensitive-looking paths, emits reviewable `.agentignore`, `.codexignore`, `.aiexclude`, or `.gitignore` candidates, and checks project policy coverage before an agent run without reading sensitive file contents.
 - Read-only `lsp-audit` command that reports detected repo languages, missing language-server commands, install hints, and evidence files before Codex attempts symbol-aware edits.
 - `codex-report` command for turning redacted failed traces into OpenAI/Codex issue-ready Markdown with likely failure class, evidence, diagnostics, and privacy notes.
 - Remote compact failure detection for `/compact` and auto-compaction `responses/compact` timeouts, stream disconnects, provider timeout workarounds, and long-thread recovery loss.
@@ -91,7 +91,7 @@ Current proof points:
 - SARIF output for GitHub code scanning.
 - Before/after eval comparison with keep/revise/reject decisions.
 - One-command repository setup via `trace-to-skill init`.
-- Public release v0.1.101.
+- Public release v0.1.102.
 - Current GitHub scorecard: 100/100 Codex-ready, benchmark passing.
 
 500-character version:

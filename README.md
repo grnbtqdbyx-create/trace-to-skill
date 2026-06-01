@@ -64,7 +64,7 @@ Use it when you need to:
 - **Protect agent context:** run `trace-to-skill guard-github-event "$GITHUB_EVENT_PATH"` before feeding issue, PR, comment, discussion, check-run, or commit text into an agent.
 - **Prevent unsafe patch overwrites:** run `trace-to-skill guard-patch ./change.patch --root .` before applying generated patches so `*** Add File` cannot silently replace an existing file or symlink target.
 - **Audit local Codex session history:** run `trace-to-skill session-audit ~/.codex --format json` to summarize rollout JSONL sizes, huge lines, parse errors, state files, short `session_index.jsonl` evidence, bloated transcript-like sidebar titles, subagent lifecycle signals, and recoverable unindexed thread ids without publishing private transcripts.
-- **Preflight sensitive paths before agent runs:** run `trace-to-skill sensitive-audit . --format json` to find `.env`, private keys, package auth files, cloud credentials, local databases, signing files, and secret manifests by filename/path without reading file contents. Add `--format ignore --ignore-target codexignore` to generate a reviewable `.codexignore` candidate without mutating the repo.
+- **Preflight sensitive paths before agent runs:** run `trace-to-skill sensitive-audit . --format json` to find `.env`, private keys, package auth files, cloud credentials, local databases, signing files, and secret manifests by filename/path without reading file contents. The report now checks project-level `.codexignore`, `.agentignore`, `.aiexclude`, and `.gitignore` coverage for the recommended patterns; add `--format ignore --ignore-target codexignore` to generate a reviewable `.codexignore` candidate without mutating the repo.
 - **Preflight language-server readiness:** run `trace-to-skill lsp-audit . --format json` to detect repo languages, missing LSP commands, install hints, and evidence files before asking Codex for symbol-aware edits.
 - **Audit Codex config drift:** run `trace-to-skill config-audit ~/.codex --format json` to summarize legacy profile config, model pins, Speed/Fast service-tier persistence drift, sandbox/approval posture, Windows elevated sandbox mode, missing permission profiles, plugin cache drift, and MCP approval sprawl.
 - **Audit bundled plugin drift:** run `trace-to-skill plugin-audit ~/.codex --app /Applications/Codex.app --format json` to check Browser, Chrome, Computer Use, bundled marketplace, plugin cache, manifest, helper app, `CODEX_HOME`, and unsupported feature-flag drift without posting raw logs.
@@ -343,7 +343,7 @@ trace-to-skill sensitive-audit . --format ignore --ignore-target codexignore --o
 trace-to-skill lsp-audit . --output lsp-readiness.md
 ```
 
-This removes common API keys, GitHub/npm/Slack tokens, bearer tokens, email addresses, local home paths, and hidden Unicode controls while preserving enough context for maintainer review. `sensitive-audit` is filename/path-only and can emit `.agentignore`, `.codexignore`, `.aiexclude`, or `.gitignore` candidates; `lsp-audit` detects repo language signals and missing language-server commands without installing anything.
+This removes common API keys, GitHub/npm/Slack tokens, bearer tokens, email addresses, local home paths, and hidden Unicode controls while preserving enough context for maintainer review. `sensitive-audit` is filename/path-only, can emit `.agentignore`, `.codexignore`, `.aiexclude`, or `.gitignore` candidates, and reports whether existing project ignore files already cover the recommended patterns. `.gitignore` coverage is shown as hygiene evidence, not as proof of an agent read-deny boundary; `lsp-audit` detects repo language signals and missing language-server commands without installing anything.
 
 Scaffold a repo:
 
@@ -549,7 +549,7 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v5
-      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.101
+      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.102
         with:
           mode: all
           doctor-threshold: "85"
@@ -598,7 +598,7 @@ Composite action usage:
 
 ```yaml
 - id: trace-to-skill
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.101
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.102
   with:
     mode: all
     doctor-threshold: "85"
@@ -616,7 +616,7 @@ Issue-map action usage for direct GitHub issue demand mining:
 
 ```yaml
 - id: codex-issue-map
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.101
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.102
   with:
     mode: issue-map
     issue-map-repo: openai/codex
@@ -662,7 +662,7 @@ Action outputs:
 
 By default, generated reports are also appended to the GitHub Actions Job Summary. Set `job-summary: "false"` to disable that UI output.
 
-Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.101` executes that release's checked-out source instead of pulling the default branch at runtime.
+Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.102` executes that release's checked-out source instead of pulling the default branch at runtime.
 
 ## Codex Skill
 

@@ -1090,6 +1090,7 @@ test("auditSensitivePaths reports sensitive paths without reading file contents"
   await writeFile(path.join(cwd, ".npmrc"), "//registry.npmjs.org/:_authToken=npm_should_not_appear", "utf8");
   await writeFile(path.join(cwd, ".aws", "credentials"), "aws_secret_access_key=should-not-appear", "utf8");
   await writeFile(path.join(cwd, ".ssh", "id_ed25519"), "PRIVATE KEY should-not-appear", "utf8");
+  await writeFile(path.join(cwd, ".codexignore"), "# existing project policy\n**/.env*\n**/.aws/**\n", "utf8");
   await writeFile(path.join(cwd, "local.sqlite"), "private rows", "utf8");
   await writeFile(path.join(cwd, "src", "index.ts"), "export const ok = true;", "utf8");
   await symlink(path.join(cwd, ".env.local"), path.join(cwd, "linked-env.key"));
@@ -1097,6 +1098,7 @@ test("auditSensitivePaths reports sensitive paths without reading file contents"
   const result = await auditSensitivePaths(cwd);
   const markdown = renderSensitiveAuditMarkdown(result);
   const codexIgnore = renderSensitiveIgnoreFile(result, "codexignore");
+  const codexCoverage = result.policyCoverage.files.find((file) => file.target === "codexignore");
   const kinds = result.findings.map((finding) => finding.kind);
   const serialized = JSON.stringify(result);
 
@@ -1113,10 +1115,22 @@ test("auditSensitivePaths reports sensitive paths without reading file contents"
   assert.ok(result.ignoreFiles.some((candidate) => candidate.target === "agentignore" && candidate.filename === ".agentignore"));
   assert.ok(result.ignoreFiles.some((candidate) => candidate.target === "codexignore" && candidate.filename === ".codexignore"));
   assert.ok(result.ignoreFiles.every((candidate) => candidate.patterns.includes("**/.env*")));
+  assert.equal(result.policyCoverage.summary.checkedFiles, 4);
+  assert.equal(result.policyCoverage.summary.existingFiles, 1);
+  assert.equal(result.policyCoverage.summary.recommendedPatterns, result.recommendedExcludes.length);
+  assert.equal(result.policyCoverage.summary.coveredPatterns, 2);
+  assert.equal(result.policyCoverage.summary.missingPatterns, result.recommendedExcludes.length - 2);
+  assert.ok(codexCoverage);
+  assert.ok(codexCoverage.exists);
+  assert.ok(codexCoverage.coveredPatterns.includes("**/.env*"));
+  assert.ok(codexCoverage.coveredPatterns.includes("**/.aws/**"));
+  assert.ok(codexCoverage.missingPatterns.includes("**/.npmrc"));
   assert.match(codexIgnore, /Target: \.codexignore/);
   assert.match(codexIgnore, /\*\*\/\.aws\/\*\*/);
   assert.match(codexIgnore, /filename\/path based and did not read file contents/);
   assert.match(markdown, /Sensitive Path Audit/);
+  assert.match(markdown, /Project Policy Coverage/);
+  assert.match(markdown, /Git ignore coverage is not a deterministic Codex read-deny boundary/);
   assert.match(markdown, /does not read file contents/);
   assert.doesNotMatch(serialized, /sk-should-not-appear|npm_should_not_appear|PRIVATE KEY|private rows/);
   assert.doesNotMatch(markdown, /sk-should-not-appear|npm_should_not_appear|PRIVATE KEY|private rows/);
@@ -1134,6 +1148,9 @@ test("auditSensitivePaths passes ordinary source trees", async () => {
   assert.equal(result.findings.length, 0);
   assert.equal(result.recommendedExcludes.length, 0);
   assert.ok(result.ignoreFiles.every((candidate) => candidate.patterns.length === 0));
+  assert.equal(result.policyCoverage.summary.checkedFiles, 4);
+  assert.equal(result.policyCoverage.summary.recommendedPatterns, 0);
+  assert.equal(result.policyCoverage.summary.missingPatterns, 0);
 });
 
 test("auditLspReadiness reports detected languages and missing servers", async () => {
@@ -1862,6 +1879,9 @@ test("package metadata points npm users back to the public project", async () =>
   assert.ok(packageJson.keywords?.includes("quota-mismatch"));
   assert.ok(packageJson.keywords?.includes("sensitive-files"));
   assert.ok(packageJson.keywords?.includes("codex-privacy"));
+  assert.ok(packageJson.keywords?.includes("ignore-policy"));
+  assert.ok(packageJson.keywords?.includes("policy-coverage"));
+  assert.ok(packageJson.keywords?.includes("codexignore-audit"));
   assert.ok(packageJson.keywords?.includes("codex-rewind"));
   assert.ok(packageJson.keywords?.includes("codex-undo"));
   assert.ok(packageJson.keywords?.includes("workspace-checkpoint"));
@@ -2442,10 +2462,13 @@ test("published JSON schemas describe CLI result contracts", async () => {
   assert.deepEqual(checkpointSchema.required, ["generatedAt", "root", "outputDir", "includeUntracked", "includeIgnored", "summary", "files", "artifacts"]);
   assert.ok(checkpointSchema.properties.artifacts);
   assert.ok(checkpointSchema.$defs.file);
-  assert.deepEqual(sensitiveAuditSchema.required, ["generatedAt", "root", "status", "summary", "findings", "recommendedExcludes", "ignoreFiles"]);
+  assert.deepEqual(sensitiveAuditSchema.required, ["generatedAt", "root", "status", "summary", "findings", "recommendedExcludes", "ignoreFiles", "policyCoverage"]);
   assert.ok(sensitiveAuditSchema.properties.recommendedExcludes);
   assert.ok(sensitiveAuditSchema.properties.ignoreFiles);
+  assert.ok(sensitiveAuditSchema.properties.policyCoverage);
   assert.ok(sensitiveAuditSchema.$defs.ignoreFile);
+  assert.ok(sensitiveAuditSchema.$defs.policyCoverage);
+  assert.ok(sensitiveAuditSchema.$defs.policyCoverageFile);
   assert.ok((sensitiveAuditSchema.$defs.finding as { properties: { kind: { enum: string[] } } }).properties.kind.enum.includes("env_file"));
   assert.ok((sensitiveAuditSchema.$defs.finding as { properties: { kind: { enum: string[] } } }).properties.kind.enum.includes("sensitive_symlink"));
   assert.deepEqual(lspAuditSchema.required, ["generatedAt", "root", "status", "summary", "languages", "recommendedInstalls"]);
@@ -2539,7 +2562,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.equal(brief.scorecard.benchmarkStatus, "pass");
   assert.equal(brief.scorecard.benchmarkCases, 46);
   assert.equal(brief.packageName, "trace-to-skill");
-  assert.equal(brief.packageVersion, "0.1.101");
+  assert.equal(brief.packageVersion, "0.1.102");
   assert.equal(brief.license, "Apache-2.0");
   assert.ok(brief.repository?.includes("github.com/grnbtqdbyx-create/trace-to-skill"));
   assert.ok(brief.qualification.max500.length <= 500);
@@ -2547,8 +2570,10 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.match(markdown, /OpenAI OSS Brief/);
   assert.match(markdown, /Why This Repository Qualifies/);
   assert.match(markdown, /500-Character Version/);
-  assert.match(markdown, /npx trace-to-skill@0\.1\.101/);
+  assert.match(markdown, /npx trace-to-skill@0\.1\.102/);
   assert.match(markdown, /Weekly Codex Issue Radar/);
+  assert.match(markdown, /sensitive-file policy coverage/);
+  assert.match(markdown, /project policy coverage without reading secret contents/);
 });
 
 test("scorecard-comment dry-run resolves pull request event", async () => {

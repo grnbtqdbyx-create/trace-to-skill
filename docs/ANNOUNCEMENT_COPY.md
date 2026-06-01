@@ -51,7 +51,7 @@ trace-to-skill checks repo readiness and scans agent traces/logs to generate:
 - scorecard PR comments with update-in-place marker
 - a GitHub event context guard for prompt-injection checks before agents read PR/issue/comment text
 - a redaction command for privacy-preserving failed trace sharing
-- a filename/path-only `sensitive-audit` command for building reviewable `.agentignore`, `.aiexclude`, `.codexignore`, `.gitignore`, or sandbox exclude candidates before an agent reads the repo
+- a filename/path-only `sensitive-audit` command for building reviewable `.agentignore`, `.aiexclude`, `.codexignore`, `.gitignore`, or sandbox exclude candidates before an agent reads the repo, with project policy coverage for existing ignore files
 - a local `lsp-audit` command for detecting repo languages, missing language-server commands, install hints, and evidence files before Codex attempts symbol-aware edits
 - an OpenAI/Codex issue-ready report command for turning redacted traces into concise, evidence-backed issue bodies
 - a zero-setup `demo` command so people can see a real Codex issue report before collecting private traces
@@ -88,7 +88,7 @@ trace-to-skill checks repo readiness and scans agent traces/logs to generate:
 - Codex resource-leak detection for high CPU/GPU/RAM, orphaned shell snapshots, renderer/helper loops, and thinking-animation GPU reports
 - Codex quota mismatch detection for usage-limit, account-switching, reset-time, and rate-limit evidence
 - sensitive-file access detection for `.env`, private keys, package auth files, cloud credentials, local databases, and production secret manifests entering agent context
-- sensitive path preflight for `.env`, private keys, package auth files, cloud credentials, local databases, signing files, and secret manifests without reading their contents
+- sensitive path preflight for `.env`, private keys, package auth files, cloud credentials, local databases, signing files, and secret manifests without reading their contents, plus `.codexignore` / `.agentignore` / `.aiexclude` / `.gitignore` coverage evidence
 - a Codex-native readiness auditor skill
 - an Agent Learning Report
 - suggested AGENTS.md rules

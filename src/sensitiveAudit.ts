@@ -1,4 +1,4 @@
-import { lstat, readdir } from "node:fs/promises";
+import { lstat, readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 
 export type SensitiveAuditStatus = "pass" | "warn" | "fail";
@@ -33,6 +33,28 @@ export interface SensitiveIgnoreFile {
   patterns: string[];
 }
 
+export interface SensitivePolicyCoverageFile {
+  target: SensitiveIgnoreTarget;
+  filename: string;
+  path: string;
+  exists: boolean;
+  coveredPatterns: string[];
+  missingPatterns: string[];
+  note: string;
+}
+
+export interface SensitivePolicyCoverage {
+  summary: {
+    checkedFiles: number;
+    existingFiles: number;
+    recommendedPatterns: number;
+    coveredPatterns: number;
+    missingPatterns: number;
+  };
+  files: SensitivePolicyCoverageFile[];
+  notes: string[];
+}
+
 export interface SensitiveAuditResult {
   generatedAt: string;
   root: string;
@@ -46,6 +68,7 @@ export interface SensitiveAuditResult {
   findings: SensitiveAuditFinding[];
   recommendedExcludes: string[];
   ignoreFiles: SensitiveIgnoreFile[];
+  policyCoverage: SensitivePolicyCoverage;
 }
 
 interface SensitivePattern {
@@ -161,6 +184,8 @@ export async function auditSensitivePaths(root = process.cwd()): Promise<Sensiti
   const recommendedExcludes = uniqueSorted(findings.map((finding) => finding.suggestedExclude));
   const criticalFindings = findings.filter((finding) => finding.severity === "critical").length;
 
+  const policyCoverage = await buildSensitivePolicyCoverage(resolvedRoot, recommendedExcludes);
+
   return {
     generatedAt: new Date().toISOString(),
     root: resolvedRoot,
@@ -173,7 +198,8 @@ export async function auditSensitivePaths(root = process.cwd()): Promise<Sensiti
     },
     findings: findings.sort((a, b) => a.path.localeCompare(b.path)),
     recommendedExcludes,
-    ignoreFiles: buildSensitiveIgnoreFiles(recommendedExcludes)
+    ignoreFiles: buildSensitiveIgnoreFiles(recommendedExcludes),
+    policyCoverage
   };
 }
 
@@ -264,6 +290,34 @@ export function renderSensitiveAuditMarkdown(result: SensitiveAuditResult): stri
   }
   lines.push("");
 
+  lines.push("## Project Policy Coverage", "");
+  lines.push(
+    `Checked files: ${result.policyCoverage.summary.checkedFiles}`,
+    `Existing files: ${result.policyCoverage.summary.existingFiles}`,
+    `Covered recommended patterns: ${result.policyCoverage.summary.coveredPatterns}`,
+    `Missing recommended patterns: ${result.policyCoverage.summary.missingPatterns}`,
+    ""
+  );
+
+  for (const file of result.policyCoverage.files) {
+    lines.push(
+      `- \`${file.filename}\`: ${file.exists ? "present" : "missing"}; covers ${file.coveredPatterns.length}/${result.policyCoverage.summary.recommendedPatterns} recommended pattern(s).`,
+      `  - ${file.note}`
+    );
+    if (file.missingPatterns.length > 0) {
+      lines.push(`  - Missing: \`${file.missingPatterns.join("`, `")}\``);
+    }
+  }
+  lines.push("");
+
+  if (result.policyCoverage.notes.length > 0) {
+    lines.push("Policy notes:", "");
+    for (const note of result.policyCoverage.notes) {
+      lines.push(`- ${note}`);
+    }
+    lines.push("");
+  }
+
   lines.push(
     "Suggested next step:",
     "",
@@ -273,6 +327,72 @@ export function renderSensitiveAuditMarkdown(result: SensitiveAuditResult): stri
   );
 
   return lines.join("\n");
+}
+
+async function buildSensitivePolicyCoverage(root: string, recommendedExcludes: string[]): Promise<SensitivePolicyCoverage> {
+  const recommendedPatterns = uniqueSorted(recommendedExcludes);
+  const files = await Promise.all(
+    SENSITIVE_IGNORE_FILES.map(async ({ target, filename }) => {
+      const absolutePath = path.join(root, filename);
+      let contents: string | undefined;
+      try {
+        contents = await readFile(absolutePath, "utf8");
+      } catch {
+        contents = undefined;
+      }
+
+      const existingPatterns = contents === undefined ? [] : parseIgnorePatterns(contents);
+      const coveredPatterns = recommendedPatterns.filter((pattern) => existingPatterns.includes(pattern));
+      const missingPatterns = recommendedPatterns.filter((pattern) => !existingPatterns.includes(pattern));
+
+      return {
+        target,
+        filename,
+        path: filename,
+        exists: contents !== undefined,
+        coveredPatterns,
+        missingPatterns,
+        note: policyCoverageNote(target, contents !== undefined)
+      };
+    })
+  );
+
+  const coveredPatterns = new Set(files.flatMap((file) => file.coveredPatterns));
+  const missingPatterns = recommendedPatterns.filter((pattern) => !coveredPatterns.has(pattern));
+
+  return {
+    summary: {
+      checkedFiles: files.length,
+      existingFiles: files.filter((file) => file.exists).length,
+      recommendedPatterns: recommendedPatterns.length,
+      coveredPatterns: coveredPatterns.size,
+      missingPatterns: missingPatterns.length
+    },
+    files,
+    notes: [
+      "Coverage is based on exact pattern lines in project-level ignore files; it does not read sensitive file contents.",
+      "A .gitignore match is useful for repository hygiene but is not proof that an AI agent or Codex runtime enforces a read boundary.",
+      "Use OS sandboxing or agent-native deny rules for hard enforcement when available."
+    ]
+  };
+}
+
+function parseIgnorePatterns(contents: string): string[] {
+  return uniqueSorted(
+    contents
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0 && !line.startsWith("#"))
+  );
+}
+
+function policyCoverageNote(target: SensitiveIgnoreTarget, exists: boolean): string {
+  const prefix = exists ? "Project file exists." : "Project file is missing.";
+  if (target === "gitignore") {
+    return `${prefix} Git ignore coverage is not a deterministic Codex read-deny boundary.`;
+  }
+
+  return `${prefix} Use this as a reviewable project policy candidate for agent-sensitive path exclusion.`;
 }
 
 async function scanDirectory(
