@@ -12,6 +12,21 @@ trace-to-skill duplicate-audit --repo openai/codex --issue 25507 --format markdo
 trace-to-skill duplicate-audit duplicate-audit.json --format json
 ```
 
+## Action Output Mapping
+
+| Output | Step output | Source |
+| --- | --- | --- |
+| `duplicate-audit-candidates` | `candidates` | `summary.candidateCount` |
+| `duplicate-audit-likely` | `likely` | `summary.likelyDuplicates` |
+| `duplicate-audit-related` | `related` | `summary.relatedNotDuplicates` |
+| `duplicate-audit-needs-review` | `needs-review` | `summary.needsHumanReview` |
+| `duplicate-audit-weak` | `weak` | `summary.weakMatches` |
+| `duplicate-audit-top-verdict` | `top-verdict` | `candidates[].verdict` |
+| `duplicate-audit-report` | `report` | `trace-to-skill-duplicate-audit.md` |
+| `duplicate-audit-json` | `json` | `trace-to-skill-duplicate-audit.json` |
+
+The machine-readable mapping lives in `fixtures/duplicate-audit-action-outputs.json`; `schemas/duplicate-audit-action-outputs.schema.json` describes that fixture, and JSON-derived outputs must point at fields in `schemas/duplicate-audit-result.schema.json`.
+
 ## Summary
 
 - Candidates: 2

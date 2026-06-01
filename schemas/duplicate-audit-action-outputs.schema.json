@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/grnbtqdbyx-create/trace-to-skill/main/schemas/duplicate-audit-action-outputs.schema.json",
+  "title": "trace-to-skill duplicate-audit Action output mapping",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["action", "outputs"],
+  "properties": {
+    "action": {
+      "type": "string",
+      "const": "duplicate-audit"
+    },
+    "outputs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/outputMapping"
+      }
+    }
+  },
+  "$defs": {
+    "outputMapping": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["actionOutput", "stepOutput", "kind", "description"],
+      "properties": {
+        "actionOutput": {
+          "type": "string",
+          "pattern": "^duplicate-audit-[a-z0-9-]+$"
+        },
+        "stepOutput": {
+          "type": "string",
+          "pattern": "^[a-z0-9-]+$"
+        },
+        "kind": {
+          "type": "string",
+          "enum": ["json-field", "artifact-path"]
+        },
+        "jsonPath": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_.\\[\\]-]+$"
+        },
+        "path": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["integer", "string", "path"]
+        },
+        "description": {
+          "type": "string"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "json-field"
+              }
+            },
+            "required": ["kind"]
+          },
+          "then": {
+            "required": ["jsonPath", "type"],
+            "not": {
+              "required": ["path"]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "artifact-path"
+              }
+            },
+            "required": ["kind"]
+          },
+          "then": {
+            "required": ["path", "type"],
+            "not": {
+              "required": ["jsonPath"]
+            }
+          }
+        }
+      ]
+    }
+  }
+}

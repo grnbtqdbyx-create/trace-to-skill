@@ -2434,6 +2434,79 @@ test("composite action exposes Codex readiness doctor mode", async () => {
   assert.match(action, /mode must be one of: traces, agents-lint, github-context, doctor, benchmark, issue-map, issue-heat, duplicate-audit, both, all/);
 });
 
+test("duplicate-audit Action output mapping points at documented JSON fields", async () => {
+  const action = await readFile("action.yml", "utf8");
+  const readme = await readFile("README.md", "utf8");
+  const duplicateAuditDocs = await readFile("docs/CODEX_DUPLICATE_AUDIT.md", "utf8");
+  const resultSchema = JSON.parse(await readFile("schemas/duplicate-audit-result.schema.json", "utf8")) as {
+    properties: Record<string, unknown>;
+    $defs: Record<string, unknown>;
+  };
+  const mappingSchema = JSON.parse(await readFile("schemas/duplicate-audit-action-outputs.schema.json", "utf8")) as {
+    required: string[];
+    properties: Record<string, unknown>;
+    $defs: Record<string, unknown>;
+  };
+  const mapping = JSON.parse(await readFile("fixtures/duplicate-audit-action-outputs.json", "utf8")) as {
+    action: string;
+    outputs: Array<{
+      actionOutput: string;
+      stepOutput: string;
+      kind: "json-field" | "artifact-path";
+      jsonPath?: string;
+      path?: string;
+    }>;
+  };
+
+  const resolveRef = (node: unknown): unknown => {
+    if (node && typeof node === "object" && "$ref" in node) {
+      const ref = (node as { $ref: string }).$ref;
+      const match = ref.match(/^#\/\$defs\/(.+)$/);
+      return match ? resultSchema.$defs[match[1]] : node;
+    }
+    return node;
+  };
+  const hasSchemaPath = (jsonPath: string): boolean => {
+    let node: unknown = resultSchema;
+    for (const segment of jsonPath.split(".")) {
+      node = resolveRef(node);
+      const isArraySegment = segment.endsWith("[]");
+      const propertyName = isArraySegment ? segment.slice(0, -2) : segment;
+      const properties = (node as { properties?: Record<string, unknown> }).properties;
+      node = properties?.[propertyName];
+      if (!node) {
+        return false;
+      }
+      node = resolveRef(node);
+      if (isArraySegment) {
+        node = resolveRef((node as { items?: unknown }).items);
+      }
+    }
+    return Boolean(node);
+  };
+
+  assert.deepEqual(mappingSchema.required, ["action", "outputs"]);
+  assert.ok(mappingSchema.properties.outputs);
+  assert.ok(mappingSchema.$defs.outputMapping);
+  assert.equal(mapping.action, "duplicate-audit");
+  assert.equal(mapping.outputs.length, 8);
+
+  const escapeRegExp = (value: string): string => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  for (const output of mapping.outputs) {
+    assert.match(action, new RegExp(`${output.actionOutput}:\\n\\s+description:[\\s\\S]*?value:\\s*\\$\\{\\{ steps\\.duplicate-audit\\.outputs\\.${escapeRegExp(output.stepOutput)} \\}\\}`));
+    assert.match(readme, new RegExp(`\\| \`${escapeRegExp(output.actionOutput)}\` \\|`));
+    assert.match(duplicateAuditDocs, new RegExp(`\\| \`${escapeRegExp(output.actionOutput)}\` \\|`));
+    if (output.kind === "json-field") {
+      assert.ok(output.jsonPath, `${output.actionOutput} should document its JSON source field`);
+      assert.ok(hasSchemaPath(output.jsonPath), `${output.actionOutput} points at missing JSON schema field ${output.jsonPath}`);
+      assert.match(action, new RegExp(`${escapeRegExp(output.stepOutput)}=\\$\\{report\\.${escapeRegExp(output.jsonPath.replace("[]", "[0]?"))}`));
+    } else {
+      assert.ok(output.path, `${output.actionOutput} should document its generated artifact path`);
+      assert.match(action, new RegExp(`${escapeRegExp(output.stepOutput)}=${escapeRegExp(output.path)}`));
+    }
+  }
+});
+
 test("composite action keeps user-controlled inputs out of shell scripts", async () => {
   const action = await readFile("action.yml", "utf8");
   const fixture = JSON.parse(await readFile("fixtures/action-malicious-inputs.json", "utf8")) as {
@@ -2862,7 +2935,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.equal(brief.scorecard.benchmarkStatus, "pass");
   assert.equal(brief.scorecard.benchmarkCases, 46);
   assert.equal(brief.packageName, "trace-to-skill");
-  assert.equal(brief.packageVersion, "0.1.110");
+  assert.equal(brief.packageVersion, "0.1.111");
   assert.equal(brief.license, "Apache-2.0");
   assert.ok(brief.repository?.includes("github.com/grnbtqdbyx-create/trace-to-skill"));
   assert.ok(brief.qualification.max500.length <= 500);
@@ -2870,7 +2943,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.match(markdown, /OpenAI OSS Brief/);
   assert.match(markdown, /Why This Repository Qualifies/);
   assert.match(markdown, /500-Character Version/);
-  assert.match(markdown, /npx trace-to-skill@0\.1\.110/);
+  assert.match(markdown, /npx trace-to-skill@0\.1\.111/);
   assert.match(markdown, /GitHub Issue Heat/);
   assert.match(markdown, /Duplicate triage/);
   assert.match(markdown, /hot-issue detection/);

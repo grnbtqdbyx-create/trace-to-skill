@@ -13,7 +13,7 @@ body:
     attributes:
       label: trace-to-skill version
       description: Run `trace-to-skill --help` or check `npm ls trace-to-skill`.
-      placeholder: "0.1.110"
+      placeholder: "0.1.111"
     validations:
       required: true
   - type: dropdown

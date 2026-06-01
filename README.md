@@ -527,6 +527,7 @@ Stable machine-readable contracts are published with the npm package and release
 - [`schemas/usage-evidence-result.schema.json`](schemas/usage-evidence-result.schema.json) describes `trace-to-skill usage-evidence --format json`.
 - [`schemas/process-audit-result.schema.json`](schemas/process-audit-result.schema.json) describes `trace-to-skill process-audit --format json`.
 - [`schemas/issue-map-result.schema.json`](schemas/issue-map-result.schema.json) describes `trace-to-skill issue-map --format json`.
+- [`schemas/duplicate-audit-action-outputs.schema.json`](schemas/duplicate-audit-action-outputs.schema.json) describes the duplicate-audit Action output mapping in `fixtures/duplicate-audit-action-outputs.json`.
 - [`schemas/workspace-checkpoint-result.schema.json`](schemas/workspace-checkpoint-result.schema.json) describes `trace-to-skill checkpoint --format json`.
 
 These schemas let downstream Codex workflows, dashboards, and CI bots consume reports without scraping Markdown.
@@ -559,7 +560,7 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v5
-      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.110
+      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.111
         with:
           mode: all
           doctor-threshold: "85"
@@ -608,7 +609,7 @@ Composite action usage:
 
 ```yaml
 - id: trace-to-skill
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.110
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.111
   with:
     mode: all
     doctor-threshold: "85"
@@ -626,7 +627,7 @@ Issue-map action usage for direct GitHub issue demand mining:
 
 ```yaml
 - id: codex-issue-map
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.110
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.111
   with:
     mode: issue-map
     issue-map-repo: openai/codex
@@ -643,7 +644,7 @@ Issue-heat action usage for recency-weighted GitHub issue movement:
 
 ```yaml
 - id: codex-issue-heat
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.110
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.111
   with:
     mode: issue-heat
     issue-heat-repo: openai/codex
@@ -661,7 +662,7 @@ Duplicate-audit action usage for checking Codex Action duplicate suggestions:
 
 ```yaml
 - id: codex-duplicate-audit
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.110
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.111
   with:
     mode: duplicate-audit
     duplicate-audit-repo: openai/codex
@@ -717,9 +718,24 @@ Action outputs:
 | `duplicate-audit-report` | Markdown duplicate-audit report path |
 | `duplicate-audit-json` | JSON duplicate-audit report path |
 
+Duplicate-audit Action output mapping:
+
+| Output | Step output | Source |
+| --- | --- | --- |
+| `duplicate-audit-candidates` | `candidates` | `summary.candidateCount` |
+| `duplicate-audit-likely` | `likely` | `summary.likelyDuplicates` |
+| `duplicate-audit-related` | `related` | `summary.relatedNotDuplicates` |
+| `duplicate-audit-needs-review` | `needs-review` | `summary.needsHumanReview` |
+| `duplicate-audit-weak` | `weak` | `summary.weakMatches` |
+| `duplicate-audit-top-verdict` | `top-verdict` | `candidates[].verdict` |
+| `duplicate-audit-report` | `report` | `trace-to-skill-duplicate-audit.md` |
+| `duplicate-audit-json` | `json` | `trace-to-skill-duplicate-audit.json` |
+
+The machine-readable mapping lives in [`fixtures/duplicate-audit-action-outputs.json`](fixtures/duplicate-audit-action-outputs.json) and is described by [`schemas/duplicate-audit-action-outputs.schema.json`](schemas/duplicate-audit-action-outputs.schema.json). The regression test checks that JSON-derived outputs point at fields in [`schemas/duplicate-audit-result.schema.json`](schemas/duplicate-audit-result.schema.json).
+
 By default, generated reports are also appended to the GitHub Actions Job Summary. Set `job-summary: "false"` to disable that UI output.
 
-Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.110` executes that release's checked-out source instead of pulling the default branch at runtime.
+Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.111` executes that release's checked-out source instead of pulling the default branch at runtime.
 
 Action inputs are passed into bash steps through environment variables before the CLI receives them. The regression fixture at `fixtures/action-malicious-inputs.json` keeps quote, newline, command-substitution, and shell-separator examples out of `run:` scripts so workflow inputs are treated as data.
 
