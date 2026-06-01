@@ -46,7 +46,7 @@ This page is written for maintainers, search engines, package indexes, and AI re
 - Codex usage drains unexpectedly because of rapid drain experiments (`1% in 4 minutes`, `22 credits`, `70% weekly in a day`), background `write_stdin` polling, idle app activity, compaction/replay overhead, retry loops, subagent fan-out, fast-mode drift, or cached-token-heavy turns.
 - Codex weekly or 5-hour reset anchors move unexpectedly, saved usage is lost, or `/status` and the dashboard disagree about reset timing or enforcement.
 - Codex usage evidence is scattered across `/status`, dashboard notes, reset tables, usage-limit messages, token totals, prompt-cache rows, cached input, and overhead clues, making high-signal reports hard to file.
-- Codex token-burn reports need a receipt that separates backend quota-window percentages, prompt-cache collapse events, bounded drain experiments, local token totals, and orchestration overhead such as background polling, compaction loops, retry/tool loops, subagent fan-out, or idle drain.
+- Codex token-burn reports need a `usage-doctor` receipt that separates backend quota-window percentages, prompt-cache collapse events, bounded drain experiments, local token totals, and orchestration overhead such as background polling, compaction loops, retry/tool loops, subagent fan-out, or idle drain into confidence-ranked attribution buckets.
 - Codex users need a local checkpoint before agent edits because conversation rewind does not protect untracked dirty workspace files.
 - Codex `/compact` or auto-compaction fails against the remote `responses/compact` endpoint with stream disconnects, child-process timeout messages, provider timeout workarounds, or long-thread recovery loss.
 - Codex Desktop, app-server, VS Code extension, renderer, GPU, shell snapshot, or helper processes leak local resources or keep burning CPU/GPU/RAM after the useful work should be idle.
@@ -97,7 +97,7 @@ npx trace-to-skill lsp-audit . --format json
 npx trace-to-skill config-audit ~/.codex --format json
 npx trace-to-skill plugin-audit ~/.codex --app /Applications/Codex.app --format json
 npx trace-to-skill diagnostics-bundle ~/.codex --output codex-diagnostics
-npx trace-to-skill usage-evidence ./usage-notes.md --output usage-evidence.md
+npx trace-to-skill usage-doctor ./usage-notes.md --output usage-evidence.md
 npx trace-to-skill process-audit ./process-notes.md --output process-audit.md
 npx trace-to-skill issue-map --repo openai/codex --state all --limit 100 --output codex-issue-radar.md
 npx trace-to-skill init --issue-map-repo openai/codex --issue-map-state all --issue-map-limit 100
@@ -124,7 +124,7 @@ npx trace-to-skill suggest ./runs --target agents-md
 - `trace-to-skill config-audit --format json`
 - `trace-to-skill plugin-audit --format json`
 - `trace-to-skill diagnostics-bundle --format json`
-- `trace-to-skill usage-evidence --format json`
+- `trace-to-skill usage-doctor --format json`
 - `trace-to-skill process-audit --format json`
 - `trace-to-skill issue-map --format json`
 - `trace-to-skill checkpoint --format json`

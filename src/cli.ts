@@ -76,7 +76,7 @@ async function main(): Promise<void> {
     return;
   }
 
-  if (parsed.command === "usage-evidence") {
+  if (parsed.command === "usage-evidence" || parsed.command === "usage-doctor") {
     const result = await buildUsageEvidence(parsed.targets);
     const format = String(parsed.flags.format ?? "markdown");
     const output = format === "json" ? `${JSON.stringify(result, null, 2)}\n` : renderUsageEvidenceMarkdown(result);
@@ -595,6 +595,7 @@ Usage:
   trace-to-skill analyze <trace-file-or-dir> [--format markdown|json|sarif] [--output report.md]
   trace-to-skill codex-report <trace-file-or-dir> [--output openai-codex-issue.md]
   trace-to-skill usage-evidence <usage-log-file-or-dir> [--format markdown|json] [--output usage-evidence.md]
+  trace-to-skill usage-doctor <usage-log-file-or-dir> [--format markdown|json] [--output usage-evidence.md]
   trace-to-skill process-audit <process-log-file-or-dir> [--format markdown|json] [--output process-audit.md]
   trace-to-skill checkpoint [repo-dir] [--output checkpoint-dir] [--format markdown|json] [--no-untracked] [--include-ignored]
   trace-to-skill suggest <trace-file-or-dir> [--target agents-md|skill] [--output AGENTS.generated.md]
@@ -629,6 +630,7 @@ Examples:
   trace-to-skill analyze ./runs
   trace-to-skill codex-report ./runs --output openai-codex-issue.md
   trace-to-skill usage-evidence ./usage-notes.md --output usage-evidence.md
+  trace-to-skill usage-doctor ./usage-notes.md --format json
   trace-to-skill process-audit ./process-notes.md --output process-audit.md
   trace-to-skill checkpoint . --output .trace-to-skill/checkpoints/before-codex
   trace-to-skill suggest ./runs --target skill --output skills/verification-before-completion/SKILL.md

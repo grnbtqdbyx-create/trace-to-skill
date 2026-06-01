@@ -58,7 +58,7 @@ Secondary headline:
 - [x] crawler-friendly `llms.txt` and `docs/DISCOVERY.md`
 - [x] npm Trusted Publishing workflow prepared for release automation without repeated local web auth
 - [x] OpenAI/Codex issue-ready report command with redaction-first workflow
-- [x] Codex token-burn detector for usage drain, background polling, idle app, compaction tax, and cached-token evidence
+- [x] Codex token-burn detector and `usage-doctor` attribution for usage drain, background polling, idle app, compaction tax, and cached-token evidence
 - [x] Codex usage reset drift detector for moving weekly reset anchors and saved-usage loss reports
 - [x] Codex resource-leak detector for high CPU/GPU/RAM, orphaned shell snapshots, renderer/helper loops, and thinking-animation GPU reports
 - [x] Codex issue map linking active issue clusters to deterministic report commands
@@ -71,7 +71,7 @@ Secondary headline:
 
 - Repository: https://github.com/grnbtqdbyx-create/trace-to-skill
 - npm: https://www.npmjs.com/package/trace-to-skill
-- Latest release: https://github.com/grnbtqdbyx-create/trace-to-skill/releases/tag/v0.1.102
+- Latest release: https://github.com/grnbtqdbyx-create/trace-to-skill/releases/tag/v0.1.103
 - CI: passing on `main`
 - Codex issue map: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/CODEX_ISSUE_MAP.md
 - Codex Issue Radar demo: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/CODEX_ISSUE_RADAR.md

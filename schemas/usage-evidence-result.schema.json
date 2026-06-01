@@ -225,7 +225,7 @@
     },
     "receipt": {
       "type": "object",
-      "required": ["quotaWindows", "localTokenTotals", "drainExperiments", "overheadSignals", "cacheCollapseEvents", "suspectedCauses"],
+      "required": ["quotaWindows", "localTokenTotals", "drainExperiments", "overheadSignals", "cacheCollapseEvents", "suspectedCauses", "attribution"],
       "additionalProperties": false,
       "properties": {
         "quotaWindows": {
@@ -260,6 +260,51 @@
           "items": {
             "type": "string"
           }
+        },
+        "attribution": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/attribution"
+          }
+        }
+      }
+    },
+    "attribution": {
+      "type": "object",
+      "required": ["bucket", "confidence", "signals", "evidence", "nextEvidence"],
+      "additionalProperties": false,
+      "properties": {
+        "bucket": {
+          "type": "string",
+          "enum": [
+            "quota_window_accounting",
+            "rapid_drain_repro",
+            "prompt_cache_collapse",
+            "large_cached_context_replay",
+            "background_polling",
+            "compaction_loop",
+            "retry_or_tool_loop",
+            "subagent_fanout",
+            "idle_background_drain",
+            "missing_evidence"
+          ]
+        },
+        "confidence": {
+          "type": "string",
+          "enum": ["low", "medium", "high"]
+        },
+        "signals": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/evidence"
+          }
+        },
+        "nextEvidence": {
+          "type": "string"
         }
       }
     },

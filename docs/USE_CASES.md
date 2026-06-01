@@ -61,7 +61,7 @@ What it proves:
 Recommended CI surface:
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.102
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.103
   with:
     mode: all
     doctor-threshold: "85"
@@ -245,11 +245,11 @@ Include Codex app/CLI/TUI version, whether built-in `spawn_agent` or `/agents` e
 Use this when a Codex usage issue has scattered evidence across `/status`, dashboard notes, reset tables, token totals, prompt-cache rows, cached input, and local overhead clues.
 
 ```bash
-npx trace-to-skill usage-evidence ./usage-notes.md --output usage-evidence.md
+npx trace-to-skill usage-doctor ./usage-notes.md --output usage-evidence.md
 npx trace-to-skill usage-evidence ./usage-notes.md --format json
 ```
 
-This turns Markdown polling tables, CSV-like rows, JSON/JSONL snapshots, `reset_at` values, usage-limit errors, rapid drain experiment notes like `1% in 4 minutes`, `22 credits`, or `70% weekly in a day`, prompt-cache rows with `input_tokens`, `cached_input_tokens` / `cached_tokens`, `prompt_cache_key`, response ids, websocket/reconnect notes, `Token usage: total=... cached` lines, `write_stdin` polling, compaction loops, retry/tool loops, subagent fan-out, and idle-drain notes into a single report with a usage receipt.
+This turns Markdown polling tables, CSV-like rows, JSON/JSONL snapshots, `reset_at` values, usage-limit errors, rapid drain experiment notes like `1% in 4 minutes`, `22 credits`, or `70% weekly in a day`, prompt-cache rows with `input_tokens`, `cached_input_tokens` / `cached_tokens`, `prompt_cache_key`, response ids, websocket/reconnect notes, `Token usage: total=... cached` lines, `write_stdin` polling, compaction loops, retry/tool loops, subagent fan-out, and idle-drain notes into a single report with a usage receipt. `usage-doctor` is an alias for this workflow and adds a clearer public-support name for token-burn triage.
 
 The receipt separates:
 
@@ -258,6 +258,7 @@ The receipt separates:
 - prompt-cache records and adjacent cache-collapse events
 - bounded rapid-drain experiment rows with model, plan, prompt count, elapsed time, percent, and credits when present
 - orchestration-overhead signals that may burn usage without accepted work
+- attribution buckets with confidence, signal counts, line-linked evidence, and the next evidence to collect
 - suspected cause buckets to keep public reports comparable
 
 ## 12. Codex Usage Bucket Scope Evidence

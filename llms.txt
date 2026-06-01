@@ -38,7 +38,7 @@ Runtime: Node.js 20+
 - Codex context fork bloat and prompt-cache lineage failures where conversation forks duplicate parent transcript blocks, inflate `input_tokens`, change `prompt_cache_key`, drop cache hit rate, or leak `fork_context` subagent history into child context before new work happens
 - Codex subagent prompt leakage where `spawn_agent` with `fork_turns: "none"` delivers assistant/commentary prompt envelopes, same-turn parallel children see sibling prompts, or `wait_agent`/`close_agent` completes despite the wrong child task
 - Codex usage popover bucket confusion where `Usage remaining`, `5h`, weekly percentages, reset dates, percent remaining vs percent used, rolling 7-day vs calendar-week, or account/workspace/device scope are unclear
-- Codex token-burn, prompt-cache collapse, and usage-drain failures such as rapid drain experiments (`1% in 4 minutes`, `22 credits`, `70% weekly in a day`), `input_tokens` / `cached_input_tokens` / `prompt_cache_key` rows, websocket reconnect cache drops, background `write_stdin` polling, idle app usage, compaction tax, retry/tool loops, cached-token-heavy turns, fast-mode drift, subagent fan-out, and unclear usage attribution
+- Codex token-burn, prompt-cache collapse, and usage-drain failures such as rapid drain experiments (`1% in 4 minutes`, `22 credits`, `70% weekly in a day`), `input_tokens` / `cached_input_tokens` / `prompt_cache_key` rows, websocket reconnect cache drops, background `write_stdin` polling, idle app usage, compaction tax, retry/tool loops, cached-token-heavy turns, fast-mode drift, subagent fan-out, and unclear usage attribution; use `usage-doctor` for confidence-ranked attribution buckets
 - Codex process evidence packaging for Windows PowerShell/pwsh CIM polling, high-CPU helpers, stale process-manager entries, and renderer runaways
 - Codex usage reset schedule drift such as weekly reset dates moving, `reset_at` jumping, saved usage disappearing, outage compensation resets changing the anchor, and `/status` disagreeing with enforcement
 - Codex usage evidence packaging for scattered `/status`, reset-table, usage-limit, token-total, prompt-cache, cached-input, and orchestration-overhead snippets
@@ -110,7 +110,7 @@ npx trace-to-skill session-audit ~/.codex --format json
 npx trace-to-skill config-audit ~/.codex --format json
 npx trace-to-skill plugin-audit ~/.codex --app /Applications/Codex.app --format json
 npx trace-to-skill diagnostics-bundle ~/.codex --output codex-diagnostics
-npx trace-to-skill usage-evidence ./usage-notes.md --output usage-evidence.md
+npx trace-to-skill usage-doctor ./usage-notes.md --output usage-evidence.md
 npx trace-to-skill process-audit ./process-notes.md --output process-audit.md
 npx trace-to-skill issue-map --repo openai/codex --state all --limit 100 --output codex-issue-radar.md
 npx trace-to-skill issue-map-comment --repo openai/codex --issue-number 8 --comment-repository owner/name --dry-run
@@ -137,7 +137,7 @@ gh issue list --repo openai/codex --state all --limit 100 --json number,title,bo
 ## GitHub Action
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.102
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.103
   with:
     mode: all
     doctor-threshold: "85"
@@ -150,7 +150,7 @@ gh issue list --repo openai/codex --state all --limit 100 --json number,title,bo
 ## Weekly Codex Issue Radar
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.102
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.103
   with:
     mode: issue-map
     issue-map-repo: openai/codex

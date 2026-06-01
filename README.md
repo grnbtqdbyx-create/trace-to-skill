@@ -69,7 +69,7 @@ Use it when you need to:
 - **Audit Codex config drift:** run `trace-to-skill config-audit ~/.codex --format json` to summarize legacy profile config, model pins, Speed/Fast service-tier persistence drift, sandbox/approval posture, Windows elevated sandbox mode, missing permission profiles, plugin cache drift, and MCP approval sprawl.
 - **Audit bundled plugin drift:** run `trace-to-skill plugin-audit ~/.codex --app /Applications/Codex.app --format json` to check Browser, Chrome, Computer Use, bundled marketplace, plugin cache, manifest, helper app, `CODEX_HOME`, and unsupported feature-flag drift without posting raw logs.
 - **Bundle Codex diagnostics safely:** run `trace-to-skill diagnostics-bundle ~/.codex --output codex-diagnostics` to create a metadata-only support folder with manifest, README, config, plugin, and session audit reports while excluding raw logs, SQLite state, raw config, and transcripts.
-- **Package Codex usage evidence:** run `trace-to-skill usage-evidence ./usage-notes.md --output usage-evidence.md` to turn `/status`, reset tables, usage-limit errors, token totals, prompt-cache collapse rows, rapid drain experiments, and orchestration-overhead clues into a redaction-aware usage receipt.
+- **Package Codex usage evidence:** run `trace-to-skill usage-doctor ./usage-notes.md --output usage-evidence.md` to turn `/status`, reset tables, usage-limit errors, token totals, prompt-cache collapse rows, rapid drain experiments, and orchestration-overhead clues into a redaction-aware usage receipt with attribution buckets and confidence.
 - **Clarify usage bucket reports:** run `trace-to-skill codex-report ./runs` when the usage popover shows confusing 5h vs weekly percentages and does not explain remaining/used, rolling/calendar, or account/workspace scope.
 - **Package Codex process evidence:** run `trace-to-skill process-audit ./process-notes.md --output process-audit.md` to turn Task Manager, System Informer, `Get-CimInstance`, `ps`, or `top` snippets into a privacy-aware report for PowerShell CIM polling, stale process-manager entries, high CPU helpers, and runaway renderers.
 - **Bookmark a workspace before agent edits:** run `trace-to-skill checkpoint . --output .trace-to-skill/checkpoints/before-codex` to store git diffs plus copied changed/untracked files before Codex, Claude, Cursor, or another agent touches a dirty repo. It does not auto-restore or run destructive commands.
@@ -104,7 +104,7 @@ Use it when you need to:
 - **Debug Codex plugin runtime failures:** run `trace-to-skill analyze ./runs` when Browser, Computer Use, Chrome, connectors, or bundled plugins are advertised but fail with missing native pipe paths, plugin-list schema errors, or stale plugin cache state.
 - **Report Codex file tree UI failures:** run `trace-to-skill analyze ./runs` when `View > Toggle File Tree`, the folder icon, floating file panel, or built-in file preview disappears, goes stale, or stops revealing workspace files.
 - **Debug Codex resume/session state:** run `trace-to-skill analyze ./runs` when `codex resume` freezes, large JSONL histories make Desktop sluggish, recent context disappears after resume, or SQLite migration/state errors break goals.
-- **Attribute token burn:** run `trace-to-skill usage-evidence ./usage-notes.md --format json` when Codex drains usage unexpectedly and you need to separate backend quota-window percentages, local token totals, prompt-cache collapse events, rapid drain experiments, cached input, compaction loops, retry/tool loops, background polling, subagent fan-out, and idle drain.
+- **Attribute token burn:** run `trace-to-skill usage-doctor ./usage-notes.md --format json` when Codex drains usage unexpectedly and you need confidence-ranked buckets for backend quota-window accounting, rapid-drain repros, prompt-cache collapse, large cached-context replay, compaction loops, retry/tool loops, background polling, subagent fan-out, and idle drain.
 - **Report usage reset drift:** run `trace-to-skill analyze ./runs` when weekly or 5-hour reset times move unexpectedly, saved usage is lost, or `/status` and the dashboard disagree about the reset anchor.
 - **Bundle quota evidence:** run `trace-to-skill usage-evidence ./usage-notes.md` when you have polling tables, `/status` percentages, reset timestamps, `input_tokens`/`cached_input_tokens`/`prompt_cache_key` rows, rapid burn notes like `1% in 4 minutes` or `22 credits`, or `You've hit your usage limit` messages.
 - **Report resource leaks:** run `trace-to-skill analyze ./runs` when Codex Desktop, VS Code extension, app-server, renderer, GPU, or orphaned helper processes keep burning CPU/GPU/memory after the work should be idle.
@@ -373,11 +373,11 @@ This renders a copy-paste issue body with the likely Codex failure class, eviden
 Package Codex usage, reset, and quota evidence:
 
 ```bash
-trace-to-skill usage-evidence ./usage-notes.md --output usage-evidence.md
+trace-to-skill usage-doctor ./usage-notes.md --output usage-evidence.md
 trace-to-skill usage-evidence ./usage-notes.md --format json
 ```
 
-This parses Markdown polling tables, CSV-like rows, JSON/JSONL snapshots, `/status` excerpts, `reset_at` timestamps, usage-limit messages, rapid drain experiment notes such as `1% in 4 minutes` or `22 credits`, prompt-cache rows with `input_tokens`, `cached_input_tokens` / `cached_tokens`, `prompt_cache_key`, and `response id`, and `Token usage: total=... cached` lines into a concise report for Codex rate-limit, reset-drift, prompt-cache-collapse, and token-burn issues.
+This parses Markdown polling tables, CSV-like rows, JSON/JSONL snapshots, `/status` excerpts, `reset_at` timestamps, usage-limit messages, rapid drain experiment notes such as `1% in 4 minutes` or `22 credits`, prompt-cache rows with `input_tokens`, `cached_input_tokens` / `cached_tokens`, `prompt_cache_key`, and `response id`, and `Token usage: total=... cached` lines into a concise report for Codex rate-limit, reset-drift, prompt-cache-collapse, and token-burn issues. `usage-doctor` is an alias for the same parser with a clearer name for public support workflows; the JSON receipt includes attribution buckets, confidence, signal counts, line-linked evidence, and the next evidence to collect.
 
 Generate reusable rules:
 
@@ -549,7 +549,7 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v5
-      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.102
+      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.103
         with:
           mode: all
           doctor-threshold: "85"
@@ -598,7 +598,7 @@ Composite action usage:
 
 ```yaml
 - id: trace-to-skill
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.102
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.103
   with:
     mode: all
     doctor-threshold: "85"
@@ -616,7 +616,7 @@ Issue-map action usage for direct GitHub issue demand mining:
 
 ```yaml
 - id: codex-issue-map
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.102
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.103
   with:
     mode: issue-map
     issue-map-repo: openai/codex
@@ -662,7 +662,7 @@ Action outputs:
 
 By default, generated reports are also appended to the GitHub Actions Job Summary. Set `job-summary: "false"` to disable that UI output.
 
-Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.102` executes that release's checked-out source instead of pulling the default branch at runtime.
+Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.103` executes that release's checked-out source instead of pulling the default branch at runtime.
 
 ## Codex Skill
 

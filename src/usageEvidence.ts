@@ -61,6 +61,26 @@ export interface PromptCacheCollapseEvent {
   excerpt: string;
 }
 
+export type UsageAttributionBucket =
+  | "quota_window_accounting"
+  | "rapid_drain_repro"
+  | "prompt_cache_collapse"
+  | "large_cached_context_replay"
+  | "background_polling"
+  | "compaction_loop"
+  | "retry_or_tool_loop"
+  | "subagent_fanout"
+  | "idle_background_drain"
+  | "missing_evidence";
+
+export interface UsageAttribution {
+  bucket: UsageAttributionBucket;
+  confidence: "low" | "medium" | "high";
+  signals: number;
+  evidence: Evidence[];
+  nextEvidence: string;
+}
+
 export type UsageOverheadKind =
   | "background_polling"
   | "compaction_loop"
@@ -107,6 +127,7 @@ export interface UsageReceipt {
   overheadSignals: UsageOverheadSignal[];
   cacheCollapseEvents: PromptCacheCollapseEvent[];
   suspectedCauses: string[];
+  attribution: UsageAttribution[];
 }
 
 export interface UsageEvidenceFinding {
@@ -363,6 +384,26 @@ export function renderUsageEvidenceMarkdown(result: UsageEvidenceResult): string
         escapeCell(event.responseId ?? ""),
         escapeCell(event.previousResponseId ?? "")
       ].join(" | ").replace(/^/, "| ").replace(/$/, " |"));
+    }
+    lines.push("");
+  }
+
+  lines.push("### Attribution Triage", "");
+  if (result.receipt.attribution.length === 0) {
+    lines.push("_No attribution buckets inferred from the supplied evidence._", "");
+  } else {
+    lines.push("| Bucket | Confidence | Signals | Next Evidence |");
+    lines.push("| --- | --- | ---: | --- |");
+    for (const item of result.receipt.attribution) {
+      lines.push([
+        item.bucket,
+        item.confidence,
+        String(item.signals),
+        escapeCell(item.nextEvidence)
+      ].join(" | ").replace(/^/, "| ").replace(/$/, " |"));
+      for (const evidence of item.evidence.slice(0, 2)) {
+        lines.push(`  - Evidence: ${evidence.file}:${evidence.line} - ${evidence.excerpt}`);
+      }
     }
     lines.push("");
   }
@@ -891,8 +932,96 @@ function buildReceipt(
     drainExperiments,
     overheadSignals,
     cacheCollapseEvents,
-    suspectedCauses: [...suspectedCauses].sort((a, b) => a.localeCompare(b))
+    suspectedCauses: [...suspectedCauses].sort((a, b) => a.localeCompare(b)),
+    attribution: buildUsageAttribution(snapshots, tokenUsage, cacheCollapseEvents, overheadSignals, usageLimitSignals, drainExperiments)
   };
+}
+
+function buildUsageAttribution(
+  snapshots: UsageSnapshot[],
+  tokenUsage: TokenUsageRecord[],
+  cacheCollapseEvents: PromptCacheCollapseEvent[],
+  overheadSignals: UsageOverheadSignal[],
+  usageLimitSignals: UsageLimitSignal[],
+  drainExperiments: UsageDrainExperiment[]
+): UsageAttribution[] {
+  const attribution: UsageAttribution[] = [];
+
+  if (usageLimitSignals.length > 0 || snapshots.length > 0) {
+    const quotaEvidence = [
+      ...usageLimitSignals.map((signal) => evidence(signal.source, signal.line, signal.excerpt)),
+      ...snapshots.map((snapshot) => evidence(snapshot.source, snapshot.line, snapshot.excerpt))
+    ];
+    attribution.push({
+      bucket: "quota_window_accounting",
+      confidence: usageLimitSignals.length > 0 && snapshots.some((snapshot) => snapshot.percent !== undefined) ? "high" : "medium",
+      signals: usageLimitSignals.length + snapshots.length,
+      evidence: quotaEvidence.slice(0, 4),
+      nextEvidence: "Attach before/after /status and dashboard screenshots with timezone, plan, workspace, and exact reset_at values."
+    });
+  }
+
+  if (drainExperiments.length > 0) {
+    attribution.push({
+      bucket: "rapid_drain_repro",
+      confidence: drainExperiments.some((experiment) => experiment.percentDelta !== undefined || experiment.credits !== undefined) ? "high" : "medium",
+      signals: drainExperiments.length,
+      evidence: drainExperiments.slice(0, 4).map((experiment) => evidence(experiment.source, experiment.line, experiment.excerpt)),
+      nextEvidence: "Repeat the tiny experiment with model, reasoning effort, speed mode, prompt count, elapsed minutes, and before/after quota."
+    });
+  }
+
+  if (cacheCollapseEvents.length > 0) {
+    attribution.push({
+      bucket: "prompt_cache_collapse",
+      confidence: "high",
+      signals: cacheCollapseEvents.length,
+      evidence: cacheCollapseEvents.slice(0, 4).map((event) => evidence(event.source, event.line, event.excerpt)),
+      nextEvidence: "Include adjacent request rows with input_tokens, cached_input_tokens/cached_tokens, prompt_cache_key, response id, transport, and reconnect notes."
+    });
+  }
+
+  const largeCached = tokenUsage.filter((record) => record.cachedInput !== undefined && record.cachedInput >= 1_000_000);
+  if (largeCached.length > 0) {
+    attribution.push({
+      bucket: "large_cached_context_replay",
+      confidence: "high",
+      signals: largeCached.length,
+      evidence: largeCached.slice(0, 4).map((record) => evidence(record.source, record.line, record.excerpt)),
+      nextEvidence: "Capture context size, compaction state, model, prompt cache key, and whether a fork/subagent/retry replayed the same context."
+    });
+  }
+
+  for (const [kind, bucket, nextEvidence] of [
+    ["background_polling", "background_polling", "Capture process ids, poll cadence, write_stdin/no-output rows, and whether quota moved while no user prompt was running."],
+    ["compaction_loop", "compaction_loop", "Attach compaction start/end rows, context percentage before/after, compact errors, and whether usage moved during repeated compaction."],
+    ["retry_or_tool_loop", "retry_or_tool_loop", "Attach repeated tool-call ids, retry counts, failing command excerpts, and whether no useful edit or response was produced."],
+    ["subagent_fanout", "subagent_fanout", "Attach number of spawned subagents, roles, model/speed settings, and parent/child token or quota deltas."],
+    ["idle_drain", "idle_background_drain", "Capture idle interval, app state, background tasks, process activity, and before/after usage state."]
+  ] as const) {
+    const matches = overheadSignals.filter((signal) => signal.kind === kind);
+    if (matches.length > 0) {
+      attribution.push({
+        bucket,
+        confidence: matches.length > 1 ? "high" : "medium",
+        signals: matches.length,
+        evidence: matches.slice(0, 4).map((signal) => evidence(signal.source, signal.line, signal.excerpt)),
+        nextEvidence
+      });
+    }
+  }
+
+  if (attribution.length === 0) {
+    attribution.push({
+      bucket: "missing_evidence",
+      confidence: "low",
+      signals: 0,
+      evidence: [],
+      nextEvidence: "Add /status snapshots, usage dashboard percentages, token totals, prompt-cache rows, or a bounded rapid-drain experiment."
+    });
+  }
+
+  return attribution.sort((a, b) => confidenceRank(b.confidence) - confidenceRank(a.confidence) || b.signals - a.signals || a.bucket.localeCompare(b.bucket));
 }
 
 function findPromptCacheCollapseEvents(records: PromptCacheRecord[]): PromptCacheCollapseEvent[] {
@@ -1135,6 +1264,22 @@ function comparableInputSize(previous: number | undefined, current: number | und
 
 function round2(value: number): number {
   return Math.round(value * 100) / 100;
+}
+
+function evidence(file: string, line: number, excerpt: string): Evidence {
+  return { file, line, excerpt };
+}
+
+function confidenceRank(confidence: UsageAttribution["confidence"]): number {
+  if (confidence === "high") {
+    return 3;
+  }
+
+  if (confidence === "medium") {
+    return 2;
+  }
+
+  return 1;
 }
 
 function cleanValue(value: string | undefined): string {

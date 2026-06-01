@@ -1403,8 +1403,15 @@ test("buildUsageEvidence packages reset drift, token burn, and quota mismatch ev
   assert.ok(result.receipt.suspectedCauses.includes("compaction loop"));
   assert.ok(result.receipt.suspectedCauses.includes("rapid quota-drain experiment"));
   assert.ok(result.receipt.suspectedCauses.includes("retry or tool loop"));
+  assert.ok(result.receipt.attribution.some((item) => item.bucket === "quota_window_accounting" && item.confidence === "high"));
+  assert.ok(result.receipt.attribution.some((item) => item.bucket === "rapid_drain_repro" && item.confidence === "high"));
+  assert.ok(result.receipt.attribution.some((item) => item.bucket === "prompt_cache_collapse" && item.confidence === "high"));
+  assert.ok(result.receipt.attribution.some((item) => item.bucket === "large_cached_context_replay" && item.confidence === "high"));
+  assert.ok(result.receipt.attribution.some((item) => item.bucket === "background_polling"));
+  assert.ok(result.receipt.attribution.every((item) => item.nextEvidence.length > 0));
   assert.match(markdown, /Codex Usage Evidence/);
   assert.match(markdown, /Usage Receipt/);
+  assert.match(markdown, /Attribution Triage/);
   assert.match(markdown, /Prompt Cache Evidence/);
   assert.match(markdown, /Cache Collapse Events/);
   assert.match(markdown, /Drain Experiments/);
@@ -1868,6 +1875,9 @@ test("package metadata points npm users back to the public project", async () =>
   assert.ok(packageJson.keywords?.includes("codex-demo"));
   assert.ok(packageJson.keywords?.includes("codex-token-burn"));
   assert.ok(packageJson.keywords?.includes("codex-usage"));
+  assert.ok(packageJson.keywords?.includes("usage-doctor"));
+  assert.ok(packageJson.keywords?.includes("usage-attribution"));
+  assert.ok(packageJson.keywords?.includes("token-burn-attribution"));
   assert.ok(packageJson.keywords?.includes("codex-reset"));
   assert.ok(packageJson.keywords?.includes("codex-usage-reset"));
   assert.ok(packageJson.keywords?.includes("codex-resource-leak"));
@@ -2446,6 +2456,7 @@ test("published JSON schemas describe CLI result contracts", async () => {
   assert.ok(usageEvidenceSchema.$defs.cacheCollapseEvent);
   assert.ok(usageEvidenceSchema.$defs.drainExperiment);
   assert.ok(usageEvidenceSchema.$defs.overheadSignal);
+  assert.ok(usageEvidenceSchema.$defs.attribution);
   assert.ok((usageEvidenceSchema.$defs.finding as { properties: { kind: { enum: string[] } } }).properties.kind.enum.includes("orchestration_overhead_signal"));
   assert.ok((usageEvidenceSchema.$defs.finding as { properties: { kind: { enum: string[] } } }).properties.kind.enum.includes("rapid_quota_drain_experiment"));
   assert.ok((usageEvidenceSchema.$defs.finding as { properties: { kind: { enum: string[] } } }).properties.kind.enum.includes("prompt_cache_collapse"));
@@ -2562,7 +2573,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.equal(brief.scorecard.benchmarkStatus, "pass");
   assert.equal(brief.scorecard.benchmarkCases, 46);
   assert.equal(brief.packageName, "trace-to-skill");
-  assert.equal(brief.packageVersion, "0.1.102");
+  assert.equal(brief.packageVersion, "0.1.103");
   assert.equal(brief.license, "Apache-2.0");
   assert.ok(brief.repository?.includes("github.com/grnbtqdbyx-create/trace-to-skill"));
   assert.ok(brief.qualification.max500.length <= 500);
@@ -2570,8 +2581,10 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.match(markdown, /OpenAI OSS Brief/);
   assert.match(markdown, /Why This Repository Qualifies/);
   assert.match(markdown, /500-Character Version/);
-  assert.match(markdown, /npx trace-to-skill@0\.1\.102/);
+  assert.match(markdown, /npx trace-to-skill@0\.1\.103/);
   assert.match(markdown, /Weekly Codex Issue Radar/);
+  assert.match(markdown, /Usage doctor/);
+  assert.match(markdown, /token-burn attribution/);
   assert.match(markdown, /sensitive-file policy coverage/);
   assert.match(markdown, /project policy coverage without reading secret contents/);
 });
