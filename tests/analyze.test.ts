@@ -2630,6 +2630,32 @@ test("README exposes a contributor-friendly roadmap", async () => {
   assert.ok(section[1].trim().split("\n").length <= 18, "roadmap section should stay compact for first-time visitors");
 });
 
+test("maintainer demo cast uses only public fixtures and is linked near the top", async () => {
+  const readme = await readFile("README.md", "utf8");
+  const demoDocs = await readFile("docs/DEMO.md", "utf8");
+  const cast = await readFile("docs/MAINTAINER_DEMO.cast", "utf8");
+  const lines = cast.trim().split("\n");
+  const header = JSON.parse(lines[0]) as { version: number; width: number; height: number };
+  const events = lines.slice(1).map((line) => JSON.parse(line) as [number, string, string]);
+  const transcript = events.map((event) => event[2]).join("");
+  const startHere = readme.match(/## Start Here\n([\s\S]*?)(?=\n## )/);
+
+  assert.ok(startHere, "README should have a Start Here section");
+  assert.equal(header.version, 2);
+  assert.ok(header.width >= 80);
+  assert.ok(header.height >= 20);
+  assert.ok(events.length >= 4);
+  assert.match(startHere[1], /docs\/MAINTAINER_DEMO\.cast/);
+  assert.match(startHere[1], /docs\/DEMO\.md/);
+  assert.match(demoDocs, /MAINTAINER_DEMO\.cast/);
+  assert.match(demoDocs, /Fast Maintainer Demo/);
+  assert.match(transcript, /trace-to-skill demo hooks-contract/);
+  assert.match(transcript, /trace-to-skill codex-report fixtures\/codex-hooks-contract\.md/);
+  assert.match(transcript, /trace-to-skill scorecard \./);
+  assert.doesNotMatch(transcript, /\/Users\/|OPENAI_API_KEY|ghp_|ghs_|sk-[A-Za-z0-9]/);
+  assert.doesNotMatch(cast, /runs\/private|\.env|npmrc/);
+});
+
 test("repository publishes npm through trusted publishing workflow", async () => {
   const workflow = await readFile(".github/workflows/npm-publish.yml", "utf8");
   const releaseGuide = await readFile("docs/RELEASE.md", "utf8");

@@ -1,5 +1,19 @@
 # trace-to-skill Demo
 
+## Fast Maintainer Demo
+
+Watch the short asciinema recording: [`docs/MAINTAINER_DEMO.cast`](MAINTAINER_DEMO.cast).
+
+It uses only packaged public fixtures and shows the quickest maintainer loop:
+
+```bash
+npx trace-to-skill demo hooks-contract
+npx trace-to-skill codex-report fixtures/codex-hooks-contract.md --output codex-hooks-issue.md
+npx trace-to-skill scorecard .
+```
+
+The demo starts with a failed-agent/Codex issue fixture, turns it into a copy-paste OpenAI/Codex issue report with line-level evidence, then checks repository readiness with scorecard proof.
+
 Scenario: **Codex hooks contract and coverage gap**
 
 Users need documented hook events, blocking/async semantics, matcher coverage, additionalContext, and lifecycle coverage for guardrails and automation.

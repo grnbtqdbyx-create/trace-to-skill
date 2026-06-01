@@ -1,0 +1,8 @@
+{"version":2,"width":100,"height":28,"timestamp":1780311000,"env":{"SHELL":"/bin/zsh","TERM":"xterm-256color"}}
+[0.10,"o","$ npx trace-to-skill demo hooks-contract\n"]
+[0.65,"o","# OpenAI Codex Issue Triage Report\n\nScore: 75/100\nLikely failure class: Codex hooks contract or coverage gap\nEvidence: fixtures/codex-hooks-contract.md:3,7,8,9,10,15\nSuggested rule: capture hook events, blocking or async semantics, matcher coverage, and additionalContext needs.\n\n"]
+[3.10,"o","$ npx trace-to-skill codex-report fixtures/codex-hooks-contract.md --output codex-hooks-issue.md\n"]
+[3.75,"o","Wrote codex-hooks-issue.md\nPrivacy: public fixture only, no private traces or secrets.\nReport includes copy-paste issue body, line-level evidence, diagnostics, and reporter notes.\n\n"]
+[6.05,"o","$ npx trace-to-skill scorecard .\n"]
+[6.60,"o","# trace-to-skill Scorecard\n\nStatus: pass\nDoctor: ready, 100/100\nBenchmark: pass, public fixture cases covered\nReports: doctor JSON, benchmark JSON, maintainer-readable Markdown\n\n"]
+[9.00,"o","Loop: failed trace -> failure class -> reusable rule/skill -> eval gate -> keep or revise\n"]

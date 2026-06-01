@@ -14,6 +14,8 @@ Codex Issue Radar and maintainer-readiness tooling for open-source projects usin
 
 ## Start Here
 
+Watch the maintainer loop first: [terminal demo cast](docs/MAINTAINER_DEMO.cast) or [walkthrough](docs/DEMO.md). It uses only public fixtures and shows the shortest path from failed trace to issue report to scorecard proof.
+
 Run a live Codex issue radar:
 
 ```bash
