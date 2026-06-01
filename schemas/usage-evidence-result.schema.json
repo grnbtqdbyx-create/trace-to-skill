@@ -3,7 +3,7 @@
   "$id": "https://github.com/grnbtqdbyx-create/trace-to-skill/schemas/usage-evidence-result.schema.json",
   "title": "trace-to-skill Codex usage evidence result",
   "type": "object",
-  "required": ["generatedAt", "status", "inputs", "summary", "snapshots", "tokenUsage", "drainExperiments", "receipt", "findings", "checklist"],
+  "required": ["generatedAt", "status", "inputs", "summary", "snapshots", "tokenUsage", "cacheRecords", "cacheCollapseEvents", "drainExperiments", "receipt", "findings", "checklist"],
   "additionalProperties": false,
   "properties": {
     "generatedAt": {
@@ -20,7 +20,7 @@
     },
     "summary": {
       "type": "object",
-      "required": ["snapshots", "tokenUsageRecords", "usageLimitSignals", "resetDriftWindows", "highCachedInputRecords", "drainExperiments", "overheadSignals"],
+      "required": ["snapshots", "tokenUsageRecords", "usageLimitSignals", "resetDriftWindows", "highCachedInputRecords", "cacheRecords", "cacheCollapseEvents", "drainExperiments", "overheadSignals"],
       "additionalProperties": false,
       "properties": {
         "snapshots": {
@@ -40,6 +40,14 @@
           "minimum": 0
         },
         "highCachedInputRecords": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "cacheRecords": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "cacheCollapseEvents": {
           "type": "integer",
           "minimum": 0
         },
@@ -63,6 +71,18 @@
       "type": "array",
       "items": {
         "$ref": "#/$defs/tokenUsage"
+      }
+    },
+    "cacheRecords": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/cacheRecord"
+      }
+    },
+    "cacheCollapseEvents": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/cacheCollapseEvent"
       }
     },
     "drainExperiments": {
@@ -160,6 +180,7 @@
             "quota_percentage_jump",
             "usage_limit_with_remaining_quota",
             "high_cached_input",
+            "prompt_cache_collapse",
             "high_total_tokens",
             "orchestration_overhead_signal",
             "rapid_quota_drain_experiment"
@@ -204,7 +225,7 @@
     },
     "receipt": {
       "type": "object",
-      "required": ["quotaWindows", "localTokenTotals", "drainExperiments", "overheadSignals", "suspectedCauses"],
+      "required": ["quotaWindows", "localTokenTotals", "drainExperiments", "overheadSignals", "cacheCollapseEvents", "suspectedCauses"],
       "additionalProperties": false,
       "properties": {
         "quotaWindows": {
@@ -226,6 +247,12 @@
           "type": "array",
           "items": {
             "$ref": "#/$defs/overheadSignal"
+          }
+        },
+        "cacheCollapseEvents": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/cacheCollapseEvent"
           }
         },
         "suspectedCauses": {
@@ -314,6 +341,86 @@
           "type": "string"
         },
         "plan": {
+          "type": "string"
+        },
+        "excerpt": {
+          "type": "string"
+        }
+      }
+    },
+    "cacheRecord": {
+      "type": "object",
+      "required": ["source", "line", "excerpt"],
+      "additionalProperties": false,
+      "properties": {
+        "source": {
+          "type": "string"
+        },
+        "line": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "inputTokens": {
+          "type": "number"
+        },
+        "cachedInputTokens": {
+          "type": "number"
+        },
+        "cacheHitPercent": {
+          "type": "number"
+        },
+        "promptCacheKey": {
+          "type": "string"
+        },
+        "responseId": {
+          "type": "string"
+        },
+        "transport": {
+          "type": "string"
+        },
+        "outcome": {
+          "type": "string"
+        },
+        "excerpt": {
+          "type": "string"
+        }
+      }
+    },
+    "cacheCollapseEvent": {
+      "type": "object",
+      "required": ["source", "line", "previousLine", "cachedInputTokens", "previousCachedInputTokens", "dropPercent", "excerpt"],
+      "additionalProperties": false,
+      "properties": {
+        "source": {
+          "type": "string"
+        },
+        "line": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "previousLine": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "inputTokens": {
+          "type": "number"
+        },
+        "cachedInputTokens": {
+          "type": "number"
+        },
+        "previousCachedInputTokens": {
+          "type": "number"
+        },
+        "dropPercent": {
+          "type": "number"
+        },
+        "promptCacheKey": {
+          "type": "string"
+        },
+        "responseId": {
+          "type": "string"
+        },
+        "previousResponseId": {
           "type": "string"
         },
         "excerpt": {

@@ -1064,6 +1064,9 @@ test("buildUsageEvidence packages reset drift, token burn, and quota mismatch ev
     "/status says weekly 21% left, reset_at 2025-12-07 16:50:09",
     "Codex says: You've hit your usage limit.",
     "Token usage: total=742,555 input=697,188 (+ 9,077,504 cached) output=45,367 (reasoning 11,450)",
+    "Previous WebSocket request: input_tokens=183,426 cached_input_tokens=152,448 prompt_cache_key=\"019e74ff-6cf1-7d40-80ce-0c8baa3ad6cf\" id=\"resp_0442f7dc\" outcome=incremental",
+    "Reconnect request: input_tokens=184,739 cached_tokens=91,520 prompt_cache_key=\"019e74ff-6cf1-7d40-80ce-0c8baa3ad6cf\" id=\"resp_0fd6c965\" outcome=incremental websocket reconnect",
+    "Recovered request: input_tokens=185,010 cached_input_tokens=153,000 prompt_cache_key=\"019e74ff-6cf1-7d40-80ce-0c8baa3ad6cf\" id=\"resp_1a2b3c\" outcome=incremental",
     "GPT-5.4 on a Pro account consumed 22 credits and 1% of weekly usage within 4 minutes 24 seconds for 3 prompts.",
     "I burned through 70% of my weekly limit in a single day on the same normal workload.",
     "empty write_stdin polling kept reporting no new output in the background",
@@ -1079,26 +1082,36 @@ test("buildUsageEvidence packages reset drift, token burn, and quota mismatch ev
   assert.equal(result.status, "warn");
   assert.ok(result.summary.snapshots >= 6);
   assert.equal(result.summary.tokenUsageRecords, 1);
+  assert.equal(result.summary.cacheRecords, 3);
+  assert.equal(result.summary.cacheCollapseEvents, 1);
   assert.equal(result.summary.drainExperiments, 2);
   assert.equal(result.summary.overheadSignals, 3);
   assert.ok(kinds.includes("reset_timestamp_drift"));
   assert.ok(kinds.includes("quota_percentage_jump"));
   assert.ok(kinds.includes("usage_limit_with_remaining_quota"));
   assert.ok(kinds.includes("high_cached_input"));
+  assert.ok(kinds.includes("prompt_cache_collapse"));
   assert.ok(kinds.includes("orchestration_overhead_signal"));
   assert.ok(kinds.includes("rapid_quota_drain_experiment"));
   assert.equal(result.receipt.localTokenTotals.cachedInput, 9_077_504);
+  assert.equal(result.cacheRecords[0]?.cacheHitPercent, 83.11);
+  assert.equal(result.cacheCollapseEvents[0]?.previousCachedInputTokens, 152_448);
+  assert.equal(result.cacheCollapseEvents[0]?.cachedInputTokens, 91_520);
+  assert.equal(result.cacheCollapseEvents[0]?.dropPercent, 39.97);
   assert.equal(result.drainExperiments[0]?.percentDelta, 1);
   assert.equal(result.drainExperiments[0]?.credits, 22);
   assert.equal(result.drainExperiments[0]?.durationMinutes, 4.4);
   assert.equal(result.drainExperiments[0]?.model, "GPT-5.4");
   assert.equal(result.drainExperiments[0]?.plan, "Pro");
   assert.ok(result.receipt.suspectedCauses.includes("background polling"));
+  assert.ok(result.receipt.suspectedCauses.includes("prompt-cache collapse"));
   assert.ok(result.receipt.suspectedCauses.includes("compaction loop"));
   assert.ok(result.receipt.suspectedCauses.includes("rapid quota-drain experiment"));
   assert.ok(result.receipt.suspectedCauses.includes("retry or tool loop"));
   assert.match(markdown, /Codex Usage Evidence/);
   assert.match(markdown, /Usage Receipt/);
+  assert.match(markdown, /Prompt Cache Evidence/);
+  assert.match(markdown, /Cache Collapse Events/);
   assert.match(markdown, /Drain Experiments/);
   assert.match(markdown, /Overhead Signals/);
   assert.match(markdown, /Usage Snapshots/);
@@ -1919,14 +1932,19 @@ test("published JSON schemas describe CLI result contracts", async () => {
   assert.ok((sessionAuditSchema.$defs.finding as { properties: { kind: { enum: string[] } } }).properties.kind.enum.includes("unindexed_rollout_thread"));
   assert.ok((sessionAuditSchema.$defs.finding as { properties: { kind: { enum: string[] } } }).properties.kind.enum.includes("bloated_index_title"));
   assert.ok((sessionAuditSchema.$defs.finding as { properties: { kind: { enum: string[] } } }).properties.kind.enum.includes("subagent_lifecycle_signal"));
-  assert.deepEqual(usageEvidenceSchema.required, ["generatedAt", "status", "inputs", "summary", "snapshots", "tokenUsage", "drainExperiments", "receipt", "findings", "checklist"]);
+  assert.deepEqual(usageEvidenceSchema.required, ["generatedAt", "status", "inputs", "summary", "snapshots", "tokenUsage", "cacheRecords", "cacheCollapseEvents", "drainExperiments", "receipt", "findings", "checklist"]);
   assert.ok(usageEvidenceSchema.properties.receipt);
   assert.ok(usageEvidenceSchema.properties.drainExperiments);
+  assert.ok(usageEvidenceSchema.properties.cacheRecords);
+  assert.ok(usageEvidenceSchema.properties.cacheCollapseEvents);
   assert.ok(usageEvidenceSchema.$defs.receipt);
+  assert.ok(usageEvidenceSchema.$defs.cacheRecord);
+  assert.ok(usageEvidenceSchema.$defs.cacheCollapseEvent);
   assert.ok(usageEvidenceSchema.$defs.drainExperiment);
   assert.ok(usageEvidenceSchema.$defs.overheadSignal);
   assert.ok((usageEvidenceSchema.$defs.finding as { properties: { kind: { enum: string[] } } }).properties.kind.enum.includes("orchestration_overhead_signal"));
   assert.ok((usageEvidenceSchema.$defs.finding as { properties: { kind: { enum: string[] } } }).properties.kind.enum.includes("rapid_quota_drain_experiment"));
+  assert.ok((usageEvidenceSchema.$defs.finding as { properties: { kind: { enum: string[] } } }).properties.kind.enum.includes("prompt_cache_collapse"));
   assert.deepEqual(processAuditSchema.required, ["generatedAt", "status", "inputs", "summary", "signals", "findings", "checklist"]);
   assert.ok(processAuditSchema.properties.signals);
   assert.ok(processAuditSchema.$defs.signal);
@@ -2018,7 +2036,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.equal(brief.scorecard.benchmarkStatus, "pass");
   assert.equal(brief.scorecard.benchmarkCases, 33);
   assert.equal(brief.packageName, "trace-to-skill");
-  assert.equal(brief.packageVersion, "0.1.78");
+  assert.equal(brief.packageVersion, "0.1.79");
   assert.equal(brief.license, "Apache-2.0");
   assert.ok(brief.repository?.includes("github.com/grnbtqdbyx-create/trace-to-skill"));
   assert.ok(brief.qualification.max500.length <= 500);
@@ -2026,7 +2044,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.match(markdown, /OpenAI OSS Brief/);
   assert.match(markdown, /Why This Repository Qualifies/);
   assert.match(markdown, /500-Character Version/);
-  assert.match(markdown, /npx trace-to-skill@0\.1\.78/);
+  assert.match(markdown, /npx trace-to-skill@0\.1\.79/);
 });
 
 test("scorecard-comment dry-run resolves pull request event", async () => {

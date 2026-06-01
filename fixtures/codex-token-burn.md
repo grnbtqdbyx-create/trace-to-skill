@@ -29,6 +29,14 @@ During background waits, the cadence is about one poll every 5-10 seconds.
 Cached tokens are still charged by some API/proxy billing paths.
 ```
 
+## Prompt cache collapse
+
+```text
+Previous WebSocket request: input_tokens=183,426 cached_input_tokens=152,448 prompt_cache_key="019e74ff-6cf1-7d40-80ce-0c8baa3ad6cf" id="resp_0442f7dc" outcome=incremental
+Reconnect request: input_tokens=184,739 cached_tokens=91,520 prompt_cache_key="019e74ff-6cf1-7d40-80ce-0c8baa3ad6cf" id="resp_0fd6c965" outcome=incremental websocket reconnect
+Recovered request: input_tokens=185,010 cached_input_tokens=153,000 prompt_cache_key="019e74ff-6cf1-7d40-80ce-0c8baa3ad6cf" id="resp_1a2b3c" outcome=incremental
+```
+
 ## Compaction and replay cost
 
 Another report said:
@@ -39,4 +47,4 @@ The weekly usage limit depletes unusually fast on 5.5, worsened by unstable cont
 Failed context compaction forces users to restart tasks and re-explain project state, creating compaction tax.
 ```
 
-The report should include the plan/workspace, app or CLI version, model, reasoning effort, speed mode, large context setting, subagent and /review usage, recent `/status` and dashboard deltas, token totals including cached input/output/reasoning, background process ids, write_stdin poll cadence, compaction attempts, retry/tool-loop counts, whether the app was idle, and before/after usage percentages.
+The report should include the plan/workspace, app or CLI version, model, reasoning effort, speed mode, large context setting, subagent and /review usage, recent `/status` and dashboard deltas, token totals including cached input/output/reasoning, adjacent prompt-cache rows with response ids and prompt_cache_key, background process ids, write_stdin poll cadence, compaction attempts, retry/tool-loop counts, whether the app was idle, and before/after usage percentages.

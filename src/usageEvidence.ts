@@ -8,6 +8,7 @@ export type UsageEvidenceFindingKind =
   | "quota_percentage_jump"
   | "usage_limit_with_remaining_quota"
   | "high_cached_input"
+  | "prompt_cache_collapse"
   | "high_total_tokens"
   | "orchestration_overhead_signal"
   | "rapid_quota_drain_experiment";
@@ -30,6 +31,33 @@ export interface TokenUsageRecord {
   cachedInput?: number;
   output?: number;
   reasoning?: number;
+  excerpt: string;
+}
+
+export interface PromptCacheRecord {
+  source: string;
+  line: number;
+  inputTokens?: number;
+  cachedInputTokens?: number;
+  cacheHitPercent?: number;
+  promptCacheKey?: string;
+  responseId?: string;
+  transport?: string;
+  outcome?: string;
+  excerpt: string;
+}
+
+export interface PromptCacheCollapseEvent {
+  source: string;
+  line: number;
+  previousLine: number;
+  inputTokens?: number;
+  cachedInputTokens: number;
+  previousCachedInputTokens: number;
+  dropPercent: number;
+  promptCacheKey?: string;
+  responseId?: string;
+  previousResponseId?: string;
   excerpt: string;
 }
 
@@ -77,6 +105,7 @@ export interface UsageReceipt {
   };
   drainExperiments: UsageDrainExperiment[];
   overheadSignals: UsageOverheadSignal[];
+  cacheCollapseEvents: PromptCacheCollapseEvent[];
   suspectedCauses: string[];
 }
 
@@ -99,11 +128,15 @@ export interface UsageEvidenceResult {
     usageLimitSignals: number;
     resetDriftWindows: number;
     highCachedInputRecords: number;
+    cacheRecords: number;
+    cacheCollapseEvents: number;
     drainExperiments: number;
     overheadSignals: number;
   };
   snapshots: UsageSnapshot[];
   tokenUsage: TokenUsageRecord[];
+  cacheRecords: PromptCacheRecord[];
+  cacheCollapseEvents: PromptCacheCollapseEvent[];
   drainExperiments: UsageDrainExperiment[];
   receipt: UsageReceipt;
   findings: UsageEvidenceFinding[];
@@ -123,6 +156,7 @@ export async function buildUsageEvidence(targets: string[]): Promise<UsageEviden
 export function buildUsageEvidenceFromInputs(inputs: TraceInput[]): UsageEvidenceResult {
   const snapshots: UsageSnapshot[] = [];
   const tokenUsage: TokenUsageRecord[] = [];
+  const cacheRecords: PromptCacheRecord[] = [];
   const usageLimitSignals: UsageLimitSignal[] = [];
   const overheadSignals: UsageOverheadSignal[] = [];
   const drainExperiments: UsageDrainExperiment[] = [];
@@ -149,6 +183,11 @@ export function buildUsageEvidenceFromInputs(inputs: TraceInput[]): UsageEvidenc
         tokenUsage.push(tokenRecord);
       }
 
+      const cacheRecord = parsePromptCacheRecord(input.path, lineNumber, excerpt);
+      if (cacheRecord) {
+        cacheRecords.push(cacheRecord);
+      }
+
       const overheadSignal = parseOverheadSignal(input.path, lineNumber, excerpt);
       if (overheadSignal) {
         overheadSignals.push(overheadSignal);
@@ -165,8 +204,9 @@ export function buildUsageEvidenceFromInputs(inputs: TraceInput[]): UsageEvidenc
     });
   }
 
-  const findings = buildFindings(snapshots, tokenUsage, usageLimitSignals, overheadSignals, drainExperiments);
-  const receipt = buildReceipt(snapshots, tokenUsage, overheadSignals, usageLimitSignals, drainExperiments);
+  const cacheCollapseEvents = findPromptCacheCollapseEvents(cacheRecords);
+  const findings = buildFindings(snapshots, tokenUsage, cacheCollapseEvents, usageLimitSignals, overheadSignals, drainExperiments);
+  const receipt = buildReceipt(snapshots, tokenUsage, cacheCollapseEvents, overheadSignals, usageLimitSignals, drainExperiments);
   return {
     generatedAt: new Date().toISOString(),
     status: findings.length > 0 ? "warn" : "pass",
@@ -177,11 +217,15 @@ export function buildUsageEvidenceFromInputs(inputs: TraceInput[]): UsageEvidenc
       usageLimitSignals: usageLimitSignals.length,
       resetDriftWindows: findings.filter((finding) => finding.kind === "reset_timestamp_drift").length,
       highCachedInputRecords: findings.filter((finding) => finding.kind === "high_cached_input").length,
+      cacheRecords: cacheRecords.length,
+      cacheCollapseEvents: cacheCollapseEvents.length,
       drainExperiments: drainExperiments.length,
       overheadSignals: overheadSignals.length
     },
     snapshots,
     tokenUsage,
+    cacheRecords,
+    cacheCollapseEvents,
     drainExperiments,
     receipt,
     findings,
@@ -191,6 +235,7 @@ export function buildUsageEvidenceFromInputs(inputs: TraceInput[]): UsageEvidenc
       "Capture before/after `/status` output, usage dashboard timestamp, and timezone for every reset value.",
       "Note whether a prompt was running during reset and whether an outage or compensation reset was announced.",
       "Include token totals when available: total, input, cached input, output, and reasoning.",
+      "For prompt-cache reports, include adjacent request rows with input_tokens, cached_input_tokens or cached_tokens, prompt_cache_key, response id, transport, and reconnect/outcome notes.",
       "If reporting a sudden burn regression, add a tiny experiment row with model, plan, prompt count, elapsed time, percent or credits consumed, and before/after usage state.",
       "Separate quota-window percentage changes from local token totals and orchestration overhead signals.",
       "Add one minimal reproduction or polling table that shows the percentage and reset timestamp changing."
@@ -209,6 +254,8 @@ export function renderUsageEvidenceMarkdown(result: UsageEvidenceResult): string
     `- Inputs: ${result.inputs.length}`,
     `- Usage snapshots: ${result.summary.snapshots}`,
     `- Token usage records: ${result.summary.tokenUsageRecords}`,
+    `- Prompt cache records: ${result.summary.cacheRecords}`,
+    `- Prompt cache collapse events: ${result.summary.cacheCollapseEvents}`,
     `- Usage limit signals: ${result.summary.usageLimitSignals}`,
     `- Reset drift windows: ${result.summary.resetDriftWindows}`,
     `- High cached-input records: ${result.summary.highCachedInputRecords}`,
@@ -298,6 +345,28 @@ export function renderUsageEvidenceMarkdown(result: UsageEvidenceResult): string
     lines.push("");
   }
 
+  lines.push("### Cache Collapse Events", "");
+  if (result.receipt.cacheCollapseEvents.length === 0) {
+    lines.push("_No adjacent prompt-cache collapse events found._", "");
+  } else {
+    lines.push("| Source | Line | Previous Line | Prompt Cache Key | Cached Input | Previous Cached Input | Drop | Response | Previous Response |");
+    lines.push("| --- | ---: | ---: | --- | ---: | ---: | ---: | --- | --- |");
+    for (const event of result.receipt.cacheCollapseEvents.slice(0, 12)) {
+      lines.push([
+        escapeCell(event.source),
+        String(event.line),
+        String(event.previousLine),
+        escapeCell(event.promptCacheKey ?? ""),
+        formatNumber(event.cachedInputTokens),
+        formatNumber(event.previousCachedInputTokens),
+        `${event.dropPercent}%`,
+        escapeCell(event.responseId ?? ""),
+        escapeCell(event.previousResponseId ?? "")
+      ].join(" | ").replace(/^/, "| ").replace(/$/, " |"));
+    }
+    lines.push("");
+  }
+
   lines.push("### Suspected Cause Buckets", "");
   if (result.receipt.suspectedCauses.length === 0) {
     lines.push("_No cause bucket inferred from the supplied evidence._", "");
@@ -322,6 +391,28 @@ export function renderUsageEvidenceMarkdown(result: UsageEvidenceResult): string
         snapshot.percent === undefined ? "" : String(snapshot.percent),
         escapeCell(snapshot.resetAt ?? ""),
         escapeCell(snapshot.sampleTime ?? "")
+      ].join(" | ").replace(/^/, "| ").replace(/$/, " |"));
+    }
+    lines.push("");
+  }
+
+  lines.push("## Prompt Cache Evidence", "");
+  if (result.cacheRecords.length === 0) {
+    lines.push("_No prompt-cache request records found._", "");
+  } else {
+    lines.push("| Source | Line | Input Tokens | Cached Input Tokens | Cache Hit | Prompt Cache Key | Response | Transport | Outcome |");
+    lines.push("| --- | ---: | ---: | ---: | ---: | --- | --- | --- | --- |");
+    for (const record of result.cacheRecords.slice(0, 30)) {
+      lines.push([
+        escapeCell(record.source),
+        String(record.line),
+        formatNumber(record.inputTokens),
+        formatNumber(record.cachedInputTokens),
+        record.cacheHitPercent === undefined ? "" : `${record.cacheHitPercent}%`,
+        escapeCell(record.promptCacheKey ?? ""),
+        escapeCell(record.responseId ?? ""),
+        escapeCell(record.transport ?? ""),
+        escapeCell(record.outcome ?? "")
       ].join(" | ").replace(/^/, "| ").replace(/$/, " |"));
     }
     lines.push("");
@@ -489,6 +580,83 @@ function parseTokenUsage(source: string, line: number, excerpt: string): TokenUs
   return { source, line, total, input, cachedInput, output, reasoning, excerpt };
 }
 
+function parsePromptCacheRecord(source: string, line: number, excerpt: string): PromptCacheRecord | undefined {
+  const json = parsePromptCacheJson(source, line, excerpt);
+  if (json) {
+    return json;
+  }
+
+  if (!/\b(input_tokens|cached_input_tokens|cached_tokens|prompt_cache_key|cache hit|cached token)/i.test(excerpt)) {
+    return undefined;
+  }
+
+  const inputTokens = numberAfter(excerpt, /\binput_tokens\s*[:=]?\s*([0-9][0-9,]*)/i) ??
+    numberAfter(excerpt, /\binput tokens\s*[:=]?\s*([0-9][0-9,]*)/i);
+  const cachedInputTokens = numberAfter(excerpt, /\bcached_input_tokens\s*[:=]?\s*([0-9][0-9,]*)/i) ??
+    numberAfter(excerpt, /\bcached_tokens\s*[:=]?\s*([0-9][0-9,]*)/i) ??
+    numberAfter(excerpt, /\bcached input tokens\s*[:=]?\s*([0-9][0-9,]*)/i) ??
+    numberAfter(excerpt, /\bcached tokens\s*[:=]?\s*([0-9][0-9,]*)/i);
+  const promptCacheKey = stringAfter(excerpt, /\bprompt_cache_key\s*[:=]\s*"?([A-Za-z0-9._:-]+)"?/i);
+  const responseId = stringAfter(excerpt, /\b(?:response_)?id\s*[:=]\s*"?([A-Za-z0-9._:-]+)"?/i);
+  const outcome = stringAfter(excerpt, /\boutcome\s*[:=]\s*"?([A-Za-z0-9._:-]+)"?/i);
+  const transport = /\bwebsocket\b/i.test(excerpt) ? "websocket" :
+    /\bsse\b/i.test(excerpt) ? "sse" :
+      /\bhttps?\b/i.test(excerpt) ? "http" :
+        undefined;
+
+  if (inputTokens === undefined && cachedInputTokens === undefined && !promptCacheKey) {
+    return undefined;
+  }
+
+  return {
+    source,
+    line,
+    inputTokens,
+    cachedInputTokens,
+    cacheHitPercent: computeCacheHitPercent(inputTokens, cachedInputTokens),
+    promptCacheKey,
+    responseId,
+    transport,
+    outcome,
+    excerpt
+  };
+}
+
+function parsePromptCacheJson(source: string, line: number, excerpt: string): PromptCacheRecord | undefined {
+  if (!excerpt.startsWith("{")) {
+    return undefined;
+  }
+
+  try {
+    const value = JSON.parse(excerpt) as Record<string, unknown>;
+    const usage = value.usage && typeof value.usage === "object" ? value.usage as Record<string, unknown> : {};
+    const inputTokens = numberValue(value.input_tokens ?? value.inputTokens ?? usage.input_tokens ?? usage.inputTokens);
+    const cachedInputTokens = numberValue(value.cached_input_tokens ?? value.cachedInputTokens ?? value.cached_tokens ?? value.cachedTokens ?? usage.cached_input_tokens ?? usage.cachedInputTokens ?? usage.cached_tokens ?? usage.cachedTokens);
+    const promptCacheKey = stringValue(value.prompt_cache_key ?? value.promptCacheKey ?? usage.prompt_cache_key ?? usage.promptCacheKey);
+    const responseId = stringValue(value.response_id ?? value.responseId ?? value.id);
+    const transport = stringValue(value.transport ?? value.protocol);
+    const outcome = stringValue(value.outcome ?? value.result);
+    if (inputTokens === undefined && cachedInputTokens === undefined && !promptCacheKey) {
+      return undefined;
+    }
+
+    return {
+      source,
+      line,
+      inputTokens,
+      cachedInputTokens,
+      cacheHitPercent: computeCacheHitPercent(inputTokens, cachedInputTokens),
+      promptCacheKey,
+      responseId,
+      transport,
+      outcome,
+      excerpt
+    };
+  } catch {
+    return undefined;
+  }
+}
+
 function parseOverheadSignal(source: string, line: number, excerpt: string): UsageOverheadSignal | undefined {
   const kind =
     /\bwrite_stdin\b|\b(empty|idle).{0,30}\bpoll/i.test(excerpt) ? "background_polling" :
@@ -535,6 +703,7 @@ function parseDrainExperiment(source: string, line: number, excerpt: string): Us
 function buildFindings(
   snapshots: UsageSnapshot[],
   tokenUsage: TokenUsageRecord[],
+  cacheCollapseEvents: PromptCacheCollapseEvent[],
   usageLimitSignals: UsageLimitSignal[],
   overheadSignals: UsageOverheadSignal[],
   drainExperiments: UsageDrainExperiment[]
@@ -596,6 +765,17 @@ function buildFindings(
     }
   }
 
+  for (const event of cacheCollapseEvents) {
+    findings.push({
+      kind: "prompt_cache_collapse",
+      severity: event.dropPercent >= 50 ? "high" : "medium",
+      title: "Prompt cache collapse between adjacent requests",
+      why: "The evidence shows cached input tokens dropping sharply while the same prompt cache key or request chain continues, which helps separate backend prompt-cache instability from ordinary high-token turns.",
+      evidence: [{ file: event.source, line: event.line, excerpt: event.excerpt }],
+      nextStep: "Attach the adjacent previous/current request rows with response ids, prompt_cache_key, transport, reconnect timing, and local token totals so maintainers can check routing or cache-retention behavior."
+    });
+  }
+
   for (const signal of usageLimitSignals) {
     const nearby = snapshots.find((snapshot) => snapshot.source === signal.source && Math.abs(snapshot.line - signal.line) <= 8 && (snapshot.percent ?? 0) > 0);
     if (nearby) {
@@ -648,6 +828,7 @@ function buildFindings(
 function buildReceipt(
   snapshots: UsageSnapshot[],
   tokenUsage: TokenUsageRecord[],
+  cacheCollapseEvents: PromptCacheCollapseEvent[],
   overheadSignals: UsageOverheadSignal[],
   usageLimitSignals: UsageLimitSignal[],
   drainExperiments: UsageDrainExperiment[]
@@ -687,6 +868,9 @@ function buildReceipt(
   if (tokenUsage.some((record) => record.cachedInput !== undefined && record.cachedInput >= 1_000_000)) {
     suspectedCauses.add("large cached-context replay");
   }
+  if (cacheCollapseEvents.length > 0) {
+    suspectedCauses.add("prompt-cache collapse");
+  }
   for (const signal of overheadSignals) {
     if (signal.kind === "background_polling") {
       suspectedCauses.add("background polling");
@@ -706,8 +890,43 @@ function buildReceipt(
     localTokenTotals,
     drainExperiments,
     overheadSignals,
+    cacheCollapseEvents,
     suspectedCauses: [...suspectedCauses].sort((a, b) => a.localeCompare(b))
   };
+}
+
+function findPromptCacheCollapseEvents(records: PromptCacheRecord[]): PromptCacheCollapseEvent[] {
+  const events: PromptCacheCollapseEvent[] = [];
+  const previousByKey = new Map<string, PromptCacheRecord>();
+  for (const record of records) {
+    const key = record.promptCacheKey ?? `${record.source}:unknown-cache-key`;
+    const previous = previousByKey.get(key);
+    if (
+      previous?.cachedInputTokens !== undefined &&
+      record.cachedInputTokens !== undefined &&
+      previous.cachedInputTokens >= 10_000 &&
+      record.cachedInputTokens < previous.cachedInputTokens * 0.7 &&
+      comparableInputSize(previous.inputTokens, record.inputTokens)
+    ) {
+      events.push({
+        source: record.source,
+        line: record.line,
+        previousLine: previous.line,
+        inputTokens: record.inputTokens,
+        cachedInputTokens: record.cachedInputTokens,
+        previousCachedInputTokens: previous.cachedInputTokens,
+        dropPercent: round2(((previous.cachedInputTokens - record.cachedInputTokens) / previous.cachedInputTokens) * 100),
+        promptCacheKey: record.promptCacheKey,
+        responseId: record.responseId,
+        previousResponseId: previous.responseId,
+        excerpt: record.excerpt
+      });
+    }
+
+    previousByKey.set(key, record);
+  }
+
+  return events;
 }
 
 function findPercentageJumps(items: UsageSnapshot[]): Array<{ before: UsageSnapshot; after: UsageSnapshot; delta: number }> {
@@ -857,6 +1076,10 @@ function numberAfter(value: string, regex: RegExp): number | undefined {
   return match ? parseInteger(match[1]) : undefined;
 }
 
+function stringAfter(value: string, regex: RegExp): string | undefined {
+  return cleanValue(value.match(regex)?.[1]);
+}
+
 function numberValue(value: unknown): number | undefined {
   if (typeof value === "number" && Number.isFinite(value)) {
     return value;
@@ -892,6 +1115,26 @@ function addOptional(a: number | undefined, b: number | undefined): number | und
   }
 
   return a + b;
+}
+
+function computeCacheHitPercent(inputTokens: number | undefined, cachedInputTokens: number | undefined): number | undefined {
+  if (!inputTokens || cachedInputTokens === undefined || inputTokens <= 0) {
+    return undefined;
+  }
+
+  return round2((cachedInputTokens / inputTokens) * 100);
+}
+
+function comparableInputSize(previous: number | undefined, current: number | undefined): boolean {
+  if (previous === undefined || current === undefined || previous <= 0) {
+    return true;
+  }
+
+  return current >= previous * 0.75;
+}
+
+function round2(value: number): number {
+  return Math.round(value * 100) / 100;
 }
 
 function cleanValue(value: string | undefined): string {

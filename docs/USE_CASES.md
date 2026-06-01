@@ -54,7 +54,7 @@ What it proves:
 Recommended CI surface:
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.78
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.79
   with:
     mode: all
     doctor-threshold: "85"
@@ -145,19 +145,20 @@ This catches signals such as `Error running remote compact task`, `timeout waiti
 
 ## 8. Codex Usage Evidence Packaging
 
-Use this when a Codex usage issue has scattered evidence across `/status`, dashboard notes, reset tables, token totals, cached input, and local overhead clues.
+Use this when a Codex usage issue has scattered evidence across `/status`, dashboard notes, reset tables, token totals, prompt-cache rows, cached input, and local overhead clues.
 
 ```bash
 npx trace-to-skill usage-evidence ./usage-notes.md --output usage-evidence.md
 npx trace-to-skill usage-evidence ./usage-notes.md --format json
 ```
 
-This turns Markdown polling tables, CSV-like rows, JSON/JSONL snapshots, `reset_at` values, usage-limit errors, rapid drain experiment notes like `1% in 4 minutes`, `22 credits`, or `70% weekly in a day`, `Token usage: total=... cached` lines, `write_stdin` polling, compaction loops, retry/tool loops, subagent fan-out, and idle-drain notes into a single report with a usage receipt.
+This turns Markdown polling tables, CSV-like rows, JSON/JSONL snapshots, `reset_at` values, usage-limit errors, rapid drain experiment notes like `1% in 4 minutes`, `22 credits`, or `70% weekly in a day`, prompt-cache rows with `input_tokens`, `cached_input_tokens` / `cached_tokens`, `prompt_cache_key`, response ids, websocket/reconnect notes, `Token usage: total=... cached` lines, `write_stdin` polling, compaction loops, retry/tool loops, subagent fan-out, and idle-drain notes into a single report with a usage receipt.
 
 The receipt separates:
 
 - backend quota-window percentage evidence
 - local token totals, including cached input and reasoning
+- prompt-cache records and adjacent cache-collapse events
 - bounded rapid-drain experiment rows with model, plan, prompt count, elapsed time, percent, and credits when present
 - orchestration-overhead signals that may burn usage without accepted work
 - suspected cause buckets to keep public reports comparable
@@ -258,7 +259,7 @@ npx trace-to-skill analyze ./runs --format json
 npx trace-to-skill codex-report ./runs --output openai-codex-issue.md
 ```
 
-This catches signals such as tokens `burning very fast`, usage dropping by visible percentages after one or two prompts, weekly allowance depletion, 5-hour usage reaching 0%, large `input` plus `cached input` totals, `write_stdin` empty polling, background commands repeatedly reporting no new output, idle app usage, compaction tax, retry/tool loops, and missing attribution between normal turns, compaction, background polling, subagents, and retries.
+This catches signals such as tokens `burning very fast`, usage dropping by visible percentages after one or two prompts, weekly allowance depletion, 5-hour usage reaching 0%, large `input` plus `cached input` totals, `input_tokens` / `cached_input_tokens` / `prompt_cache_key` rows that show cache collapse, `write_stdin` empty polling, background commands repeatedly reporting no new output, idle app usage, compaction tax, retry/tool loops, and missing attribution between normal turns, compaction, background polling, subagents, and retries.
 
 For public reports, prefer `usage-evidence` first so the quota-window, local-token, and orchestration-overhead layers are visible separately.
 
