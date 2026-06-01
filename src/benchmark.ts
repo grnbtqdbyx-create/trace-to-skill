@@ -240,6 +240,12 @@ const BENCHMARK_CASES: BenchmarkCaseDefinition[] = [
     expectedKinds: ["codex_context_visibility", "weak_evidence"]
   },
   {
+    id: "codex-remote-connection",
+    title: "Codex remote connection or SSH workspace failure",
+    fixture: "fixtures/codex-remote-connection.md",
+    expectedKinds: ["codex_remote_connection", "weak_evidence"]
+  },
+  {
     id: "codex-token-burn",
     title: "Codex token burn and usage-drain loop",
     fixture: "fixtures/codex-token-burn.md",

@@ -1,6 +1,6 @@
 {
   "name": "trace-to-skill",
-  "version": "0.1.96",
+  "version": "0.1.97",
   "description": "Turn failed AI coding-agent runs into reusable AGENTS.md rules, SKILL.md files, and eval evidence.",
   "type": "module",
   "main": "dist/src/index.js",
@@ -114,6 +114,10 @@
     "codex-ripgrep",
     "token-exchange-failed",
     "codex-remote-control",
+    "codex-remote-connection",
+    "codex-ssh",
+    "remote-ssh",
+    "remote-workspace",
     "codex-mobile",
     "codex-terminal",
     "codex-scrollback",

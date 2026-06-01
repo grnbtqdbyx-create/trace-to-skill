@@ -360,6 +360,13 @@ function buildRoadmap(summaries: IssueMapKindSummary[]): IssueMapRoadmapItem[] {
 }
 
 function roadmapAction(kind: FindingKind): { targetArtifact: string; command: string } {
+  if (kind === "codex_remote_connection") {
+    return {
+      targetArtifact: "Remote connection fixture and SSH workspace evidence report",
+      command: "trace-to-skill codex-report ./runs --output openai-codex-remote-connection.md"
+    };
+  }
+
   if (kind === "codex_context_visibility") {
     return {
       targetArtifact: "Context visibility fixture and Desktop UI evidence report",

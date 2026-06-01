@@ -133,6 +133,12 @@ const DEMO_SCENARIOS: DemoScenario[] = [
     description: "Desktop context or token usage indicators disappear, leaving long-session compaction pressure invisible."
   },
   {
+    id: "remote-connection",
+    title: "Codex remote connection or SSH workspace failure",
+    fixture: "fixtures/codex-remote-connection.md",
+    description: "Desktop remote SSH workspaces, Settings > Connections, remote app-server, tunnel, or remote filesystem evidence breaks."
+  },
+  {
     id: "token-burn",
     title: "Codex token burn",
     fixture: "fixtures/codex-token-burn.md",
@@ -231,6 +237,7 @@ export function renderDemoMarkdown(result: DemoResult): string {
     "trace-to-skill demo subagent-lifecycle",
     "trace-to-skill demo usage-bucket-confusion",
     "trace-to-skill demo context-visibility",
+    "trace-to-skill demo remote-connection",
     "trace-to-skill demo file-tree-ui",
     "trace-to-skill demo usage-reset-drift",
     "```",
@@ -266,6 +273,8 @@ export function renderDemoScenarioList(scenarios = listDemoScenarios()): string 
     "trace-to-skill demo terminal-output-integrity",
     "trace-to-skill demo subagent-lifecycle",
     "trace-to-skill demo usage-bucket-confusion",
+    "trace-to-skill demo context-visibility",
+    "trace-to-skill demo remote-connection",
     "trace-to-skill demo --list",
     "```",
     ""

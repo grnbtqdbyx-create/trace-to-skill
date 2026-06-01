@@ -144,6 +144,19 @@
     "updatedAt": "2026-05-27T05:08:25Z"
   },
   {
+    "number": 10450,
+    "title": "Remote Development in Codex Desktop App",
+    "body": "Codex Desktop App only works with local projects and does not support development on remote hosts via SSH, remote Linux servers, cloud instances, GPU machines, or remote filesystems. Users want Settings > Connections, ~/.ssh/config host discovery, remote workspaces as the single source of truth without git/rsync/sshfs sync workarounds, remote command execution, persistent remote sessions, reconnect/resume, and app-server health evidence. Later reports mention remote_connections = true, local tunnel not ready, stale remote Codex versions, codex-server restart, ForwardAgent, and fs/getMetadata timeouts while listing remote folders.",
+    "url": "https://github.com/openai/codex/issues/10450",
+    "labels": [
+      { "name": "enhancement" },
+      { "name": "app" }
+    ],
+    "commentsCount": 176,
+    "reactions": { "totalCount": 851 },
+    "updatedAt": "2026-05-14T21:25:03Z"
+  },
+  {
     "number": 6465,
     "title": "MCP servers not detected in Codex VS Code extension but working in Codex CLI",
     "body": "MCP servers not detected in the VS Code extension or Desktop, but working in Codex CLI from ~/.codex/config.toml. tools/list is empty in one surface, project .codex/config.toml is ignored, and serverName metadata is missing.",

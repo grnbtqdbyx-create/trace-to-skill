@@ -94,6 +94,7 @@ Use it when you need to:
 - **Reduce approval friction:** run `trace-to-skill analyze ./runs` when `Approve for this session` is not remembered, repeated prompts push users toward Full Access, or trusted MCP tools like Playwright require dozens of approvals.
 - **Diagnose sandbox blockers:** run `trace-to-skill analyze ./runs` on Codex traces that fail with sandbox setup refresh, `os error 740`, ACL, ownership, or approval-mode permission errors.
 - **Debug Codex auth/connectivity:** run `trace-to-skill analyze ./runs` on logs with `token_exchange_failed`, `auth.openai.com/oauth/token`, Cloudflare challenge, proxy/CA, IPv6, or stream disconnect symptoms.
+- **Triage remote SSH workspaces:** run `trace-to-skill codex-report ./runs` when Codex Desktop remote connections, Settings > Connections, `remote_connections`, SSH hosts, local tunnels, remote app-server, model lists, or remote folder browsing fail.
 - **Prove remote-control route health:** run `trace-to-skill analyze ./runs` when Codex mobile/remote sessions show `Waiting for desktop`, `Directory Unavailable`, stale listener/cache, missing helper bundle, or stale enrollment symptoms.
 - **Triage Codex MCP runtime failures:** run `trace-to-skill analyze ./runs` when MCP tools are listed but Codex cancels approval, drops namespace/serverName metadata, routes to `unsupported call`, or closes stdio transport.
 - **Debug Codex plugin runtime failures:** run `trace-to-skill analyze ./runs` when Browser, Computer Use, Chrome, connectors, or bundled plugins are advertised but fail with missing native pipe paths, plugin-list schema errors, or stale plugin cache state.
@@ -230,6 +231,7 @@ Trace analysis detects run-level failures:
 | Codex approval friction | Session approvals are not remembered, MCP tools reprompt repeatedly, or users fall back to unsafe full access |
 | Sandbox permission | Codex sandbox setup, approval mode, ACL, or workspace ownership blocks tool execution |
 | Codex connectivity | Auth token exchange, proxy/CA, IPv6, Cloudflare challenge, or ChatGPT transport errors block Codex |
+| Codex remote connection | Desktop SSH/remote workspaces, Settings > Connections, local tunnels, remote app-server, model lists, or remote folder browsing fail |
 | Codex remote control | Mobile or remote sessions route through stale listeners, stale enrollment, or incomplete helper bundles |
 | Codex MCP discovery mismatch | MCP works in CLI or one config scope but disappears in VS Code, Desktop, WSL, project config, or an older session |
 | Codex Streamable HTTP MCP | HTTP/SSE MCP servers initialize but fail JSON-RPC parsing, `text/event-stream` framing, handshakes, auth gating, stale session ids, or reconnects |
@@ -539,7 +541,7 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v5
-      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.96
+      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.97
         with:
           mode: all
           doctor-threshold: "85"
@@ -588,7 +590,7 @@ Composite action usage:
 
 ```yaml
 - id: trace-to-skill
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.96
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.97
   with:
     mode: all
     doctor-threshold: "85"
@@ -606,7 +608,7 @@ Issue-map action usage for direct GitHub issue demand mining:
 
 ```yaml
 - id: codex-issue-map
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.96
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.97
   with:
     mode: issue-map
     issue-map-repo: openai/codex
@@ -652,7 +654,7 @@ Action outputs:
 
 By default, generated reports are also appended to the GitHub Actions Job Summary. Set `job-summary: "false"` to disable that UI output.
 
-Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.96` executes that release's checked-out source instead of pulling the default branch at runtime.
+Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.97` executes that release's checked-out source instead of pulling the default branch at runtime.
 
 ## Codex Skill
 
@@ -702,6 +704,7 @@ The goal is not to let agents autonomously rewrite project policy. The goal is t
 - `trace-to-skill scorecard` for combined reviewer proof
 - `trace-to-skill oss-brief` for OpenAI OSS application-ready evidence
 - Codex file tree and workspace navigation UI failure detection
+- Codex remote connection and SSH workspace failure detection
 - Codex usage reset schedule drift detection
 - Scorecard JSON schema and Action outputs
 - Tag-pinned GitHub Action runtime via `$GITHUB_ACTION_PATH`

@@ -160,6 +160,14 @@ Common signals include `visible context/token usage indicator`, `context-window 
 
 The fix is to capture Codex Desktop version, OS, surface, screenshot or short recording of the chat input area, whether the prior context/token indicator or tooltip was visible before the update, exact UI route where it disappeared, local session metadata showing context/window pressure if available, `/status` output if relevant, compaction timing, whether CLI/TUI still exposes a statusline, and how the missing indicator affects long-session decisions.
 
+## Codex Remote Connection Or SSH Workspace Failure
+
+Codex Desktop remote connections can fail after the feature exists: the app may not show Settings > Connections, the wrong feature flag may be set, the SSH host may connect but the local tunnel or remote app-server may be unhealthy, the remote filesystem may fail to list, or the remote Codex version/model list may be stale.
+
+Common signals include `Remote Development in Codex Desktop App`, `Remote SSH`, remote workspaces as the single source of truth, `remote_connections = true`, `remote_control = true` used as a mistaken flag, Settings > Connections missing, `local tunnel not ready`, stale remote Codex versions, `codex-server` or app-server restarts, `fs/getMetadata` folder listing timeouts, ForwardAgent requirements, proxying Codex API traffic through the local machine, and tmux-like reconnect/resume expectations.
+
+The fix is to capture Codex Desktop version, remote Codex CLI/app-server version, local OS, remote OS/architecture, SSH alias from `~/.ssh/config`, whether `[features].remote_connections = true` is set, Settings > Connections visibility, selected host/path, remote workspace path, whether the remote filesystem is the source of truth, exact tunnel/app-server error, codex-server pid and restart result, remote PATH/auth/proxy/API reachability, model list differences versus local, fs/getMetadata or folder listing errors, ForwardAgent/proxy requirements, and whether reconnect/resume or a clean host works.
+
 ## Codex Subagent Prompt Leakage
 
 Codex MultiAgentV2 child agents can fail the task boundary even when the parent asks for isolated children. When `spawn_agent` with `fork_turns: "none"` records the delegated task as an assistant/commentary JSON envelope, or a same-turn parallel child sees a sibling prompt, independent review, QA, and security lanes are no longer independent.

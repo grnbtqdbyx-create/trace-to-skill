@@ -489,6 +489,30 @@ const RULES: RuleDefinition[] = [
     suggestedSkill: "codex-remote-control-triage"
   },
   {
+    kind: "codex_remote_connection",
+    severity: "high",
+    title: "Codex remote connection or SSH workspace failure",
+    why: "Remote-first developers need Codex Desktop to open SSH, server, VM, WSL, container, or cloud workspaces as the source of truth, with reliable remote file browsing, command execution, model availability, app-server health, and reconnect behavior.",
+    patterns: [
+      /\bRemote Development in Codex Desktop App\b/i,
+      /\bCodex Desktop App\b.{0,240}\b(remote development|remote host|remote hosts|remote workspace|remote workspaces|Remote SSH|SSH-based remote|remote filesystem|remote file system|cloud instances?|remote Linux|GPU machines?)\b/i,
+      /\b(remote development|remote host|remote hosts|remote workspace|remote workspaces|Remote SSH|SSH-based remote|remote filesystem|remote file system|cloud instances?|remote Linux|GPU machines?)\b.{0,240}\b(Codex Desktop App|Codex app|Desktop app|Codex)\b/i,
+      /\b(remote_connections|remote connection|remote connections|Settings\s*>\s*Connections|Connections subheading)\b.{0,220}\b(Codex|Desktop|config\.toml|doesn'?t show|not show|missing|connect|SSH|host|remote)\b/i,
+      /\b\[features\]\b.{0,160}\bremote_connections\s*=\s*true\b/i,
+      /\bremote_control\s*=\s*true\b.{0,220}\b(remote_connections|Settings\s*>\s*Connections|doesn'?t show|wrong feature flag|typo|not work)\b/i,
+      /\b(local tunnel|tunnel)\b.{0,180}\b(not ready|failed|connect(?:ion)? failed|dropped|remote host|SSH|Codex)\b/i,
+      /\bcodex-server\b.{0,220}\b(remote|host|version|stale|kill|restart|reattach|Settings\s*>\s*Connection)\b/i,
+      /\b(remote Codex version|host Codex version|Codex CLI version)\b.{0,220}\b(lower|stale|mismatch|not correct|update|refresh|0\.\d+\.\d+)\b/i,
+      /\b(fs\/getMetadata|Unable to load folder contents|Timed out waiting for MCP response)\b.{0,220}\b(remote|folder|directories|files|workspace|Codex)\b/i,
+      /\b(ForwardAgent|agent forwarding|proxy all requests|local machine.*Codex API|remote machine cannot directly access)\b.{0,220}\b(SSH|remote|Codex|API|server)\b/i,
+      /\b(no local clone|single source of truth|git\/rsync\/sshfs|sync workaround|remote filesystem as the workspace)\b.{0,240}\b(Codex|remote|Desktop|workspace|SSH)\b/i,
+      /\b(tmux|persistent remote sessions?|reconnect|resume|background sessions?)\b.{0,220}\b(Codex Desktop|Codex app|remote|SSH|host|workspace)\b/i
+    ],
+    suggestedRule:
+      "When reporting Codex remote connection failures, capture Codex Desktop version, remote Codex CLI/app-server version, local OS, remote OS/architecture, SSH target alias from `~/.ssh/config`, whether `[features].remote_connections = true` is set, Settings > Connections visibility, selected host/path, remote workspace path, whether the remote filesystem is the source of truth, exact tunnel/app-server error, codex-server pid and restart result, `ps -ef | rg 'codex app-server|openai.chatgpt.*/codex'` evidence if available, remote PATH/auth/proxy/API reachability, model list differences versus local, fs/getMetadata or folder listing errors, ForwardAgent/proxy requirements, and whether reconnect/resume or a clean host works.",
+    suggestedSkill: "codex-remote-connection-triage"
+  },
+  {
     kind: "codex_terminal_output_integrity",
     severity: "high",
     title: "Codex terminal output or scrollback integrity failure",
@@ -761,7 +785,7 @@ const RULES: RuleDefinition[] = [
     title: "Codex client resource leak or runaway process",
     why: "Codex Desktop, app, extension, or helper processes can enter CPU/GPU/memory loops that make the local machine unusable unless reports preserve process names, versions, resource samples, log-loop signatures, and cleanup evidence.",
     patterns: [
-      /\b(Codex|VS Code|extension|app|desktop|renderer|helper|Code Helper|Electron|WindowServer|GPU process)\b.{0,180}\b(high|sustained|runaway|spikes?|burns?|consumes?|uses?)\b.{0,120}\b(CPU|GPU|memory|RAM|battery|thermal|heat|hot|overheat|usage|utilization)\b/i,
+      /\b(Codex|VS Code|extension|app|desktop|renderer|helper|Code Helper|Electron|WindowServer|GPU process)\b.{0,180}\b(sustained|runaway|spikes?|burns?|consumes?|uses?)\b.{0,120}\b(CPU|GPU|memory|RAM|battery|thermal|heat|hot|overheat|usage|utilization)\b/i,
       /\b(CPU|GPU)\b.{0,120}\b(usage|utilization|load)\b.{0,120}\b(9\d|100|1\d\d|2\d\d|3\d\d|400)%/i,
       /\b(Code Helper \(Renderer\)|Code Helper \(Plugin\)|Codex Helper Renderer|Codex app-server|syspolicyd|zygote|WindowServer).{0,180}\b(9\d|100|1\d\d|2\d\d|3\d\d)%/i,
       /\borphaned\b.{0,160}\b(shell[- ]snapshot|zsh|codex|native process|subprocess|helper|process)\b/i,

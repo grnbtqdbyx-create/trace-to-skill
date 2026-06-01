@@ -59,7 +59,7 @@ What it proves:
 Recommended CI surface:
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.96
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.97
   with:
     mode: all
     doctor-threshold: "85"
@@ -347,6 +347,19 @@ npx trace-to-skill codex-report ./runs --output openai-codex-context-visibility.
 This catches signals such as a missing visible context/token usage indicator, hidden context-window pressure display, missing tooltip near the input area, `/status` not being a replacement for passive context awareness, local session logs still containing context data, and users being unable to tell when to compact, start a new thread, reduce pasted context, or split work before context loss.
 
 Include Codex Desktop version, OS, surface, screenshot or short recording of the chat input area, whether the prior context/token indicator or tooltip was visible before the update, exact UI route where it disappeared, local session metadata showing context/window pressure if available, `/status` output if relevant, compaction timing, whether CLI/TUI still exposes a statusline, and how the missing indicator affects long-session decisions.
+
+## 18.2. Codex Remote Connection Evidence
+
+Use this when Codex Desktop remote SSH workspaces, Settings > Connections, remote app-server, tunnel, model list, or remote filesystem browsing fails.
+
+```bash
+npx trace-to-skill demo remote-connection
+npx trace-to-skill codex-report ./runs --output openai-codex-remote-connection.md
+```
+
+This catches signals such as `Remote Development in Codex Desktop App`, missing Settings > Connections, `[features].remote_connections = true`, mistaken `remote_control = true`, SSH hosts from `~/.ssh/config`, remote filesystem source-of-truth expectations, `local tunnel not ready`, stale remote Codex versions, `codex-server` restart evidence, `fs/getMetadata` timeouts while listing remote folders, ForwardAgent needs, and local-machine proxy expectations for remote hosts that cannot reach the Codex API directly.
+
+Include Codex Desktop version, remote Codex CLI/app-server version, local OS, remote OS/architecture, selected SSH host/path, whether the remote filesystem is the source of truth, exact tunnel/app-server/folder-listing/model-list/auth/proxy error, process evidence such as `ps -ef | rg 'codex app-server|openai.chatgpt.*/codex'` when available, and whether killing codex-server, reinstalling remote Codex, reconnecting, or trying a clean host changes the result.
 
 ## 19. Codex File Tree UI Evidence
 

@@ -1,10 +1,10 @@
 # trace-to-skill Demo
 
-Scenario: **Codex context or token usage indicator missing**
+Scenario: **Codex remote connection or SSH workspace failure**
 
-Desktop context or token usage indicators disappear, leaving long-session compaction pressure invisible.
+Desktop remote SSH workspaces, Settings > Connections, remote app-server, tunnel, or remote filesystem evidence breaks.
 
-Fixture: `fixtures/codex-context-visibility.md`
+Fixture: `fixtures/codex-remote-connection.md`
 
 This is a packaged public fixture, so you can try the project without collecting a private trace first.
 
@@ -14,7 +14,7 @@ This is a packaged public fixture, so you can try the project without collecting
 
 Score: **75/100**
 
-Likely failure class: **Codex context or token usage indicator missing (codex_context_visibility, high)**
+Likely failure class: **Codex remote connection or SSH workspace failure (codex_remote_connection, high)**
 
 Agent workflow needs clearer verification, instruction, or security hardening before broad reuse.
 
@@ -23,25 +23,25 @@ Agent workflow needs clearer verification, instruction, or security hardening be
 ```md
 ### What happened?
 
-trace-to-skill detected Codex context or token usage indicator missing (codex_context_visibility). Desktop users need passive context-pressure visibility during long coding sessions so they can decide when to compact, split a thread, reduce pasted context, or avoid context loss before the app forces compaction.
+trace-to-skill detected Codex remote connection or SSH workspace failure (codex_remote_connection). Remote-first developers need Codex Desktop to open SSH, server, VM, WSL, container, or cloud workspaces as the source of truth, with reliable remote file browsing, command execution, model availability, app-server health, and reconnect behavior.
 
 ### Detected failure class
 
-- codex_context_visibility: Codex context or token usage indicator missing (high)
+- codex_remote_connection: Codex remote connection or SSH workspace failure (high)
 
 ### Evidence
 
-#### Codex context or token usage indicator missing
-- fixtures/codex-context-visibility.md:5 - - Codex Desktop no longer shows a visible context/token usage indicator in the chat UI after an update.
-- fixtures/codex-context-visibility.md:6 - - Previously the app exposed context usage information, context-window pressure, or a tooltip near the input area.
-- fixtures/codex-context-visibility.md:8 - - `/status` is useful as an explicit command, but it is not a replacement for passive context awareness during long-running desktop threads.
-- fixtures/codex-context-visibility.md:9 - - The missing indicator affects professional coding workflows because users cannot tell when to compact, start a new thread, reduce pasted context, or split work before context loss.
-- fixtures/codex-context-visibility.md:10 - - A related report says the data exists in local session logs, but the app no longer exposes it passively.
-- fixtures/codex-context-visibility.md:15 - - Screenshot or short recording of the chat input area where the context indicator or tooltip used to appear.
+#### Codex remote connection or SSH workspace failure
+- fixtures/codex-remote-connection.md:5 - - Remote Development in Codex Desktop App is a high-demand workflow because many users work on SSH hosts, cloud instances, GPU machines, WSL boxes, containers, or remote Linux servers.
+- fixtures/codex-remote-connection.md:7 - - Users expect Settings > Connections to show SSH hosts from `~/.ssh/config` after enabling `[features] remote_connections = true`.
+- fixtures/codex-remote-connection.md:8 - - A common setup mistake is using `remote_control = true` instead of `remote_connections = true`, so the Connections subheading never appears in the Desktop app.
+- fixtures/codex-remote-connection.md:9 - - The local tunnel can fail with "local tunnel not ready" even when the SSH host is reachable.
+- fixtures/codex-remote-connection.md:10 - - Remote folder browsing can fail with `Unable to load folder contents: Timed out waiting for MCP response to fs/getMetadata while listing directories/files`.
+- fixtures/codex-remote-connection.md:12 - - Killing a stale `codex-server` or app-server on the remote host can force the Desktop app to reattach.
 
 ### Diagnostics to attach
 
-- When reporting Codex context-visibility regressions, capture Codex Desktop version, OS, surface, screenshot or short recording of the chat input area, whether the prior context/token indicator or tooltip was visible before the update, exact UI route where it disappeared, local session metadata showing context/window pressure if available, `/status` output if relevant, compaction timing, whether CLI/TUI still exposes a statusline, and how the missing indicator affects long-session decisions.
+- When reporting Codex remote connection failures, capture Codex Desktop version, remote Codex CLI/app-server version, local OS, remote OS/architecture, SSH target alias from `~/.ssh/config`, whether `[features].remote_connections = true` is set, Settings > Connections visibility, selected host/path, remote workspace path, whether the remote filesystem is the source of truth, exact tunnel/app-server error, codex-server pid and restart result, `ps -ef | rg 'codex app-server|openai.chatgpt.*/codex'` evidence if available, remote PATH/auth/proxy/API reachability, model list differences versus local, fs/getMetadata or folder listing errors, ForwardAgent/proxy requirements, and whether reconnect/resume or a clean host works.
 
 ### Privacy
 
@@ -50,23 +50,25 @@ trace-to-skill detected Codex context or token usage indicator missing (codex_co
 
 ## Findings
 
-### 1. Codex context or token usage indicator missing
+### 1. Codex remote connection or SSH workspace failure
 
 Severity: **high**
 
-Desktop users need passive context-pressure visibility during long coding sessions so they can decide when to compact, split a thread, reduce pasted context, or avoid context loss before the app forces compaction.
+Remote-first developers need Codex Desktop to open SSH, server, VM, WSL, container, or cloud workspaces as the source of truth, with reliable remote file browsing, command execution, model availability, app-server health, and reconnect behavior.
 
 Evidence:
-- `fixtures/codex-context-visibility.md:5` - Codex Desktop no longer shows a visible context/token usage indicator in the chat UI after an update.
-- `fixtures/codex-context-visibility.md:6` - Previously the app exposed context usage information, context-window pressure, or a tooltip near the input area.
-- `fixtures/codex-context-visibility.md:8` - `/status` is useful as an explicit command, but it is not a replacement for passive context awareness during long-running desktop threads.
-- `fixtures/codex-context-visibility.md:9` - The missing indicator affects professional coding workflows because users cannot tell when to compact, start a new thread, reduce pasted context, or split work before context loss.
-- `fixtures/codex-context-visibility.md:10` - A related report says the data exists in local session logs, but the app no longer exposes it passively.
-- `fixtures/codex-context-visibility.md:15` - Screenshot or short recording of the chat input area where the context indicator or tooltip used to appear.
+- `fixtures/codex-remote-connection.md:5` - Remote Development in Codex Desktop App is a high-demand workflow because many users work on SSH hosts, cloud instances, GPU machines, WSL boxes, containers, or remote Linux servers.
+- `fixtures/codex-remote-connection.md:7` - Users expect Settings > Connections to show SSH hosts from `~/.ssh/config` after enabling `[features] remote_connections = true`.
+- `fixtures/codex-remote-connection.md:8` - A common setup mistake is using `remote_control = true` instead of `remote_connections = true`, so the Connections subheading never appears in the Desktop app.
+- `fixtures/codex-remote-connection.md:9` - The local tunnel can fail with "local tunnel not ready" even when the SSH host is reachable.
+- `fixtures/codex-remote-connection.md:10` - Remote folder browsing can fail with `Unable to load folder contents: Timed out waiting for MCP response to fs/getMetadata while listing directories/files`.
+- `fixtures/codex-remote-connection.md:12` - Killing a stale `codex-server` or app-server on the remote host can force the Desktop app to reattach.
+- `fixtures/codex-remote-connection.md:13` - Some remote machines cannot directly access the Codex API, so reports need to mention proxy, local-machine request routing, or ForwardAgent SSH remote server requirements.
+- `fixtures/codex-remote-connection.md:22` - Exact local tunnel, app-server, codex-server, fs/getMetadata, folder listing, model list, auth, proxy, or API reachability error.
 
 Suggested rule:
 
-> When reporting Codex context-visibility regressions, capture Codex Desktop version, OS, surface, screenshot or short recording of the chat input area, whether the prior context/token indicator or tooltip was visible before the update, exact UI route where it disappeared, local session metadata showing context/window pressure if available, `/status` output if relevant, compaction timing, whether CLI/TUI still exposes a statusline, and how the missing indicator affects long-session decisions.
+> When reporting Codex remote connection failures, capture Codex Desktop version, remote Codex CLI/app-server version, local OS, remote OS/architecture, SSH target alias from `~/.ssh/config`, whether `[features].remote_connections = true` is set, Settings > Connections visibility, selected host/path, remote workspace path, whether the remote filesystem is the source of truth, exact tunnel/app-server error, codex-server pid and restart result, `ps -ef | rg 'codex app-server|openai.chatgpt.*/codex'` evidence if available, remote PATH/auth/proxy/API reachability, model list differences versus local, fs/getMetadata or folder listing errors, ForwardAgent/proxy requirements, and whether reconnect/resume or a clean host works.
 
 
 ## Reporter Notes
@@ -97,6 +99,7 @@ Suggested rule:
 - `terminal-output-integrity`: Terminal scrollback, streamed output, or transcript rendering drops, overwrites, truncates, or makes lines inaccessible.
 - `subagent-lifecycle`: Completed, closed, stale, or interrupted subagents diverge between UI, live registry, persisted state, quota, and parent discoverability.
 - `usage-bucket-confusion`: Usage popovers show 5h and weekly percentages without clear remaining/used, rolling/calendar, or account/workspace scope.
+- `context-visibility`: Desktop context or token usage indicators disappear, leaving long-session compaction pressure invisible.
 - `token-burn`: Usage drains from background polling, idle activity, compaction loops, retries, or cached-heavy turns.
 - `patch-overwrite`: `apply_patch` accepts `*** Add File` for an existing path, turning a create operation into a silent overwrite.
 - `sensitive-files`: Secrets, local credentials, production env files, or private databases enter agent context.
@@ -122,6 +125,7 @@ trace-to-skill demo terminal-output-integrity
 trace-to-skill demo subagent-lifecycle
 trace-to-skill demo usage-bucket-confusion
 trace-to-skill demo context-visibility
+trace-to-skill demo remote-connection
 trace-to-skill demo file-tree-ui
 trace-to-skill demo usage-reset-drift
 ```
