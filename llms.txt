@@ -82,6 +82,7 @@ failed agent run -> failure class -> evidence-backed AGENTS.md/SKILL.md suggesti
 ```bash
 npx trace-to-skill doctor .
 npx trace-to-skill demo
+npx trace-to-skill demo model-routing-mismatch
 npx trace-to-skill demo thinking-hang
 npx trace-to-skill demo clipboard-attachment
 npx trace-to-skill demo deeplink-launch
@@ -129,7 +130,7 @@ gh issue list --repo openai/codex --state all --limit 100 --json number,title,bo
 ## GitHub Action
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.94
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.95
   with:
     mode: all
     doctor-threshold: "85"
@@ -142,7 +143,7 @@ gh issue list --repo openai/codex --state all --limit 100 --json number,title,bo
 ## Weekly Codex Issue Radar
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.94
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.95
   with:
     mode: issue-map
     issue-map-repo: openai/codex

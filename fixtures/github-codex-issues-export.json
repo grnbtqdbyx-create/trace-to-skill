@@ -62,6 +62,45 @@
     "updatedAt": "2025-10-16T20:32:11Z"
   },
   {
+    "number": 11189,
+    "title": "GPT-5.3-Codex being routed to GPT-5.2",
+    "body": "Both config.toml and TUI are set for gpt-5.3-codex, but output and SSE captures show response.model is actually gpt-5.2-2025-12-11. The user selected GPT-5.3-Codex but is silently rerouted to GPT-5.2 with no fallback notice.",
+    "url": "https://github.com/openai/codex/issues/11189",
+    "labels": [
+      { "name": "bug" },
+      { "name": "CLI" }
+    ],
+    "commentsCount": 169,
+    "reactions": { "totalCount": 12 },
+    "updatedAt": "2026-05-05T22:11:18Z"
+  },
+  {
+    "number": 11561,
+    "title": "GPT-5.3-Codex being routed to GPT-5.2",
+    "body": "Set both config.toml and TUI to gpt-5.3-codex, run RUST_LOG=codex_tui::chatwidget=info,codex_api::sse::responses=trace codex, send a prompt, and log/codex-tui.log shows response.model is gpt-5.2-2025-12-11.",
+    "url": "https://github.com/openai/codex/issues/11561",
+    "labels": [
+      { "name": "bug" },
+      { "name": "CLI" }
+    ],
+    "commentsCount": 47,
+    "reactions": { "totalCount": 4 },
+    "updatedAt": "2026-03-03T15:08:52Z"
+  },
+  {
+    "number": 11842,
+    "title": "GPT-5.3-Codex being routed to GPT-5.2",
+    "body": "Although the CLI displays gpt-5.3-codex, inspecting the actual SSE response stream shows that the request is routed to gpt-5.2. There is no warning or fallback notice indicating a different model version is used internally.",
+    "url": "https://github.com/openai/codex/issues/11842",
+    "labels": [
+      { "name": "bug" },
+      { "name": "CLI" }
+    ],
+    "commentsCount": 15,
+    "reactions": { "totalCount": 2 },
+    "updatedAt": "2026-02-18T18:34:33Z"
+  },
+  {
     "number": 6465,
     "title": "MCP servers not detected in Codex VS Code extension but working in Codex CLI",
     "body": "MCP servers not detected in the VS Code extension or Desktop, but working in Codex CLI from ~/.codex/config.toml. tools/list is empty in one surface, project .codex/config.toml is ignored, and serverName metadata is missing.",

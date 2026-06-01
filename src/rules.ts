@@ -234,6 +234,23 @@ const RULES: RuleDefinition[] = [
     suggestedSkill: "codex-latest-turn-drift-triage"
   },
   {
+    kind: "codex_model_routing_mismatch",
+    severity: "high",
+    title: "Codex selected model differs from actual routed model",
+    why: "Silent model fallback, misrouting, or response.model mismatch makes Codex model access, benchmarks, billing expectations, and user trust hard to debug unless reports preserve both the selected model and the actual server-side model evidence.",
+    patterns: [
+      /\bGPT-?5\.3[- ]?Codex\b.{0,180}\b(routed|routes|routing|misrouted|being routed|silently rerouted|fallback|downgraded|downgrade)\b.{0,180}\bGPT-?5\.2\b/i,
+      /\bGPT-?5\.2\b.{0,180}\b(routed|routes|routing|misrouted|being routed|silently rerouted|fallback|downgraded|downgrade)\b.{0,180}\bGPT-?5\.3[- ]?Codex\b/i,
+      /\b(config\.toml|TUI|--model|model selector|selected model|Which model were you using)\b.{0,220}\bgpt-5\.3-codex\b.{0,260}\b(response\.model|SSE|response\.created|actual model|output|server-side|server side)\b.{0,220}\bgpt-5\.2(?:-\d{4}-\d{2}-\d{2})?\b/i,
+      /\b(response\.model|SSE event|response\.created|actual model|server-side model|server side model)\b.{0,220}\bgpt-5\.2(?:-\d{4}-\d{2}-\d{2})?\b.{0,260}\b(config\.toml|TUI|--model|selected model|gpt-5\.3-codex)\b/i,
+      /\b(RUST_LOG|codex_api::sse::responses|codex_tui::chatwidget|log\/codex-tui\.log)\b.{0,240}\b(response\.model|response\.created|gpt-5\.2|gpt-5\.3-codex|misrouted|routed)\b/i,
+      /\b(no warning|no fallback notice|silent(?:ly)? rerout(?:e|ed|ing)|transparency concerns?)\b.{0,220}\b(model|gpt-5\.3|gpt-5\.2|Codex)\b/i
+    ],
+    suggestedRule:
+      "When reporting Codex model-routing mismatches, capture the Codex app/CLI/extension version, subscription/workspace, selected model from config.toml, TUI, command flag, or UI, actual server-side model from SSE `response.created` / `response.model`, the exact `RUST_LOG` or trace command used, timestamp, account or verification state without secrets, whether API and Codex routes differ, whether a warning/fallback notice appeared, and a minimal one-prompt reproduction with redacted logs.",
+    suggestedSkill: "codex-model-routing-triage"
+  },
+  {
     kind: "codex_latency_regression",
     severity: "high",
     title: "Codex model or runtime latency regression",

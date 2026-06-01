@@ -59,7 +59,7 @@ What it proves:
 Recommended CI surface:
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.94
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.95
   with:
     mode: all
     doctor-threshold: "85"
@@ -197,6 +197,19 @@ npx trace-to-skill codex-report ./runs --output openai-codex-context-fork-bloat.
 This catches signals such as forked conversations carrying the full parent transcript twice, repeated parent turns after a fork boundary, `input_tokens` or `cached_input_tokens` jumping after a short follow-up, `prompt_cache_key` changing despite mostly identical inherited content, cache hit rate drops, duplicated tool transcript blocks, and `fork_context` subagent history being duplicated into child context.
 
 Include Codex app/CLI/extension version, surface, model, fork source thread id, forked thread id, fork action timestamp, fork boundary marker, `input_tokens` and `cached_input_tokens` before and after the fork, `prompt_cache_key` before and after, cache hit rate, duplicated parent-turn or tool-transcript examples with line ids, whether new files were read before the token jump, compaction state, subagent or `fork_context` history, minimal reproduction steps, and whether a fresh thread or non-fork continuation avoids the bloat.
+
+## 9.1. Codex Model Routing Mismatch Evidence
+
+Use this when Codex shows one selected model in config, TUI, CLI flags, or UI, but server-side response evidence shows a different model was actually used.
+
+```bash
+npx trace-to-skill demo model-routing-mismatch
+npx trace-to-skill codex-report ./runs --output openai-codex-model-routing.md
+```
+
+This catches signals such as `gpt-5.3-codex` being routed to `gpt-5.2`, `response.created` / `response.model` mismatch in SSE logs, `RUST_LOG=codex_api::sse::responses=trace` reproduction commands, silent fallback, no warning, and no fallback notice.
+
+Include the Codex app/CLI/extension version, subscription/workspace, selected model from `config.toml`, TUI, command flag, or UI, actual server-side model from SSE `response.created` / `response.model`, the exact redacted `RUST_LOG` command, timestamp, account or verification state without secrets, whether API and Codex routes differ, whether a warning/fallback notice appeared, and a minimal one-prompt reproduction.
 
 ## 10. Codex Subagent Prompt Leakage Evidence
 

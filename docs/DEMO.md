@@ -1,10 +1,10 @@
 # trace-to-skill Demo
 
-Scenario: **Codex sign-in and account verification failure**
+Scenario: **Codex selected model differs from actual routed model**
 
-Phone verification, ChatGPT sign-in account routing, or extension chat initialization blocks Codex before a usable session starts.
+Codex shows one selected model while SSE response evidence shows a different server-side model was used.
 
-Fixture: `fixtures/codex-auth-verification.md`
+Fixture: `fixtures/codex-model-routing-mismatch.md`
 
 This is a packaged public fixture, so you can try the project without collecting a private trace first.
 
@@ -14,7 +14,7 @@ This is a packaged public fixture, so you can try the project without collecting
 
 Score: **75/100**
 
-Likely failure class: **Codex sign-in or account verification failure (codex_auth_verification, high)**
+Likely failure class: **Codex selected model differs from actual routed model (codex_model_routing_mismatch, high)**
 
 Agent workflow needs clearer verification, instruction, or security hardening before broad reuse.
 
@@ -23,24 +23,24 @@ Agent workflow needs clearer verification, instruction, or security hardening be
 ```md
 ### What happened?
 
-trace-to-skill detected Codex sign-in or account verification failure (codex_auth_verification). Codex first-party sign-in, phone verification, account-type routing, and extension chat initialization failures block users before they can produce useful debugging traces; reports need account surface and verification evidence without exposing tokens or phone numbers.
+trace-to-skill detected Codex selected model differs from actual routed model (codex_model_routing_mismatch). Silent model fallback, misrouting, or response.model mismatch makes Codex model access, benchmarks, billing expectations, and user trust hard to debug unless reports preserve both the selected model and the actual server-side model evidence.
 
 ### Detected failure class
 
-- codex_auth_verification: Codex sign-in or account verification failure (high)
+- codex_model_routing_mismatch: Codex selected model differs from actual routed model (high)
 
 ### Evidence
 
-#### Codex sign-in or account verification failure
-- fixtures/codex-auth-verification.md:5 - - Phone number verification doesn't work after logging out on one device and signing in on another device with SSO.
-- fixtures/codex-auth-verification.md:6 - - The Codex sign-in screen asks for phone verification even though the ChatGPT account normally uses Google or Apple SSO.
-- fixtures/codex-auth-verification.md:7 - - The SMS verification code is not received, shows `invalid_phone_number`, or the user gets a phone call from random numbers instead of a predictable verification code.
-- fixtures/codex-auth-verification.md:8 - - "Sign in With ChatGPT" needs to be robust across Plus, Pro, Teams, Enterprise, personal workspace, and organization-verified account types.
-- fixtures/codex-auth-verification.md:10 - - In the VS Code extension, a new chat shows "Error starting conversation" while initializing a chat after sign-in.
+#### Codex selected model differs from actual routed model
+- fixtures/codex-model-routing-mismatch.md:5 - - GPT-5.3-Codex is being routed to GPT-5.2.
+- fixtures/codex-model-routing-mismatch.md:6 - - Both `config.toml` and the TUI are set to `gpt-5.3-codex`, but SSE captures show the actual `response.model` is `gpt-5.2-2025-12-11`.
+- fixtures/codex-model-routing-mismatch.md:7 - - Running `RUST_LOG='codex_tui::chatwidget=info,codex_api::sse::responses=trace' codex` and sending a prompt shows `response.created` with `response.model=gpt-5.2-2025-12-11`.
+- fixtures/codex-model-routing-mismatch.md:9 - - The user sees no warning or fallback notice that a different model version is being used internally.
+- fixtures/codex-model-routing-mismatch.md:10 - - Some reports mention ChatGPT Pro, WSL, macOS, recent CLI versions, and verification briefly restoring GPT-5.3-Codex before silently rerouting back to GPT-5.2.
 
 ### Diagnostics to attach
 
-- When reporting Codex sign-in or account-verification failures, capture the Codex app/CLI/extension version, surface, OS, account type without secrets, workspace or organization context, SSO provider, whether the flow is ChatGPT sign-in, phone/SMS/OTP verification, or extension chat initialization, exact redacted error text, timestamps, whether another device/browser/account works, logout/login attempts, and screenshots with phone numbers, tokens, and email addresses redacted.
+- When reporting Codex model-routing mismatches, capture the Codex app/CLI/extension version, subscription/workspace, selected model from config.toml, TUI, command flag, or UI, actual server-side model from SSE `response.created` / `response.model`, the exact `RUST_LOG` or trace command used, timestamp, account or verification state without secrets, whether API and Codex routes differ, whether a warning/fallback notice appeared, and a minimal one-prompt reproduction with redacted logs.
 
 ### Privacy
 
@@ -49,22 +49,22 @@ trace-to-skill detected Codex sign-in or account verification failure (codex_aut
 
 ## Findings
 
-### 1. Codex sign-in or account verification failure
+### 1. Codex selected model differs from actual routed model
 
 Severity: **high**
 
-Codex first-party sign-in, phone verification, account-type routing, and extension chat initialization failures block users before they can produce useful debugging traces; reports need account surface and verification evidence without exposing tokens or phone numbers.
+Silent model fallback, misrouting, or response.model mismatch makes Codex model access, benchmarks, billing expectations, and user trust hard to debug unless reports preserve both the selected model and the actual server-side model evidence.
 
 Evidence:
-- `fixtures/codex-auth-verification.md:5` - Phone number verification doesn't work after logging out on one device and signing in on another device with SSO.
-- `fixtures/codex-auth-verification.md:6` - The Codex sign-in screen asks for phone verification even though the ChatGPT account normally uses Google or Apple SSO.
-- `fixtures/codex-auth-verification.md:7` - The SMS verification code is not received, shows `invalid_phone_number`, or the user gets a phone call from random numbers instead of a predictable verification code.
-- `fixtures/codex-auth-verification.md:8` - "Sign in With ChatGPT" needs to be robust across Plus, Pro, Teams, Enterprise, personal workspace, and organization-verified account types.
-- `fixtures/codex-auth-verification.md:10` - In the VS Code extension, a new chat shows "Error starting conversation" while initializing a chat after sign-in.
+- `fixtures/codex-model-routing-mismatch.md:5` - GPT-5.3-Codex is being routed to GPT-5.2.
+- `fixtures/codex-model-routing-mismatch.md:6` - Both `config.toml` and the TUI are set to `gpt-5.3-codex`, but SSE captures show the actual `response.model` is `gpt-5.2-2025-12-11`.
+- `fixtures/codex-model-routing-mismatch.md:7` - Running `RUST_LOG='codex_tui::chatwidget=info,codex_api::sse::responses=trace' codex` and sending a prompt shows `response.created` with `response.model=gpt-5.2-2025-12-11`.
+- `fixtures/codex-model-routing-mismatch.md:9` - The user sees no warning or fallback notice that a different model version is being used internally.
+- `fixtures/codex-model-routing-mismatch.md:10` - Some reports mention ChatGPT Pro, WSL, macOS, recent CLI versions, and verification briefly restoring GPT-5.3-Codex before silently rerouting back to GPT-5.2.
 
 Suggested rule:
 
-> When reporting Codex sign-in or account-verification failures, capture the Codex app/CLI/extension version, surface, OS, account type without secrets, workspace or organization context, SSO provider, whether the flow is ChatGPT sign-in, phone/SMS/OTP verification, or extension chat initialization, exact redacted error text, timestamps, whether another device/browser/account works, logout/login attempts, and screenshots with phone numbers, tokens, and email addresses redacted.
+> When reporting Codex model-routing mismatches, capture the Codex app/CLI/extension version, subscription/workspace, selected model from config.toml, TUI, command flag, or UI, actual server-side model from SSE `response.created` / `response.model`, the exact `RUST_LOG` or trace command used, timestamp, account or verification state without secrets, whether API and Codex routes differ, whether a warning/fallback notice appeared, and a minimal one-prompt reproduction with redacted logs.
 
 
 ## Reporter Notes
@@ -87,6 +87,7 @@ Suggested rule:
 - `clipboard-attachment`: Copy as Markdown, long-paste conversion, or generated Pasted text.txt attachments break prompt and report workflows.
 - `deeplink-launch`: OAuth callbacks, notification clicks, mobile links, or `codex app <path>` external activation fail to route into Codex.
 - `connector-auth-cache`: App connectors keep stale `link_*` auth or discovery metadata after reauth-required responses.
+- `auth-verification`: Phone verification, ChatGPT sign-in account routing, or extension chat initialization blocks Codex before a usable session starts.
 - `mcp-discovery-mismatch`: MCP servers work in CLI or one config scope but are absent in Desktop, VS Code, WSL, or project-local sessions.
 - `mcp-streamable-http`: Streamable HTTP or SSE MCP servers pass initialize or tools/list but fail parsing, handshakes, auth gating, stale sessions, or reconnects.
 - `hooks-runtime`: Hooks duplicate, stop firing, warn about stale config, skip surfaces, or become hard to manage in Desktop settings.

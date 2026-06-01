@@ -32,6 +32,14 @@ Common signals include `responds to an earlier message`, `ignoring my latest mes
 
 The fix is to capture app/CLI/extension version, model and reasoning effort, context-window percent or token counts, compaction timing, the exact latest user request, the stale earlier request or response it answered instead, thread or feedback id, whether resending the same message fixes it, and any raw internal tool payload leaked into the chat UI.
 
+## Codex Selected Model Differs From Actual Routed Model
+
+Codex shows one selected model in config, TUI, CLI flags, or UI, but the actual server-side response uses a different model. This is different from generic latency: the key evidence is a selected-model versus `response.model` mismatch or silent fallback.
+
+Common signals include `GPT-5.3-Codex being routed to GPT-5.2`, `config.toml` and TUI set to `gpt-5.3-codex` while SSE `response.created` shows `response.model=gpt-5.2-2025-12-11`, `RUST_LOG=codex_api::sse::responses=trace`, `codex exec --model gpt-5.3-codex`, no warning, no fallback notice, and verification briefly restoring access before a silent reroute.
+
+The fix is to capture Codex app/CLI/extension version, subscription/workspace, selected model from `config.toml`, TUI, command flag, or UI, actual server-side model from SSE `response.created` / `response.model`, the exact `RUST_LOG` or trace command used, timestamp, account or verification state without secrets, whether API and Codex routes differ, whether a warning/fallback notice appeared, and a minimal one-prompt reproduction with redacted logs.
+
 ## Codex Latency Regression
 
 Codex can regress from fast interactive work into long pre-first-token stalls, extended thinking, slow read/search orchestration, compaction delays, or model routing that makes a fast mode feel like a standard or higher-reasoning mode.

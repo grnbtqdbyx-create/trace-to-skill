@@ -55,6 +55,12 @@ const DEMO_SCENARIOS: DemoScenario[] = [
     description: "Fast mode feels like Standard, with long thinking, search, read, or compaction stalls."
   },
   {
+    id: "model-routing-mismatch",
+    title: "Codex selected model differs from actual routed model",
+    fixture: "fixtures/codex-model-routing-mismatch.md",
+    description: "Codex shows one selected model while SSE response evidence shows a different server-side model was used."
+  },
+  {
     id: "thinking-hang",
     title: "Codex thinking and stream hang",
     fixture: "fixtures/codex-thinking-hang.md",

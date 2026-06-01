@@ -83,6 +83,12 @@ const BENCHMARK_CASES: BenchmarkCaseDefinition[] = [
     expectedKinds: ["codex_latest_turn_drift", "weak_evidence"]
   },
   {
+    id: "codex-model-routing-mismatch",
+    title: "Codex selected model differs from actual routed model",
+    fixture: "fixtures/codex-model-routing-mismatch.md",
+    expectedKinds: ["codex_model_routing_mismatch", "weak_evidence"]
+  },
+  {
     id: "codex-latency-regression",
     title: "Codex model and runtime latency regression",
     fixture: "fixtures/codex-latency-regression.md",

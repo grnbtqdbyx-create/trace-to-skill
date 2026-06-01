@@ -1,10 +1,10 @@
 # GitHub Issue Pain Map
 
-Generated: 2026-06-01T02:48:00.507Z
+Generated: 2026-06-01T02:57:24.901Z
 
 Issues analyzed: **46**
-Matched issues: **18**
-Unmatched issues: **28**
+Matched issues: **19**
+Unmatched issues: **27**
 
 This report maps GitHub issues onto deterministic `trace-to-skill` failure classes. Fetch a repository directly with `--repo`, or export issues with `gh issue list` / `gh search issues` and pass the JSON file.
 
@@ -20,17 +20,17 @@ gh issue list --repo openai/codex --state all --limit 100 --json number,title,bo
 | Priority | Kind | Severity | Issues | Comments | Reactions | Example |
 | ---: | --- | --- | ---: | ---: | ---: | --- |
 | 2438 | `codex_token_burn` | high | 4 | 1151 | 620 | [#14593 Burning tokens very fast](https://github.com/openai/codex/issues/14593) |
-| 2221 | `weak_evidence` | medium | 46 | 4755 | 7792 | [#14593 Burning tokens very fast](https://github.com/openai/codex/issues/14593) |
+| 2221 | `weak_evidence` | medium | 46 | 4755 | 7793 | [#14593 Burning tokens very fast](https://github.com/openai/codex/issues/14593) |
 | 884 | `sensitive_file_access` | high | 1 | 75 | 396 | [#2847 A way to exclude sensitive files](https://github.com/openai/codex/issues/2847) |
 | 805 | `codex_auth_verification` | high | 3 | 436 | 166 | [#20161 Phone number verification doesn't work](https://github.com/openai/codex/issues/20161) |
 | 442 | `codex_tool_call_integrity` | high | 1 | 61 | 182 | [#2998 IDE-integrated diff / approval](https://github.com/openai/codex/issues/2998) |
 | 376 | `codex_remote_compact` | high | 2 | 147 | 101 | [#14860 Error running remote compact task](https://github.com/openai/codex/issues/14860) |
 | 376 | `context_compaction` | high | 2 | 147 | 101 | [#14860 Error running remote compact task](https://github.com/openai/codex/issues/14860) |
 | 351 | `codex_terminal_output_integrity` | high | 1 | 66 | 134 | [#2558 Codex client output truncated when scrolling in Zellij](https://github.com/openai/codex/issues/2558) |
+| 324 | `codex_model_routing_mismatch` | high | 1 | 169 | 69 | [#11189 GPT-5.3-Codex being routed to GPT-5.2](https://github.com/openai/codex/issues/11189) |
 | 261 | `premature_completion` | high | 1 | 60 | 92 | [#2448 Codex CLI: Plus users hitting usage limits extremely quickly compared to competitors](https://github.com/openai/codex/issues/2448) |
 | 247 | `codex_connectivity` | high | 2 | 192 | 14 | [#12764 The codex cli giving: 401 unauthorized](https://github.com/openai/codex/issues/12764) |
 | 181 | `codex_latest_turn_drift` | high | 1 | 58 | 53 | [#8648 Codex replies to earlier messages instead of latest one in conversations](https://github.com/openai/codex/issues/8648) |
-| 168 | `codex_resource_leak` | high | 1 | 97 | 27 | [#10432 High GPU usage (70–90%) on macOS with Codex app](https://github.com/openai/codex/issues/10432) |
 
 ## Maintainer Roadmap
 
@@ -103,7 +103,6 @@ Evidence rule prompts:
 
 - [#10410 Codex Desktop App: macOS Intel (x86_64) support](https://github.com/openai/codex/issues/10410) (190 comments; labels: enhancement, app)
 - [#10450 Remote Development in Codex Desktop App](https://github.com/openai/codex/issues/10450) (176 comments; labels: enhancement, app)
-- [#11189 GPT-5.3-Codex being routed to GPT-5.2](https://github.com/openai/codex/issues/11189) (169 comments; labels: bug, CLI)
 - [#23794 Codex Desktop no longer shows visible context/token usage indicator](https://github.com/openai/codex/issues/23794) (160 comments; labels: bug, context, app)
 - [#14048 All models — Codex CLI hangs indefinitely on all prompts, no response generated](https://github.com/openai/codex/issues/14048) (131 comments; labels: bug, agent)
 - [#2604 Subagent Support](https://github.com/openai/codex/issues/2604) (103 comments; labels: enhancement, subagent)
@@ -113,3 +112,4 @@ Evidence rule prompts:
 - [#2796 BUG: VSCode IDE Plugin on SSH Connection: "Failed to load tasks."](https://github.com/openai/codex/issues/2796) (71 comments; labels: bug, extension)
 - [#16231 High CPU usage on macOS after updating Codex in VS Code extension to 26.325.31654](https://github.com/openai/codex/issues/16231) (71 comments; labels: bug, extension, regression, performance)
 - [#7156 Codex hangs during cli command execution](https://github.com/openai/codex/issues/7156) (70 comments; labels: bug, CLI)
+- [#4313 Extension for JetBrains IDEs (PyCharm, IntelliJ, etc.)](https://github.com/openai/codex/issues/4313) (70 comments; labels: enhancement)
