@@ -1,10 +1,10 @@
 # GitHub Issue Pain Map
 
-Generated: 2026-06-01T02:37:07.997Z
+Generated: 2026-06-01T02:48:00.507Z
 
 Issues analyzed: **46**
-Matched issues: **15**
-Unmatched issues: **31**
+Matched issues: **18**
+Unmatched issues: **28**
 
 This report maps GitHub issues onto deterministic `trace-to-skill` failure classes. Fetch a repository directly with `--repo`, or export issues with `gh issue list` / `gh search issues` and pass the JSON file.
 
@@ -22,6 +22,7 @@ gh issue list --repo openai/codex --state all --limit 100 --json number,title,bo
 | 2438 | `codex_token_burn` | high | 4 | 1151 | 620 | [#14593 Burning tokens very fast](https://github.com/openai/codex/issues/14593) |
 | 2221 | `weak_evidence` | medium | 46 | 4755 | 7792 | [#14593 Burning tokens very fast](https://github.com/openai/codex/issues/14593) |
 | 884 | `sensitive_file_access` | high | 1 | 75 | 396 | [#2847 A way to exclude sensitive files](https://github.com/openai/codex/issues/2847) |
+| 805 | `codex_auth_verification` | high | 3 | 436 | 166 | [#20161 Phone number verification doesn't work](https://github.com/openai/codex/issues/20161) |
 | 442 | `codex_tool_call_integrity` | high | 1 | 61 | 182 | [#2998 IDE-integrated diff / approval](https://github.com/openai/codex/issues/2998) |
 | 376 | `codex_remote_compact` | high | 2 | 147 | 101 | [#14860 Error running remote compact task](https://github.com/openai/codex/issues/14860) |
 | 376 | `context_compaction` | high | 2 | 147 | 101 | [#14860 Error running remote compact task](https://github.com/openai/codex/issues/14860) |
@@ -30,7 +31,6 @@ gh issue list --repo openai/codex --state all --limit 100 --json number,title,bo
 | 247 | `codex_connectivity` | high | 2 | 192 | 14 | [#12764 The codex cli giving: 401 unauthorized](https://github.com/openai/codex/issues/12764) |
 | 181 | `codex_latest_turn_drift` | high | 1 | 58 | 53 | [#8648 Codex replies to earlier messages instead of latest one in conversations](https://github.com/openai/codex/issues/8648) |
 | 168 | `codex_resource_leak` | high | 1 | 97 | 27 | [#10432 High GPU usage (70–90%) on macOS with Codex app](https://github.com/openai/codex/issues/10432) |
-| 128 | `codex_mcp_discovery_mismatch` | high | 1 | 55 | 28 | [#6465 MCP servers not detected in Codex VS Code extension (but working in Codex CLI)](https://github.com/openai/codex/issues/6465) |
 
 ## Maintainer Roadmap
 
@@ -38,9 +38,9 @@ gh issue list --repo openai/codex --state all --limit 100 --json number,title,bo
 | ---: | --- | --- | --- |
 | 1 | Usage evidence fixture and support-ready token report | 4 issue(s), 1151 comment(s), severity high; top signal: codex_token_burn. | `trace-to-skill usage-evidence ./usage-notes.md --output usage-evidence.md` |
 | 2 | Privacy/safety guardrail and redacted support bundle | 1 issue(s), 75 comment(s), severity high; top signal: sensitive_file_access. | `trace-to-skill diagnostics-bundle ~/.codex --output codex-diagnostics` |
-| 3 | Patch safety fixture and pre-agent checkpoint workflow | 1 issue(s), 61 comment(s), severity high; top signal: codex_tool_call_integrity. | `trace-to-skill checkpoint . --output .trace-to-skill/checkpoints/before-codex` |
-| 4 | Compaction/session regression fixture and Codex issue report | 2 issue(s), 147 comment(s), severity high; top signal: codex_remote_compact. | `trace-to-skill codex-report ./runs --output openai-codex-issue.md` |
-| 5 | Compaction/session regression fixture and Codex issue report | 2 issue(s), 147 comment(s), severity high; top signal: context_compaction. | `trace-to-skill codex-report ./runs --output openai-codex-issue.md` |
+| 3 | Auth verification fixture and login support report | 3 issue(s), 436 comment(s), severity high; top signal: codex_auth_verification. | `trace-to-skill codex-report ./runs --output openai-codex-auth-issue.md` |
+| 4 | Patch safety fixture and pre-agent checkpoint workflow | 1 issue(s), 61 comment(s), severity high; top signal: codex_tool_call_integrity. | `trace-to-skill checkpoint . --output .trace-to-skill/checkpoints/before-codex` |
+| 5 | Compaction/session regression fixture and Codex issue report | 2 issue(s), 147 comment(s), severity high; top signal: codex_remote_compact. | `trace-to-skill codex-report ./runs --output openai-codex-issue.md` |
 
 ## Suggested Next Actions
 
@@ -66,6 +66,18 @@ Example issues:
 Evidence rule prompts:
 - Before running an agent, exclude sensitive files such as .env, private keys, package auth files, cloud credentials, local databases, and production secret manifests; share only minimal redacted excerpts when maintainer-approved.
 
+### codex_auth_verification
+
+Priority score: 805. 3 issue(s), 436 comment(s).
+
+Example issues:
+- [#20161 Phone number verification doesn't work](https://github.com/openai/codex/issues/20161) (177 comments; labels: bug, auth)
+- [#1243 "Sign in With ChatGPT" functionality needs to be robust against all account types](https://github.com/openai/codex/issues/1243) (169 comments; labels: none)
+- [#2841 “Error starting conversation” in new Codex VS Code extension when initializing a chat](https://github.com/openai/codex/issues/2841) (90 comments; labels: bug, windows-os, extension)
+
+Evidence rule prompts:
+- When reporting Codex sign-in or account-verification failures, capture the Codex app/CLI/extension version, surface, OS, account type without secrets, workspace or organization context, SSO provider, whether the flow is ChatGPT sign-in, phone/SMS/OTP verification, or extension chat initialization, exact redacted error text, timestamps, whether another device/browser/account works, logout/login attempts, and screenshots with phone numbers, tokens, and email addresses redacted.
+
 ### codex_tool_call_integrity
 
 Priority score: 442. 1 issue(s), 61 comment(s).
@@ -87,28 +99,17 @@ Example issues:
 Evidence rule prompts:
 - When reporting Codex remote compact failures, capture app/CLI/extension version, OS, model and reasoning/speed mode, provider config without secrets, exact /compact or auto-compact error, `responses/compact` endpoint shape, timeout values such as tcp_user_timeout or stream_idle_timeout_ms, context/token level before compaction, whether lowering reasoning/speed changes behavior, whether local fallback or a new session recovers, and related thread/feedback ids.
 
-### context_compaction
-
-Priority score: 376. 2 issue(s), 147 comment(s).
-
-Example issues:
-- [#14860 Error running remote compact task](https://github.com/openai/codex/issues/14860) (90 comments; labels: bug, context)
-- [#9544 Error running remote compact task: stream disconnected before completion](https://github.com/openai/codex/issues/9544) (57 comments; labels: bug, context)
-
-Evidence rule prompts:
-- When Codex compaction fails, capture the compact error, model/app version, thread state, and whether the session is recoverable before continuing or reporting success.
-
 ## Unmatched Issues
 
 - [#10410 Codex Desktop App: macOS Intel (x86_64) support](https://github.com/openai/codex/issues/10410) (190 comments; labels: enhancement, app)
-- [#20161 Phone number verification doesn't work](https://github.com/openai/codex/issues/20161) (177 comments; labels: bug, auth)
 - [#10450 Remote Development in Codex Desktop App](https://github.com/openai/codex/issues/10450) (176 comments; labels: enhancement, app)
-- [#1243 "Sign in With ChatGPT" functionality needs to be robust against all account types](https://github.com/openai/codex/issues/1243) (169 comments; labels: none)
 - [#11189 GPT-5.3-Codex being routed to GPT-5.2](https://github.com/openai/codex/issues/11189) (169 comments; labels: bug, CLI)
 - [#23794 Codex Desktop no longer shows visible context/token usage indicator](https://github.com/openai/codex/issues/23794) (160 comments; labels: bug, context, app)
 - [#14048 All models — Codex CLI hangs indefinitely on all prompts, no response generated](https://github.com/openai/codex/issues/14048) (131 comments; labels: bug, agent)
 - [#2604 Subagent Support](https://github.com/openai/codex/issues/2604) (103 comments; labels: enhancement, subagent)
-- [#2841 “Error starting conversation” in new Codex VS Code extension when initializing a chat](https://github.com/openai/codex/issues/2841) (90 comments; labels: bug, windows-os, extension)
 - [#12564 Allow renaming task/thread titles to improve history navigation](https://github.com/openai/codex/issues/12564) (77 comments; labels: enhancement, extension)
 - [#2860 Unusable on Windows due to permission ask for every shell command](https://github.com/openai/codex/issues/2860) (77 comments; labels: bug, windows-os)
 - [#2109 Event Hooks](https://github.com/openai/codex/issues/2109) (76 comments; labels: enhancement, hooks)
+- [#2796 BUG: VSCode IDE Plugin on SSH Connection: "Failed to load tasks."](https://github.com/openai/codex/issues/2796) (71 comments; labels: bug, extension)
+- [#16231 High CPU usage on macOS after updating Codex in VS Code extension to 26.325.31654](https://github.com/openai/codex/issues/16231) (71 comments; labels: bug, extension, regression, performance)
+- [#7156 Codex hangs during cli command execution](https://github.com/openai/codex/issues/7156) (70 comments; labels: bug, CLI)

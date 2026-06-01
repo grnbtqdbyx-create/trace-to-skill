@@ -1,10 +1,10 @@
 # trace-to-skill Demo
 
-Scenario: **Codex subagent lifecycle**
+Scenario: **Codex sign-in and account verification failure**
 
-Completed, closed, stale, or interrupted subagents diverge between UI, live registry, persisted state, quota, and parent discoverability.
+Phone verification, ChatGPT sign-in account routing, or extension chat initialization blocks Codex before a usable session starts.
 
-Fixture: `fixtures/codex-subagent-lifecycle.md`
+Fixture: `fixtures/codex-auth-verification.md`
 
 This is a packaged public fixture, so you can try the project without collecting a private trace first.
 
@@ -14,7 +14,7 @@ This is a packaged public fixture, so you can try the project without collecting
 
 Score: **75/100**
 
-Likely failure class: **Codex subagent lifecycle or state reconciliation failure (codex_subagent_lifecycle, high)**
+Likely failure class: **Codex sign-in or account verification failure (codex_auth_verification, high)**
 
 Agent workflow needs clearer verification, instruction, or security hardening before broad reuse.
 
@@ -23,25 +23,24 @@ Agent workflow needs clearer verification, instruction, or security hardening be
 ```md
 ### What happened?
 
-trace-to-skill detected Codex subagent lifecycle or state reconciliation failure (codex_subagent_lifecycle). When completed, closed, stale, or interrupted subagents remain visible, keep quota slots, lose parent discoverability, or diverge between UI, live registry, and persisted spawn-edge state, long-running Codex sessions become hard to trust or recover.
+trace-to-skill detected Codex sign-in or account verification failure (codex_auth_verification). Codex first-party sign-in, phone verification, account-type routing, and extension chat initialization failures block users before they can produce useful debugging traces; reports need account surface and verification evidence without exposing tokens or phone numbers.
 
 ### Detected failure class
 
-- codex_subagent_lifecycle: Codex subagent lifecycle or state reconciliation failure (high)
+- codex_auth_verification: Codex sign-in or account verification failure (high)
 
 ### Evidence
 
-#### Codex subagent lifecycle or state reconciliation failure
-- fixtures/codex-subagent-lifecycle.md:16 - Completed or closed subagents remain visible in the Subagents panel.
-- fixtures/codex-subagent-lifecycle.md:17 - The app shows stale subagent cards after close/readback reports no live agent handle.
-- fixtures/codex-subagent-lifecycle.md:18 - The visible subagent count grows very large; the panel can show Show 67 more or 100+ stale entries.
-- fixtures/codex-subagent-lifecycle.md:20 - It is unclear which subagents are active versus stale UI/cache entries.
-- fixtures/codex-subagent-lifecycle.md:27 - thread_spawn_edges status count: closed=549, open=0
-- fixtures/codex-subagent-lifecycle.md:28 - After restarting Codex Desktop multiple times, the Subagents panel still visually shows stale subagent cards.
+#### Codex sign-in or account verification failure
+- fixtures/codex-auth-verification.md:5 - - Phone number verification doesn't work after logging out on one device and signing in on another device with SSO.
+- fixtures/codex-auth-verification.md:6 - - The Codex sign-in screen asks for phone verification even though the ChatGPT account normally uses Google or Apple SSO.
+- fixtures/codex-auth-verification.md:7 - - The SMS verification code is not received, shows `invalid_phone_number`, or the user gets a phone call from random numbers instead of a predictable verification code.
+- fixtures/codex-auth-verification.md:8 - - "Sign in With ChatGPT" needs to be robust across Plus, Pro, Teams, Enterprise, personal workspace, and organization-verified account types.
+- fixtures/codex-auth-verification.md:10 - - In the VS Code extension, a new chat shows "Error starting conversation" while initializing a chat after sign-in.
 
 ### Diagnostics to attach
 
-- When reporting Codex subagent lifecycle failures, capture Codex app/CLI/extension version, OS, surface, model, subscription/workspace, root thread id, subagent ids/nicknames/roles, spawn/close/list commands or UI actions, close_agent results, list_agents or /agents output, thread_spawn_edges status counts, agent registry or max_threads/quota evidence, recent-list/sidebar behavior, whether child threads are archived or shown as top-level conversations, last-progress/heartbeat or halt reason, MCP server state for subagents, compaction/resume timing, screenshot or redacted UI state, whether restart/reload/new thread clears it, and whether stale agents are UI-only or still block new spawns.
+- When reporting Codex sign-in or account-verification failures, capture the Codex app/CLI/extension version, surface, OS, account type without secrets, workspace or organization context, SSO provider, whether the flow is ChatGPT sign-in, phone/SMS/OTP verification, or extension chat initialization, exact redacted error text, timestamps, whether another device/browser/account works, logout/login attempts, and screenshots with phone numbers, tokens, and email addresses redacted.
 
 ### Privacy
 
@@ -50,25 +49,22 @@ trace-to-skill detected Codex subagent lifecycle or state reconciliation failure
 
 ## Findings
 
-### 1. Codex subagent lifecycle or state reconciliation failure
+### 1. Codex sign-in or account verification failure
 
 Severity: **high**
 
-When completed, closed, stale, or interrupted subagents remain visible, keep quota slots, lose parent discoverability, or diverge between UI, live registry, and persisted spawn-edge state, long-running Codex sessions become hard to trust or recover.
+Codex first-party sign-in, phone verification, account-type routing, and extension chat initialization failures block users before they can produce useful debugging traces; reports need account surface and verification evidence without exposing tokens or phone numbers.
 
 Evidence:
-- `fixtures/codex-subagent-lifecycle.md:16` Completed or closed subagents remain visible in the Subagents panel.
-- `fixtures/codex-subagent-lifecycle.md:17` The app shows stale subagent cards after close/readback reports no live agent handle.
-- `fixtures/codex-subagent-lifecycle.md:18` The visible subagent count grows very large; the panel can show Show 67 more or 100+ stale entries.
-- `fixtures/codex-subagent-lifecycle.md:20` It is unclear which subagents are active versus stale UI/cache entries.
-- `fixtures/codex-subagent-lifecycle.md:27` thread_spawn_edges status count: closed=549, open=0
-- `fixtures/codex-subagent-lifecycle.md:28` After restarting Codex Desktop multiple times, the Subagents panel still visually shows stale subagent cards.
-- `fixtures/codex-subagent-lifecycle.md:36` Codex subagents have been going stale and refusing to close for the past week.
-- `fixtures/codex-subagent-lifecycle.md:47` Long sessions with stale subagents may hold MCP connections or leave connection lifecycle state unclear.
+- `fixtures/codex-auth-verification.md:5` - Phone number verification doesn't work after logging out on one device and signing in on another device with SSO.
+- `fixtures/codex-auth-verification.md:6` - The Codex sign-in screen asks for phone verification even though the ChatGPT account normally uses Google or Apple SSO.
+- `fixtures/codex-auth-verification.md:7` - The SMS verification code is not received, shows `invalid_phone_number`, or the user gets a phone call from random numbers instead of a predictable verification code.
+- `fixtures/codex-auth-verification.md:8` - "Sign in With ChatGPT" needs to be robust across Plus, Pro, Teams, Enterprise, personal workspace, and organization-verified account types.
+- `fixtures/codex-auth-verification.md:10` - In the VS Code extension, a new chat shows "Error starting conversation" while initializing a chat after sign-in.
 
 Suggested rule:
 
-> When reporting Codex subagent lifecycle failures, capture Codex app/CLI/extension version, OS, surface, model, subscription/workspace, root thread id, subagent ids/nicknames/roles, spawn/close/list commands or UI actions, close_agent results, list_agents or /agents output, thread_spawn_edges status counts, agent registry or max_threads/quota evidence, recent-list/sidebar behavior, whether child threads are archived or shown as top-level conversations, last-progress/heartbeat or halt reason, MCP server state for subagents, compaction/resume timing, screenshot or redacted UI state, whether restart/reload/new thread clears it, and whether stale agents are UI-only or still block new spawns.
+> When reporting Codex sign-in or account-verification failures, capture the Codex app/CLI/extension version, surface, OS, account type without secrets, workspace or organization context, SSO provider, whether the flow is ChatGPT sign-in, phone/SMS/OTP verification, or extension chat initialization, exact redacted error text, timestamps, whether another device/browser/account works, logout/login attempts, and screenshots with phone numbers, tokens, and email addresses redacted.
 
 
 ## Reporter Notes
@@ -95,6 +91,7 @@ Suggested rule:
 - `mcp-streamable-http`: Streamable HTTP or SSE MCP servers pass initialize or tools/list but fail parsing, handshakes, auth gating, stale sessions, or reconnects.
 - `hooks-runtime`: Hooks duplicate, stop firing, warn about stale config, skip surfaces, or become hard to manage in Desktop settings.
 - `terminal-output-integrity`: Terminal scrollback, streamed output, or transcript rendering drops, overwrites, truncates, or makes lines inaccessible.
+- `subagent-lifecycle`: Completed, closed, stale, or interrupted subagents diverge between UI, live registry, persisted state, quota, and parent discoverability.
 - `usage-bucket-confusion`: Usage popovers show 5h and weekly percentages without clear remaining/used, rolling/calendar, or account/workspace scope.
 - `token-burn`: Usage drains from background polling, idle activity, compaction loops, retries, or cached-heavy turns.
 - `patch-overwrite`: `apply_patch` accepts `*** Add File` for an existing path, turning a create operation into a silent overwrite.

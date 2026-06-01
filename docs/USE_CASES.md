@@ -59,7 +59,7 @@ What it proves:
 Recommended CI surface:
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.93
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.94
   with:
     mode: all
     doctor-threshold: "85"
@@ -162,6 +162,17 @@ npx trace-to-skill analyze ./runs --format json
 ```
 
 This catches signals such as `token_exchange_failed`, `auth.openai.com/oauth/token`, `codex_login::server`, `cf-mitigated: challenge`, missing `ca-certificates`, `update-ca-certificates`, `CODEX_CA_CERTIFICATE`, IPv6 fallback evidence, proxy/MITM TLS failures, and `stream disconnected before completion` on `chatgpt.com/backend-api/codex/responses`.
+
+## 7.1. Codex Sign-In And Account Verification Triage
+
+Use this when first-party Codex sign-in is blocked by phone verification, SMS/OTP failure, ChatGPT account routing, SSO/workspace/organization verification, or VS Code extension chat initialization.
+
+```bash
+npx trace-to-skill demo auth-verification
+npx trace-to-skill codex-report ./runs --output openai-codex-auth-issue.md
+```
+
+This catches signals such as phone number verification not working, `invalid_phone_number`, missing SMS/OTP codes, `Sign in With ChatGPT` account-type edge cases, Plus/Pro/Teams/Enterprise routing confusion, and `Error starting conversation` while initializing a VS Code extension chat after sign-in.
 
 ## 8. Codex Remote Compact Failure Triage
 

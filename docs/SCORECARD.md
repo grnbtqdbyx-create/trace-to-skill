@@ -9,7 +9,7 @@ Status: **pass**
 | Failed doctor checks | 0 |
 | Critical findings | 0 |
 | Built-in benchmark | pass |
-| Benchmark cases | 38 |
+| Benchmark cases | 39 |
 
 ## Doctor Summary
 
@@ -36,6 +36,7 @@ This benchmark runs the public fixture pack that ships with the repository and p
 | Codex clipboard, paste, and attachment workflow regression | `fixtures/codex-clipboard-attachment.md` | 75 | 2 | 0 | `codex_clipboard_attachment`, `weak_evidence` | pass |
 | Codex deeplink, OAuth callback, and external launch regression | `fixtures/codex-deeplink-launch.md` | 50 | 4 | 0 | `codex_deeplink_launch`, `codex_remote_control`, `hallucinated_file`, `weak_evidence` | pass |
 | Codex app connector auth cache and stale link regression | `fixtures/codex-connector-auth-cache.md` | 75 | 2 | 0 | `codex_connector_auth_cache`, `weak_evidence` | pass |
+| Codex sign-in and account verification failure | `fixtures/codex-auth-verification.md` | 75 | 2 | 0 | `codex_auth_verification`, `weak_evidence` | pass |
 | Codex approval persistence and MCP approval friction | `fixtures/codex-approval-friction.md` | 59 | 3 | 0 | `codex_approval_friction`, `sandbox_permission`, `weak_evidence` | pass |
 | Codex sandbox permission failure | `fixtures/sandbox-permission.md` | 59 | 3 | 0 | `codex_windows_helper_path`, `sandbox_permission`, `weak_evidence` | pass |
 | Codex Windows helper and bundled tool path failure | `fixtures/codex-windows-helper-path.md` | 43 | 4 | 0 | `codex_plugin_runtime`, `codex_windows_helper_path`, `sandbox_permission`, `weak_evidence` | pass |
@@ -43,7 +44,7 @@ This benchmark runs the public fixture pack that ships with the repository and p
 | Codex remote-control route health failure | `fixtures/codex-remote-control.md` | 75 | 2 | 0 | `codex_remote_control`, `weak_evidence` | pass |
 | Codex terminal output and scrollback integrity failure | `fixtures/codex-terminal-output-integrity.md` | 75 | 2 | 0 | `codex_terminal_output_integrity`, `weak_evidence` | pass |
 | Codex subagent lifecycle and state reconciliation failure | `fixtures/codex-subagent-lifecycle.md` | 75 | 2 | 0 | `codex_subagent_lifecycle`, `weak_evidence` | pass |
-| Codex quota mismatch | `fixtures/quota-mismatch.md` | 59 | 3 | 0 | `codex_usage_reset_drift`, `quota_mismatch`, `weak_evidence` | pass |
+| Codex quota mismatch | `fixtures/quota-mismatch.md` | 43 | 4 | 0 | `codex_token_burn`, `codex_usage_reset_drift`, `quota_mismatch`, `weak_evidence` | pass |
 | MCP config with secret exposure | `fixtures/mcp-risk.json` | 59 | 2 | 1 | `mcp_risk`, `secret_exposure` | pass |
 | Sensitive file access in agent context | `fixtures/sensitive-file-access.md` | 75 | 2 | 0 | `sensitive_file_access`, `weak_evidence` | pass |
 | Codex MCP runtime failure | `fixtures/codex-mcp-runtime.md` | 75 | 2 | 0 | `codex_mcp_runtime`, `weak_evidence` | pass |

@@ -342,6 +342,24 @@ const RULES: RuleDefinition[] = [
     suggestedSkill: "codex-connector-auth-cache-triage"
   },
   {
+    kind: "codex_auth_verification",
+    severity: "high",
+    title: "Codex sign-in or account verification failure",
+    why: "Codex first-party sign-in, phone verification, account-type routing, and extension chat initialization failures block users before they can produce useful debugging traces; reports need account surface and verification evidence without exposing tokens or phone numbers.",
+    patterns: [
+      /\b(phone number verification|phone verification|verify phone|SMS|OTP|one[- ]time code|verification code)\b.{0,220}\b(doesn'?t work|fails?|failed|stuck|loop|invalid|not sent|not received|cannot|unable|blocked|random numbers? will call)\b/i,
+      /\b(doesn'?t work|fails?|failed|stuck|loop|invalid|not sent|not received|cannot|unable|blocked)\b.{0,220}\b(phone number verification|phone verification|verify phone|SMS|OTP|one[- ]time code|verification code)\b/i,
+      /\b(Sign in with ChatGPT|Sign in With ChatGPT|login method|log in|sign in)\b.{0,240}\b(account types?|Teams?|Enterprise|Plus|Pro|workspace|personal account|SSO|organization|credits?|appropriate messaging|edge cases?)\b/i,
+      /\b(account types?|Teams?|Enterprise|Plus|Pro|workspace|personal account|SSO|organization|credits?)\b.{0,220}\b(Sign in with ChatGPT|Sign in With ChatGPT|login method|log in|sign in)\b/i,
+      /\b(Error starting conversation|initializing a chat|new chat)\b.{0,220}\b(sign[- ]?in|login|auth|verification|account|extension|VS Code)\b/i,
+      /\b(sign[- ]?in|login|auth|verification|account|extension|VS Code)\b.{0,220}\b(Error starting conversation|initializing a chat|new chat)\b/i,
+      /\b(auth|login|sign[- ]?in|verification)\b.{0,160}\b(loop|stuck|blocked|cannot continue|doesn'?t work|wrong account|phone|SMS|OTP|SSO)\b/i
+    ],
+    suggestedRule:
+      "When reporting Codex sign-in or account-verification failures, capture the Codex app/CLI/extension version, surface, OS, account type without secrets, workspace or organization context, SSO provider, whether the flow is ChatGPT sign-in, phone/SMS/OTP verification, or extension chat initialization, exact redacted error text, timestamps, whether another device/browser/account works, logout/login attempts, and screenshots with phone numbers, tokens, and email addresses redacted.",
+    suggestedSkill: "codex-auth-verification-triage"
+  },
+  {
     kind: "codex_approval_friction",
     severity: "high",
     title: "Codex approval persistence or MCP approval friction",

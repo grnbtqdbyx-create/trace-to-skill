@@ -113,6 +113,12 @@ const BENCHMARK_CASES: BenchmarkCaseDefinition[] = [
     expectedKinds: ["codex_connector_auth_cache", "weak_evidence"]
   },
   {
+    id: "codex-auth-verification",
+    title: "Codex sign-in and account verification failure",
+    fixture: "fixtures/codex-auth-verification.md",
+    expectedKinds: ["codex_auth_verification", "weak_evidence"]
+  },
+  {
     id: "codex-approval-friction",
     title: "Codex approval persistence and MCP approval friction",
     fixture: "fixtures/codex-approval-friction.md",

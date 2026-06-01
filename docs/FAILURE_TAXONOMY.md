@@ -72,6 +72,14 @@ Common signals include `401: "Server returned 401: 'Reauthentication required'"`
 
 The fix is to capture app and CLI versions, OS, connector/plugin name and id, installed plugin root, exact Codex Apps tool name, error text, redacted cache metadata, `link_*` before and after reconnect/cache regeneration, `isAccessible` state, restart/remove/re-add/sign-in/cache-clear attempts, ChatGPT app page state, and whether an external MCP workaround succeeds.
 
+## Codex Sign-In Or Account Verification Failure
+
+Codex first-party sign-in, phone verification, ChatGPT account routing, workspace/organization verification, or extension chat initialization fails before the user reaches a usable session.
+
+Common signals include phone number verification not working, SMS/OTP code not received, `invalid_phone_number`, `Sign in With ChatGPT` account-type edge cases, Plus/Pro/Teams/Enterprise routing confusion, SSO requiring unexpected phone verification, and VS Code extension `Error starting conversation` while initializing a chat after sign-in.
+
+The fix is to capture Codex app/CLI/extension version, surface, OS, account type without secrets, workspace or organization context, SSO provider, whether the flow is ChatGPT sign-in, phone/SMS/OTP verification, or extension chat initialization, exact redacted error text, timestamps, whether another device/browser/account works, logout/login attempts, and screenshots with phone numbers, tokens, and email addresses redacted.
+
 ## Codex Approval Friction
 
 Codex approval UX can fail even when the sandbox itself works. The common pattern is that a user chooses `Approve for this session`, `Always`, or an MCP/tool trust setting, but Codex keeps asking for approval, makes the user babysit every step, or pushes them toward `Full Access` just to get useful work done.

@@ -39,6 +39,29 @@
     "updatedAt": "2026-06-01T02:00:00Z"
   },
   {
+    "number": 20161,
+    "title": "Phone number verification doesn't work",
+    "body": "Codex sign in is blocked because phone number verification does not work after logging out on one device and logging in on another. SSO asks for a phone number, SMS or OTP verification fails with invalid_phone_number, and users cannot continue auth.",
+    "url": "https://github.com/openai/codex/issues/20161",
+    "labels": [
+      { "name": "bug" },
+      { "name": "auth" }
+    ],
+    "commentsCount": 177,
+    "reactions": { "totalCount": 10 },
+    "updatedAt": "2026-06-01T02:03:05Z"
+  },
+  {
+    "number": 1243,
+    "title": "\"Sign in With ChatGPT\" functionality needs to be robust against all account types",
+    "body": "Sign in With ChatGPT needs to be robust against Plus, Pro, Teams, Enterprise, workspace, personal account, SSO, organization verification, credits, and appropriate messaging edge cases. Browser login can complete while Codex still fails account routing.",
+    "url": "https://github.com/openai/codex/issues/1243",
+    "labels": [],
+    "commentsCount": 169,
+    "reactions": { "totalCount": 8 },
+    "updatedAt": "2025-10-16T20:32:11Z"
+  },
+  {
     "number": 6465,
     "title": "MCP servers not detected in Codex VS Code extension but working in Codex CLI",
     "body": "MCP servers not detected in the VS Code extension or Desktop, but working in Codex CLI from ~/.codex/config.toml. tools/list is empty in one surface, project .codex/config.toml is ignored, and serverName metadata is missing.",

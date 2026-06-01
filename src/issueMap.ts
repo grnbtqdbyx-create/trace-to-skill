@@ -381,6 +381,13 @@ function roadmapAction(kind: FindingKind): { targetArtifact: string; command: st
     };
   }
 
+  if (kind === "codex_auth_verification") {
+    return {
+      targetArtifact: "Auth verification fixture and login support report",
+      command: "trace-to-skill codex-report ./runs --output openai-codex-auth-issue.md"
+    };
+  }
+
   if (kind === "sensitive_file_access" || kind === "prompt_injection") {
     return {
       targetArtifact: "Privacy/safety guardrail and redacted support bundle",

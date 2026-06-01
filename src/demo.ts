@@ -79,6 +79,12 @@ const DEMO_SCENARIOS: DemoScenario[] = [
     description: "App connectors keep stale `link_*` auth or discovery metadata after reauth-required responses."
   },
   {
+    id: "auth-verification",
+    title: "Codex sign-in and account verification failure",
+    fixture: "fixtures/codex-auth-verification.md",
+    description: "Phone verification, ChatGPT sign-in account routing, or extension chat initialization blocks Codex before a usable session starts."
+  },
+  {
     id: "mcp-discovery-mismatch",
     title: "Codex MCP discovery mismatch",
     fixture: "fixtures/codex-mcp-discovery-mismatch.md",
