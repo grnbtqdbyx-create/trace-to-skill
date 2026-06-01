@@ -83,6 +83,7 @@ Use it when you need to:
 - **Catch latest-turn drift:** run `trace-to-skill analyze ./runs` when Codex answers an older prompt, repeats a previous response, forgets recent edits after compaction, or leaks raw tool payload text into chat.
 - **Measure Codex latency regressions:** run `trace-to-skill analyze ./runs` when GPT-5.5 Fast feels like Standard, simple tasks take 10-20+ minutes, thinking stalls, or search/read/compaction delays dominate the session.
 - **Report Thinking hangs:** run `trace-to-skill codex-report ./runs` when Codex accepts a turn or finishes local tools but stays on Thinking/Working with no streamed follow-up.
+- **Report CLI no-response hangs:** run `trace-to-skill demo cli-no-response` when Codex CLI accepts prompts but never streams output, shows `100% left`, hangs during command execution, or requires Ctrl+C/forced kill.
 - **Report clipboard and pasted-text attachment regressions:** run `trace-to-skill codex-report ./runs` when `Copy as Markdown` disappears, long prompts become `Pasted text.txt`, generated attachments cannot be previewed/edited, or `/goal` treats attached pasted text as empty.
 - **Report deeplink and OAuth launch regressions:** run `trace-to-skill codex-report ./runs` when `codex://oauth_callback`, notification clicks, browser-extension activation, mobile links, or `codex app <path>` fail to route back into Codex.
 - **Diagnose stale connector auth/cache:** run `trace-to-skill codex-report ./runs` when Codex app connectors return `401 Reauthentication required`, keep the same `link_*`, report `isAccessible: false`, or survive restart/plugin reinstall/cache clearing.
@@ -541,7 +542,7 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v5
-      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.97
+      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.98
         with:
           mode: all
           doctor-threshold: "85"
@@ -590,7 +591,7 @@ Composite action usage:
 
 ```yaml
 - id: trace-to-skill
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.97
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.98
   with:
     mode: all
     doctor-threshold: "85"
@@ -608,7 +609,7 @@ Issue-map action usage for direct GitHub issue demand mining:
 
 ```yaml
 - id: codex-issue-map
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.97
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.98
   with:
     mode: issue-map
     issue-map-repo: openai/codex
@@ -654,7 +655,7 @@ Action outputs:
 
 By default, generated reports are also appended to the GitHub Actions Job Summary. Set `job-summary: "false"` to disable that UI output.
 
-Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.97` executes that release's checked-out source instead of pulling the default branch at runtime.
+Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.98` executes that release's checked-out source instead of pulling the default branch at runtime.
 
 ## Codex Skill
 

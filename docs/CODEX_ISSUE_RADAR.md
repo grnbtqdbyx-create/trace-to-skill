@@ -1,10 +1,10 @@
 # GitHub Issue Pain Map
 
-Generated: 2026-06-01T03:26:00.188Z
+Generated: 2026-06-01T03:41:42.598Z
 
 Issues analyzed: **46**
-Matched issues: **21**
-Unmatched issues: **25**
+Matched issues: **23**
+Unmatched issues: **23**
 
 This report maps GitHub issues onto deterministic `trace-to-skill` failure classes. Fetch a repository directly with `--repo`, or export issues with `gh issue list` / `gh search issues` and pass the JSON file.
 
@@ -26,11 +26,11 @@ gh issue list --repo openai/codex --state all --limit 100 --json number,title,bo
 | 805 | `codex_auth_verification` | high | 3 | 436 | 166 | [#20161 Phone number verification doesn't work](https://github.com/openai/codex/issues/20161) |
 | 631 | `codex_context_visibility` | high | 1 | 160 | 227 | [#23794 Codex Desktop no longer shows visible context/token usage indicator](https://github.com/openai/codex/issues/23794) |
 | 442 | `codex_tool_call_integrity` | high | 1 | 61 | 182 | [#2998 IDE-integrated diff / approval](https://github.com/openai/codex/issues/2998) |
+| 434 | `codex_thinking_hang` | high | 2 | 201 | 103 | [#14048 All models — Codex CLI hangs indefinitely on all prompts, no response generated](https://github.com/openai/codex/issues/14048) |
 | 376 | `codex_remote_compact` | high | 2 | 147 | 101 | [#14860 Error running remote compact task](https://github.com/openai/codex/issues/14860) |
 | 376 | `context_compaction` | high | 2 | 147 | 101 | [#14860 Error running remote compact task](https://github.com/openai/codex/issues/14860) |
 | 351 | `codex_terminal_output_integrity` | high | 1 | 66 | 134 | [#2558 Codex client output truncated when scrolling in Zellij](https://github.com/openai/codex/issues/2558) |
 | 324 | `codex_model_routing_mismatch` | high | 1 | 169 | 69 | [#11189 GPT-5.3-Codex being routed to GPT-5.2](https://github.com/openai/codex/issues/11189) |
-| 261 | `premature_completion` | high | 1 | 60 | 92 | [#2448 Codex CLI: Plus users hitting usage limits extremely quickly compared to competitors](https://github.com/openai/codex/issues/2448) |
 
 ## Maintainer Roadmap
 
@@ -101,14 +101,14 @@ Evidence rule prompts:
 ## Unmatched Issues
 
 - [#10410 Codex Desktop App: macOS Intel (x86_64) support](https://github.com/openai/codex/issues/10410) (190 comments; labels: enhancement, app)
-- [#14048 All models — Codex CLI hangs indefinitely on all prompts, no response generated](https://github.com/openai/codex/issues/14048) (131 comments; labels: bug, agent)
 - [#2604 Subagent Support](https://github.com/openai/codex/issues/2604) (103 comments; labels: enhancement, subagent)
 - [#12564 Allow renaming task/thread titles to improve history navigation](https://github.com/openai/codex/issues/12564) (77 comments; labels: enhancement, extension)
 - [#2860 Unusable on Windows due to permission ask for every shell command](https://github.com/openai/codex/issues/2860) (77 comments; labels: bug, windows-os)
 - [#2109 Event Hooks](https://github.com/openai/codex/issues/2109) (76 comments; labels: enhancement, hooks)
 - [#2796 BUG: VSCode IDE Plugin on SSH Connection: "Failed to load tasks."](https://github.com/openai/codex/issues/2796) (71 comments; labels: bug, extension)
 - [#16231 High CPU usage on macOS after updating Codex in VS Code extension to 26.325.31654](https://github.com/openai/codex/issues/16231) (71 comments; labels: bug, extension, regression, performance)
-- [#7156 Codex hangs during cli command execution](https://github.com/openai/codex/issues/7156) (70 comments; labels: bug, CLI)
 - [#4313 Extension for JetBrains IDEs (PyCharm, IntelliJ, etc.)](https://github.com/openai/codex/issues/4313) (70 comments; labels: enhancement)
 - [#13041 WebSocket upgrade succeeds then server closes with 1008 Policy (falls back to HTTPS)](https://github.com/openai/codex/issues/13041) (70 comments; labels: bug, connectivity)
 - [#11701 Subagent configuration and orchestration](https://github.com/openai/codex/issues/11701) (69 comments; labels: enhancement, subagent)
+- [#11023 Codex desktop app for Linux](https://github.com/openai/codex/issues/11023) (68 comments; labels: enhancement, app)
+- [#6172 Hitting rate limits](https://github.com/openai/codex/issues/6172) (66 comments; labels: bug, codex-web, rate-limits)

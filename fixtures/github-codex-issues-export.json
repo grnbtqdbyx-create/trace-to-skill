@@ -157,6 +157,32 @@
     "updatedAt": "2026-05-14T21:25:03Z"
   },
   {
+    "number": 14048,
+    "title": "All models - Codex CLI hangs indefinitely on all prompts, no response generated",
+    "body": "Codex CLI accepts prompts but produces massively delayed response. It hangs indefinitely with no streaming output, no error, no timeout, all prompt types fail, status bar says gpt-5.4 high - 100% left, and no tokens are consumed. RUST_LOG codex exec ping shows unhandled responses event response.in_progress, response.content_part.added, response.output_text.done, response.content_part.done; other runs stop after mcp startup: no servers. Ctrl-C and /exit do not respond for minutes.",
+    "url": "https://github.com/openai/codex/issues/14048",
+    "labels": [
+      { "name": "bug" },
+      { "name": "agent" }
+    ],
+    "commentsCount": 131,
+    "reactions": { "totalCount": 79 },
+    "updatedAt": "2026-03-16T09:23:48Z"
+  },
+  {
+    "number": 7156,
+    "title": "Codex hangs during cli command execution",
+    "body": "Codex hangs during terminal command execution. Users report basic bash CLI commands get stuck, the tool does half the job then stuck, sometimes one response arrives then hangs, and VS Code/Codex says Thinking or Working. Collaborators linked a status incident and unhealthy clusters / service down in some geographies; users report Reconnecting, stream disconnected before completion, and Ctrl-C or exit delays.",
+    "url": "https://github.com/openai/codex/issues/7156",
+    "labels": [
+      { "name": "bug" },
+      { "name": "CLI" }
+    ],
+    "commentsCount": 70,
+    "reactions": { "totalCount": 24 },
+    "updatedAt": "2025-12-04T17:00:05Z"
+  },
+  {
     "number": 6465,
     "title": "MCP servers not detected in Codex VS Code extension but working in Codex CLI",
     "body": "MCP servers not detected in the VS Code extension or Desktop, but working in Codex CLI from ~/.codex/config.toml. tools/list is empty in one surface, project .codex/config.toml is ignored, and serverName metadata is missing.",

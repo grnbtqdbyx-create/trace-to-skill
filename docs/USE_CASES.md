@@ -59,7 +59,7 @@ What it proves:
 Recommended CI surface:
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.97
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.98
   with:
     mode: all
     doctor-threshold: "85"
@@ -360,6 +360,19 @@ npx trace-to-skill codex-report ./runs --output openai-codex-remote-connection.m
 This catches signals such as `Remote Development in Codex Desktop App`, missing Settings > Connections, `[features].remote_connections = true`, mistaken `remote_control = true`, SSH hosts from `~/.ssh/config`, remote filesystem source-of-truth expectations, `local tunnel not ready`, stale remote Codex versions, `codex-server` restart evidence, `fs/getMetadata` timeouts while listing remote folders, ForwardAgent needs, and local-machine proxy expectations for remote hosts that cannot reach the Codex API directly.
 
 Include Codex Desktop version, remote Codex CLI/app-server version, local OS, remote OS/architecture, selected SSH host/path, whether the remote filesystem is the source of truth, exact tunnel/app-server/folder-listing/model-list/auth/proxy error, process evidence such as `ps -ef | rg 'codex app-server|openai.chatgpt.*/codex'` when available, and whether killing codex-server, reinstalling remote Codex, reconnecting, or trying a clean host changes the result.
+
+## 18.3. Codex CLI No-Response Evidence
+
+Use this when Codex CLI accepts prompts but produces no streaming output, no error, no timeout, or hangs during command execution.
+
+```bash
+npx trace-to-skill demo cli-no-response
+npx trace-to-skill codex-report ./runs --output openai-codex-cli-no-response.md
+```
+
+This catches signals such as all-model hangs, `gpt-5.4 high - 100% left`, no tokens consumed, simple prompts like `Hello` or `ping` never producing output, `codex exec --sandbox read-only --model gpt-5.3-codex 'ping'`, `mcp startup: no servers`, unhandled responses events, CLI/VS Code stuck on Thinking or Working, terminal command execution hangs, status incidents, unhealthy cluster reroutes, and Ctrl+C or `/exit` delays.
+
+Include CLI/app/extension version, OS/terminal/WSL, subscription/workspace, model and reasoning/speed settings, prompt timestamp, exact prompt, whether the prompt was accepted but no stream/error/timeout appeared, status bar or usage percent, `RUST_LOG` SSE snippets, transport, first `response_item` or assistant timestamp if it appears later, reconnect or stream-disconnect lines, status incident link, and recovery attempts such as new thread, downgrade, logout/login, API billing path, or minimal config without MCPs.
 
 ## 19. Codex File Tree UI Evidence
 

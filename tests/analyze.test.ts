@@ -254,6 +254,25 @@ test("analyzeTargets detects Codex thinking and stream hangs", async () => {
   assert.match(report, /codex_thinking_hang/);
 });
 
+test("analyzeTargets detects Codex CLI no-response hangs", async () => {
+  const result = await analyzeTargets(["fixtures/codex-cli-no-response.md"]);
+  const finding = result.findings.find((item) => item.kind === "codex_thinking_hang");
+  const evidence = finding?.evidence.map((item) => item.excerpt).join("\n") ?? "";
+  const report = renderCodexIssueReport(result);
+
+  assert.ok(finding);
+  assert.equal(finding.severity, "high");
+  assert.match(evidence, /no streaming output/);
+  assert.match(evidence, /100% left/);
+  assert.match(evidence, /codex exec --sandbox read-only/);
+  assert.match(evidence, /unhandled responses event/);
+  assert.match(evidence, /terminal command execution/);
+  assert.match(evidence, /status incident/);
+  assert.match(finding.suggestedRule, /Ctrl\+C/);
+  assert.match(finding.suggestedRule, /RUST_LOG/);
+  assert.match(report, /codex_thinking_hang/);
+});
+
 test("analyzeTargets detects Codex clipboard and pasted-text attachment regressions", async () => {
   const result = await analyzeTargets(["fixtures/codex-clipboard-attachment.md"]);
   const finding = result.findings.find((item) => item.kind === "codex_clipboard_attachment");
@@ -324,6 +343,7 @@ test("demo command runs packaged scenarios without private traces", async () => 
   assert.ok(scenarios.some((scenario) => scenario.id === "latency-regression"));
   assert.ok(scenarios.some((scenario) => scenario.id === "model-routing-mismatch"));
   assert.ok(scenarios.some((scenario) => scenario.id === "thinking-hang"));
+  assert.ok(scenarios.some((scenario) => scenario.id === "cli-no-response"));
   assert.ok(scenarios.some((scenario) => scenario.id === "clipboard-attachment"));
   assert.ok(scenarios.some((scenario) => scenario.id === "deeplink-launch"));
   assert.ok(scenarios.some((scenario) => scenario.id === "connector-auth-cache"));
@@ -346,6 +366,7 @@ test("demo command runs packaged scenarios without private traces", async () => 
   assert.match(list, /latency-regression/);
   assert.match(list, /model-routing-mismatch/);
   assert.match(list, /thinking-hang/);
+  assert.match(list, /cli-no-response/);
   assert.match(list, /clipboard-attachment/);
   assert.match(list, /deeplink-launch/);
   assert.match(list, /connector-auth-cache/);
@@ -1331,9 +1352,10 @@ test("issue-map ranks GitHub issue exports by detected Codex failure classes", a
   const markdown = renderIssueMapMarkdown(result);
   const kinds = result.summaries.map((summary) => summary.kind);
 
-  assert.equal(result.issueCount, 15);
+  assert.equal(result.issueCount, 17);
   assert.ok(result.matchedIssueCount >= 5);
   assert.ok(kinds.includes("codex_token_burn"));
+  assert.ok(kinds.includes("codex_thinking_hang"));
   assert.ok(kinds.includes("codex_context_visibility"));
   assert.ok(kinds.includes("codex_remote_connection"));
   assert.ok(kinds.includes("codex_auth_verification"));
@@ -1355,6 +1377,8 @@ test("issue-map ranks GitHub issue exports by detected Codex failure classes", a
   assert.match(markdown, /#11189 GPT-5\.3-Codex being routed to GPT-5\.2/);
   assert.match(markdown, /#23794 Codex Desktop no longer shows visible context\/token usage indicator/);
   assert.match(markdown, /#10450 Remote Development in Codex Desktop App/);
+  assert.match(markdown, /#14048 All models - Codex CLI hangs indefinitely on all prompts, no response generated/);
+  assert.match(markdown, /#7156 Codex hangs during cli command execution/);
   assert.match(markdown, /gh issue list --repo openai\/codex/);
 });
 
@@ -1425,7 +1449,7 @@ test("issue-map reads GitHub issue exports from stdin", async () => {
   };
 
   assert.deepEqual(result.sources, ["stdin"]);
-  assert.equal(result.issueCount, 15);
+  assert.equal(result.issueCount, 17);
   assert.equal(result.roadmap[0]?.kind, "codex_remote_connection");
   assert.match(result.roadmap[0]?.command ?? "", /remote-connection/);
 });
@@ -1712,6 +1736,10 @@ test("package metadata points npm users back to the public project", async () =>
   assert.ok(packageJson.keywords?.includes("context-bloat"));
   assert.ok(packageJson.keywords?.includes("codex-subagent-prompt"));
   assert.ok(packageJson.keywords?.includes("subagent-prompt-leak"));
+  assert.ok(packageJson.keywords?.includes("codex-cli-hang"));
+  assert.ok(packageJson.keywords?.includes("codex-no-response"));
+  assert.ok(packageJson.keywords?.includes("codex-cli-no-response"));
+  assert.ok(packageJson.keywords?.includes("codex-status-incident"));
   assert.ok(packageJson.keywords?.includes("codex-usage-bucket"));
   assert.ok(packageJson.keywords?.includes("usage-popover"));
   assert.ok(packageJson.keywords?.includes("sandbox-permission"));
@@ -2348,7 +2376,7 @@ test("benchmark covers public fixture failure classes", async () => {
   const markdown = renderBenchmarkMarkdown(benchmark);
 
   assert.equal(benchmark.passed, true);
-  assert.equal(benchmark.cases.length, 42);
+  assert.equal(benchmark.cases.length, 43);
   assert.ok(benchmark.cases.some((item) => item.id === "clean-validated-run" && item.score === 100));
   assert.ok(benchmark.cases.some((item) => item.id === "failed-workflow" && item.detectedKinds.includes("test_failure")));
   assert.ok(benchmark.cases.some((item) => item.id === "context-compaction" && item.detectedKinds.includes("context_compaction")));
@@ -2359,6 +2387,7 @@ test("benchmark covers public fixture failure classes", async () => {
   assert.ok(benchmark.cases.some((item) => item.id === "codex-model-routing-mismatch" && item.detectedKinds.includes("codex_model_routing_mismatch")));
   assert.ok(benchmark.cases.some((item) => item.id === "codex-latency-regression" && item.detectedKinds.includes("codex_latency_regression")));
   assert.ok(benchmark.cases.some((item) => item.id === "codex-thinking-hang" && item.detectedKinds.includes("codex_thinking_hang")));
+  assert.ok(benchmark.cases.some((item) => item.id === "codex-cli-no-response" && item.detectedKinds.includes("codex_thinking_hang")));
   assert.ok(benchmark.cases.some((item) => item.id === "codex-clipboard-attachment" && item.detectedKinds.includes("codex_clipboard_attachment")));
   assert.ok(benchmark.cases.some((item) => item.id === "codex-deeplink-launch" && item.detectedKinds.includes("codex_deeplink_launch")));
   assert.ok(benchmark.cases.some((item) => item.id === "codex-connector-auth-cache" && item.detectedKinds.includes("codex_connector_auth_cache")));
@@ -2403,7 +2432,7 @@ test("scorecard combines doctor readiness and benchmark evidence", async () => {
   assert.equal(scorecard.doctor.status, "ready");
   assert.equal(scorecard.doctor.score, 100);
   assert.equal(scorecard.benchmark.status, "pass");
-  assert.equal(scorecard.benchmark.cases, 42);
+  assert.equal(scorecard.benchmark.cases, 43);
   assert.match(markdown, /trace-to-skill Scorecard/);
   assert.match(markdown, /Codex readiness/);
   assert.match(markdown, /Benchmark Summary/);
@@ -2419,9 +2448,9 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.equal(brief.scorecard.doctorStatus, "ready");
   assert.equal(brief.scorecard.doctorScore, 100);
   assert.equal(brief.scorecard.benchmarkStatus, "pass");
-  assert.equal(brief.scorecard.benchmarkCases, 42);
+  assert.equal(brief.scorecard.benchmarkCases, 43);
   assert.equal(brief.packageName, "trace-to-skill");
-  assert.equal(brief.packageVersion, "0.1.97");
+  assert.equal(brief.packageVersion, "0.1.98");
   assert.equal(brief.license, "Apache-2.0");
   assert.ok(brief.repository?.includes("github.com/grnbtqdbyx-create/trace-to-skill"));
   assert.ok(brief.qualification.max500.length <= 500);
@@ -2429,7 +2458,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.match(markdown, /OpenAI OSS Brief/);
   assert.match(markdown, /Why This Repository Qualifies/);
   assert.match(markdown, /500-Character Version/);
-  assert.match(markdown, /npx trace-to-skill@0\.1\.97/);
+  assert.match(markdown, /npx trace-to-skill@0\.1\.98/);
   assert.match(markdown, /Weekly Codex Issue Radar/);
 });
 

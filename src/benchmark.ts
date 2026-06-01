@@ -101,6 +101,12 @@ const BENCHMARK_CASES: BenchmarkCaseDefinition[] = [
     expectedKinds: ["codex_thinking_hang", "weak_evidence"]
   },
   {
+    id: "codex-cli-no-response",
+    title: "Codex CLI no-response and command execution hang",
+    fixture: "fixtures/codex-cli-no-response.md",
+    expectedKinds: ["codex_thinking_hang", "weak_evidence"]
+  },
+  {
     id: "codex-clipboard-attachment",
     title: "Codex clipboard, paste, and attachment workflow regression",
     fixture: "fixtures/codex-clipboard-attachment.md",

@@ -67,6 +67,12 @@ const DEMO_SCENARIOS: DemoScenario[] = [
     description: "A turn or tool call completes, but the session stays on Thinking or Working with no streamed follow-up."
   },
   {
+    id: "cli-no-response",
+    title: "Codex CLI no-response or all-model hang",
+    fixture: "fixtures/codex-cli-no-response.md",
+    description: "Codex CLI accepts prompts but produces no streaming output, no error, no timeout, or hangs during command execution."
+  },
+  {
     id: "clipboard-attachment",
     title: "Codex clipboard and pasted-text attachment regression",
     fixture: "fixtures/codex-clipboard-attachment.md",
@@ -227,6 +233,7 @@ export function renderDemoMarkdown(result: DemoResult): string {
     "trace-to-skill demo windows-helper-path",
     "trace-to-skill demo patch-overwrite",
     "trace-to-skill demo thinking-hang",
+    "trace-to-skill demo cli-no-response",
     "trace-to-skill demo clipboard-attachment",
     "trace-to-skill demo deeplink-launch",
     "trace-to-skill demo connector-auth-cache",
@@ -264,6 +271,7 @@ export function renderDemoScenarioList(scenarios = listDemoScenarios()): string 
     "trace-to-skill demo patch-overwrite",
     "trace-to-skill demo latency-regression",
     "trace-to-skill demo thinking-hang",
+    "trace-to-skill demo cli-no-response",
     "trace-to-skill demo clipboard-attachment",
     "trace-to-skill demo deeplink-launch",
     "trace-to-skill demo connector-auth-cache",

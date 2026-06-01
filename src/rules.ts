@@ -17,7 +17,7 @@ const RULES: RuleDefinition[] = [
     title: "Agent claimed completion without verifiable proof",
     why: "Maintainers need completion claims to include concrete command output, test names, or review evidence.",
     patterns: [
-      /\b(done|complete|fixed|resolved|all set)\b/i,
+      /(?:^|[>\s])\b(done|complete|fixed|resolved|all set)\b/i,
       /\b(no tests? (were )?(run|executed)|did not run tests?|unable to run tests?)\b/i
     ],
     suggestedRule:
@@ -243,7 +243,7 @@ const RULES: RuleDefinition[] = [
       /\bGPT-?5\.2\b.{0,180}\b(routed|routes|routing|misrouted|being routed|silently rerouted|fallback|downgraded|downgrade)\b.{0,180}\bGPT-?5\.3[- ]?Codex\b/i,
       /\b(config\.toml|TUI|--model|model selector|selected model|Which model were you using)\b.{0,220}\bgpt-5\.3-codex\b.{0,260}\b(response\.model|SSE|response\.created|actual model|output|server-side|server side)\b.{0,220}\bgpt-5\.2(?:-\d{4}-\d{2}-\d{2})?\b/i,
       /\b(response\.model|SSE event|response\.created|actual model|server-side model|server side model)\b.{0,220}\bgpt-5\.2(?:-\d{4}-\d{2}-\d{2})?\b.{0,260}\b(config\.toml|TUI|--model|selected model|gpt-5\.3-codex)\b/i,
-      /\b(RUST_LOG|codex_api::sse::responses|codex_tui::chatwidget|log\/codex-tui\.log)\b.{0,240}\b(response\.model|response\.created|gpt-5\.2|gpt-5\.3-codex|misrouted|routed)\b/i,
+      /\b(RUST_LOG|codex_api::sse::responses|codex_tui::chatwidget|log\/codex-tui\.log)\b.{0,240}\b(response\.model|response\.created|gpt-5\.2|misrouted|routed)\b/i,
       /\b(no warning|no fallback notice|silent(?:ly)? rerout(?:e|ed|ing)|transparency concerns?)\b.{0,220}\b(model|gpt-5\.3|gpt-5\.2|Codex)\b/i
     ],
     suggestedRule:
@@ -276,6 +276,14 @@ const RULES: RuleDefinition[] = [
     title: "Codex thinking or stream hang",
     why: "Codex can accept a turn, finish local tool calls, or keep a Responses request open while the UI/CLI remains on Thinking or Working with no streamed follow-up, making users interrupt healthy runs or lose long-session context.",
     patterns: [
+      /\b(All models|all models|gpt-5\.[34]|gpt-5\.1-codex|max)\b.{0,220}\b(Codex CLI|codex)\b.{0,220}\b(hangs? indefinitely|hangs? on every message|no response is ever generated|no response generated|no streaming output|no error|no timeout)\b/i,
+      /\b(Codex CLI|codex)\b.{0,220}\b(accepts prompts?|prompt is accepted|accepted and displayed)\b.{0,220}\b(no streaming output|no response|no error|no timeout|hangs? indefinitely|silent)\b/i,
+      /\b(status bar|usage bar)\b.{0,160}\b(100% left|no tokens? (?:are )?being consumed|tokens? used)\b.{0,180}\b(no response|hangs?|silent|no streaming|prompt)\b/i,
+      /\bcodex exec\b.{0,220}\b(ping|hello|simple greeting|any prompt)\b.{0,220}\b(hangs?|no response|mcp startup: no servers|no output|silent)\b/i,
+      /\bunhandled responses event\b.{0,180}\b(response\.in_progress|response\.content_part\.added|response\.output_text\.done|response\.content_part\.done)\b/i,
+      /\b(no response|no output|no streaming output|no streamed output)\b.{0,180}\b(all prompts?|every message|simple greetings?|questions?|codebase analysis|any prompt)\b/i,
+      /\b(CLI|Codex CLI|terminal command execution|shell commands?)\b.{0,180}\b(hangs?|stuck|loading infinitely|does half the job|no response|no output)\b/i,
+      /\b(service is down|Codex is down|codex seems down|unhealthy clusters?|rerouted traffic|status\.openai\.com\/incidents)\b.{0,220}\b(Codex|CLI|hanging|no response|Thinking|Working)\b/i,
       /\b(remain|remains|stays?|stuck|hangs?|hung)\b.{0,140}\b(Thinking|Working|running|spinner)\b.{0,220}\b(successful tool calls?|tool returned|no streamed follow-up|no follow-up|no response|responses request|\/responses request|post-tool|continuation)\b/i,
       /\b(successful tool calls?|tool returned|tools? returned instantly|pwd|rg --files|function_call_output)\b.{0,220}\b(Thinking|Working|stuck|hangs?|hung|no next assistant action|no streamed follow-up|no visible output|silent)\b/i,
       /\bpre[- ]?first[- ]?(?:token|output|event|response)\b.{0,180}\b(stall|hang|gap|silent|no visible|no streamed|many minutes|30 minutes|1,?838(?:\.5)? seconds)\b/i,
@@ -289,7 +297,7 @@ const RULES: RuleDefinition[] = [
       /\b(MCP|config\.toml|broken MCP|not responding)\b.{0,180}\b(Thinking|stuck|hang|minimal config|without any MCPs)\b/i
     ],
     suggestedRule:
-      "When reporting Codex thinking hangs, capture app/CLI/extension version, OS, model and reasoning/speed settings, turn/thread id, prompt timestamp, `turn/start` or `task_started` timestamp, last successful tool-call output, first `response_item` or assistant timestamp if it eventually appears, transport (`responses_http` or websocket), `time.busy`/`time.idle` close metrics, reconnect or stream-disconnect lines, MCP/subagent state, whether stop/interrupt works, and whether a new thread or minimal config without MCPs recovers.",
+      "When reporting Codex thinking or CLI no-response hangs, capture app/CLI/extension version, OS/terminal such as WSL, model and reasoning/speed settings, subscription/workspace, turn/thread id, prompt timestamp, whether the prompt is accepted but no streaming output/error/timeout appears, status bar or usage percent such as 100% left, `turn/start` or `task_started` timestamp, last successful tool-call output, first `response_item` or assistant timestamp if it eventually appears, `RUST_LOG`/SSE evidence including unhandled responses events, transport (`responses_http` or websocket), `time.busy`/`time.idle` close metrics, reconnect or stream-disconnect lines, status incident link or cluster mitigation note if relevant, MCP/subagent state, whether stop/Ctrl+C/interrupt works, and whether a new thread, logout/login, downgrade, API billing path, or minimal config without MCPs recovers.",
     suggestedSkill: "codex-thinking-hang-triage"
   },
   {

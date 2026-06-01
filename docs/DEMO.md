@@ -1,10 +1,10 @@
 # trace-to-skill Demo
 
-Scenario: **Codex remote connection or SSH workspace failure**
+Scenario: **Codex CLI no-response or all-model hang**
 
-Desktop remote SSH workspaces, Settings > Connections, remote app-server, tunnel, or remote filesystem evidence breaks.
+Codex CLI accepts prompts but produces no streaming output, no error, no timeout, or hangs during command execution.
 
-Fixture: `fixtures/codex-remote-connection.md`
+Fixture: `fixtures/codex-cli-no-response.md`
 
 This is a packaged public fixture, so you can try the project without collecting a private trace first.
 
@@ -14,7 +14,7 @@ This is a packaged public fixture, so you can try the project without collecting
 
 Score: **75/100**
 
-Likely failure class: **Codex remote connection or SSH workspace failure (codex_remote_connection, high)**
+Likely failure class: **Codex thinking or stream hang (codex_thinking_hang, high)**
 
 Agent workflow needs clearer verification, instruction, or security hardening before broad reuse.
 
@@ -23,25 +23,25 @@ Agent workflow needs clearer verification, instruction, or security hardening be
 ```md
 ### What happened?
 
-trace-to-skill detected Codex remote connection or SSH workspace failure (codex_remote_connection). Remote-first developers need Codex Desktop to open SSH, server, VM, WSL, container, or cloud workspaces as the source of truth, with reliable remote file browsing, command execution, model availability, app-server health, and reconnect behavior.
+trace-to-skill detected Codex thinking or stream hang (codex_thinking_hang). Codex can accept a turn, finish local tool calls, or keep a Responses request open while the UI/CLI remains on Thinking or Working with no streamed follow-up, making users interrupt healthy runs or lose long-session context.
 
 ### Detected failure class
 
-- codex_remote_connection: Codex remote connection or SSH workspace failure (high)
+- codex_thinking_hang: Codex thinking or stream hang (high)
 
 ### Evidence
 
-#### Codex remote connection or SSH workspace failure
-- fixtures/codex-remote-connection.md:5 - - Remote Development in Codex Desktop App is a high-demand workflow because many users work on SSH hosts, cloud instances, GPU machines, WSL boxes, containers, or remote Linux servers.
-- fixtures/codex-remote-connection.md:7 - - Users expect Settings > Connections to show SSH hosts from `~/.ssh/config` after enabling `[features] remote_connections = true`.
-- fixtures/codex-remote-connection.md:8 - - A common setup mistake is using `remote_control = true` instead of `remote_connections = true`, so the Connections subheading never appears in the Desktop app.
-- fixtures/codex-remote-connection.md:9 - - The local tunnel can fail with "local tunnel not ready" even when the SSH host is reachable.
-- fixtures/codex-remote-connection.md:10 - - Remote folder browsing can fail with `Unable to load folder contents: Timed out waiting for MCP response to fs/getMetadata while listing directories/files`.
-- fixtures/codex-remote-connection.md:12 - - Killing a stale `codex-server` or app-server on the remote host can force the Desktop app to reattach.
+#### Codex thinking or stream hang
+- fixtures/codex-cli-no-response.md:1 - # Codex CLI No-Response Hang
+- fixtures/codex-cli-no-response.md:3 - Public issue cluster: All models - Codex CLI hangs indefinitely on all prompts, no response generated.
+- fixtures/codex-cli-no-response.md:7 - - Codex CLI accepts prompts and displays them, but no streaming output begins.
+- fixtures/codex-cli-no-response.md:8 - - All models tested, including `gpt-5.4 high`, `gpt-5.3-codex`, and `gpt-5.1-codex-max`, show no response, no error, and no timeout.
+- fixtures/codex-cli-no-response.md:9 - - The status bar remains `gpt-5.4 high - 100% left`; no tokens are being consumed while the prompt is stuck.
+- fixtures/codex-cli-no-response.md:10 - - A `status.openai.com/incidents` status incident note says Codex CLI hanging or no response may come from unhealthy clusters and rerouted traffic.
 
 ### Diagnostics to attach
 
-- When reporting Codex remote connection failures, capture Codex Desktop version, remote Codex CLI/app-server version, local OS, remote OS/architecture, SSH target alias from `~/.ssh/config`, whether `[features].remote_connections = true` is set, Settings > Connections visibility, selected host/path, remote workspace path, whether the remote filesystem is the source of truth, exact tunnel/app-server error, codex-server pid and restart result, `ps -ef | rg 'codex app-server|openai.chatgpt.*/codex'` evidence if available, remote PATH/auth/proxy/API reachability, model list differences versus local, fs/getMetadata or folder listing errors, ForwardAgent/proxy requirements, and whether reconnect/resume or a clean host works.
+- When reporting Codex thinking or CLI no-response hangs, capture app/CLI/extension version, OS/terminal such as WSL, model and reasoning/speed settings, subscription/workspace, turn/thread id, prompt timestamp, whether the prompt is accepted but no streaming output/error/timeout appears, status bar or usage percent such as 100% left, `turn/start` or `task_started` timestamp, last successful tool-call output, first `response_item` or assistant timestamp if it eventually appears, `RUST_LOG`/SSE evidence including unhandled responses events, transport (`responses_http` or websocket), `time.busy`/`time.idle` close metrics, reconnect or stream-disconnect lines, status incident link or cluster mitigation note if relevant, MCP/subagent state, whether stop/Ctrl+C/interrupt works, and whether a new thread, logout/login, downgrade, API billing path, or minimal config without MCPs recovers.
 
 ### Privacy
 
@@ -50,25 +50,25 @@ trace-to-skill detected Codex remote connection or SSH workspace failure (codex_
 
 ## Findings
 
-### 1. Codex remote connection or SSH workspace failure
+### 1. Codex thinking or stream hang
 
 Severity: **high**
 
-Remote-first developers need Codex Desktop to open SSH, server, VM, WSL, container, or cloud workspaces as the source of truth, with reliable remote file browsing, command execution, model availability, app-server health, and reconnect behavior.
+Codex can accept a turn, finish local tool calls, or keep a Responses request open while the UI/CLI remains on Thinking or Working with no streamed follow-up, making users interrupt healthy runs or lose long-session context.
 
 Evidence:
-- `fixtures/codex-remote-connection.md:5` - Remote Development in Codex Desktop App is a high-demand workflow because many users work on SSH hosts, cloud instances, GPU machines, WSL boxes, containers, or remote Linux servers.
-- `fixtures/codex-remote-connection.md:7` - Users expect Settings > Connections to show SSH hosts from `~/.ssh/config` after enabling `[features] remote_connections = true`.
-- `fixtures/codex-remote-connection.md:8` - A common setup mistake is using `remote_control = true` instead of `remote_connections = true`, so the Connections subheading never appears in the Desktop app.
-- `fixtures/codex-remote-connection.md:9` - The local tunnel can fail with "local tunnel not ready" even when the SSH host is reachable.
-- `fixtures/codex-remote-connection.md:10` - Remote folder browsing can fail with `Unable to load folder contents: Timed out waiting for MCP response to fs/getMetadata while listing directories/files`.
-- `fixtures/codex-remote-connection.md:12` - Killing a stale `codex-server` or app-server on the remote host can force the Desktop app to reattach.
-- `fixtures/codex-remote-connection.md:13` - Some remote machines cannot directly access the Codex API, so reports need to mention proxy, local-machine request routing, or ForwardAgent SSH remote server requirements.
-- `fixtures/codex-remote-connection.md:22` - Exact local tunnel, app-server, codex-server, fs/getMetadata, folder listing, model list, auth, proxy, or API reachability error.
+- `fixtures/codex-cli-no-response.md:1` # Codex CLI No-Response Hang
+- `fixtures/codex-cli-no-response.md:3` Public issue cluster: All models - Codex CLI hangs indefinitely on all prompts, no response generated.
+- `fixtures/codex-cli-no-response.md:7` - Codex CLI accepts prompts and displays them, but no streaming output begins.
+- `fixtures/codex-cli-no-response.md:8` - All models tested, including `gpt-5.4 high`, `gpt-5.3-codex`, and `gpt-5.1-codex-max`, show no response, no error, and no timeout.
+- `fixtures/codex-cli-no-response.md:9` - The status bar remains `gpt-5.4 high - 100% left`; no tokens are being consumed while the prompt is stuck.
+- `fixtures/codex-cli-no-response.md:10` - A `status.openai.com/incidents` status incident note says Codex CLI hanging or no response may come from unhealthy clusters and rerouted traffic.
+- `fixtures/codex-cli-no-response.md:12` - In another report, Codex hangs during terminal command execution; basic shell commands get stuck, it does half the job then stuck, and the VS Code client remains on Thinking or Working.
+- `fixtures/codex-cli-no-response.md:17` The `codex exec --sandbox read-only --model gpt-5.3-codex 'ping'` run has no output and hangs after MCP startup with `unhandled responses event` SSE lines:
 
 Suggested rule:
 
-> When reporting Codex remote connection failures, capture Codex Desktop version, remote Codex CLI/app-server version, local OS, remote OS/architecture, SSH target alias from `~/.ssh/config`, whether `[features].remote_connections = true` is set, Settings > Connections visibility, selected host/path, remote workspace path, whether the remote filesystem is the source of truth, exact tunnel/app-server error, codex-server pid and restart result, `ps -ef | rg 'codex app-server|openai.chatgpt.*/codex'` evidence if available, remote PATH/auth/proxy/API reachability, model list differences versus local, fs/getMetadata or folder listing errors, ForwardAgent/proxy requirements, and whether reconnect/resume or a clean host works.
+> When reporting Codex thinking or CLI no-response hangs, capture app/CLI/extension version, OS/terminal such as WSL, model and reasoning/speed settings, subscription/workspace, turn/thread id, prompt timestamp, whether the prompt is accepted but no streaming output/error/timeout appears, status bar or usage percent such as 100% left, `turn/start` or `task_started` timestamp, last successful tool-call output, first `response_item` or assistant timestamp if it eventually appears, `RUST_LOG`/SSE evidence including unhandled responses events, transport (`responses_http` or websocket), `time.busy`/`time.idle` close metrics, reconnect or stream-disconnect lines, status incident link or cluster mitigation note if relevant, MCP/subagent state, whether stop/Ctrl+C/interrupt works, and whether a new thread, logout/login, downgrade, API billing path, or minimal config without MCPs recovers.
 
 
 ## Reporter Notes
@@ -100,6 +100,7 @@ Suggested rule:
 - `subagent-lifecycle`: Completed, closed, stale, or interrupted subagents diverge between UI, live registry, persisted state, quota, and parent discoverability.
 - `usage-bucket-confusion`: Usage popovers show 5h and weekly percentages without clear remaining/used, rolling/calendar, or account/workspace scope.
 - `context-visibility`: Desktop context or token usage indicators disappear, leaving long-session compaction pressure invisible.
+- `remote-connection`: Desktop remote SSH workspaces, Settings > Connections, remote app-server, tunnel, or remote filesystem evidence breaks.
 - `token-burn`: Usage drains from background polling, idle activity, compaction loops, retries, or cached-heavy turns.
 - `patch-overwrite`: `apply_patch` accepts `*** Add File` for an existing path, turning a create operation into a silent overwrite.
 - `sensitive-files`: Secrets, local credentials, production env files, or private databases enter agent context.
@@ -115,6 +116,7 @@ trace-to-skill demo subagent-prompt-leakage
 trace-to-skill demo windows-helper-path
 trace-to-skill demo patch-overwrite
 trace-to-skill demo thinking-hang
+trace-to-skill demo cli-no-response
 trace-to-skill demo clipboard-attachment
 trace-to-skill demo deeplink-launch
 trace-to-skill demo connector-auth-cache

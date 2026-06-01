@@ -17,6 +17,7 @@ This benchmark runs the public fixture pack that ships with the repository and p
 | Codex selected model differs from actual routed model | `fixtures/codex-model-routing-mismatch.md` | 75 | 2 | 0 | `codex_model_routing_mismatch`, `weak_evidence` | pass |
 | Codex model and runtime latency regression | `fixtures/codex-latency-regression.md` | 75 | 2 | 0 | `codex_latency_regression`, `weak_evidence` | pass |
 | Codex thinking and stream hang | `fixtures/codex-thinking-hang.md` | 75 | 2 | 0 | `codex_thinking_hang`, `weak_evidence` | pass |
+| Codex CLI no-response and command execution hang | `fixtures/codex-cli-no-response.md` | 75 | 2 | 0 | `codex_thinking_hang`, `weak_evidence` | pass |
 | Codex clipboard, paste, and attachment workflow regression | `fixtures/codex-clipboard-attachment.md` | 75 | 2 | 0 | `codex_clipboard_attachment`, `weak_evidence` | pass |
 | Codex deeplink, OAuth callback, and external launch regression | `fixtures/codex-deeplink-launch.md` | 50 | 4 | 0 | `codex_deeplink_launch`, `codex_remote_control`, `hallucinated_file`, `weak_evidence` | pass |
 | Codex app connector auth cache and stale link regression | `fixtures/codex-connector-auth-cache.md` | 75 | 2 | 0 | `codex_connector_auth_cache`, `weak_evidence` | pass |

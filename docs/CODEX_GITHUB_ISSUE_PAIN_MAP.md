@@ -1,9 +1,9 @@
 # GitHub Issue Pain Map
 
-Generated: 2026-06-01T03:25:54.011Z
+Generated: 2026-06-01T03:41:41.220Z
 
-Issues analyzed: **15**
-Matched issues: **14**
+Issues analyzed: **17**
+Matched issues: **16**
 Unmatched issues: **1**
 
 This report maps GitHub issues onto deterministic `trace-to-skill` failure classes. Fetch a repository directly with `--repo`, or export issues with `gh issue list` / `gh search issues` and pass the JSON file.
@@ -21,7 +21,8 @@ gh issue list --repo openai/codex --state all --limit 100 --json number,title,bo
 | ---: | --- | --- | ---: | ---: | ---: | --- |
 | 1895 | `codex_remote_connection` | high | 1 | 176 | 851 | [#10450 Remote Development in Codex Desktop App](https://github.com/openai/codex/issues/10450) |
 | 1051 | `codex_token_burn` | high | 2 | 918 | 53 | [#14593 Burning tokens very fast](https://github.com/openai/codex/issues/14593) |
-| 460 | `weak_evidence` | medium | 15 | 1985 | 991 | [#14593 Burning tokens very fast](https://github.com/openai/codex/issues/14593) |
+| 508 | `weak_evidence` | medium | 17 | 2186 | 1094 | [#14593 Burning tokens very fast](https://github.com/openai/codex/issues/14593) |
+| 434 | `codex_thinking_hang` | high | 2 | 201 | 103 | [#14048 All models - Codex CLI hangs indefinitely on all prompts, no response generated](https://github.com/openai/codex/issues/14048) |
 | 409 | `codex_auth_verification` | high | 2 | 346 | 18 | [#20161 Phone number verification doesn't work](https://github.com/openai/codex/issues/20161) |
 | 304 | `codex_model_routing_mismatch` | high | 3 | 231 | 18 | [#11189 GPT-5.3-Codex being routed to GPT-5.2](https://github.com/openai/codex/issues/11189) |
 | 257 | `codex_context_visibility` | high | 3 | 168 | 26 | [#23794 Codex Desktop no longer shows visible context/token usage indicator](https://github.com/openai/codex/issues/23794) |
@@ -37,9 +38,9 @@ gh issue list --repo openai/codex --state all --limit 100 --json number,title,bo
 | ---: | --- | --- | --- |
 | 1 | Remote connection fixture and SSH workspace evidence report | 1 issue(s), 176 comment(s), severity high; top signal: codex_remote_connection. | `trace-to-skill codex-report ./runs --output openai-codex-remote-connection.md` |
 | 2 | Usage evidence fixture and support-ready token report | 2 issue(s), 918 comment(s), severity high; top signal: codex_token_burn. | `trace-to-skill usage-evidence ./usage-notes.md --output usage-evidence.md` |
-| 3 | Auth verification fixture and login support report | 2 issue(s), 346 comment(s), severity high; top signal: codex_auth_verification. | `trace-to-skill codex-report ./runs --output openai-codex-auth-issue.md` |
-| 4 | Model-routing fixture and SSE evidence report | 3 issue(s), 231 comment(s), severity high; top signal: codex_model_routing_mismatch. | `trace-to-skill codex-report ./runs --output openai-codex-model-routing.md` |
-| 5 | Context visibility fixture and Desktop UI evidence report | 3 issue(s), 168 comment(s), severity high; top signal: codex_context_visibility. | `trace-to-skill codex-report ./runs --output openai-codex-context-visibility.md` |
+| 3 | Codex-ready issue report and failure fixture | 2 issue(s), 201 comment(s), severity high; top signal: codex_thinking_hang. | `trace-to-skill codex-report ./runs --output openai-codex-issue.md` |
+| 4 | Auth verification fixture and login support report | 2 issue(s), 346 comment(s), severity high; top signal: codex_auth_verification. | `trace-to-skill codex-report ./runs --output openai-codex-auth-issue.md` |
+| 5 | Model-routing fixture and SSE evidence report | 3 issue(s), 231 comment(s), severity high; top signal: codex_model_routing_mismatch. | `trace-to-skill codex-report ./runs --output openai-codex-model-routing.md` |
 
 ## Suggested Next Actions
 
@@ -64,6 +65,17 @@ Example issues:
 Evidence rule prompts:
 - When reporting Codex token burn, capture plan/workspace, client and version, model and reasoning/speed settings, fast-mode/large-context/subagent/review flags, recent /status and usage-dashboard deltas, local token totals including cached input/output/reasoning if available, background process ids and write_stdin poll cadence, compaction attempts and failures, retry/tool-loop counts, whether the app was idle, and a minimal reproduction with before/after usage percentages.
 
+### codex_thinking_hang
+
+Priority score: 434. 2 issue(s), 201 comment(s).
+
+Example issues:
+- [#14048 All models - Codex CLI hangs indefinitely on all prompts, no response generated](https://github.com/openai/codex/issues/14048) (131 comments; labels: bug, agent)
+- [#7156 Codex hangs during cli command execution](https://github.com/openai/codex/issues/7156) (70 comments; labels: bug, CLI)
+
+Evidence rule prompts:
+- When reporting Codex thinking or CLI no-response hangs, capture app/CLI/extension version, OS/terminal such as WSL, model and reasoning/speed settings, subscription/workspace, turn/thread id, prompt timestamp, whether the prompt is accepted but no streaming output/error/timeout appears, status bar or usage percent such as 100% left, `turn/start` or `task_started` timestamp, last successful tool-call output, first `response_item` or assistant timestamp if it eventually appears, `RUST_LOG`/SSE evidence including unhandled responses events, transport (`responses_http` or websocket), `time.busy`/`time.idle` close metrics, reconnect or stream-disconnect lines, status incident link or cluster mitigation note if relevant, MCP/subagent state, whether stop/Ctrl+C/interrupt works, and whether a new thread, logout/login, downgrade, API billing path, or minimal config without MCPs recovers.
+
 ### codex_auth_verification
 
 Priority score: 409. 2 issue(s), 346 comment(s).
@@ -86,18 +98,6 @@ Example issues:
 
 Evidence rule prompts:
 - When reporting Codex model-routing mismatches, capture the Codex app/CLI/extension version, subscription/workspace, selected model from config.toml, TUI, command flag, or UI, actual server-side model from SSE `response.created` / `response.model`, the exact `RUST_LOG` or trace command used, timestamp, account or verification state without secrets, whether API and Codex routes differ, whether a warning/fallback notice appeared, and a minimal one-prompt reproduction with redacted logs.
-
-### codex_context_visibility
-
-Priority score: 257. 3 issue(s), 168 comment(s).
-
-Example issues:
-- [#23794 Codex Desktop no longer shows visible context/token usage indicator](https://github.com/openai/codex/issues/23794) (160 comments; labels: bug, context, app)
-- [#23591 Reimplement visible context/token usage indicator in Codex Desktop App](https://github.com/openai/codex/issues/23591) (7 comments; labels: enhancement, rate-limits, context, app)
-- [#24710 Codex Desktop: hidden context indicator still blocks long-session context management](https://github.com/openai/codex/issues/24710) (1 comments; labels: enhancement, context, app)
-
-Evidence rule prompts:
-- When reporting Codex context-visibility regressions, capture Codex Desktop version, OS, surface, screenshot or short recording of the chat input area, whether the prior context/token indicator or tooltip was visible before the update, exact UI route where it disappeared, local session metadata showing context/window pressure if available, `/status` output if relevant, compaction timing, whether CLI/TUI still exposes a statusline, and how the missing indicator affects long-session decisions.
 
 ## Unmatched Issues
 
