@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { writeFile } from "node:fs/promises";
+import { readFile, writeFile } from "node:fs/promises";
 import { lintAgents, renderAgentsLintMarkdown } from "./agentsLint.js";
 import { analyzeTargets } from "./analyze.js";
 import { renderBenchmarkMarkdown, runBenchmark } from "./benchmark.js";
@@ -10,7 +10,7 @@ import { createDiagnosticsBundle, renderDiagnosticsBundleMarkdown } from "./diag
 import { doctorRepo } from "./doctor.js";
 import { compareAnalyses, evaluate } from "./eval.js";
 import { analyzeGithubEventContext } from "./githubContext.js";
-import { buildGithubIssueMap, buildIssueMap, renderIssueMapMarkdown } from "./issueMap.js";
+import { buildGithubIssueMap, buildIssueMapFromSources, renderIssueMapMarkdown } from "./issueMap.js";
 import { postIssueComment, postPullRequestComment } from "./github.js";
 import { initProject } from "./init.js";
 import { auditLspReadiness, renderLspAuditMarkdown } from "./lspAudit.js";
@@ -222,7 +222,7 @@ async function main(): Promise<void> {
         limit: numberFlag(parsed.flags.limit),
         token: stringFlag(parsed.flags.token)
       }) :
-      await buildIssueMap(parsed.targets, issueMapOptions);
+      await buildIssueMapFromCliTargets(parsed.targets, issueMapOptions);
     const format = String(parsed.flags.format ?? "markdown");
     const output = format === "json" ? `${JSON.stringify(result, null, 2)}\n` : renderIssueMapMarkdown(result);
     await writeOutput(output, parsed.flags.output);
@@ -241,7 +241,7 @@ async function main(): Promise<void> {
         limit: numberFlag(parsed.flags.limit),
         token: stringFlag(parsed.flags.token)
       }) :
-      await buildIssueMap(parsed.targets, issueMapOptions);
+      await buildIssueMapFromCliTargets(parsed.targets, issueMapOptions);
     const body = `<!-- trace-to-skill-issue-map-report -->\n${renderIssueMapMarkdown(result)}`;
     const message = await postIssueComment({
       body,
@@ -538,6 +538,44 @@ function parseArgs(args: string[]): ParsedArgs {
   return { command, targets, flags };
 }
 
+async function buildIssueMapFromCliTargets(targets: string[], options: { top?: number }) {
+  if (targets.length === 0) {
+    if (!process.stdin.isTTY) {
+      const raw = await readStdin();
+      if (!raw.trim()) {
+        throw new Error("issue-map received empty stdin. Pipe GitHub issue JSON, pass an export file, or use --repo owner/name.");
+      }
+      return buildIssueMapFromSources([{ source: "stdin", raw }], options);
+    }
+    throw new Error("issue-map requires at least one GitHub issue export file, stdin input, or --repo owner/name.");
+  }
+
+  const sources: Array<{ source: string; raw: string }> = [];
+  let stdinRaw: string | undefined;
+  for (const target of targets) {
+    if (target === "-") {
+      stdinRaw ??= await readStdin();
+      if (!stdinRaw.trim()) {
+        throw new Error("issue-map received empty stdin. Pipe GitHub issue JSON before using issue-map -.");
+      }
+      sources.push({ source: "stdin", raw: stdinRaw });
+      continue;
+    }
+    sources.push({ source: target, raw: await readFile(target, "utf8") });
+  }
+
+  return buildIssueMapFromSources(sources, options);
+}
+
+async function readStdin(): Promise<string> {
+  let raw = "";
+  process.stdin.setEncoding("utf8");
+  for await (const chunk of process.stdin) {
+    raw += chunk;
+  }
+  return raw;
+}
+
 async function writeOutput(output: string, outputPath: string | boolean | undefined): Promise<void> {
   if (typeof outputPath === "string") {
     await writeFile(outputPath, output, "utf8");
@@ -570,6 +608,7 @@ Usage:
   trace-to-skill scorecard-comment [repo-dir] [--threshold 85] [--dry-run] [--token $GITHUB_TOKEN]
   trace-to-skill oss-brief [repo-dir] [--threshold 85] [--format markdown|json] [--output docs/OPENAI_OSS_BRIEF.md]
   trace-to-skill issue-map <github-issues.json-or-md> [--top 12] [--format markdown|json] [--output codex-issue-map.md]
+  gh issue list --repo openai/codex --json number,title,body,url,labels,comments,updatedAt | trace-to-skill issue-map - [--format markdown|json]
   trace-to-skill issue-map --repo openai/codex [--state open|closed|all] [--limit 100] [--token $GITHUB_TOKEN] [--format markdown|json]
   trace-to-skill issue-map-comment --repo openai/codex --issue-number 8 [--comment-repository owner/repo] [--state open|closed|all] [--limit 100] [--dry-run] [--token $GITHUB_TOKEN]
   trace-to-skill guard-github-event [event.json] [--threshold 80] [--format markdown|json] [--output report.md]
@@ -605,6 +644,7 @@ Examples:
   trace-to-skill oss-brief . --output docs/OPENAI_OSS_BRIEF.md
   gh issue list --repo openai/codex --state open --limit 100 --json number,title,body,url,labels,comments,createdAt,updatedAt > codex-issues.json
   trace-to-skill issue-map codex-issues.json --output codex-issue-map.md
+  gh issue list --repo openai/codex --state all --limit 100 --json number,title,body,url,labels,comments,updatedAt | trace-to-skill issue-map - --format json
   trace-to-skill issue-map --repo openai/codex --limit 100 --output codex-issue-map.md
   trace-to-skill issue-map-comment --repo openai/codex --issue-number 8 --comment-repository owner/repo --dry-run
   trace-to-skill guard-github-event "$GITHUB_EVENT_PATH"

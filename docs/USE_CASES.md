@@ -59,7 +59,7 @@ What it proves:
 Recommended CI surface:
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.91
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.92
   with:
     mode: all
     doctor-threshold: "85"
@@ -81,11 +81,13 @@ npx trace-to-skill issue-map-comment --repo openai/codex --issue-number 8 --comm
 gh issue list --repo openai/codex --state open --limit 100 --json number,title,body,url,labels,comments,createdAt,updatedAt > codex-issues.json
 npx trace-to-skill issue-map codex-issues.json --output codex-issue-map.md
 npx trace-to-skill issue-map codex-issues.json --format json
+gh issue list --repo openai/codex --state all --limit 100 --json number,title,body,url,labels,comments,updatedAt | npx trace-to-skill issue-map - --format json
 ```
 
 What it proves:
 
 - public issue clusters can be ranked without private telemetry
+- GitHub CLI issue JSON can be piped directly without writing temporary export files
 - high-comment pain points are mapped to deterministic failure classes such as token burn, remote compact, MCP discovery, usage buckets, context drift, sandbox, and resource leaks
 - maintainers get example issue links, evidence-rule prompts, and a Maintainer Roadmap with the next artifact plus the command to generate it
 - `init --issue-map-repo owner/name` can install a weekly/manual Codex Issue Radar workflow without committing generated reports

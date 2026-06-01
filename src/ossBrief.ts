@@ -173,7 +173,7 @@ function buildEvidence(
     license ? `Open-source license: ${license}` : "Add an OSI-approved license such as Apache-2.0 or MIT.",
     `Codex readiness doctor: ${scorecard.doctor.status}, ${scorecard.doctor.score}/100, ${scorecard.doctor.failedChecks} failed checks.`,
     `Public fixture benchmark: ${scorecard.benchmark.status}, ${scorecard.benchmark.cases} cases.`,
-    "GitHub issue demand mining: issue-map ranks exported OpenAI/Codex issues by failure class, comments, reactions, evidence gaps, and Maintainer Roadmap next artifacts.",
+    "GitHub issue demand mining: issue-map fetches or reads piped GitHub CLI issue JSON, then ranks OpenAI/Codex issues by failure class, comments, reactions, evidence gaps, and Maintainer Roadmap next artifacts.",
     "Weekly Codex Issue Radar: init --issue-map-repo owner/name scaffolds a scheduled Action that fetches live GitHub issues and publishes the pain map to the job summary or a stable tracking issue comment.",
     "Maintainer control: generated rules are suggestions, evidence is line-linked, and secrets can be redacted before sharing."
   ];

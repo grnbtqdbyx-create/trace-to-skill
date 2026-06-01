@@ -1324,6 +1324,23 @@ test("issue-map fetches repository issues from GitHub-compatible API", async () 
   }
 });
 
+test("issue-map reads GitHub issue exports from stdin", async () => {
+  const { stdout } = await execFileAsync("sh", [
+    "-c",
+    "cat fixtures/github-codex-issues-export.json | node dist/src/cli.js issue-map - --format json"
+  ]);
+  const result = JSON.parse(stdout) as {
+    sources: string[];
+    issueCount: number;
+    roadmap: Array<{ kind: string; command: string }>;
+  };
+
+  assert.deepEqual(result.sources, ["stdin"]);
+  assert.equal(result.issueCount, 5);
+  assert.equal(result.roadmap[0]?.kind, "codex_token_burn");
+  assert.match(result.roadmap[0]?.command ?? "", /usage-evidence/);
+});
+
 test("process audit packages Codex process polling and high CPU evidence", () => {
   const result = auditProcessEvidenceFromInputs([
     {
@@ -2305,7 +2322,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.equal(brief.scorecard.benchmarkStatus, "pass");
   assert.equal(brief.scorecard.benchmarkCases, 38);
   assert.equal(brief.packageName, "trace-to-skill");
-  assert.equal(brief.packageVersion, "0.1.91");
+  assert.equal(brief.packageVersion, "0.1.92");
   assert.equal(brief.license, "Apache-2.0");
   assert.ok(brief.repository?.includes("github.com/grnbtqdbyx-create/trace-to-skill"));
   assert.ok(brief.qualification.max500.length <= 500);
@@ -2313,7 +2330,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.match(markdown, /OpenAI OSS Brief/);
   assert.match(markdown, /Why This Repository Qualifies/);
   assert.match(markdown, /500-Character Version/);
-  assert.match(markdown, /npx trace-to-skill@0\.1\.91/);
+  assert.match(markdown, /npx trace-to-skill@0\.1\.92/);
   assert.match(markdown, /Weekly Codex Issue Radar/);
 });
 

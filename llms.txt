@@ -120,14 +120,15 @@ npx trace-to-skill benchmark
 npx trace-to-skill scorecard .
 npx trace-to-skill init --comment --sarif
 npx trace-to-skill init --issue-map-repo openai/codex --issue-map-state all --issue-map-limit 100
+gh issue list --repo openai/codex --state all --limit 100 --json number,title,body,url,labels,comments,updatedAt | npx trace-to-skill issue-map - --format json
 ```
 
-`issue-map` JSON and Markdown include a Maintainer Roadmap: the highest-priority failure classes, the next public artifact to build, and the exact `trace-to-skill` command that generates the supporting evidence.
+`issue-map` JSON and Markdown include a Maintainer Roadmap: the highest-priority failure classes, the next public artifact to build, and the exact `trace-to-skill` command that generates the supporting evidence. Use `issue-map -` when GitHub issue JSON is piped from `gh`.
 
 ## GitHub Action
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.91
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.92
   with:
     mode: all
     doctor-threshold: "85"
@@ -140,7 +141,7 @@ npx trace-to-skill init --issue-map-repo openai/codex --issue-map-state all --is
 ## Weekly Codex Issue Radar
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.91
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.92
   with:
     mode: issue-map
     issue-map-repo: openai/codex

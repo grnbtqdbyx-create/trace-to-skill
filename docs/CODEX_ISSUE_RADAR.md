@@ -1,6 +1,6 @@
 # GitHub Issue Pain Map
 
-Generated: 2026-06-01T02:23:28.269Z
+Generated: 2026-06-01T02:31:32.760Z
 
 Issues analyzed: **46**
 Matched issues: **14**
@@ -12,6 +12,7 @@ This report maps GitHub issues onto deterministic `trace-to-skill` failure class
 trace-to-skill issue-map --repo openai/codex --output codex-issue-map.md
 gh issue list --repo openai/codex --state open --limit 100 --json number,title,body,url,labels,comments,createdAt,updatedAt > codex-issues.json
 trace-to-skill issue-map codex-issues.json --output codex-issue-map.md
+gh issue list --repo openai/codex --state all --limit 100 --json number,title,body,url,labels,comments,updatedAt | trace-to-skill issue-map - --format json
 ```
 
 ## Top Clusters

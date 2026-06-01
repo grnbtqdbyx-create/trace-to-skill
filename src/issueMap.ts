@@ -7,6 +7,11 @@ export interface IssueMapOptions {
   top?: number;
 }
 
+export interface IssueMapSource {
+  source: string;
+  raw: string;
+}
+
 export interface GithubIssueMapOptions extends IssueMapOptions {
   state?: "open" | "closed" | "all";
   limit?: number;
@@ -119,14 +124,28 @@ export async function buildIssueMap(targets: string[], options: IssueMapOptions 
     throw new Error("issue-map requires at least one GitHub issue export file.");
   }
 
-  const normalizedIssues: NormalizedIssue[] = [];
+  const sources: IssueMapSource[] = [];
   for (const target of targets) {
-    const source = path.resolve(target);
-    const raw = await readFile(source, "utf8");
-    normalizedIssues.push(...parseIssueExport(raw, target));
+    sources.push({
+      source: target,
+      raw: await readFile(path.resolve(target), "utf8")
+    });
   }
 
-  return buildIssueMapFromNormalized(normalizedIssues, targets, options);
+  return buildIssueMapFromSources(sources, options);
+}
+
+export function buildIssueMapFromSources(sources: IssueMapSource[], options: IssueMapOptions = {}): IssueMapResult {
+  if (sources.length === 0) {
+    throw new Error("issue-map requires at least one GitHub issue export file or stdin input.");
+  }
+
+  const normalizedIssues: NormalizedIssue[] = [];
+  for (const source of sources) {
+    normalizedIssues.push(...parseIssueExport(source.raw, source.source));
+  }
+
+  return buildIssueMapFromNormalized(normalizedIssues, sources.map((source) => source.source), options);
 }
 
 export async function buildGithubIssueMap(repo: string, options: GithubIssueMapOptions = {}): Promise<IssueMapResult> {
@@ -273,6 +292,7 @@ export function renderIssueMapMarkdown(result: IssueMapResult): string {
     "trace-to-skill issue-map --repo openai/codex --output codex-issue-map.md",
     "gh issue list --repo openai/codex --state open --limit 100 --json number,title,body,url,labels,comments,createdAt,updatedAt > codex-issues.json",
     "trace-to-skill issue-map codex-issues.json --output codex-issue-map.md",
+    "gh issue list --repo openai/codex --state all --limit 100 --json number,title,body,url,labels,comments,updatedAt | trace-to-skill issue-map - --format json",
     "```",
     "",
     "## Top Clusters",
