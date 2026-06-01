@@ -294,6 +294,7 @@ test("demo command runs packaged scenarios without private traces", async () => 
   assert.ok(scenarios.some((scenario) => scenario.id === "deeplink-launch"));
   assert.ok(scenarios.some((scenario) => scenario.id === "connector-auth-cache"));
   assert.ok(scenarios.some((scenario) => scenario.id === "mcp-discovery-mismatch"));
+  assert.ok(scenarios.some((scenario) => scenario.id === "mcp-streamable-http"));
   assert.ok(scenarios.some((scenario) => scenario.id === "terminal-output-integrity"));
   assert.ok(scenarios.some((scenario) => scenario.id === "subagent-lifecycle"));
   assert.ok(scenarios.some((scenario) => scenario.id === "file-tree-ui"));
@@ -309,6 +310,7 @@ test("demo command runs packaged scenarios without private traces", async () => 
   assert.match(list, /deeplink-launch/);
   assert.match(list, /connector-auth-cache/);
   assert.match(list, /mcp-discovery-mismatch/);
+  assert.match(list, /mcp-streamable-http/);
   assert.match(list, /terminal-output-integrity/);
   assert.match(list, /subagent-lifecycle/);
   assert.match(list, /remote-compact/);
@@ -440,6 +442,23 @@ test("analyzeTargets detects Codex MCP runtime failures", async () => {
   assert.match(evidence, /unsupported call: mcp__node_repl__js/);
   assert.match(evidence, /Transport closed/);
   assert.match(finding.suggestedRule, /tools\/list/);
+});
+
+test("analyzeTargets detects Codex Streamable HTTP MCP failures", async () => {
+  const result = await analyzeTargets(["fixtures/codex-mcp-streamable-http.md"]);
+  const finding = result.findings.find((item) => item.kind === "codex_mcp_streamable_http");
+  const evidence = finding?.evidence.map((item) => item.excerpt).join("\n") ?? "";
+  const report = renderCodexIssueReport(result);
+
+  assert.ok(finding);
+  assert.equal(finding.severity, "high");
+  assert.match(evidence, /Streamable HTTP MCP server `penpot`/);
+  assert.match(evidence, /JsonRpcMessage deserialize error/);
+  assert.match(evidence, /Content-Type: text\/event-stream/);
+  assert.match(evidence, /stale streamable-http session id/);
+  assert.match(finding.suggestedRule, /Content-Type/);
+  assert.match(finding.suggestedRule, /session id/);
+  assert.match(report, /codex_mcp_streamable_http/);
 });
 
 test("analyzeTargets detects Codex MCP discovery and config-scope mismatches", async () => {
@@ -1407,6 +1426,8 @@ test("package metadata points npm users back to the public project", async () =>
   assert.ok(packageJson.keywords?.includes("codex-remote-control"));
   assert.ok(packageJson.keywords?.includes("codex-mcp"));
   assert.ok(packageJson.keywords?.includes("mcp-runtime"));
+  assert.ok(packageJson.keywords?.includes("codex-mcp-streamable-http"));
+  assert.ok(packageJson.keywords?.includes("streamable-http-mcp"));
   assert.ok(packageJson.keywords?.includes("codex-file-tree"));
   assert.ok(packageJson.keywords?.includes("codex-navigation"));
   assert.ok(packageJson.keywords?.includes("codex-session"));
@@ -1889,6 +1910,7 @@ test("published JSON schemas describe CLI result contracts", async () => {
   assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("codex_subagent_lifecycle"));
   assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("codex_mcp_discovery_mismatch"));
   assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("codex_mcp_runtime"));
+  assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("codex_mcp_streamable_http"));
   assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("codex_plugin_runtime"));
   assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("codex_file_tree_ui"));
   assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("codex_session_state"));
@@ -1972,7 +1994,7 @@ test("benchmark covers public fixture failure classes", async () => {
   const markdown = renderBenchmarkMarkdown(benchmark);
 
   assert.equal(benchmark.passed, true);
-  assert.equal(benchmark.cases.length, 33);
+  assert.equal(benchmark.cases.length, 34);
   assert.ok(benchmark.cases.some((item) => item.id === "clean-validated-run" && item.score === 100));
   assert.ok(benchmark.cases.some((item) => item.id === "failed-workflow" && item.detectedKinds.includes("test_failure")));
   assert.ok(benchmark.cases.some((item) => item.id === "context-compaction" && item.detectedKinds.includes("context_compaction")));
@@ -1991,6 +2013,7 @@ test("benchmark covers public fixture failure classes", async () => {
   assert.ok(benchmark.cases.some((item) => item.id === "codex-terminal-output-integrity" && item.detectedKinds.includes("codex_terminal_output_integrity")));
   assert.ok(benchmark.cases.some((item) => item.id === "codex-subagent-lifecycle" && item.detectedKinds.includes("codex_subagent_lifecycle")));
   assert.ok(benchmark.cases.some((item) => item.id === "codex-mcp-runtime" && item.detectedKinds.includes("codex_mcp_runtime")));
+  assert.ok(benchmark.cases.some((item) => item.id === "codex-mcp-streamable-http" && item.detectedKinds.includes("codex_mcp_streamable_http")));
   assert.ok(benchmark.cases.some((item) => item.id === "codex-mcp-discovery-mismatch" && item.detectedKinds.includes("codex_mcp_discovery_mismatch")));
   assert.ok(benchmark.cases.some((item) => item.id === "codex-plugin-runtime" && item.detectedKinds.includes("codex_plugin_runtime")));
   assert.ok(benchmark.cases.some((item) => item.id === "codex-file-tree-ui" && item.detectedKinds.includes("codex_file_tree_ui")));
@@ -2018,7 +2041,7 @@ test("scorecard combines doctor readiness and benchmark evidence", async () => {
   assert.equal(scorecard.doctor.status, "ready");
   assert.equal(scorecard.doctor.score, 100);
   assert.equal(scorecard.benchmark.status, "pass");
-  assert.equal(scorecard.benchmark.cases, 33);
+  assert.equal(scorecard.benchmark.cases, 34);
   assert.match(markdown, /trace-to-skill Scorecard/);
   assert.match(markdown, /Codex readiness/);
   assert.match(markdown, /Benchmark Summary/);
@@ -2034,9 +2057,9 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.equal(brief.scorecard.doctorStatus, "ready");
   assert.equal(brief.scorecard.doctorScore, 100);
   assert.equal(brief.scorecard.benchmarkStatus, "pass");
-  assert.equal(brief.scorecard.benchmarkCases, 33);
+  assert.equal(brief.scorecard.benchmarkCases, 34);
   assert.equal(brief.packageName, "trace-to-skill");
-  assert.equal(brief.packageVersion, "0.1.79");
+  assert.equal(brief.packageVersion, "0.1.80");
   assert.equal(brief.license, "Apache-2.0");
   assert.ok(brief.repository?.includes("github.com/grnbtqdbyx-create/trace-to-skill"));
   assert.ok(brief.qualification.max500.length <= 500);
@@ -2044,7 +2067,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.match(markdown, /OpenAI OSS Brief/);
   assert.match(markdown, /Why This Repository Qualifies/);
   assert.match(markdown, /500-Character Version/);
-  assert.match(markdown, /npx trace-to-skill@0\.1\.79/);
+  assert.match(markdown, /npx trace-to-skill@0\.1\.80/);
 });
 
 test("scorecard-comment dry-run resolves pull request event", async () => {

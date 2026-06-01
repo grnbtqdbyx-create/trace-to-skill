@@ -1,6 +1,6 @@
 {
   "name": "trace-to-skill",
-  "version": "0.1.79",
+  "version": "0.1.80",
   "description": "Turn failed AI coding-agent runs into reusable AGENTS.md rules, SKILL.md files, and eval evidence.",
   "type": "module",
   "main": "dist/src/index.js",
@@ -119,6 +119,10 @@
     "mcp-config",
     "codex-vscode",
     "mcp-runtime",
+    "codex-mcp-streamable-http",
+    "streamable-http-mcp",
+    "mcp-http",
+    "mcp-sse",
     "codex-plugins",
     "codex-file-tree",
     "codex-navigation",

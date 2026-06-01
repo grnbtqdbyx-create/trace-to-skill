@@ -73,6 +73,12 @@ const DEMO_SCENARIOS: DemoScenario[] = [
     description: "MCP servers work in CLI or one config scope but are absent in Desktop, VS Code, WSL, or project-local sessions."
   },
   {
+    id: "mcp-streamable-http",
+    title: "Codex Streamable HTTP MCP failure",
+    fixture: "fixtures/codex-mcp-streamable-http.md",
+    description: "Streamable HTTP or SSE MCP servers pass initialize or tools/list but fail parsing, handshakes, auth gating, stale sessions, or reconnects."
+  },
+  {
     id: "terminal-output-integrity",
     title: "Codex terminal output integrity",
     fixture: "fixtures/codex-terminal-output-integrity.md",
@@ -175,6 +181,7 @@ export function renderDemoMarkdown(result: DemoResult): string {
     "trace-to-skill demo deeplink-launch",
     "trace-to-skill demo connector-auth-cache",
     "trace-to-skill demo mcp-discovery-mismatch",
+    "trace-to-skill demo mcp-streamable-http",
     "trace-to-skill demo terminal-output-integrity",
     "trace-to-skill demo subagent-lifecycle",
     "trace-to-skill demo file-tree-ui",
@@ -205,6 +212,7 @@ export function renderDemoScenarioList(scenarios = listDemoScenarios()): string 
     "trace-to-skill demo deeplink-launch",
     "trace-to-skill demo connector-auth-cache",
     "trace-to-skill demo mcp-discovery-mismatch",
+    "trace-to-skill demo mcp-streamable-http",
     "trace-to-skill demo terminal-output-integrity",
     "trace-to-skill demo subagent-lifecycle",
     "trace-to-skill demo --list",

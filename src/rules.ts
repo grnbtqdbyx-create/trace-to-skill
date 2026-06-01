@@ -509,6 +509,25 @@ const RULES: RuleDefinition[] = [
     suggestedSkill: "codex-mcp-runtime-triage"
   },
   {
+    kind: "codex_mcp_streamable_http",
+    severity: "high",
+    title: "Codex Streamable HTTP MCP parse or handshake failure",
+    why: "Streamable HTTP and SSE MCP servers can be reachable yet fail in Codex because response framing, JSON-RPC parsing, session ids, OAuth gating, headers, or reconnect handling diverge from what the server expects.",
+    patterns: [
+      /\b(Streamable HTTP|streamable-http|HTTP\/SSE|SSE MCP|text\/event-stream)\b.{0,240}\b(MCP|server|client)\b.{0,240}\b(parse|deserialize|JsonRpcMessage|invalid JSON|response parse|schema|Penpot|n8n|DingTalk)\b/i,
+      /\b(Penpot|n8n|DingTalk)\b.{0,240}\b(Streamable HTTP|streamable-http|HTTP MCP|SSE MCP|text\/event-stream)\b.{0,240}\b(fails?|failed|parse|deserialize|handshake|initialize|tools\/list|tools\/call|OAuth|login)\b/i,
+      /\bMCP Streamable HTTP\b.{0,240}\b(handshake|initialize|tools\/list|tools\/call|session id|session_id|Transport closed|server restart|reconnect|stale)\b/i,
+      /\bJsonRpcMessage\b.{0,180}\bdeserialize\b.{0,180}\b(streamable-http|Streamable HTTP|response|MCP)\b/i,
+      /\b(streamable-http|Streamable HTTP)\b.{0,240}\b(stale session|session id|session_id|404|410|restart|reinitialize|recover|reconnect)\b/i,
+      /\b(streamable-http|Streamable HTTP)\b.{0,240}\b(User-Agent|missing header|OAuth|login|auth gate|incorrectly gated)\b/i,
+      /\b(response parse|parse failed|deserialize)\b.{0,180}\bContent-Type\b.{0,140}\b(text\/event-stream|application\/json)\b/i,
+      /\bContent-Type\b.{0,140}\b(text\/event-stream|application\/json)\b.{0,240}\b(MCP|JSON-RPC|JsonRpcMessage|parse|deserialize|SSE|response)\b/i
+    ],
+    suggestedRule:
+      "When reporting Codex Streamable HTTP MCP failures, capture Codex version, MCP server name, transport URL without secrets, initialize/tools/list/tools/call results, HTTP status, Content-Type, SSE event framing, JSON-RPC message shape, session id before and after reconnect or server restart, auth/OAuth expectations, User-Agent and header requirements, exact parse/deserialize error, whether curl or another MCP client succeeds, and whether restarting Codex or reinitializing the transport recovers.",
+    suggestedSkill: "codex-mcp-streamable-http-triage"
+  },
+  {
     kind: "codex_plugin_runtime",
     severity: "high",
     title: "Codex plugin runtime or bundled capability failure",

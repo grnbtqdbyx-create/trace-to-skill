@@ -168,6 +168,12 @@ const BENCHMARK_CASES: BenchmarkCaseDefinition[] = [
     expectedKinds: ["codex_mcp_runtime", "weak_evidence"]
   },
   {
+    id: "codex-mcp-streamable-http",
+    title: "Codex Streamable HTTP MCP parse and handshake failure",
+    fixture: "fixtures/codex-mcp-streamable-http.md",
+    expectedKinds: ["codex_mcp_streamable_http", "weak_evidence"]
+  },
+  {
     id: "codex-mcp-discovery-mismatch",
     title: "Codex MCP discovery and config-scope mismatch",
     fixture: "fixtures/codex-mcp-discovery-mismatch.md",

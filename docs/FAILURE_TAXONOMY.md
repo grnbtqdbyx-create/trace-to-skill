@@ -120,6 +120,14 @@ Common signals include `user cancelled MCP tool call`, `request_user_input is no
 
 The fix is to capture the Codex version, MCP server name and transport, tool name, exposed callable name, whether `tools/list` and manual `tools/call` succeed, `approval_policy`, sandbox mode, exec or interactive mode, elicitation setting, namespace or `serverName` metadata, exact `item.started` / `item.completed` JSONL, stderr or backpressure evidence, and whether restarting or reinitializing the transport changes the result.
 
+## Codex Streamable HTTP MCP
+
+Streamable HTTP and SSE MCP servers can be reachable and still fail inside Codex before or during tool calls. This is different from discovery mismatch because the server may initialize or expose tools, and different from stdio runtime failure because the failure sits in HTTP framing, JSON-RPC parsing, session reuse, auth expectations, or reconnect behavior.
+
+Common signals include Penpot response parse or `JsonRpcMessage deserialize` errors, `Content-Type: text/event-stream` SSE frames that Codex cannot parse, n8n `initialize` success followed by `Transport closed`, DingTalk OAuth/login gating that contradicts local config, stale `streamable-http` session ids after a remote server restart, missing header or User-Agent requirements, and recovery only after restarting Codex.
+
+The fix is to capture Codex version, MCP server name, transport URL without secrets, initialize/tools/list/tools/call results, HTTP status, `Content-Type`, SSE event framing, JSON-RPC message shape, session id before and after reconnect or server restart, auth/OAuth expectations, User-Agent and header requirements, exact parse/deserialize error, whether curl or another MCP client succeeds, and whether restarting Codex or reinitializing the transport recovers.
+
 ## Codex MCP Discovery Mismatch
 
 Codex MCP servers can work in CLI or one config scope but disappear in another surface before any tool call is possible. This is different from runtime failure: the user may have no `mcp__*` tools exposed in VS Code, Desktop, WSL, a remote session, project-local `.codex/config.toml`, or an older conversation even though CLI `/mcp` works.

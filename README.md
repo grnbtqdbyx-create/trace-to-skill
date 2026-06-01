@@ -80,6 +80,7 @@ Use it when you need to:
 - **Report deeplink and OAuth launch regressions:** run `trace-to-skill codex-report ./runs` when `codex://oauth_callback`, notification clicks, browser-extension activation, mobile links, or `codex app <path>` fail to route back into Codex.
 - **Diagnose stale connector auth/cache:** run `trace-to-skill codex-report ./runs` when Codex app connectors return `401 Reauthentication required`, keep the same `link_*`, report `isAccessible: false`, or survive restart/plugin reinstall/cache clearing.
 - **Explain missing MCP tools across Codex surfaces:** run `trace-to-skill codex-report ./runs` when MCP servers work in CLI or user-global config but are absent in VS Code, Desktop, WSL, or project-local sessions.
+- **Diagnose Streamable HTTP MCP failures:** run `trace-to-skill codex-report ./runs` when Penpot, n8n, DingTalk, or another HTTP/SSE MCP server initializes but fails response parsing, handshakes, OAuth gating, stale session reuse, missing headers, or reconnects.
 - **Report terminal output and scrollback integrity failures:** run `trace-to-skill codex-report ./runs` when Codex terminal output disappears, gets overwritten, truncates numbered lines, snaps scrollback to the bottom, or only survives in logs/transcripts.
 - **Triage subagent lifecycle drift:** run `trace-to-skill codex-report ./runs` when completed or closed subagents stay visible, stale spawn edges remain open, child threads crowd the recent list, `agent thread limit reached` blocks new work, or compaction loses prior subagent IDs.
 - **Reduce approval friction:** run `trace-to-skill analyze ./runs` when `Approve for this session` is not remembered, repeated prompts push users toward Full Access, or trusted MCP tools like Playwright require dozens of approvals.
@@ -220,6 +221,7 @@ Trace analysis detects run-level failures:
 | Codex connectivity | Auth token exchange, proxy/CA, IPv6, Cloudflare challenge, or ChatGPT transport errors block Codex |
 | Codex remote control | Mobile or remote sessions route through stale listeners, stale enrollment, or incomplete helper bundles |
 | Codex MCP discovery mismatch | MCP works in CLI or one config scope but disappears in VS Code, Desktop, WSL, project config, or an older session |
+| Codex Streamable HTTP MCP | HTTP/SSE MCP servers initialize but fail JSON-RPC parsing, `text/event-stream` framing, handshakes, auth gating, stale session ids, or reconnects |
 | Codex terminal output integrity | Terminal scrollback, streamed output, or transcript rendering drops, overwrites, truncates, duplicates, or hides lines that raw logs still contain |
 | Codex subagent lifecycle | Completed, closed, stale, or interrupted subagents diverge across UI, registry, persisted spawn edges, quota, recent list, or parent discoverability |
 | Codex MCP runtime | MCP tools are configured but approval, namespace routing, unsupported callable names, or stdio transport fail at runtime |
@@ -268,6 +270,7 @@ trace-to-skill demo clipboard-attachment
 trace-to-skill demo deeplink-launch
 trace-to-skill demo connector-auth-cache
 trace-to-skill demo mcp-discovery-mismatch
+trace-to-skill demo mcp-streamable-http
 trace-to-skill demo terminal-output-integrity
 trace-to-skill demo subagent-lifecycle
 trace-to-skill demo patch-overwrite
@@ -503,7 +506,7 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v5
-      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.79
+      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.80
         with:
           mode: all
           doctor-threshold: "85"
@@ -552,7 +555,7 @@ Composite action usage:
 
 ```yaml
 - id: trace-to-skill
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.79
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.80
   with:
     mode: all
     doctor-threshold: "85"
@@ -594,7 +597,7 @@ Action outputs:
 
 By default, generated reports are also appended to the GitHub Actions Job Summary. Set `job-summary: "false"` to disable that UI output.
 
-Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.79` executes that release's checked-out source instead of pulling the default branch at runtime.
+Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.80` executes that release's checked-out source instead of pulling the default branch at runtime.
 
 ## Codex Skill
 
