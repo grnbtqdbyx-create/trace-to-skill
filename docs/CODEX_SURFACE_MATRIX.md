@@ -1,6 +1,6 @@
 # Codex Surface Support Matrix
 
-Generated: 2026-06-01T04:44:38.768Z
+Generated: 2026-06-01T05:01:50.226Z
 Issues analyzed: **23**
 
 This matrix turns live Codex issue demand into surface-specific support questions, evidence checklists, and first commands.

@@ -1,6 +1,6 @@
 # GitHub Issue Pain Map
 
-Generated: 2026-06-01T04:44:38.682Z
+Generated: 2026-06-01T05:01:49.046Z
 
 Issues analyzed: **46**
 Matched issues: **29**
@@ -19,9 +19,9 @@ gh issue list --repo openai/codex --state all --limit 100 --json number,title,bo
 
 | Priority | Kind | Severity | Issues | Comments | Reactions | Example |
 | ---: | --- | --- | ---: | ---: | ---: | --- |
-| 3101 | `codex_platform_availability` | high | 3 | 328 | 1368 | [#10410 Codex Desktop App: macOS Intel (x86_64) support](https://github.com/openai/codex/issues/10410) |
+| 3103 | `codex_platform_availability` | high | 3 | 328 | 1369 | [#10410 Codex Desktop App: macOS Intel (x86_64) support](https://github.com/openai/codex/issues/10410) |
 | 2438 | `codex_token_burn` | high | 4 | 1151 | 620 | [#14593 Burning tokens very fast](https://github.com/openai/codex/issues/14593) |
-| 2221 | `weak_evidence` | medium | 46 | 4755 | 7794 | [#14593 Burning tokens very fast](https://github.com/openai/codex/issues/14593) |
+| 2222 | `weak_evidence` | medium | 46 | 4755 | 7795 | [#14593 Burning tokens very fast](https://github.com/openai/codex/issues/14593) |
 | 1895 | `codex_remote_connection` | high | 1 | 176 | 851 | [#10450 Remote Development in Codex Desktop App](https://github.com/openai/codex/issues/10450) |
 | 1471 | `codex_hooks_contract` | high | 1 | 76 | 689 | [#2109 Event Hooks](https://github.com/openai/codex/issues/2109) |
 | 1135 | `codex_subagent_orchestration` | high | 2 | 172 | 468 | [#2604 Subagent Support](https://github.com/openai/codex/issues/2604) |
@@ -46,7 +46,7 @@ gh issue list --repo openai/codex --state all --limit 100 --json number,title,bo
 
 ### codex_platform_availability
 
-Priority score: 3101. 3 issue(s), 328 comment(s).
+Priority score: 3103. 3 issue(s), 328 comment(s).
 
 Example issues:
 - [#10410 Codex Desktop App: macOS Intel (x86_64) support](https://github.com/openai/codex/issues/10410) (190 comments; labels: enhancement, app)

@@ -39,7 +39,7 @@ Package a failed run into a better OpenAI/Codex issue:
 npx trace-to-skill codex-report ./runs --output openai-codex-issue.md
 ```
 
-See the live generated example: [docs/CODEX_ISSUE_RADAR.md](docs/CODEX_ISSUE_RADAR.md) and the surface support matrix: [docs/CODEX_SURFACE_MATRIX.md](docs/CODEX_SURFACE_MATRIX.md). For the full command catalog, use [docs/USE_CASES.md](docs/USE_CASES.md).
+See the live generated example: [docs/CODEX_ISSUE_RADAR.md](docs/CODEX_ISSUE_RADAR.md), the recency-weighted heat map: [docs/CODEX_ISSUE_HEAT.md](docs/CODEX_ISSUE_HEAT.md), and the surface support matrix: [docs/CODEX_SURFACE_MATRIX.md](docs/CODEX_SURFACE_MATRIX.md). For the full command catalog, use [docs/USE_CASES.md](docs/USE_CASES.md).
 
 AI coding agents are getting good enough to change real repositories, but they still repeat the same workflow mistakes: claiming success without tests, ignoring repo instructions, over-editing, inventing files, leaking secrets into traces, or enabling risky MCP tools.
 
@@ -59,6 +59,7 @@ Use it when you need to:
 - **Try it before collecting traces:** run `trace-to-skill demo` to generate a real Codex issue report from packaged public fixtures in one command.
 - **Prepare OpenAI OSS evidence:** run `trace-to-skill oss-brief .` to generate application-ready proof, 500-character summary fields, readiness score, benchmark status, license, and next steps.
 - **Mine GitHub issue demand:** run `trace-to-skill issue-map --repo openai/codex` or pass an exported issue JSON file to rank maintainer pain by deterministic failure class, comments, reactions, and evidence gaps.
+- **See what is heating up right now:** run `trace-to-skill issue-heat --repo openai/codex --state open --limit 100 --window-hours 24` to rank recent GitHub issue movement by recency, comments, labels, reactions, severity, and the first support command to run.
 - **Install a weekly issue radar:** run `trace-to-skill init --issue-map-repo owner/name` to add a scheduled GitHub Action that turns the repo's hottest issues into a Codex failure-class report in the job summary.
 - **Harden agent instructions:** run `trace-to-skill lint-agents .` to catch missing `AGENTS.md`, conflicting tool instructions, missing includes, nested instruction drift, encoding issues, and risky MCP config.
 - **Protect agent context:** run `trace-to-skill guard-github-event "$GITHUB_EVENT_PATH"` before feeding issue, PR, comment, discussion, check-run, or commit text into an agent.
@@ -428,6 +429,7 @@ Mine public GitHub issue demand into a maintainer pain map:
 ```bash
 trace-to-skill issue-map --repo openai/codex --state all --limit 100 --output codex-issue-radar.md
 trace-to-skill issue-map --repo openai/codex --format json
+trace-to-skill issue-heat --repo openai/codex --state open --limit 100 --window-hours 24 --output codex-issue-heat.md
 trace-to-skill init --issue-map-repo openai/codex --issue-map-state all --issue-map-limit 100
 gh issue list --repo openai/codex --state open --limit 100 --json number,title,body,url,labels,comments,createdAt,updatedAt > codex-issues.json
 trace-to-skill issue-map codex-issues.json --output codex-issue-map.md
@@ -437,7 +439,9 @@ gh issue list --repo openai/codex --state all --limit 100 --json number,title,bo
 
 `issue-map` can fetch a public GitHub repository directly through the GitHub REST API, read JSON exported by `gh issue list` / `gh search issues`, or consume piped GitHub CLI JSON through `issue-map -`. It analyzes each issue with the same deterministic failure detectors, ranks clusters by issue count, comment count, reactions, and severity, then emits a Maintainer Roadmap with the next artifact and command to run. Use it to decide what people are actively asking for on GitHub before adding the next fixture, Codex report template, diagnostic bundle, or OpenAI-ready support artifact.
 
-For a live generated radar, see [docs/CODEX_ISSUE_RADAR.md](docs/CODEX_ISSUE_RADAR.md). For blocked/degraded surfaces, see [docs/CODEX_SURFACE_MATRIX.md](docs/CODEX_SURFACE_MATRIX.md). To map a Codex problem to the right failure class and report command, see [docs/CODEX_ISSUE_MAP.md](docs/CODEX_ISSUE_MAP.md).
+`issue-heat` uses the same detectors but ranks recent issue movement. It is useful when all-time demand is dominated by older high-reaction threads and maintainers need to know what broke or became noisy in the last 24-72 hours.
+
+For a live generated radar, see [docs/CODEX_ISSUE_RADAR.md](docs/CODEX_ISSUE_RADAR.md). For recent movement, see [docs/CODEX_ISSUE_HEAT.md](docs/CODEX_ISSUE_HEAT.md). For blocked/degraded surfaces, see [docs/CODEX_SURFACE_MATRIX.md](docs/CODEX_SURFACE_MATRIX.md). To map a Codex problem to the right failure class and report command, see [docs/CODEX_ISSUE_MAP.md](docs/CODEX_ISSUE_MAP.md).
 
 Create a local pre-agent workspace checkpoint:
 
@@ -550,7 +554,7 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v5
-      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.104
+      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.105
         with:
           mode: all
           doctor-threshold: "85"
@@ -599,7 +603,7 @@ Composite action usage:
 
 ```yaml
 - id: trace-to-skill
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.104
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.105
   with:
     mode: all
     doctor-threshold: "85"
@@ -617,7 +621,7 @@ Issue-map action usage for direct GitHub issue demand mining:
 
 ```yaml
 - id: codex-issue-map
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.104
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.105
   with:
     mode: issue-map
     issue-map-repo: openai/codex
@@ -663,7 +667,7 @@ Action outputs:
 
 By default, generated reports are also appended to the GitHub Actions Job Summary. Set `job-summary: "false"` to disable that UI output.
 
-Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.104` executes that release's checked-out source instead of pulling the default branch at runtime.
+Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.105` executes that release's checked-out source instead of pulling the default branch at runtime.
 
 ## Codex Skill
 

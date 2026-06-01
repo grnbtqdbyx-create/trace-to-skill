@@ -15,6 +15,7 @@ import { createDiagnosticsBundle, renderDiagnosticsBundleMarkdown } from "../src
 import { doctorRepo } from "../src/doctor.js";
 import { compareAnalyses, evaluate } from "../src/eval.js";
 import { analyzeGithubEventContext, extractGithubContextInputs } from "../src/githubContext.js";
+import { buildIssueHeatFromSources, renderIssueHeatMarkdown } from "../src/issueHeat.js";
 import { buildGithubIssueMap, buildIssueMap, renderIssueMapMarkdown } from "../src/issueMap.js";
 import { postIssueComment, postPullRequestComment } from "../src/github.js";
 import { initProject } from "../src/init.js";
@@ -1586,6 +1587,46 @@ test("surface-matrix command reads GitHub issue exports from stdin", async () =>
   assert.ok(result.rows.some((row) => row.kind === "codex_remote_connection" && /remote-connection/.test(row.bestCommand)));
 });
 
+test("issue-heat ranks recent Codex issue movement without weak-evidence noise", async () => {
+  const raw = await readFile("fixtures/github-codex-issues-export.json", "utf8");
+  const result = buildIssueHeatFromSources([{ source: "fixture", raw }], {
+    top: 8,
+    windowHours: 8,
+    now: new Date("2026-06-01T04:00:00Z")
+  });
+  const markdown = renderIssueHeatMarkdown(result);
+  const kinds = result.hot.map((summary) => summary.kind);
+
+  assert.equal(result.issueCount, 23);
+  assert.ok(result.consideredIssueCount < result.issueCount);
+  assert.ok(result.matchedIssueCount > 0);
+  assert.ok(!kinds.includes("weak_evidence"));
+  assert.ok(!kinds.includes("premature_completion"));
+  assert.ok(kinds.includes("codex_token_burn"));
+  assert.ok(kinds.includes("codex_usage_bucket_confusion"));
+  assert.match(result.hot.find((summary) => summary.kind === "codex_token_burn")?.action ?? "", /usage-doctor/);
+  assert.match(markdown, /GitHub Issue Heat/);
+  assert.match(markdown, /issue-map` shows all-time pain/);
+  assert.match(markdown, /#14593 Burning tokens very fast/);
+});
+
+test("issue-heat command reads GitHub issue exports from stdin", async () => {
+  const { stdout } = await execFileAsync("sh", [
+    "-c",
+    "cat fixtures/github-codex-issues-export.json | node dist/src/cli.js issue-heat - --window-hours 8 --format json"
+  ]);
+  const result = JSON.parse(stdout) as {
+    sources: string[];
+    consideredIssueCount: number;
+    hot: Array<{ kind: string; action: string }>;
+  };
+
+  assert.deepEqual(result.sources, ["stdin"]);
+  assert.ok(result.consideredIssueCount > 0);
+  assert.ok(result.hot.some((summary) => summary.kind === "codex_token_burn" && /usage-doctor/.test(summary.action)));
+  assert.ok(!result.hot.some((summary) => summary.kind === "weak_evidence"));
+});
+
 test("process audit packages Codex process polling and high CPU evidence", () => {
   const result = auditProcessEvidenceFromInputs([
     {
@@ -1858,6 +1899,7 @@ test("package metadata points npm users back to the public project", async () =>
   assert.equal(packageJson.publishConfig?.access, "public");
   assert.ok(packageJson.files?.includes("llms.txt"));
   assert.ok(packageJson.files?.includes("docs/DISCOVERY.md"));
+  assert.ok(packageJson.files?.includes("docs/CODEX_ISSUE_HEAT.md"));
   assert.ok(packageJson.files?.includes("docs/CODEX_ISSUE_MAP.md"));
   assert.ok(packageJson.files?.includes("docs/DEMO.md"));
   assert.ok(packageJson.files?.includes("docs/OPENAI_OSS_BRIEF.md"));
@@ -1889,6 +1931,9 @@ test("package metadata points npm users back to the public project", async () =>
   assert.ok(packageJson.keywords?.includes("codex-linux"));
   assert.ok(packageJson.keywords?.includes("codex-jetbrains"));
   assert.ok(packageJson.keywords?.includes("remote-ssh"));
+  assert.ok(packageJson.keywords?.includes("issue-heat"));
+  assert.ok(packageJson.keywords?.includes("codex-issue-heat"));
+  assert.ok(packageJson.keywords?.includes("codex-hot-issues"));
   assert.ok(packageJson.keywords?.includes("surface-matrix"));
   assert.ok(packageJson.keywords?.includes("codex-support-matrix"));
   assert.ok(packageJson.keywords?.includes("remote-development"));
@@ -2612,7 +2657,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.equal(brief.scorecard.benchmarkStatus, "pass");
   assert.equal(brief.scorecard.benchmarkCases, 46);
   assert.equal(brief.packageName, "trace-to-skill");
-  assert.equal(brief.packageVersion, "0.1.104");
+  assert.equal(brief.packageVersion, "0.1.105");
   assert.equal(brief.license, "Apache-2.0");
   assert.ok(brief.repository?.includes("github.com/grnbtqdbyx-create/trace-to-skill"));
   assert.ok(brief.qualification.max500.length <= 500);
@@ -2620,7 +2665,9 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.match(markdown, /OpenAI OSS Brief/);
   assert.match(markdown, /Why This Repository Qualifies/);
   assert.match(markdown, /500-Character Version/);
-  assert.match(markdown, /npx trace-to-skill@0\.1\.104/);
+  assert.match(markdown, /npx trace-to-skill@0\.1\.105/);
+  assert.match(markdown, /GitHub Issue Heat/);
+  assert.match(markdown, /hot-issue detection/);
   assert.match(markdown, /Surface support matrix/);
   assert.match(markdown, /surface support planning/);
   assert.match(markdown, /Weekly Codex Issue Radar/);

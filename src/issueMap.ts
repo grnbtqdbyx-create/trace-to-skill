@@ -17,6 +17,8 @@ export interface GithubIssueMapOptions extends IssueMapOptions {
   limit?: number;
   token?: string;
   apiBaseUrl?: string;
+  sort?: "created" | "updated" | "comments";
+  direction?: "asc" | "desc";
 }
 
 export interface IssueMapIssue {
@@ -93,7 +95,7 @@ interface RawIssue {
   pull_request?: unknown;
 }
 
-interface NormalizedIssue {
+export interface NormalizedIssue {
   id: string;
   title: string;
   body: string;
@@ -102,6 +104,7 @@ interface NormalizedIssue {
   comments: number;
   commentBodies: string[];
   reactions: number;
+  createdAt?: string;
   updatedAt?: string;
 }
 
@@ -149,6 +152,16 @@ export function buildIssueMapFromSources(sources: IssueMapSource[], options: Iss
 }
 
 export async function buildGithubIssueMap(repo: string, options: GithubIssueMapOptions = {}): Promise<IssueMapResult> {
+  const issues = await fetchGithubIssues(repo, {
+    ...options,
+    sort: options.sort ?? "comments",
+    direction: options.direction ?? "desc"
+  });
+
+  return buildIssueMapFromNormalized(issues, [`github:${repo}`], options);
+}
+
+export async function fetchGithubIssues(repo: string, options: GithubIssueMapOptions = {}): Promise<NormalizedIssue[]> {
   const match = repo.match(/^([A-Za-z0-9_.-]+)\/([A-Za-z0-9_.-]+)$/);
   if (!match) {
     throw new Error("--repo must use the owner/name format, for example openai/codex.");
@@ -160,8 +173,8 @@ export async function buildGithubIssueMap(repo: string, options: GithubIssueMapO
   const apiBaseUrl = options.apiBaseUrl ?? "https://api.github.com";
   const url = new URL(`${apiBaseUrl.replace(/\/$/, "")}/repos/${owner}/${name}/issues`);
   url.searchParams.set("state", state);
-  url.searchParams.set("sort", "comments");
-  url.searchParams.set("direction", "desc");
+  url.searchParams.set("sort", options.sort ?? "comments");
+  url.searchParams.set("direction", options.direction ?? "desc");
   url.searchParams.set("per_page", String(limit));
 
   const headers: Record<string, string> = {
@@ -186,7 +199,7 @@ export async function buildGithubIssueMap(repo: string, options: GithubIssueMapO
     .slice(0, limit)
     .map((issue, index) => normalizeIssue(issue, `github:${repo}`, index));
 
-  return buildIssueMapFromNormalized(issues, [`github:${repo}`], options);
+  return issues;
 }
 
 function buildIssueMapFromNormalized(normalized: NormalizedIssue[], sources: string[], options: IssueMapOptions): IssueMapResult {
@@ -471,7 +484,7 @@ function roadmapAction(kind: FindingKind): { targetArtifact: string; command: st
   };
 }
 
-function parseIssueExport(raw: string, source: string): NormalizedIssue[] {
+export function parseIssueExport(raw: string, source: string): NormalizedIssue[] {
   const trimmed = raw.trim();
   if (!trimmed) {
     return [];
@@ -530,6 +543,7 @@ function normalizeIssue(value: RawIssue, source: string, index: number): Normali
     comments,
     commentBodies,
     reactions: normalizeReactions(value.reactions),
+    createdAt: stringValue(value.createdAt ?? value.created_at),
     updatedAt: stringValue(value.updatedAt ?? value.updated_at ?? value.createdAt ?? value.created_at)
   };
 }

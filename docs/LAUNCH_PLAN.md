@@ -62,6 +62,7 @@ Secondary headline:
 - [x] Codex usage reset drift detector for moving weekly reset anchors and saved-usage loss reports
 - [x] Codex resource-leak detector for high CPU/GPU/RAM, orphaned shell snapshots, renderer/helper loops, and thinking-animation GPU reports
 - [x] Codex issue map linking active issue clusters to deterministic report commands
+- [x] Recency-weighted Codex Issue Heat report for what is moving right now on GitHub
 - [x] Maintainer Roadmap in issue-map output with next artifact and command recommendations
 - [x] Live Codex Issue Radar demo generated from public `openai/codex` issues
 - [x] Codex surface support matrix for blocked/degraded platform, remote workspace, MCP, plugin, file-tree, and context-visibility demand
@@ -72,10 +73,11 @@ Secondary headline:
 
 - Repository: https://github.com/grnbtqdbyx-create/trace-to-skill
 - npm: https://www.npmjs.com/package/trace-to-skill
-- Latest release: https://github.com/grnbtqdbyx-create/trace-to-skill/releases/tag/v0.1.104
+- Latest release: https://github.com/grnbtqdbyx-create/trace-to-skill/releases/tag/v0.1.105
 - CI: passing on `main`
 - Codex issue map: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/CODEX_ISSUE_MAP.md
 - Codex Issue Radar demo: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/CODEX_ISSUE_RADAR.md
+- Codex Issue Heat demo: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/CODEX_ISSUE_HEAT.md
 - Codex surface support matrix: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/CODEX_SURFACE_MATRIX.md
 - Demo: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/DEMO.md
 - Profile README: https://github.com/grnbtqdbyx-create/grnbtqdbyx-create

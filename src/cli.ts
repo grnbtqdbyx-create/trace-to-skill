@@ -10,6 +10,7 @@ import { createDiagnosticsBundle, renderDiagnosticsBundleMarkdown } from "./diag
 import { doctorRepo } from "./doctor.js";
 import { compareAnalyses, evaluate } from "./eval.js";
 import { analyzeGithubEventContext } from "./githubContext.js";
+import { buildGithubIssueHeat, buildIssueHeatFromSources, renderIssueHeatMarkdown } from "./issueHeat.js";
 import { buildGithubIssueMap, buildIssueMapFromSources, renderIssueMapMarkdown } from "./issueMap.js";
 import { postIssueComment, postPullRequestComment } from "./github.js";
 import { initProject } from "./init.js";
@@ -257,6 +258,26 @@ async function main(): Promise<void> {
     return;
   }
 
+  if (parsed.command === "issue-heat") {
+    const issueHeatOptions = {
+      top: numberFlag(parsed.flags.top),
+      windowHours: optionalPositiveIntegerFlag(parsed.flags["window-hours"], "--window-hours")
+    };
+    const repo = stringFlag(parsed.flags.repo);
+    const result = repo ?
+      await buildGithubIssueHeat(repo, {
+        ...issueHeatOptions,
+        state: githubIssueStateFlag(parsed.flags.state),
+        limit: numberFlag(parsed.flags.limit),
+        token: stringFlag(parsed.flags.token)
+      }) :
+      await buildIssueHeatFromCliTargets(parsed.targets, issueHeatOptions);
+    const format = String(parsed.flags.format ?? "markdown");
+    const output = format === "json" ? `${JSON.stringify(result, null, 2)}\n` : renderIssueHeatMarkdown(result);
+    await writeOutput(output, parsed.flags.output);
+    return;
+  }
+
   if (parsed.command === "surface-matrix") {
     const issueMapOptions = {
       top: numberFlag(parsed.flags.top)
@@ -476,6 +497,13 @@ function positiveIntegerFlag(value: string | boolean | undefined, flagName: stri
   return parsed;
 }
 
+function optionalPositiveIntegerFlag(value: string | boolean | undefined, flagName: string): number | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+  return positiveIntegerFlag(value, flagName);
+}
+
 function byteFlag(value: string | boolean | undefined, multiplier: number): number | undefined {
   if (value === undefined) {
     return undefined;
@@ -588,6 +616,35 @@ async function buildIssueMapFromCliTargets(targets: string[], options: { top?: n
   return buildIssueMapFromSources(sources, options);
 }
 
+async function buildIssueHeatFromCliTargets(targets: string[], options: { top?: number; windowHours?: number }) {
+  if (targets.length === 0) {
+    if (!process.stdin.isTTY) {
+      const raw = await readStdin();
+      if (!raw.trim()) {
+        throw new Error("issue-heat received empty stdin. Pipe GitHub issue JSON, pass an export file, or use --repo owner/name.");
+      }
+      return buildIssueHeatFromSources([{ source: "stdin", raw }], options);
+    }
+    throw new Error("issue-heat requires at least one GitHub issue export file, stdin input, or --repo owner/name.");
+  }
+
+  const sources: Array<{ source: string; raw: string }> = [];
+  let stdinRaw: string | undefined;
+  for (const target of targets) {
+    if (target === "-") {
+      stdinRaw ??= await readStdin();
+      if (!stdinRaw.trim()) {
+        throw new Error("issue-heat received empty stdin. Pipe GitHub issue JSON before using issue-heat -.");
+      }
+      sources.push({ source: "stdin", raw: stdinRaw });
+      continue;
+    }
+    sources.push({ source: target, raw: await readFile(target, "utf8") });
+  }
+
+  return buildIssueHeatFromSources(sources, options);
+}
+
 async function readStdin(): Promise<string> {
   let raw = "";
   process.stdin.setEncoding("utf8");
@@ -630,9 +687,11 @@ Usage:
   trace-to-skill scorecard-comment [repo-dir] [--threshold 85] [--dry-run] [--token $GITHUB_TOKEN]
   trace-to-skill oss-brief [repo-dir] [--threshold 85] [--format markdown|json] [--output docs/OPENAI_OSS_BRIEF.md]
   trace-to-skill issue-map <github-issues.json-or-md> [--top 12] [--format markdown|json] [--output codex-issue-map.md]
+  trace-to-skill issue-heat <github-issues.json-or-md> [--window-hours 24] [--top 12] [--format markdown|json] [--output codex-issue-heat.md]
   trace-to-skill surface-matrix <github-issues.json-or-md> [--top 12] [--format markdown|json] [--output codex-surface-matrix.md]
   gh issue list --repo openai/codex --json number,title,body,url,labels,comments,updatedAt | trace-to-skill issue-map - [--format markdown|json]
   trace-to-skill issue-map --repo openai/codex [--state open|closed|all] [--limit 100] [--token $GITHUB_TOKEN] [--format markdown|json]
+  trace-to-skill issue-heat --repo openai/codex [--state open|closed|all] [--limit 100] [--window-hours 24] [--token $GITHUB_TOKEN] [--format markdown|json]
   trace-to-skill surface-matrix --repo openai/codex [--state open|closed|all] [--limit 100] [--token $GITHUB_TOKEN] [--format markdown|json]
   trace-to-skill issue-map-comment --repo openai/codex --issue-number 8 [--comment-repository owner/repo] [--state open|closed|all] [--limit 100] [--dry-run] [--token $GITHUB_TOKEN]
   trace-to-skill guard-github-event [event.json] [--threshold 80] [--format markdown|json] [--output report.md]
@@ -664,6 +723,7 @@ Examples:
   trace-to-skill lsp-audit .
   trace-to-skill eval ./runs --threshold 80
   trace-to-skill benchmark
+  trace-to-skill issue-heat --repo openai/codex --state open --limit 100 --window-hours 24 --output codex-issue-heat.md
   trace-to-skill surface-matrix --repo openai/codex --output codex-surface-matrix.md
   trace-to-skill scorecard .
   trace-to-skill scorecard-comment . --threshold 85

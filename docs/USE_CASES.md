@@ -61,7 +61,7 @@ What it proves:
 Recommended CI surface:
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.104
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.105
   with:
     mode: all
     doctor-threshold: "85"
@@ -77,6 +77,7 @@ Use this when you want to see what Codex users are actually complaining about on
 
 ```bash
 npx trace-to-skill issue-map --repo openai/codex --state all --limit 100 --output codex-issue-radar.md
+npx trace-to-skill issue-heat --repo openai/codex --state open --limit 100 --window-hours 24 --output codex-issue-heat.md
 npx trace-to-skill surface-matrix --repo openai/codex --state all --limit 100 --output codex-surface-matrix.md
 npx trace-to-skill issue-map --repo openai/codex --format json
 npx trace-to-skill init --issue-map-repo openai/codex --issue-map-state all --issue-map-limit 100
@@ -90,10 +91,12 @@ gh issue list --repo openai/codex --state all --limit 100 --json number,title,bo
 What it proves:
 
 - public issue clusters can be ranked without private telemetry
+- recent issue movement can be separated from all-time high-reaction pain
 - blocked and degraded Codex surfaces can be turned into a support-policy matrix with evidence checklists
 - GitHub CLI issue JSON can be piped directly without writing temporary export files
 - high-comment pain points are mapped to deterministic failure classes such as token burn, remote compact, MCP discovery, usage buckets, context drift, sandbox, and resource leaks
 - maintainers get example issue links, evidence-rule prompts, and a Maintainer Roadmap with the next artifact plus the command to generate it
+- `issue-heat` highlights what became noisy in the last 24-72 hours and links each hot cluster to the first support artifact to generate
 - `init --issue-map-repo owner/name` can install a weekly/manual Codex Issue Radar workflow without committing generated reports
 - `issue-map-comment` can update a stable tracking issue comment so scheduled radar output remains visible after the Action summary scrolls away
 - `surface-matrix` converts issue-map clusters into platform, remote workspace, MCP, plugin, file-tree, and context-visibility support rows

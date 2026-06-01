@@ -13,6 +13,7 @@ This page is written for maintainers, search engines, package indexes, and AI re
 - Latest release: https://github.com/grnbtqdbyx-create/trace-to-skill/releases/latest
 - Use cases: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/USE_CASES.md
 - Codex Issue Radar demo: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/CODEX_ISSUE_RADAR.md
+- Codex Issue Heat demo: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/CODEX_ISSUE_HEAT.md
 - Codex surface support matrix: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/CODEX_SURFACE_MATRIX.md
 - Codex issue map: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/CODEX_ISSUE_MAP.md
 - Scorecard: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/SCORECARD.md
@@ -101,6 +102,7 @@ npx trace-to-skill diagnostics-bundle ~/.codex --output codex-diagnostics
 npx trace-to-skill usage-doctor ./usage-notes.md --output usage-evidence.md
 npx trace-to-skill process-audit ./process-notes.md --output process-audit.md
 npx trace-to-skill issue-map --repo openai/codex --state all --limit 100 --output codex-issue-radar.md
+npx trace-to-skill issue-heat --repo openai/codex --state open --limit 100 --window-hours 24 --output codex-issue-heat.md
 npx trace-to-skill surface-matrix --repo openai/codex --state all --limit 100 --output codex-surface-matrix.md
 npx trace-to-skill init --issue-map-repo openai/codex --issue-map-state all --issue-map-limit 100
 npx trace-to-skill issue-map codex-issues.json --output codex-issue-map.md
@@ -135,6 +137,7 @@ npx trace-to-skill suggest ./runs --target agents-md
 - Packaged zero-setup Codex issue-report demo from `trace-to-skill demo`
 - OpenAI OSS support/application brief from `trace-to-skill oss-brief`
 - Live Codex Issue Radar demo in `docs/CODEX_ISSUE_RADAR.md`
+- Recency-weighted GitHub Issue Heat in `docs/CODEX_ISSUE_HEAT.md`
 - Codex surface support matrix in `docs/CODEX_SURFACE_MATRIX.md`
 - Codex issue-cluster mapping in `docs/CODEX_ISSUE_MAP.md`
 - GitHub issue demand mining in `docs/CODEX_GITHUB_ISSUE_PAIN_MAP.md`
