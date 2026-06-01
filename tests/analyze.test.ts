@@ -2436,6 +2436,14 @@ test("composite action exposes Codex readiness doctor mode", async () => {
 
 test("composite action keeps user-controlled inputs out of shell scripts", async () => {
   const action = await readFile("action.yml", "utf8");
+  const fixture = JSON.parse(await readFile("fixtures/action-malicious-inputs.json", "utf8")) as {
+    cases: Array<{
+      name: string;
+      input: string;
+      env: string;
+      value: string;
+    }>;
+  };
   const runBlocks = [...action.matchAll(/^\s*run:\s*(?:\|\s*\n([\s\S]*?)(?=^\s*(?:if:|shell:|env:|- id:|- run:|- uses:|outputs:|runs:)\b))/gm)]
     .map((match) => match[1])
     .join("\n");
@@ -2471,6 +2479,17 @@ test("composite action keeps user-controlled inputs out of shell scripts", async
 
   assert.match(action, /INPUT_DOCTOR_PATH:\s*\$\{\{ inputs\.doctor-path \}\}/);
   assert.match(action, /INPUT_DUPLICATE_AUDIT_CANDIDATES:\s*\$\{\{ inputs\.duplicate-audit-candidates \}\}/);
+  assert.ok(fixture.cases.length >= 6);
+  assert.ok(fixture.cases.some((testCase) => testCase.value.includes(";")));
+  assert.ok(fixture.cases.some((testCase) => testCase.value.includes("$(")));
+  assert.ok(fixture.cases.some((testCase) => testCase.value.includes("\n")));
+  assert.ok(fixture.cases.some((testCase) => testCase.value.includes('"')));
+  assert.ok(fixture.cases.some((testCase) => testCase.value.includes("'")));
+  for (const testCase of fixture.cases) {
+    assert.match(testCase.env, /^INPUT_[A-Z0-9_]+$/);
+    assert.equal(runBlocks.includes(testCase.value), false, `${testCase.name} fixture value should not appear in run scripts`);
+    assert.match(action, new RegExp(`${testCase.env}:\\s*\\$\\{\\{ inputs\\.${testCase.input.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")} \\}\\}`));
+  }
 });
 
 test("repository dogfoods the local Codex readiness action", async () => {
@@ -2843,7 +2862,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.equal(brief.scorecard.benchmarkStatus, "pass");
   assert.equal(brief.scorecard.benchmarkCases, 46);
   assert.equal(brief.packageName, "trace-to-skill");
-  assert.equal(brief.packageVersion, "0.1.109");
+  assert.equal(brief.packageVersion, "0.1.110");
   assert.equal(brief.license, "Apache-2.0");
   assert.ok(brief.repository?.includes("github.com/grnbtqdbyx-create/trace-to-skill"));
   assert.ok(brief.qualification.max500.length <= 500);
@@ -2851,7 +2870,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.match(markdown, /OpenAI OSS Brief/);
   assert.match(markdown, /Why This Repository Qualifies/);
   assert.match(markdown, /500-Character Version/);
-  assert.match(markdown, /npx trace-to-skill@0\.1\.109/);
+  assert.match(markdown, /npx trace-to-skill@0\.1\.110/);
   assert.match(markdown, /GitHub Issue Heat/);
   assert.match(markdown, /Duplicate triage/);
   assert.match(markdown, /hot-issue detection/);

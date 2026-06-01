@@ -61,7 +61,7 @@ What it proves:
 Recommended CI surface:
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.109
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.110
   with:
     mode: all
     doctor-threshold: "85"
@@ -74,7 +74,7 @@ Recommended CI surface:
 Duplicate-audit Action mode can also run from CI when you want a stable job summary for Codex Action duplicate suggestions:
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.109
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.110
   with:
     mode: duplicate-audit
     duplicate-audit-repo: openai/codex
@@ -82,6 +82,8 @@ Duplicate-audit Action mode can also run from CI when you want a stable job summ
     duplicate-audit-candidates: "25391,25488"
     github-token: ${{ github.token }}
 ```
+
+The published Action keeps user-controlled inputs out of shell scripts by passing them through step environment variables before invoking the CLI. `fixtures/action-malicious-inputs.json` covers quote, newline, command-substitution, and shell-separator cases so that future Action edits keep those values as data.
 
 ## 3. GitHub Issue Demand Mining
 

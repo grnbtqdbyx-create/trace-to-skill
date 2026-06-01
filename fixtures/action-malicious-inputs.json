@@ -1,0 +1,41 @@
+{
+  "purpose": "Regression fixture for composite Action inputs that must be treated as data, not shell syntax.",
+  "cases": [
+    {
+      "name": "semicolon command separator in traces path",
+      "input": "traces",
+      "env": "INPUT_TRACES",
+      "value": "runs; echo PWNED"
+    },
+    {
+      "name": "command substitution in doctor path",
+      "input": "doctor-path",
+      "env": "INPUT_DOCTOR_PATH",
+      "value": "$(touch /tmp/trace-to-skill-pwned)"
+    },
+    {
+      "name": "newline injection in issue-map repository",
+      "input": "issue-map-repo",
+      "env": "INPUT_ISSUE_MAP_REPO",
+      "value": "openai/codex\nmalicious=true"
+    },
+    {
+      "name": "double quote in duplicate candidates",
+      "input": "duplicate-audit-candidates",
+      "env": "INPUT_DUPLICATE_AUDIT_CANDIDATES",
+      "value": "25391,\"25488\""
+    },
+    {
+      "name": "single quote in comment repository",
+      "input": "issue-heat-comment-repository",
+      "env": "INPUT_ISSUE_HEAT_COMMENT_REPOSITORY",
+      "value": "owner/repo' --token leaked"
+    },
+    {
+      "name": "environment file redirection text in token",
+      "input": "github-token",
+      "env": "INPUT_GITHUB_TOKEN",
+      "value": "ghs_token >> $GITHUB_ENV"
+    }
+  ]
+}
