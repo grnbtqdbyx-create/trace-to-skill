@@ -72,6 +72,7 @@ Current proof points:
 - Connector auth-cache detection for `401 Reauthentication required`, stale `link_*` ids, `isAccessible: false`, `codex_apps_tools` / `codex_app_directory` cache state, and external MCP fallback evidence.
 - MCP discovery/config-scope detection for CLI-versus-VS Code/Desktop gaps, ignored project `.codex/config.toml`, WSL config path mismatch, `CODEX_HOME` drift, and missing `mcp__*` tool exposure.
 - Streamable HTTP MCP detection for Penpot/n8n/DingTalk-style parse, `Content-Type: text/event-stream`, handshake, auth-gate, stale-session, missing-header, and reconnect evidence.
+- Hooks runtime detection for duplicate hooks, stale `codex_hooks` warnings, missed `PreToolUse`/`PostToolUse`/`SessionStart` events, live-edit/rate-limit/auto-restore gaps, Code Mode/Windows surface mismatches, and Hooks settings UI evidence.
 - Terminal output/scrollback integrity detection for streamed output that disappears, is overwritten, truncates, duplicates, misaligns, snaps to the bottom, or only survives in raw logs/transcripts.
 - Subagent lifecycle/state reconciliation detection for stale visible agents, close/readback drift, `thread_spawn_edges`, spawn quota, recent-list child threads, and compaction-lost prior subagent IDs.
 - Usage reset schedule drift detection for moving weekly reset anchors, saved usage loss, outage compensation resets, and `/status` versus dashboard reset discrepancies.
@@ -85,7 +86,7 @@ Current proof points:
 - SARIF output for GitHub code scanning.
 - Before/after eval comparison with keep/revise/reject decisions.
 - One-command repository setup via `trace-to-skill init`.
-- Public release v0.1.80.
+- Public release v0.1.81.
 - Current GitHub scorecard: 100/100 Codex-ready, benchmark passing.
 
 500-character version:

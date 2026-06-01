@@ -128,6 +128,14 @@ Common signals include Penpot response parse or `JsonRpcMessage deserialize` err
 
 The fix is to capture Codex version, MCP server name, transport URL without secrets, initialize/tools/list/tools/call results, HTTP status, `Content-Type`, SSE event framing, JSON-RPC message shape, session id before and after reconnect or server restart, auth/OAuth expectations, User-Agent and header requirements, exact parse/deserialize error, whether curl or another MCP client succeeds, and whether restarting Codex or reinitializing the transport recovers.
 
+## Codex Hooks Runtime
+
+Codex hooks can be configured but unreliable across surfaces. Because hooks often carry safety checks, logging, automation, and local workflow glue, duplicate runs or missed lifecycle events can quietly invalidate user expectations.
+
+Common signals include duplicate Hooks entries for one tool call, `PostToolUse` running twice, false `codex_hooks` deprecation warnings while `[features].hooks` is enabled, hooks stopping after rate limits, live `hooks.json` edits or session auto-restore, `SessionStart` not firing on restored sessions, Windows `command_execution` or Code Mode `exec` skipping `PreToolUse`, plugin-local hooks only executing from global `hooks.json`, linked worktrees using the wrong cwd, and Hooks settings pages that show generic Hook N rows or cannot scroll.
+
+The fix is to capture Codex app/CLI/extension version, OS, surface, shell or Desktop route, `[features].hooks` and redacted `hooks.json`, hook event type, matcher, handler command/name, expected versus observed fire count, duplicate event ids, exact deprecation warning, trust state, live-edit/rate-limit/auto-restore timing, Code Mode `exec` versus normal CLI comparison, linked-worktree cwd, Hooks settings UI screenshot if relevant, and whether restart/reload/new session restores behavior.
+
 ## Codex MCP Discovery Mismatch
 
 Codex MCP servers can work in CLI or one config scope but disappear in another surface before any tool call is possible. This is different from runtime failure: the user may have no `mcp__*` tools exposed in VS Code, Desktop, WSL, a remote session, project-local `.codex/config.toml`, or an older conversation even though CLI `/mcp` works.

@@ -30,6 +30,7 @@ export type FindingKind =
   | "codex_mcp_discovery_mismatch"
   | "codex_mcp_runtime"
   | "codex_mcp_streamable_http"
+  | "codex_hooks_runtime"
   | "codex_plugin_runtime"
   | "codex_file_tree_ui"
   | "codex_session_state"

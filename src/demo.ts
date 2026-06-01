@@ -79,6 +79,12 @@ const DEMO_SCENARIOS: DemoScenario[] = [
     description: "Streamable HTTP or SSE MCP servers pass initialize or tools/list but fail parsing, handshakes, auth gating, stale sessions, or reconnects."
   },
   {
+    id: "hooks-runtime",
+    title: "Codex hooks runtime failure",
+    fixture: "fixtures/codex-hooks-runtime.md",
+    description: "Hooks duplicate, stop firing, warn about stale config, skip surfaces, or become hard to manage in Desktop settings."
+  },
+  {
     id: "terminal-output-integrity",
     title: "Codex terminal output integrity",
     fixture: "fixtures/codex-terminal-output-integrity.md",
@@ -182,6 +188,7 @@ export function renderDemoMarkdown(result: DemoResult): string {
     "trace-to-skill demo connector-auth-cache",
     "trace-to-skill demo mcp-discovery-mismatch",
     "trace-to-skill demo mcp-streamable-http",
+    "trace-to-skill demo hooks-runtime",
     "trace-to-skill demo terminal-output-integrity",
     "trace-to-skill demo subagent-lifecycle",
     "trace-to-skill demo file-tree-ui",
@@ -213,6 +220,7 @@ export function renderDemoScenarioList(scenarios = listDemoScenarios()): string 
     "trace-to-skill demo connector-auth-cache",
     "trace-to-skill demo mcp-discovery-mismatch",
     "trace-to-skill demo mcp-streamable-http",
+    "trace-to-skill demo hooks-runtime",
     "trace-to-skill demo terminal-output-integrity",
     "trace-to-skill demo subagent-lifecycle",
     "trace-to-skill demo --list",

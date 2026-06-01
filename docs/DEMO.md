@@ -91,6 +91,7 @@ Suggested rule:
 - `connector-auth-cache`: App connectors keep stale `link_*` auth or discovery metadata after reauth-required responses.
 - `mcp-discovery-mismatch`: MCP servers work in CLI or one config scope but are absent in Desktop, VS Code, WSL, or project-local sessions.
 - `mcp-streamable-http`: Streamable HTTP or SSE MCP servers pass initialize or tools/list but fail parsing, handshakes, auth gating, stale sessions, or reconnects.
+- `hooks-runtime`: Hooks duplicate, stop firing, warn about stale config, skip surfaces, or become hard to manage in Desktop settings.
 - `terminal-output-integrity`: Terminal scrollback, streamed output, or transcript rendering drops, overwrites, truncates, or makes lines inaccessible.
 - `token-burn`: Usage drains from background polling, idle activity, compaction loops, retries, or cached-heavy turns.
 - `patch-overwrite`: `apply_patch` accepts `*** Add File` for an existing path, turning a create operation into a silent overwrite.
@@ -110,6 +111,7 @@ trace-to-skill demo deeplink-launch
 trace-to-skill demo connector-auth-cache
 trace-to-skill demo mcp-discovery-mismatch
 trace-to-skill demo mcp-streamable-http
+trace-to-skill demo hooks-runtime
 trace-to-skill demo terminal-output-integrity
 trace-to-skill demo subagent-lifecycle
 trace-to-skill demo file-tree-ui

@@ -174,6 +174,12 @@ const BENCHMARK_CASES: BenchmarkCaseDefinition[] = [
     expectedKinds: ["codex_mcp_streamable_http", "weak_evidence"]
   },
   {
+    id: "codex-hooks-runtime",
+    title: "Codex hooks runtime and UI failure",
+    fixture: "fixtures/codex-hooks-runtime.md",
+    expectedKinds: ["codex_hooks_runtime", "weak_evidence"]
+  },
+  {
     id: "codex-mcp-discovery-mismatch",
     title: "Codex MCP discovery and config-scope mismatch",
     fixture: "fixtures/codex-mcp-discovery-mismatch.md",

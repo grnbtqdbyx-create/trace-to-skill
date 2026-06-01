@@ -19,6 +19,7 @@ npx trace-to-skill demo deeplink-launch
 npx trace-to-skill demo connector-auth-cache
 npx trace-to-skill demo mcp-discovery-mismatch
 npx trace-to-skill demo mcp-streamable-http
+npx trace-to-skill demo hooks-runtime
 npx trace-to-skill demo terminal-output-integrity
 npx trace-to-skill demo subagent-lifecycle
 npx trace-to-skill sensitive-audit .
@@ -30,7 +31,7 @@ What it proves:
 
 - packaged fixtures can produce a real Codex issue report immediately
 - maintainers can inspect the output shape before sharing any private log
-- demos cover remote compact failures, Windows helper path failures, patch overwrite safety, approval friction, latency, Thinking hangs, clipboard/attachment regressions, deeplink/OAuth launch regressions, connector auth-cache regressions, MCP discovery/config-scope mismatches, Streamable HTTP MCP parse/handshake failures, terminal output/scrollback integrity, subagent lifecycle drift, token burn, sensitive files, and prompt injection
+- demos cover remote compact failures, Windows helper path failures, patch overwrite safety, approval friction, latency, Thinking hangs, clipboard/attachment regressions, deeplink/OAuth launch regressions, connector auth-cache regressions, MCP discovery/config-scope mismatches, Streamable HTTP MCP parse/handshake failures, hooks runtime failures, terminal output/scrollback integrity, subagent lifecycle drift, token burn, sensitive files, and prompt injection
 - `sensitive-audit` scans filenames and paths before an agent run, without reading file contents, so teams can build `.agentignore`, `.aiexclude`, `.codexignore`, `.gitignore`, or sandbox permission profiles from a concrete repo report
 - `lsp-audit` scans repo language signals and PATH availability so teams know which language servers are ready before asking Codex for symbol-aware edits
 
@@ -55,7 +56,7 @@ What it proves:
 Recommended CI surface:
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.80
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.81
   with:
     mode: all
     doctor-threshold: "85"
@@ -391,7 +392,21 @@ This catches signals such as Penpot `JsonRpcMessage deserialize` or response-par
 
 Include Codex version, MCP server name, transport URL without secrets, initialize/tools/list/tools/call results, HTTP status, `Content-Type`, SSE event framing, JSON-RPC message shape, session id before and after reconnect or server restart, auth/OAuth expectations, User-Agent/header requirements, exact parse/deserialize error, whether curl or another MCP client succeeds, and whether restarting Codex or reinitializing the transport recovers.
 
-## 26. Patch Overwrite Guard
+## 26. Codex Hooks Runtime Evidence
+
+Use this when Codex hooks duplicate, stop firing, emit stale deprecation warnings, behave differently across CLI/Desktop/Code Mode/Windows, or become hard to inspect in settings.
+
+```bash
+npx trace-to-skill demo hooks-runtime
+npx trace-to-skill analyze ./runs --format json
+npx trace-to-skill codex-report ./runs --output openai-codex-hooks-runtime.md
+```
+
+This catches signals such as duplicate Hooks entries for one tool call, `PostToolUse` running twice, false `codex_hooks` deprecation warnings while `[features].hooks` is enabled, `SessionStart` or `PostToolUse` stopping after rate limits, live `hooks.json` edits or auto-restore, Windows `command_execution` skipping `PreToolUse`, Code Mode `exec` surface gaps, plugin/global hook scope mismatches, and Hooks settings pages that show generic Hook N rows or cannot scroll.
+
+Include Codex app/CLI/extension version, OS, surface, shell or Desktop route, `[features].hooks` and `hooks.json` snippets without secrets, hook event type, matcher, handler command/name, expected versus observed fire count, duplicate event ids, exact deprecation warning, trust state, live-edit/rate-limit/auto-restore timing, Code Mode `exec` versus normal CLI comparison, linked-worktree cwd, Hooks settings UI screenshot if relevant, and whether restart/reload/new session restores behavior.
+
+## 27. Patch Overwrite Guard
 
 Use this before applying a generated patch when you want create/update/delete semantics checked against the actual workspace.
 
@@ -408,7 +423,7 @@ For a public demo report:
 npx trace-to-skill demo patch-overwrite
 ```
 
-## 27. Sensitive Path Preflight Before Agent Runs
+## 28. Sensitive Path Preflight Before Agent Runs
 
 Use this before giving an AI coding agent a repository.
 
@@ -423,7 +438,7 @@ This finds sensitive-looking paths such as `.env`, `.env.*`, `.npmrc`, `.pypirc`
 
 The output includes a stable JSON schema plus recommended exclude globs that can seed `.agentignore`, `.aiexclude`, `.codexignore`, `.gitignore`, local sandbox permission profiles, or team security review checklists. `--format ignore` renders a reviewable generated file candidate and still does not mutate the repo. It is a preflight report, not a sandbox boundary.
 
-## 28. Workspace Checkpoint Before Agent Runs
+## 29. Workspace Checkpoint Before Agent Runs
 
 Use this before giving Codex, Claude, Cursor, or another coding agent a dirty repository where untracked local work matters.
 
@@ -436,7 +451,7 @@ This writes a local checkpoint bundle with `status.txt`, staged and unstaged bin
 
 This is useful for OpenAI/Codex `/undo` and `/rewind` discussions where users need workspace protection beyond conversation rewind, especially when untracked files are outside normal commit history.
 
-## 29. OpenAI Codex Issue Report
+## 30. OpenAI Codex Issue Report
 
 Use this when you want to file or update an OpenAI/Codex issue with a concise, evidence-backed report instead of pasting a full transcript.
 
@@ -449,7 +464,7 @@ The report includes the likely Codex failure class, line-linked evidence, diagno
 
 For a cluster-to-command map of current Codex issue patterns, see [CODEX_ISSUE_MAP.md](CODEX_ISSUE_MAP.md).
 
-## 30. Sensitive File Access Evidence
+## 31. Sensitive File Access Evidence
 
 Use this when a trace suggests an agent read, attached, uploaded, diffed, or indexed credential-bearing files.
 
@@ -462,7 +477,7 @@ This catches signals such as `.env`, `.env.production`, `.npmrc`, `.pypirc`, `.n
 
 Before publishing evidence, run `trace-to-skill redact` and attach only redacted excerpts plus the file path/class.
 
-## 31. GitHub Context Guard
+## 32. GitHub Context Guard
 
 Use this before an agent reads untrusted GitHub text.
 
@@ -479,7 +494,7 @@ Use it when:
 - a bot asks Codex to triage untrusted user reports
 - logs or comments might contain instructions like "ignore previous instructions" or "print secrets"
 
-## 32. Failed Agent Run To Reviewable Rule
+## 33. Failed Agent Run To Reviewable Rule
 
 Use this when a coding agent made a repeated workflow mistake.
 
@@ -497,7 +512,7 @@ Recommended maintainer loop:
 4. Copy only evidence-backed rules into the real policy file.
 5. Run `eval` or `scorecard` in CI so the same failure does not silently return.
 
-## 33. Privacy-Preserving Adoption
+## 34. Privacy-Preserving Adoption
 
 Use this when you want public evidence without leaking private traces.
 

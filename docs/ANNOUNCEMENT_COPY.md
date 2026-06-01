@@ -68,6 +68,7 @@ trace-to-skill checks repo readiness and scans agent traces/logs to generate:
 - Codex MCP runtime detection for cancelled approvals, unsupported routed tool calls, dropped namespace/serverName metadata, and closed stdio transports
 - Codex MCP discovery/config-scope detection for CLI-versus-VS Code/Desktop gaps, ignored project `.codex/config.toml`, WSL config path mismatch, `CODEX_HOME` drift, and missing `mcp__*` tools
 - Codex Streamable HTTP MCP detection for Penpot/n8n/DingTalk-style parse, `Content-Type: text/event-stream`, handshake, auth-gate, stale-session, missing-header, and reconnect evidence
+- Codex hooks runtime detection for duplicate hooks, stale `codex_hooks` warnings, missed lifecycle events, live-edit/rate-limit/auto-restore gaps, Code Mode/Windows surface mismatches, and Hooks settings UI evidence
 - Codex terminal output/scrollback integrity detection for missing, overwritten, truncated, duplicated, or inaccessible streamed lines that raw logs or transcripts still contain
 - Codex subagent lifecycle detection for stale visible agents, close/readback drift, `thread_spawn_edges`, quota slots, recent-list child threads, and compaction-lost subagent IDs
 - Codex file tree and workspace navigation UI failure detection for missing `View > Toggle File Tree`, stale floating panels, and file-preview failures

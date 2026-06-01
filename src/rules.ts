@@ -528,6 +528,29 @@ const RULES: RuleDefinition[] = [
     suggestedSkill: "codex-mcp-streamable-http-triage"
   },
   {
+    kind: "codex_hooks_runtime",
+    severity: "high",
+    title: "Codex hooks runtime or UI failure",
+    why: "Hooks are a safety and automation boundary for Codex users; duplicate execution, missed lifecycle events, stale deprecation warnings, surface mismatches, or unusable settings UI can break guardrails and make agent behavior hard to trust.",
+    patterns: [
+      /\b(Duplicate Hooks|duplicate hook|hook twice|runs? twice|two identical event ids?|duplicate Hooks entries)\b/i,
+      /\b(PostToolUse|PreToolUse|SessionStart|SessionEnd|UserPromptSubmit|Notification|Stop|SubagentStop)\b.{0,220}\b(hook|hooks)\b.{0,220}\b(duplicate|twice|ignored|does not fire|doesn't fire|not firing|stops? firing|skips?|missing|not emitted|not run|no longer run)\b/i,
+      /\b(hook|hooks)\b.{0,220}\b(PostToolUse|PreToolUse|SessionStart|SessionEnd|UserPromptSubmit|Notification|Stop|SubagentStop)\b.{0,220}\b(duplicate|twice|ignored|does not fire|doesn't fire|not firing|stops? firing|skips?|missing|not emitted|not run|no longer run)\b/i,
+      /\bdeprecated\b.{0,80}`?codex_hooks`?\b.{0,160}\bwarning\b/i,
+      /\bdeprecated\b.{0,120}\bcodex_hooks\b.{0,220}\b(\[features\]\.hooks|features\.hooks|hooks enabled|using hooks)\b/i,
+      /\b\[features\]\.hooks\b.{0,220}\b(deprecated|codex_hooks warning|false deprecation|warning appears)\b/i,
+      /\bhooks\.json\b.{0,220}\b(live edit|edited|rate-limit|rate limit|auto-restore|restore|trust|trusted|reload|stops? firing|not firing|ignored)\b/i,
+      /\b(command_execution|Code Mode `?exec`?|Desktop routed tool calls?|Windows command_execution)\b.{0,220}\b(does not emit|doesn't emit|not emitted|skips?|missing|not firing)\b.{0,220}\b(PreToolUse|PostToolUse|hooks?)\b/i,
+      /\b(command_execution|Code Mode `?exec`?|Desktop routed tool calls?|Windows command_execution)\b.{0,220}\b(PreToolUse|PostToolUse|hooks?)\b.{0,220}\b(does not emit|doesn't emit|not emitted|skips?|missing|not firing)\b/i,
+      /\bHooks page\b.{0,220}\b(generic Hook \d+|Hook N|cannot scroll|can't scroll|not scroll|too long|handler names?|commands?|layout|rendering)\b/i,
+      /\b(handler-level quiet mode|quiet mode)\b.{0,160}\bhooks?\b/i,
+      /\bplugin-local hooks?\b.{0,220}\b(global hooks\.json|only executes global|not loaded|ignored|scope mismatch|linked worktree|wrong cwd)\b/i
+    ],
+    suggestedRule:
+      "When reporting Codex hooks failures, capture Codex app/CLI/extension version, OS, surface, shell or Desktop route, `[features].hooks` and `hooks.json` snippets without secrets, hook event type, matcher, handler command/name, expected versus observed fire count, duplicate event ids, exact deprecation warning, trust state, whether hooks were edited live, rate-limit or auto-restore timing, Code Mode `exec` versus normal CLI comparison, linked-worktree cwd, Hooks settings UI screenshot if relevant, and whether restart/reload/new session restores behavior.",
+    suggestedSkill: "codex-hooks-runtime-triage"
+  },
+  {
     kind: "codex_plugin_runtime",
     severity: "high",
     title: "Codex plugin runtime or bundled capability failure",
