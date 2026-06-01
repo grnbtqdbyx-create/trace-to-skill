@@ -101,6 +101,49 @@
     "updatedAt": "2026-02-18T18:34:33Z"
   },
   {
+    "number": 23794,
+    "title": "Codex Desktop no longer shows visible context/token usage indicator",
+    "body": "After updating Codex Desktop, the app no longer shows a visible context/token usage indicator in the chat UI. Previously Codex exposed context-window pressure near the input area or usage indicator. Without it users cannot tell when a thread is close to compaction, context pressure, or context loss.",
+    "url": "https://github.com/openai/codex/issues/23794",
+    "labels": [
+      { "name": "bug" },
+      { "name": "context" },
+      { "name": "app" }
+    ],
+    "commentsCount": 160,
+    "reactions": { "totalCount": 20 },
+    "updatedAt": "2026-06-01T01:17:38Z"
+  },
+  {
+    "number": 23591,
+    "title": "Reimplement visible context/token usage indicator in Codex Desktop App",
+    "body": "Request to restore or re-add a visible context/token usage indicator on mouse-over. The desktop app makes it difficult to understand how much context is being used, when compaction is likely, and whether a long-running session is approaching a practical context limit.",
+    "url": "https://github.com/openai/codex/issues/23591",
+    "labels": [
+      { "name": "enhancement" },
+      { "name": "rate-limits" },
+      { "name": "context" },
+      { "name": "app" }
+    ],
+    "commentsCount": 7,
+    "reactions": { "totalCount": 5 },
+    "updatedAt": "2026-05-29T23:12:20Z"
+  },
+  {
+    "number": 24710,
+    "title": "Codex Desktop: hidden context indicator still blocks long-session context management",
+    "body": "The Codex Desktop app no longer shows an always-visible context/token usage indicator after the update. The data exists in local session logs, but the app no longer exposes it passively, which blocks long-session context management.",
+    "url": "https://github.com/openai/codex/issues/24710",
+    "labels": [
+      { "name": "enhancement" },
+      { "name": "context" },
+      { "name": "app" }
+    ],
+    "commentsCount": 1,
+    "reactions": { "totalCount": 1 },
+    "updatedAt": "2026-05-27T05:08:25Z"
+  },
+  {
     "number": 6465,
     "title": "MCP servers not detected in Codex VS Code extension but working in Codex CLI",
     "body": "MCP servers not detected in the VS Code extension or Desktop, but working in Codex CLI from ~/.codex/config.toml. tools/list is empty in one surface, project .codex/config.toml is ignored, and serverName metadata is missing.",

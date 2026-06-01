@@ -234,6 +234,12 @@ const BENCHMARK_CASES: BenchmarkCaseDefinition[] = [
     expectedKinds: ["codex_usage_bucket_confusion", "weak_evidence"]
   },
   {
+    id: "codex-context-visibility",
+    title: "Codex context or token usage indicator missing",
+    fixture: "fixtures/codex-context-visibility.md",
+    expectedKinds: ["codex_context_visibility", "weak_evidence"]
+  },
+  {
     id: "codex-token-burn",
     title: "Codex token burn and usage-drain loop",
     fixture: "fixtures/codex-token-burn.md",

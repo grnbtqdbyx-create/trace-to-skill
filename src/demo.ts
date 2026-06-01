@@ -127,6 +127,12 @@ const DEMO_SCENARIOS: DemoScenario[] = [
     description: "Usage popovers show 5h and weekly percentages without clear remaining/used, rolling/calendar, or account/workspace scope."
   },
   {
+    id: "context-visibility",
+    title: "Codex context or token usage indicator missing",
+    fixture: "fixtures/codex-context-visibility.md",
+    description: "Desktop context or token usage indicators disappear, leaving long-session compaction pressure invisible."
+  },
+  {
     id: "token-burn",
     title: "Codex token burn",
     fixture: "fixtures/codex-token-burn.md",
@@ -224,6 +230,7 @@ export function renderDemoMarkdown(result: DemoResult): string {
     "trace-to-skill demo terminal-output-integrity",
     "trace-to-skill demo subagent-lifecycle",
     "trace-to-skill demo usage-bucket-confusion",
+    "trace-to-skill demo context-visibility",
     "trace-to-skill demo file-tree-ui",
     "trace-to-skill demo usage-reset-drift",
     "```",

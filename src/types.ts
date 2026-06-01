@@ -38,6 +38,7 @@ export type FindingKind =
   | "codex_plugin_runtime"
   | "codex_file_tree_ui"
   | "codex_session_state"
+  | "codex_context_visibility"
   | "codex_usage_bucket_confusion"
   | "codex_token_burn"
   | "codex_resource_leak"

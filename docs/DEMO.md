@@ -1,10 +1,10 @@
 # trace-to-skill Demo
 
-Scenario: **Codex selected model differs from actual routed model**
+Scenario: **Codex context or token usage indicator missing**
 
-Codex shows one selected model while SSE response evidence shows a different server-side model was used.
+Desktop context or token usage indicators disappear, leaving long-session compaction pressure invisible.
 
-Fixture: `fixtures/codex-model-routing-mismatch.md`
+Fixture: `fixtures/codex-context-visibility.md`
 
 This is a packaged public fixture, so you can try the project without collecting a private trace first.
 
@@ -14,7 +14,7 @@ This is a packaged public fixture, so you can try the project without collecting
 
 Score: **75/100**
 
-Likely failure class: **Codex selected model differs from actual routed model (codex_model_routing_mismatch, high)**
+Likely failure class: **Codex context or token usage indicator missing (codex_context_visibility, high)**
 
 Agent workflow needs clearer verification, instruction, or security hardening before broad reuse.
 
@@ -23,24 +23,25 @@ Agent workflow needs clearer verification, instruction, or security hardening be
 ```md
 ### What happened?
 
-trace-to-skill detected Codex selected model differs from actual routed model (codex_model_routing_mismatch). Silent model fallback, misrouting, or response.model mismatch makes Codex model access, benchmarks, billing expectations, and user trust hard to debug unless reports preserve both the selected model and the actual server-side model evidence.
+trace-to-skill detected Codex context or token usage indicator missing (codex_context_visibility). Desktop users need passive context-pressure visibility during long coding sessions so they can decide when to compact, split a thread, reduce pasted context, or avoid context loss before the app forces compaction.
 
 ### Detected failure class
 
-- codex_model_routing_mismatch: Codex selected model differs from actual routed model (high)
+- codex_context_visibility: Codex context or token usage indicator missing (high)
 
 ### Evidence
 
-#### Codex selected model differs from actual routed model
-- fixtures/codex-model-routing-mismatch.md:5 - - GPT-5.3-Codex is being routed to GPT-5.2.
-- fixtures/codex-model-routing-mismatch.md:6 - - Both `config.toml` and the TUI are set to `gpt-5.3-codex`, but SSE captures show the actual `response.model` is `gpt-5.2-2025-12-11`.
-- fixtures/codex-model-routing-mismatch.md:7 - - Running `RUST_LOG='codex_tui::chatwidget=info,codex_api::sse::responses=trace' codex` and sending a prompt shows `response.created` with `response.model=gpt-5.2-2025-12-11`.
-- fixtures/codex-model-routing-mismatch.md:9 - - The user sees no warning or fallback notice that a different model version is being used internally.
-- fixtures/codex-model-routing-mismatch.md:10 - - Some reports mention ChatGPT Pro, WSL, macOS, recent CLI versions, and verification briefly restoring GPT-5.3-Codex before silently rerouting back to GPT-5.2.
+#### Codex context or token usage indicator missing
+- fixtures/codex-context-visibility.md:5 - - Codex Desktop no longer shows a visible context/token usage indicator in the chat UI after an update.
+- fixtures/codex-context-visibility.md:6 - - Previously the app exposed context usage information, context-window pressure, or a tooltip near the input area.
+- fixtures/codex-context-visibility.md:8 - - `/status` is useful as an explicit command, but it is not a replacement for passive context awareness during long-running desktop threads.
+- fixtures/codex-context-visibility.md:9 - - The missing indicator affects professional coding workflows because users cannot tell when to compact, start a new thread, reduce pasted context, or split work before context loss.
+- fixtures/codex-context-visibility.md:10 - - A related report says the data exists in local session logs, but the app no longer exposes it passively.
+- fixtures/codex-context-visibility.md:15 - - Screenshot or short recording of the chat input area where the context indicator or tooltip used to appear.
 
 ### Diagnostics to attach
 
-- When reporting Codex model-routing mismatches, capture the Codex app/CLI/extension version, subscription/workspace, selected model from config.toml, TUI, command flag, or UI, actual server-side model from SSE `response.created` / `response.model`, the exact `RUST_LOG` or trace command used, timestamp, account or verification state without secrets, whether API and Codex routes differ, whether a warning/fallback notice appeared, and a minimal one-prompt reproduction with redacted logs.
+- When reporting Codex context-visibility regressions, capture Codex Desktop version, OS, surface, screenshot or short recording of the chat input area, whether the prior context/token indicator or tooltip was visible before the update, exact UI route where it disappeared, local session metadata showing context/window pressure if available, `/status` output if relevant, compaction timing, whether CLI/TUI still exposes a statusline, and how the missing indicator affects long-session decisions.
 
 ### Privacy
 
@@ -49,22 +50,23 @@ trace-to-skill detected Codex selected model differs from actual routed model (c
 
 ## Findings
 
-### 1. Codex selected model differs from actual routed model
+### 1. Codex context or token usage indicator missing
 
 Severity: **high**
 
-Silent model fallback, misrouting, or response.model mismatch makes Codex model access, benchmarks, billing expectations, and user trust hard to debug unless reports preserve both the selected model and the actual server-side model evidence.
+Desktop users need passive context-pressure visibility during long coding sessions so they can decide when to compact, split a thread, reduce pasted context, or avoid context loss before the app forces compaction.
 
 Evidence:
-- `fixtures/codex-model-routing-mismatch.md:5` - GPT-5.3-Codex is being routed to GPT-5.2.
-- `fixtures/codex-model-routing-mismatch.md:6` - Both `config.toml` and the TUI are set to `gpt-5.3-codex`, but SSE captures show the actual `response.model` is `gpt-5.2-2025-12-11`.
-- `fixtures/codex-model-routing-mismatch.md:7` - Running `RUST_LOG='codex_tui::chatwidget=info,codex_api::sse::responses=trace' codex` and sending a prompt shows `response.created` with `response.model=gpt-5.2-2025-12-11`.
-- `fixtures/codex-model-routing-mismatch.md:9` - The user sees no warning or fallback notice that a different model version is being used internally.
-- `fixtures/codex-model-routing-mismatch.md:10` - Some reports mention ChatGPT Pro, WSL, macOS, recent CLI versions, and verification briefly restoring GPT-5.3-Codex before silently rerouting back to GPT-5.2.
+- `fixtures/codex-context-visibility.md:5` - Codex Desktop no longer shows a visible context/token usage indicator in the chat UI after an update.
+- `fixtures/codex-context-visibility.md:6` - Previously the app exposed context usage information, context-window pressure, or a tooltip near the input area.
+- `fixtures/codex-context-visibility.md:8` - `/status` is useful as an explicit command, but it is not a replacement for passive context awareness during long-running desktop threads.
+- `fixtures/codex-context-visibility.md:9` - The missing indicator affects professional coding workflows because users cannot tell when to compact, start a new thread, reduce pasted context, or split work before context loss.
+- `fixtures/codex-context-visibility.md:10` - A related report says the data exists in local session logs, but the app no longer exposes it passively.
+- `fixtures/codex-context-visibility.md:15` - Screenshot or short recording of the chat input area where the context indicator or tooltip used to appear.
 
 Suggested rule:
 
-> When reporting Codex model-routing mismatches, capture the Codex app/CLI/extension version, subscription/workspace, selected model from config.toml, TUI, command flag, or UI, actual server-side model from SSE `response.created` / `response.model`, the exact `RUST_LOG` or trace command used, timestamp, account or verification state without secrets, whether API and Codex routes differ, whether a warning/fallback notice appeared, and a minimal one-prompt reproduction with redacted logs.
+> When reporting Codex context-visibility regressions, capture Codex Desktop version, OS, surface, screenshot or short recording of the chat input area, whether the prior context/token indicator or tooltip was visible before the update, exact UI route where it disappeared, local session metadata showing context/window pressure if available, `/status` output if relevant, compaction timing, whether CLI/TUI still exposes a statusline, and how the missing indicator affects long-session decisions.
 
 
 ## Reporter Notes
@@ -83,6 +85,7 @@ Suggested rule:
 - `windows-helper-path`: Windows Desktop exposes bundled rg/node/plugin helpers from WindowsApps or missing LocalCache paths that cannot execute.
 - `approval-friction`: Repeated approval prompts, Approve for this session misses, and noisy trusted MCP tool approvals.
 - `latency-regression`: Fast mode feels like Standard, with long thinking, search, read, or compaction stalls.
+- `model-routing-mismatch`: Codex shows one selected model while SSE response evidence shows a different server-side model was used.
 - `thinking-hang`: A turn or tool call completes, but the session stays on Thinking or Working with no streamed follow-up.
 - `clipboard-attachment`: Copy as Markdown, long-paste conversion, or generated Pasted text.txt attachments break prompt and report workflows.
 - `deeplink-launch`: OAuth callbacks, notification clicks, mobile links, or `codex app <path>` external activation fail to route into Codex.
@@ -118,6 +121,7 @@ trace-to-skill demo hooks-runtime
 trace-to-skill demo terminal-output-integrity
 trace-to-skill demo subagent-lifecycle
 trace-to-skill demo usage-bucket-confusion
+trace-to-skill demo context-visibility
 trace-to-skill demo file-tree-ui
 trace-to-skill demo usage-reset-drift
 ```

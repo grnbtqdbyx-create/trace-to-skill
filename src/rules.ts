@@ -260,7 +260,7 @@ const RULES: RuleDefinition[] = [
       /\bFast\b.{0,120}\b(feels|felt)\b.{0,80}\b(Standard|slower|slow|8x slower)\b/i,
       /\b(simple tasks?|small module|small change)\b.{0,120}\b(10[-–]20\+? minutes|more than an hour|hour|2 hours|two hours|longer)\b/i,
       /\bthinking\b.{0,120}\b(stuck|stall|stalls|40\+? seconds|minute|hour|long)\b/i,
-      /\b(context compression|automatic context compression|compaction|reading|searching|search\/read)\b.{0,160}\b(slow|stall|stalls|long|minutes|very slow|delay)\b/i,
+      /\b(context compression|automatic context compression|compaction|reading|searching|search\/read)\b.{0,160}\b(slow|stall|stalls|takes? (?:too )?long|long delay|minutes|very slow|delay)\b/i,
       /\b(performance regression|routing change|capacity issue|backend\/client issue|backend issue|client issue)\b.{0,160}\b(Codex|GPT-5\.5|Fast|slow|latency)\b/i,
       /\b(\d+\s*hours?|two hours|1hr\s*58\s*minutes|10[-–]20\+?\s*minutes)\b.{0,180}\b(\d+\s*lines|simple|small|Codex|GPT-5\.5|Fast)\b/i,
       /\b(slowdown|latency|performance)\b.{0,100}\b8x slower\b/i,
@@ -709,6 +709,25 @@ const RULES: RuleDefinition[] = [
     suggestedRule:
       "When reporting Codex usage bucket confusion, capture subscription plan, account/workspace, app/CLI version, surface, timestamp, screenshot or redacted popover text, 5h percentage, weekly percentage, reset time/date, whether values are used or remaining, whether weekly is rolling or calendar-based, whether weekly includes app/CLI/cloud/review usage, `/status` output, usage dashboard state, and whether other devices or workspaces show the same values.",
     suggestedSkill: "codex-usage-bucket-triage"
+  },
+  {
+    kind: "codex_context_visibility",
+    severity: "high",
+    title: "Codex context or token usage indicator missing",
+    why: "Desktop users need passive context-pressure visibility during long coding sessions so they can decide when to compact, split a thread, reduce pasted context, or avoid context loss before the app forces compaction.",
+    patterns: [
+      /\b(context\/token usage indicator|context token usage indicator|visible context\/token usage indicator|visible context token usage indicator)\b.{0,240}\b(no longer shows|missing|hidden|gone|removed|restore|re-add|reimplement|not visible)\b/i,
+      /\b(no longer shows|missing|hidden|gone|removed|restore|re-add|reimplement|not visible)\b.{0,240}\b(context\/token usage indicator|context token usage indicator|visible context\/token usage indicator|visible context token usage indicator)\b/i,
+      /\b(context usage display|context usage information|context-window pressure|context window pressure|context indicator|token usage indicator|context meter)\b.{0,220}\b(no longer|missing|hidden|not visible|tooltip|mouse-over|mouse over|input area|chat UI)\b/i,
+      /\b(passive context awareness|context awareness|Context N% used|Context N% remaining)\b.{0,220}\b(long-running|long coding sessions?|desktop threads?|compaction|context loss|context limit)\b/i,
+      /\b(cannot tell|can'?t tell|cannot see|can'?t see)\b.{0,220}\b(close to compaction|context pressure|context loss|practical context limit|how much context|context is being used)\b/i,
+      /\b(app no longer exposes|no longer exposes)\b.{0,220}\b(context|token|usage)\b.{0,180}\b(local session logs|desktop app|passively|visible)\b/i,
+      /\b(data exists|context data exists|token data exists)\b.{0,180}\blocal session logs\b.{0,180}\b(no longer exposes|not exposed|hidden|passively|visible|desktop app)\b/i,
+      /\b\/status\b.{0,160}\b(not a replacement|not enough|explicit command)\b.{0,180}\b(passive context awareness|context indicator|desktop app)\b/i
+    ],
+    suggestedRule:
+      "When reporting Codex context-visibility regressions, capture Codex Desktop version, OS, surface, screenshot or short recording of the chat input area, whether the prior context/token indicator or tooltip was visible before the update, exact UI route where it disappeared, local session metadata showing context/window pressure if available, `/status` output if relevant, compaction timing, whether CLI/TUI still exposes a statusline, and how the missing indicator affects long-session decisions.",
+    suggestedSkill: "codex-context-visibility-triage"
   },
   {
     kind: "codex_token_burn",

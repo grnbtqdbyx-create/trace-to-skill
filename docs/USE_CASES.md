@@ -59,7 +59,7 @@ What it proves:
 Recommended CI surface:
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.95
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.96
   with:
     mode: all
     doctor-threshold: "85"
@@ -334,6 +334,19 @@ This catches signals such as `codex resume` picker hangs, `codex resume <id>` wo
 `session-audit` is local and read-only: it reports rollout JSONL size, line count, largest line size, parse errors, session index line count, title byte/signal counts, subagent lifecycle signal counts, state-file presence, recoverable thread ids, `codex resume <id>` commands, and common session signals so users can attach a privacy-preserving summary to OpenAI/Codex issues instead of posting transcripts. Full workspace paths are not printed in the thread table; related projects are grouped by basename plus a short path hash.
 
 For mixed resume, crash, config, plugin, or history issues, `diagnostics-bundle` writes the session, config, and plugin reports together with a checklist of files not to attach publicly.
+
+## 18.1. Codex Context Visibility Evidence
+
+Use this when Codex Desktop no longer shows passive context/token usage visibility in the chat UI and long-session compaction pressure becomes invisible.
+
+```bash
+npx trace-to-skill demo context-visibility
+npx trace-to-skill codex-report ./runs --output openai-codex-context-visibility.md
+```
+
+This catches signals such as a missing visible context/token usage indicator, hidden context-window pressure display, missing tooltip near the input area, `/status` not being a replacement for passive context awareness, local session logs still containing context data, and users being unable to tell when to compact, start a new thread, reduce pasted context, or split work before context loss.
+
+Include Codex Desktop version, OS, surface, screenshot or short recording of the chat input area, whether the prior context/token indicator or tooltip was visible before the update, exact UI route where it disappeared, local session metadata showing context/window pressure if available, `/status` output if relevant, compaction timing, whether CLI/TUI still exposes a statusline, and how the missing indicator affects long-session decisions.
 
 ## 19. Codex File Tree UI Evidence
 

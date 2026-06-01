@@ -152,6 +152,14 @@ Common signals include `Usage remaining`, compact rows like `5h 97%` and `Weekly
 
 The fix is to capture subscription plan, account/workspace, app/CLI version, surface, timestamp, screenshot or redacted popover text, 5h percentage, weekly percentage, reset time/date, whether values are used or remaining, whether weekly is rolling or calendar-based, whether weekly includes app/CLI/cloud/review usage, `/status` output, usage dashboard state, and whether other devices or workspaces show the same values.
 
+## Codex Context Or Token Usage Indicator Missing
+
+Codex Desktop can regress by hiding or removing passive context/token usage visibility from the chat UI. This is different from confusing quota percentages: the issue is that users cannot see context-window pressure at all during long desktop threads.
+
+Common signals include `visible context/token usage indicator`, `context-window pressure`, missing context usage tooltip near the input area, `Context N% used` or `Context N% remaining` requests, `/status` not being a replacement for passive context awareness, local session logs still containing context data, and users being unable to decide when to compact, split a thread, reduce pasted context, or avoid context loss.
+
+The fix is to capture Codex Desktop version, OS, surface, screenshot or short recording of the chat input area, whether the prior context/token indicator or tooltip was visible before the update, exact UI route where it disappeared, local session metadata showing context/window pressure if available, `/status` output if relevant, compaction timing, whether CLI/TUI still exposes a statusline, and how the missing indicator affects long-session decisions.
+
 ## Codex Subagent Prompt Leakage
 
 Codex MultiAgentV2 child agents can fail the task boundary even when the parent asks for isolated children. When `spawn_agent` with `fork_turns: "none"` records the delegated task as an assistant/commentary JSON envelope, or a same-turn parallel child sees a sibling prompt, independent review, QA, and security lanes are no longer independent.

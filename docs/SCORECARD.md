@@ -9,7 +9,7 @@ Status: **pass**
 | Failed doctor checks | 0 |
 | Critical findings | 0 |
 | Built-in benchmark | pass |
-| Benchmark cases | 40 |
+| Benchmark cases | 41 |
 
 ## Doctor Summary
 
@@ -56,6 +56,7 @@ This benchmark runs the public fixture pack that ships with the repository and p
 | Codex file tree and workspace navigation UI failure | `fixtures/codex-file-tree-ui.md` | 75 | 2 | 0 | `codex_file_tree_ui`, `weak_evidence` | pass |
 | Codex session resume and state failure | `fixtures/codex-session-state.md` | 59 | 3 | 0 | `codex_resource_leak`, `codex_session_state`, `weak_evidence` | pass |
 | Codex usage bucket scope and percentage confusion | `fixtures/codex-usage-bucket-confusion.md` | 59 | 3 | 0 | `codex_token_burn`, `codex_usage_bucket_confusion`, `weak_evidence` | pass |
+| Codex context or token usage indicator missing | `fixtures/codex-context-visibility.md` | 75 | 2 | 0 | `codex_context_visibility`, `weak_evidence` | pass |
 | Codex token burn and usage-drain loop | `fixtures/codex-token-burn.md` | 75 | 2 | 0 | `codex_token_burn`, `weak_evidence` | pass |
 | Codex resource leak and runaway process | `fixtures/codex-resource-leak.md` | 75 | 2 | 0 | `codex_resource_leak`, `weak_evidence` | pass |
 | Codex tool-call integrity and rollback failure | `fixtures/codex-tool-call-integrity.md` | 43 | 4 | 0 | `codex_resource_leak`, `codex_subagent_lifecycle`, `codex_tool_call_integrity`, `weak_evidence` | pass |

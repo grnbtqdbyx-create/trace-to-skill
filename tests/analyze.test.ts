@@ -334,6 +334,7 @@ test("demo command runs packaged scenarios without private traces", async () => 
   assert.ok(scenarios.some((scenario) => scenario.id === "terminal-output-integrity"));
   assert.ok(scenarios.some((scenario) => scenario.id === "subagent-lifecycle"));
   assert.ok(scenarios.some((scenario) => scenario.id === "usage-bucket-confusion"));
+  assert.ok(scenarios.some((scenario) => scenario.id === "context-visibility"));
   assert.ok(scenarios.some((scenario) => scenario.id === "file-tree-ui"));
   assert.ok(scenarios.some((scenario) => scenario.id === "usage-reset-drift"));
   assert.equal(result.scenario.id, "approval-friction");
@@ -354,6 +355,7 @@ test("demo command runs packaged scenarios without private traces", async () => 
   assert.match(list, /terminal-output-integrity/);
   assert.match(list, /subagent-lifecycle/);
   assert.match(list, /usage-bucket-confusion/);
+  assert.match(list, /context-visibility/);
   assert.match(list, /remote-compact/);
   assert.match(list, /context-fork-bloat/);
   assert.match(list, /subagent-prompt-leakage/);
@@ -654,6 +656,23 @@ test("analyzeTargets detects Codex usage bucket confusion", async () => {
   assert.match(finding.suggestedRule, /5h percentage/);
   assert.match(finding.suggestedRule, /weekly percentage/);
   assert.match(report, /codex_usage_bucket_confusion/);
+});
+
+test("analyzeTargets detects Codex context visibility regressions", async () => {
+  const result = await analyzeTargets(["fixtures/codex-context-visibility.md"]);
+  const finding = result.findings.find((item) => item.kind === "codex_context_visibility");
+  const evidence = finding?.evidence.map((item) => item.excerpt).join("\n") ?? "";
+  const report = renderCodexIssueReport(result);
+
+  assert.ok(finding);
+  assert.equal(finding.severity, "high");
+  assert.match(evidence, /visible context\/token usage indicator/);
+  assert.match(evidence, /context-window pressure/);
+  assert.match(evidence, /not a replacement for passive context awareness/);
+  assert.match(evidence, /local session logs/);
+  assert.match(finding.suggestedRule, /chat input area/);
+  assert.match(finding.suggestedRule, /statusline/);
+  assert.match(report, /codex_context_visibility/);
 });
 
 test("analyzeTargets detects Codex token burn and usage-drain loops", async () => {
@@ -1290,9 +1309,10 @@ test("issue-map ranks GitHub issue exports by detected Codex failure classes", a
   const markdown = renderIssueMapMarkdown(result);
   const kinds = result.summaries.map((summary) => summary.kind);
 
-  assert.equal(result.issueCount, 11);
+  assert.equal(result.issueCount, 14);
   assert.ok(result.matchedIssueCount >= 5);
   assert.ok(kinds.includes("codex_token_burn"));
+  assert.ok(kinds.includes("codex_context_visibility"));
   assert.ok(kinds.includes("codex_auth_verification"));
   assert.ok(kinds.includes("codex_model_routing_mismatch"));
   assert.ok(kinds.includes("codex_remote_compact"));
@@ -1310,6 +1330,7 @@ test("issue-map ranks GitHub issue exports by detected Codex failure classes", a
   assert.match(markdown, /#20161 Phone number verification doesn't work/);
   assert.match(markdown, /#1243 "Sign in With ChatGPT" functionality needs to be robust against all account types/);
   assert.match(markdown, /#11189 GPT-5\.3-Codex being routed to GPT-5\.2/);
+  assert.match(markdown, /#23794 Codex Desktop no longer shows visible context\/token usage indicator/);
   assert.match(markdown, /gh issue list --repo openai\/codex/);
 });
 
@@ -1380,7 +1401,7 @@ test("issue-map reads GitHub issue exports from stdin", async () => {
   };
 
   assert.deepEqual(result.sources, ["stdin"]);
-  assert.equal(result.issueCount, 11);
+  assert.equal(result.issueCount, 14);
   assert.equal(result.roadmap[0]?.kind, "codex_token_burn");
   assert.match(result.roadmap[0]?.command ?? "", /usage-evidence/);
 });
@@ -2212,6 +2233,7 @@ test("published JSON schemas describe CLI result contracts", async () => {
   assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("codex_plugin_runtime"));
   assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("codex_file_tree_ui"));
   assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("codex_session_state"));
+  assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("codex_context_visibility"));
   assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("codex_usage_bucket_confusion"));
   assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("codex_token_burn"));
   assert.ok((analysisSchema.$defs.findingKind as { enum: string[] }).enum.includes("codex_resource_leak"));
@@ -2299,7 +2321,7 @@ test("benchmark covers public fixture failure classes", async () => {
   const markdown = renderBenchmarkMarkdown(benchmark);
 
   assert.equal(benchmark.passed, true);
-  assert.equal(benchmark.cases.length, 40);
+  assert.equal(benchmark.cases.length, 41);
   assert.ok(benchmark.cases.some((item) => item.id === "clean-validated-run" && item.score === 100));
   assert.ok(benchmark.cases.some((item) => item.id === "failed-workflow" && item.detectedKinds.includes("test_failure")));
   assert.ok(benchmark.cases.some((item) => item.id === "context-compaction" && item.detectedKinds.includes("context_compaction")));
@@ -2329,6 +2351,7 @@ test("benchmark covers public fixture failure classes", async () => {
   assert.ok(benchmark.cases.some((item) => item.id === "codex-file-tree-ui" && item.detectedKinds.includes("codex_file_tree_ui")));
   assert.ok(benchmark.cases.some((item) => item.id === "codex-session-state" && item.detectedKinds.includes("codex_session_state")));
   assert.ok(benchmark.cases.some((item) => item.id === "codex-usage-bucket-confusion" && item.detectedKinds.includes("codex_usage_bucket_confusion")));
+  assert.ok(benchmark.cases.some((item) => item.id === "codex-context-visibility" && item.detectedKinds.includes("codex_context_visibility")));
   assert.ok(benchmark.cases.some((item) => item.id === "codex-token-burn" && item.detectedKinds.includes("codex_token_burn")));
   assert.ok(benchmark.cases.some((item) => item.id === "codex-resource-leak" && item.detectedKinds.includes("codex_resource_leak")));
   assert.ok(benchmark.cases.some((item) => item.id === "codex-tool-call-integrity" && item.detectedKinds.includes("codex_tool_call_integrity")));
@@ -2352,7 +2375,7 @@ test("scorecard combines doctor readiness and benchmark evidence", async () => {
   assert.equal(scorecard.doctor.status, "ready");
   assert.equal(scorecard.doctor.score, 100);
   assert.equal(scorecard.benchmark.status, "pass");
-  assert.equal(scorecard.benchmark.cases, 40);
+  assert.equal(scorecard.benchmark.cases, 41);
   assert.match(markdown, /trace-to-skill Scorecard/);
   assert.match(markdown, /Codex readiness/);
   assert.match(markdown, /Benchmark Summary/);
@@ -2368,9 +2391,9 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.equal(brief.scorecard.doctorStatus, "ready");
   assert.equal(brief.scorecard.doctorScore, 100);
   assert.equal(brief.scorecard.benchmarkStatus, "pass");
-  assert.equal(brief.scorecard.benchmarkCases, 40);
+  assert.equal(brief.scorecard.benchmarkCases, 41);
   assert.equal(brief.packageName, "trace-to-skill");
-  assert.equal(brief.packageVersion, "0.1.95");
+  assert.equal(brief.packageVersion, "0.1.96");
   assert.equal(brief.license, "Apache-2.0");
   assert.ok(brief.repository?.includes("github.com/grnbtqdbyx-create/trace-to-skill"));
   assert.ok(brief.qualification.max500.length <= 500);
@@ -2378,7 +2401,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.match(markdown, /OpenAI OSS Brief/);
   assert.match(markdown, /Why This Repository Qualifies/);
   assert.match(markdown, /500-Character Version/);
-  assert.match(markdown, /npx trace-to-skill@0\.1\.95/);
+  assert.match(markdown, /npx trace-to-skill@0\.1\.96/);
   assert.match(markdown, /Weekly Codex Issue Radar/);
 });
 

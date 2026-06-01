@@ -360,6 +360,13 @@ function buildRoadmap(summaries: IssueMapKindSummary[]): IssueMapRoadmapItem[] {
 }
 
 function roadmapAction(kind: FindingKind): { targetArtifact: string; command: string } {
+  if (kind === "codex_context_visibility") {
+    return {
+      targetArtifact: "Context visibility fixture and Desktop UI evidence report",
+      command: "trace-to-skill codex-report ./runs --output openai-codex-context-visibility.md"
+    };
+  }
+
   if (kind === "codex_token_burn" || kind === "codex_usage_bucket_confusion" || kind === "codex_usage_reset_drift" || kind === "quota_mismatch") {
     return {
       targetArtifact: "Usage evidence fixture and support-ready token report",
