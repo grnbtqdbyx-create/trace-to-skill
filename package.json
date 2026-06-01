@@ -1,6 +1,6 @@
 {
   "name": "trace-to-skill",
-  "version": "0.1.87",
+  "version": "0.1.88",
   "description": "Turn failed AI coding-agent runs into reusable AGENTS.md rules, SKILL.md files, and eval evidence.",
   "type": "module",
   "main": "dist/src/index.js",
@@ -211,7 +211,11 @@
     "language-server",
     "lsp-audit",
     "codex-lsp",
-    "agent-lsp"
+    "agent-lsp",
+    "codex-issue-radar",
+    "issue-radar",
+    "github-issue-radar",
+    "maintainer-radar"
   ],
   "author": "Ogün <https://github.com/grnbtqdbyx-create>",
   "license": "Apache-2.0",

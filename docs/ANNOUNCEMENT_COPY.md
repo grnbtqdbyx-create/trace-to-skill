@@ -32,6 +32,7 @@ trace-to-skill checks repo readiness and scans agent traces/logs to generate:
 
 - a Codex Readiness Doctor score
 - a focused AGENTS.md / MCP/Codex config linter with instruction composition, JSON/TOML startup, and drift checks
+- a weekly Codex Issue Radar workflow for turning live GitHub issue demand into a failure-class pain map
 - a GitHub Action readiness gate
 - a PR comment with the readiness score and top recommendations
 - a self-dogfooding workflow for its own Codex readiness
@@ -110,6 +111,7 @@ npx trace-to-skill demo mcp-discovery-mismatch
 npx trace-to-skill demo terminal-output-integrity
 npx trace-to-skill demo subagent-lifecycle
 npx trace-to-skill init --comment --sarif
+npx trace-to-skill init --issue-map-repo openai/codex --issue-map-state all --issue-map-limit 100
 npx trace-to-skill doctor .
 npx trace-to-skill lint-agents .
 npx trace-to-skill redact ./runs --output redacted-runs

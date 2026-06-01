@@ -37,6 +37,14 @@ inputs:
     description: Optional owner/repo to fetch directly in "issue-map" mode instead of reading issue-map-path.
     required: false
     default: ""
+  issue-map-state:
+    description: "Issue state to fetch when issue-map-repo is set: open, closed, or all."
+    required: false
+    default: open
+  issue-map-limit:
+    description: Maximum issues to fetch when issue-map-repo is set, from 1 to 100.
+    required: false
+    default: "100"
   threshold:
     description: Minimum passing score.
     required: false
@@ -333,8 +341,8 @@ runs:
       run: |
         set -euo pipefail
         if [ -n "${{ inputs.issue-map-repo }}" ]; then
-          node "$TRACE_TO_SKILL_CLI" issue-map --repo "${{ inputs.issue-map-repo }}" --token "${{ inputs.github-token }}" --format json --output trace-to-skill-issue-map.json
-          node "$TRACE_TO_SKILL_CLI" issue-map --repo "${{ inputs.issue-map-repo }}" --token "${{ inputs.github-token }}" --output trace-to-skill-issue-map.md
+          node "$TRACE_TO_SKILL_CLI" issue-map --repo "${{ inputs.issue-map-repo }}" --state "${{ inputs.issue-map-state }}" --limit "${{ inputs.issue-map-limit }}" --token "${{ inputs.github-token }}" --format json --output trace-to-skill-issue-map.json
+          node "$TRACE_TO_SKILL_CLI" issue-map --repo "${{ inputs.issue-map-repo }}" --state "${{ inputs.issue-map-state }}" --limit "${{ inputs.issue-map-limit }}" --token "${{ inputs.github-token }}" --output trace-to-skill-issue-map.md
         else
           node "$TRACE_TO_SKILL_CLI" issue-map "${{ inputs.issue-map-path }}" --format json --output trace-to-skill-issue-map.json
           node "$TRACE_TO_SKILL_CLI" issue-map "${{ inputs.issue-map-path }}" --output trace-to-skill-issue-map.md

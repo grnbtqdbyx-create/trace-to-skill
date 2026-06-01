@@ -30,6 +30,7 @@ Current proof points:
 - Missing-path, missing-include, nested-instruction, invalid-UTF-8, and oversized-instruction checks for AGENTS.md and tool instruction files.
 - GitHub Action `agents-lint` mode and public AGENTS.md lint report.
 - GitHub Action doctor mode with configurable readiness threshold.
+- Optional weekly Codex Issue Radar workflow from `trace-to-skill init --issue-map-repo owner/name`.
 - Pull request comments for Codex readiness scores and recommendations.
 - Self-dogfooding Codex readiness workflow in the repository.
 - Composite Action outputs for downstream maintainer workflows.
@@ -89,7 +90,7 @@ Current proof points:
 - SARIF output for GitHub code scanning.
 - Before/after eval comparison with keep/revise/reject decisions.
 - One-command repository setup via `trace-to-skill init`.
-- Public release v0.1.87.
+- Public release v0.1.88.
 - Current GitHub scorecard: 100/100 Codex-ready, benchmark passing.
 
 500-character version:

@@ -6,6 +6,9 @@ export interface InitOptions {
   traces?: string;
   threshold?: string;
   doctorThreshold?: string;
+  issueMapRepo?: string;
+  issueMapState?: "open" | "closed" | "all";
+  issueMapLimit?: string;
   comment?: boolean;
   sarif?: boolean;
   force?: boolean;
@@ -23,7 +26,19 @@ export async function initProject(options: InitOptions = {}): Promise<InitResult
   const traces = normalizeTracePath(options.traces ?? "runs");
   const threshold = normalizeThreshold(options.threshold ?? "80");
   const doctorThreshold = normalizeThreshold(options.doctorThreshold ?? "85");
-  const files = buildInitFiles(traces, threshold, doctorThreshold, Boolean(options.comment), Boolean(options.sarif));
+  const issueMapRepo = options.issueMapRepo ? normalizeRepo(options.issueMapRepo) : undefined;
+  const issueMapState = options.issueMapState ?? "open";
+  const issueMapLimit = normalizeThreshold(options.issueMapLimit ?? "100");
+  const files = buildInitFiles({
+    traces,
+    threshold,
+    doctorThreshold,
+    issueMapRepo,
+    issueMapState,
+    issueMapLimit,
+    comment: Boolean(options.comment),
+    sarif: Boolean(options.sarif)
+  });
   const written: string[] = [];
   const skipped: string[] = [];
 
@@ -64,25 +79,43 @@ interface InitFile {
   content: string;
 }
 
-function buildInitFiles(traces: string, threshold: string, doctorThreshold: string, comment: boolean, sarif: boolean): InitFile[] {
+interface InitFileOptions {
+  traces: string;
+  threshold: string;
+  doctorThreshold: string;
+  issueMapRepo?: string;
+  issueMapState: "open" | "closed" | "all";
+  issueMapLimit: string;
+  comment: boolean;
+  sarif: boolean;
+}
+
+function buildInitFiles(options: InitFileOptions): InitFile[] {
   const files: InitFile[] = [
     {
       path: ".github/workflows/codex-readiness.yml",
-      content: renderCodexReadinessWorkflow(doctorThreshold, comment)
+      content: renderCodexReadinessWorkflow(options.doctorThreshold, options.comment)
     },
     {
       path: ".github/workflows/agent-learning.yml",
-      content: renderAgentLearningWorkflow(traces, threshold, comment, sarif)
+      content: renderAgentLearningWorkflow(options.traces, options.threshold, options.comment, options.sarif)
     },
     {
-      path: `${traces}/README.md`,
+      path: `${options.traces}/README.md`,
       content: renderRunsReadme()
     },
     {
-      path: `${traces}/.gitkeep`,
+      path: `${options.traces}/.gitkeep`,
       content: ""
     }
   ];
+
+  if (options.issueMapRepo) {
+    files.push({
+      path: ".github/workflows/codex-issue-radar.yml",
+      content: renderIssueRadarWorkflow(options.issueMapRepo, options.issueMapState, options.issueMapLimit)
+    });
+  }
 
   return files;
 }
@@ -111,7 +144,7 @@ function renderCodexReadinessWorkflow(doctorThreshold: string, comment: boolean)
     "    steps:",
     "      - uses: actions/checkout@v5",
     "      - id: trace-to-skill",
-    "        uses: grnbtqdbyx-create/trace-to-skill@v0.1.31",
+    "        uses: grnbtqdbyx-create/trace-to-skill@v0.1.88",
     "        with:",
     "          mode: all",
     `          doctor-threshold: "${doctorThreshold}"`,
@@ -140,7 +173,7 @@ function renderAgentLearningWorkflow(traces: string, threshold: string, comment:
   const steps = [
     "      - uses: actions/checkout@v5",
     "      - id: trace-to-skill",
-    "        uses: grnbtqdbyx-create/trace-to-skill@v0.1.31",
+    "        uses: grnbtqdbyx-create/trace-to-skill@v0.1.88",
     "        with:",
     "          mode: traces",
     `          traces: ${traces}`,
@@ -168,6 +201,39 @@ function renderAgentLearningWorkflow(traces: string, threshold: string, comment:
     permissions,
     "    steps:",
     ...steps
+  ].join("\n")}\n`;
+}
+
+function renderIssueRadarWorkflow(repo: string, state: "open" | "closed" | "all", limit: string): string {
+  return `${[
+    "name: Codex Issue Radar",
+    "",
+    "on:",
+    "  schedule:",
+    "    - cron: '17 8 * * 1'",
+    "  workflow_dispatch:",
+    "",
+    "jobs:",
+    "  issue-radar:",
+    "    runs-on: ubuntu-latest",
+    "    permissions:",
+    "      contents: read",
+    "      issues: read",
+    "    steps:",
+    "      - uses: actions/checkout@v5",
+    "      - id: issue-map",
+    "        uses: grnbtqdbyx-create/trace-to-skill@v0.1.88",
+    "        with:",
+    "          mode: issue-map",
+    `          issue-map-repo: ${repo}`,
+    `          issue-map-state: ${state}`,
+    `          issue-map-limit: "${limit}"`,
+    "          github-token: ${{ github.token }}",
+    '          job-summary: "true"',
+    "      - run: |",
+    "          echo \"Issue radar analyzed ${{ steps.issue-map.outputs.issue-map-issues }} issues\"",
+    "          echo \"Issue radar matched ${{ steps.issue-map.outputs.issue-map-matched }} issues\"",
+    "          echo \"Top failure class is ${{ steps.issue-map.outputs.issue-map-top-kind }}\""
   ].join("\n")}\n`;
 }
 
@@ -224,4 +290,12 @@ function normalizeThreshold(value: string): string {
   }
 
   return String(threshold);
+}
+
+function normalizeRepo(value: string): string {
+  if (!/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(value)) {
+    throw new Error("--issue-map-repo must use the owner/name format, for example openai/codex.");
+  }
+
+  return value;
 }

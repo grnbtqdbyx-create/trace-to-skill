@@ -69,7 +69,7 @@ Secondary headline:
 
 - Repository: https://github.com/grnbtqdbyx-create/trace-to-skill
 - npm: https://www.npmjs.com/package/trace-to-skill
-- Latest release: https://github.com/grnbtqdbyx-create/trace-to-skill/releases/tag/v0.1.50
+- Latest release: https://github.com/grnbtqdbyx-create/trace-to-skill/releases/tag/v0.1.88
 - CI: passing on `main`
 - Codex issue map: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/CODEX_ISSUE_MAP.md
 - Demo: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/DEMO.md

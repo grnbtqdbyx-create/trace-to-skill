@@ -116,17 +116,31 @@ npx trace-to-skill eval ./runs --threshold 80
 npx trace-to-skill benchmark
 npx trace-to-skill scorecard .
 npx trace-to-skill init --comment --sarif
+npx trace-to-skill init --issue-map-repo openai/codex --issue-map-state all --issue-map-limit 100
 ```
 
 ## GitHub Action
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.87
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.88
   with:
     mode: all
     doctor-threshold: "85"
     doctor-comment: "true"
     scorecard-comment: "true"
+    job-summary: "true"
+    github-token: ${{ github.token }}
+```
+
+## Weekly Codex Issue Radar
+
+```yaml
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.88
+  with:
+    mode: issue-map
+    issue-map-repo: openai/codex
+    issue-map-state: all
+    issue-map-limit: "100"
     job-summary: "true"
     github-token: ${{ github.token }}
 ```

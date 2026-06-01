@@ -47,8 +47,8 @@ export async function runOssBrief(target = process.cwd(), threshold = 85): Promi
   const commandName = packageName ? `npx ${packageName}` : "trace-to-skill";
 
   const qualificationLong = [
-    `${projectName} helps open-source maintainers adopt Codex safely by turning failed coding-agent runs into evidence-backed rules, reusable workflows, and CI gates.`,
-    `It supports real maintenance work: PR review, GitHub issue demand mining, release quality, MCP risk, prompt-injection defense, privacy-preserving trace sharing, and repeat failure reduction.`,
+    `${projectName} helps open-source maintainers adopt Codex safely by turning failed coding-agent runs into evidence-backed rules, reusable workflows, CI gates, and a weekly Codex Issue Radar for live GitHub issue demand.`,
+    `It supports real maintenance work: PR review, issue triage, release quality, MCP risk, prompt-injection defense, privacy-preserving trace sharing, and repeat failure reduction.`,
     `The repository is ${scorecard.doctor.status}, scores ${scorecard.doctor.score}/100 on the local Codex readiness doctor, and ships a deterministic benchmark with ${scorecard.benchmark.cases} public fixture cases.`
   ].join(" ");
 
@@ -174,6 +174,7 @@ function buildEvidence(
     `Codex readiness doctor: ${scorecard.doctor.status}, ${scorecard.doctor.score}/100, ${scorecard.doctor.failedChecks} failed checks.`,
     `Public fixture benchmark: ${scorecard.benchmark.status}, ${scorecard.benchmark.cases} cases.`,
     "GitHub issue demand mining: issue-map ranks exported OpenAI/Codex issues by failure class, comments, reactions, and evidence gaps.",
+    "Weekly Codex Issue Radar: init --issue-map-repo owner/name scaffolds a scheduled Action that fetches live GitHub issues and publishes the pain map to the job summary.",
     "Maintainer control: generated rules are suggestions, evidence is line-linked, and secrets can be redacted before sharing."
   ];
 }

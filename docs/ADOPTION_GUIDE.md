@@ -8,16 +8,20 @@ Run the initializer:
 
 ```bash
 npx trace-to-skill init --comment --sarif
+npx trace-to-skill init --issue-map-repo owner/name --issue-map-state all --issue-map-limit 100
 ```
 
 This creates:
 
 - `.github/workflows/codex-readiness.yml`
 - `.github/workflows/agent-learning.yml`
+- `.github/workflows/codex-issue-radar.yml` when `--issue-map-repo owner/name` is provided
 - `runs/README.md`
 - `runs/.gitkeep`
 
 Open a pull request with those files first. Keep the first PR small so maintainers can review the policy separately from future agent traces.
+
+The optional Codex Issue Radar workflow runs weekly and on demand. It fetches the repository's most-commented issues, filters pull requests, classifies each issue into deterministic agent failure classes, and writes the report to the GitHub Actions job summary without committing generated output.
 
 ## Maintainer Workflow
 

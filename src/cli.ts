@@ -375,6 +375,9 @@ async function main(): Promise<void> {
       traces: stringFlag(parsed.flags.traces),
       threshold: stringFlag(parsed.flags.threshold),
       doctorThreshold: stringFlag(parsed.flags["doctor-threshold"]),
+      issueMapRepo: stringFlag(parsed.flags["issue-map-repo"]),
+      issueMapState: githubIssueStateFlag(parsed.flags["issue-map-state"]),
+      issueMapLimit: stringFlag(parsed.flags["issue-map-limit"]),
       comment: Boolean(parsed.flags.comment),
       sarif: Boolean(parsed.flags.sarif),
       force: Boolean(parsed.flags.force),
@@ -537,7 +540,7 @@ Usage:
   trace-to-skill compare --before <old-run> --after <new-run> [--format markdown|json]
   trace-to-skill doctor [repo-dir] [--threshold 85] [--format markdown|json|comment] [--output report.md]
   trace-to-skill doctor-comment [repo-dir] [--threshold 85] [--dry-run] [--token $GITHUB_TOKEN]
-  trace-to-skill init [--traces runs] [--threshold 80] [--doctor-threshold 85] [--comment] [--sarif] [--dry-run]
+  trace-to-skill init [--traces runs] [--threshold 80] [--doctor-threshold 85] [--issue-map-repo owner/name] [--issue-map-state open|closed|all] [--issue-map-limit 100] [--comment] [--sarif] [--dry-run]
 
 Examples:
   trace-to-skill demo
@@ -572,6 +575,7 @@ Examples:
   trace-to-skill doctor . --threshold 85
   trace-to-skill doctor-comment . --threshold 85
   trace-to-skill init --comment --sarif
+  trace-to-skill init --issue-map-repo openai/codex --issue-map-state all --issue-map-limit 100
 `);
 }
 

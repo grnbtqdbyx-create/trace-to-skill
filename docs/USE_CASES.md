@@ -59,7 +59,7 @@ What it proves:
 Recommended CI surface:
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.87
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.88
   with:
     mode: all
     doctor-threshold: "85"
@@ -76,6 +76,7 @@ Use this when you want to see what Codex users are actually complaining about on
 ```bash
 npx trace-to-skill issue-map --repo openai/codex --limit 100 --output codex-issue-map.md
 npx trace-to-skill issue-map --repo openai/codex --format json
+npx trace-to-skill init --issue-map-repo openai/codex --issue-map-state all --issue-map-limit 100
 gh issue list --repo openai/codex --state open --limit 100 --json number,title,body,url,labels,comments,createdAt,updatedAt > codex-issues.json
 npx trace-to-skill issue-map codex-issues.json --output codex-issue-map.md
 npx trace-to-skill issue-map codex-issues.json --format json
@@ -86,6 +87,7 @@ What it proves:
 - public issue clusters can be ranked without private telemetry
 - high-comment pain points are mapped to deterministic failure classes such as token burn, remote compact, MCP discovery, usage buckets, context drift, sandbox, and resource leaks
 - maintainers get example issue links and evidence-rule prompts for the next support artifact
+- `init --issue-map-repo owner/name` can install a weekly/manual Codex Issue Radar workflow without committing generated reports
 - OSS builders can show that new work is grounded in real GitHub demand instead of generic agent demos
 
 ## 4. AGENTS.md And MCP Hygiene

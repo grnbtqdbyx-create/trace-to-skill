@@ -1479,15 +1479,18 @@ test("renderSarif produces GitHub code-scanning compatible results", async () =>
 
 test("initProject scaffolds workflow without overwriting existing files", async () => {
   const cwd = await mkdtemp(path.join(os.tmpdir(), "trace-to-skill-init-"));
-  const first = await initProject({ cwd, comment: true, sarif: true });
-  const second = await initProject({ cwd, comment: true, sarif: true });
+  const first = await initProject({ cwd, comment: true, sarif: true, issueMapRepo: "openai/codex", issueMapState: "all", issueMapLimit: "75" });
+  const second = await initProject({ cwd, comment: true, sarif: true, issueMapRepo: "openai/codex", issueMapState: "all", issueMapLimit: "75" });
   const workflow = await readFile(path.join(cwd, ".github/workflows/agent-learning.yml"), "utf8");
   const doctorWorkflow = await readFile(path.join(cwd, ".github/workflows/codex-readiness.yml"), "utf8");
+  const issueRadarWorkflow = await readFile(path.join(cwd, ".github/workflows/codex-issue-radar.yml"), "utf8");
 
   assert.ok(first.written.includes(".github/workflows/agent-learning.yml"));
   assert.ok(first.written.includes(".github/workflows/codex-readiness.yml"));
+  assert.ok(first.written.includes(".github/workflows/codex-issue-radar.yml"));
   assert.ok(second.skipped.includes(".github/workflows/agent-learning.yml"));
   assert.ok(second.skipped.includes(".github/workflows/codex-readiness.yml"));
+  assert.ok(second.skipped.includes(".github/workflows/codex-issue-radar.yml"));
   assert.match(doctorWorkflow, /mode: all/);
   assert.match(doctorWorkflow, /doctor-threshold: "85"/);
   assert.match(doctorWorkflow, /doctor-comment: "true"/);
@@ -1500,6 +1503,13 @@ test("initProject scaffolds workflow without overwriting existing files", async 
   assert.match(workflow, /job-summary: "true"/);
   assert.match(workflow, /npx trace-to-skill analyze runs --format sarif/);
   assert.equal(workflow.includes("npx github:grnbtqdbyx-create/trace-to-skill"), false);
+  assert.match(issueRadarWorkflow, /name: Codex Issue Radar/);
+  assert.match(issueRadarWorkflow, /cron: '17 8 \* \* 1'/);
+  assert.match(issueRadarWorkflow, /mode: issue-map/);
+  assert.match(issueRadarWorkflow, /issue-map-repo: openai\/codex/);
+  assert.match(issueRadarWorkflow, /issue-map-state: all/);
+  assert.match(issueRadarWorkflow, /issue-map-limit: "75"/);
+  assert.match(issueRadarWorkflow, /github-token: \$\{\{ github\.token \}\}/);
 });
 
 test("createWorkspaceCheckpoint captures tracked, untracked, and requested ignored files", async () => {
@@ -1626,6 +1636,14 @@ test("initProject rejects unsafe workflow arguments", async () => {
   );
   await assert.rejects(
     () => initProject({ threshold: "101" }),
+    /between 1 and 100/
+  );
+  await assert.rejects(
+    () => initProject({ issueMapRepo: "openai/codex; curl example.com" }),
+    /owner\/name/
+  );
+  await assert.rejects(
+    () => initProject({ issueMapLimit: "0" }),
     /between 1 and 100/
   );
 });
@@ -1902,6 +1920,8 @@ test("composite action exposes Codex readiness doctor mode", async () => {
   assert.match(action, /mode:/);
   assert.match(action, /issue-map-path:/);
   assert.match(action, /issue-map-repo:/);
+  assert.match(action, /issue-map-state:/);
+  assert.match(action, /issue-map-limit:/);
   assert.match(action, /context-threshold:/);
   assert.match(action, /doctor-threshold:/);
   assert.match(action, /doctor-comment:/);
@@ -1928,7 +1948,7 @@ test("composite action exposes Codex readiness doctor mode", async () => {
   assert.match(action, /node "\$TRACE_TO_SKILL_CLI" doctor-comment/);
   assert.match(action, /node "\$TRACE_TO_SKILL_CLI" benchmark/);
   assert.match(action, /node "\$TRACE_TO_SKILL_CLI" issue-map/);
-  assert.match(action, /issue-map --repo "\$\{\{ inputs\.issue-map-repo \}\}"/);
+  assert.match(action, /issue-map --repo "\$\{\{ inputs\.issue-map-repo \}\}" --state "\$\{\{ inputs\.issue-map-state \}\}" --limit "\$\{\{ inputs\.issue-map-limit \}\}"/);
   assert.match(action, /node "\$TRACE_TO_SKILL_CLI" scorecard/);
   assert.match(action, /node "\$TRACE_TO_SKILL_CLI" scorecard-comment/);
   assert.match(action, /inputs\.mode == 'agents-lint' \|\| inputs\.mode == 'all'/);
@@ -2251,7 +2271,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.equal(brief.scorecard.benchmarkStatus, "pass");
   assert.equal(brief.scorecard.benchmarkCases, 38);
   assert.equal(brief.packageName, "trace-to-skill");
-  assert.equal(brief.packageVersion, "0.1.87");
+  assert.equal(brief.packageVersion, "0.1.88");
   assert.equal(brief.license, "Apache-2.0");
   assert.ok(brief.repository?.includes("github.com/grnbtqdbyx-create/trace-to-skill"));
   assert.ok(brief.qualification.max500.length <= 500);
@@ -2259,7 +2279,8 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.match(markdown, /OpenAI OSS Brief/);
   assert.match(markdown, /Why This Repository Qualifies/);
   assert.match(markdown, /500-Character Version/);
-  assert.match(markdown, /npx trace-to-skill@0\.1\.87/);
+  assert.match(markdown, /npx trace-to-skill@0\.1\.88/);
+  assert.match(markdown, /Weekly Codex Issue Radar/);
 });
 
 test("scorecard-comment dry-run resolves pull request event", async () => {

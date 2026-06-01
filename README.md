@@ -20,6 +20,7 @@ npx trace-to-skill usage-evidence ./usage-notes.md --output usage-evidence.md
 npx trace-to-skill process-audit ./process-notes.md --output process-audit.md
 npx trace-to-skill checkpoint . --output .trace-to-skill/checkpoints/before-codex
 npx trace-to-skill init --comment --sarif
+npx trace-to-skill init --issue-map-repo openai/codex --issue-map-state all --issue-map-limit 100
 npx trace-to-skill suggest ./runs --target agents-md
 npx trace-to-skill eval ./runs --threshold 80
 npx trace-to-skill benchmark
@@ -57,7 +58,8 @@ Use it when you need to:
 - **Gate Codex-ready PRs:** run `trace-to-skill scorecard .` in CI and post a reviewer-friendly readiness comment.
 - **Try it before collecting traces:** run `trace-to-skill demo` to generate a real Codex issue report from packaged public fixtures in one command.
 - **Prepare OpenAI OSS evidence:** run `trace-to-skill oss-brief .` to generate application-ready proof, 500-character summary fields, readiness score, benchmark status, license, and next steps.
-- **Mine GitHub issue demand:** export OpenAI/Codex issues with `gh issue list` or `gh search issues`, then run `trace-to-skill issue-map codex-issues.json` to rank maintainer pain by deterministic failure class, comments, reactions, and evidence gaps.
+- **Mine GitHub issue demand:** run `trace-to-skill issue-map --repo openai/codex` or pass an exported issue JSON file to rank maintainer pain by deterministic failure class, comments, reactions, and evidence gaps.
+- **Install a weekly issue radar:** run `trace-to-skill init --issue-map-repo owner/name` to add a scheduled GitHub Action that turns the repo's hottest issues into a Codex failure-class report in the job summary.
 - **Harden agent instructions:** run `trace-to-skill lint-agents .` to catch missing `AGENTS.md`, conflicting tool instructions, missing includes, nested instruction drift, encoding issues, and risky MCP config.
 - **Protect agent context:** run `trace-to-skill guard-github-event "$GITHUB_EVENT_PATH"` before feeding issue, PR, comment, discussion, check-run, or commit text into an agent.
 - **Prevent unsafe patch overwrites:** run `trace-to-skill guard-patch ./change.patch --root .` before applying generated patches so `*** Add File` cannot silently replace an existing file or symlink target.
@@ -337,9 +339,10 @@ Scaffold a repo:
 
 ```bash
 trace-to-skill init --comment --sarif
+trace-to-skill init --issue-map-repo openai/codex --issue-map-state all --issue-map-limit 100
 ```
 
-`init` writes `.github/workflows/codex-readiness.yml`, `.github/workflows/agent-learning.yml`, `runs/README.md`, and `runs/.gitkeep`. The generated workflows use the published GitHub Action, expose score/report outputs, and will not overwrite existing files unless `--force` is passed.
+`init` writes `.github/workflows/codex-readiness.yml`, `.github/workflows/agent-learning.yml`, `runs/README.md`, and `runs/.gitkeep`. When `--issue-map-repo owner/name` is provided, it also writes `.github/workflows/codex-issue-radar.yml`, a weekly/manual workflow that fetches live issues and publishes a Codex issue pain map to the job summary. The generated workflows use the published GitHub Action, expose score/report outputs, and will not overwrite existing files unless `--force` is passed.
 
 Analyze traces:
 
@@ -534,7 +537,7 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v5
-      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.87
+      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.88
         with:
           mode: all
           doctor-threshold: "85"
@@ -583,7 +586,7 @@ Composite action usage:
 
 ```yaml
 - id: trace-to-skill
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.87
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.88
   with:
     mode: all
     doctor-threshold: "85"
@@ -601,10 +604,12 @@ Issue-map action usage for direct GitHub issue demand mining:
 
 ```yaml
 - id: codex-issue-map
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.87
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.88
   with:
     mode: issue-map
     issue-map-repo: openai/codex
+    issue-map-state: all
+    issue-map-limit: "100"
     job-summary: "true"
     github-token: ${{ github.token }}
 - run: echo "Top Codex issue cluster is ${{ steps.codex-issue-map.outputs.issue-map-top-kind }}"
@@ -643,7 +648,7 @@ Action outputs:
 
 By default, generated reports are also appended to the GitHub Actions Job Summary. Set `job-summary: "false"` to disable that UI output.
 
-Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.87` executes that release's checked-out source instead of pulling the default branch at runtime.
+Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.88` executes that release's checked-out source instead of pulling the default branch at runtime.
 
 ## Codex Skill
 
