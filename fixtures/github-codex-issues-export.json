@@ -221,6 +221,19 @@
     "updatedAt": "2026-04-11T18:21:16Z"
   },
   {
+    "number": 2109,
+    "title": "Event Hooks",
+    "body": "Users request Codex event hooks with pattern matching to trigger scripts or commands before and after Codex behaviors. Requests include lifecycle events like SessionStart, Stop, SessionEnd, PreCompact, PostCompact, UserPromptSubmit, PreToolUse, PostToolUse, Notification, SubagentStop, and approval_requested. Users want blocking plus feedback-providing hooks, async/fire-and-forget hooks, config schema and documented contract, TOML examples, supported event names, execution semantics, stability expectations for experimental hooks, matcher coverage for Shell/Edit/Write/MCP/approval events, hook stdout or hookSpecificOutput.additionalContext injection into model context, enterprise guardrails, governance, devops monitoring, formatting, tmux status, persistent memory, external DB checkpointing, and compaction-safe session summaries.",
+    "url": "https://github.com/openai/codex/issues/2109",
+    "labels": [
+      { "name": "enhancement" },
+      { "name": "hooks" }
+    ],
+    "commentsCount": 76,
+    "reactions": { "totalCount": 689 },
+    "updatedAt": "2026-04-16T20:28:23Z"
+  },
+  {
     "number": 14048,
     "title": "All models - Codex CLI hangs indefinitely on all prompts, no response generated",
     "body": "Codex CLI accepts prompts but produces massively delayed response. It hangs indefinitely with no streaming output, no error, no timeout, all prompt types fail, status bar says gpt-5.4 high - 100% left, and no tokens are consumed. RUST_LOG codex exec ping shows unhandled responses event response.in_progress, response.content_part.added, response.output_text.done, response.content_part.done; other runs stop after mcp startup: no servers. Ctrl-C and /exit do not respond for minutes.",

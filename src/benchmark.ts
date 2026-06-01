@@ -216,6 +216,12 @@ const BENCHMARK_CASES: BenchmarkCaseDefinition[] = [
     expectedKinds: ["codex_hooks_runtime", "weak_evidence"]
   },
   {
+    id: "codex-hooks-contract",
+    title: "Codex hooks contract and coverage gap",
+    fixture: "fixtures/codex-hooks-contract.md",
+    expectedKinds: ["codex_hooks_contract", "weak_evidence"]
+  },
+  {
     id: "codex-mcp-discovery-mismatch",
     title: "Codex MCP discovery and config-scope mismatch",
     fixture: "fixtures/codex-mcp-discovery-mismatch.md",

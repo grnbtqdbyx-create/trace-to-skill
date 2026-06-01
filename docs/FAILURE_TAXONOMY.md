@@ -200,6 +200,14 @@ Common signals include Penpot response parse or `JsonRpcMessage deserialize` err
 
 The fix is to capture Codex version, MCP server name, transport URL without secrets, initialize/tools/list/tools/call results, HTTP status, `Content-Type`, SSE event framing, JSON-RPC message shape, session id before and after reconnect or server restart, auth/OAuth expectations, User-Agent and header requirements, exact parse/deserialize error, whether curl or another MCP client succeeds, and whether restarting Codex or reinitializing the transport recovers.
 
+## Codex Hooks Contract
+
+Codex hooks can be present but still hard to adopt when users do not have a documented event contract, stable config schema, predictable blocking or async semantics, matcher coverage, or a way for hook output to add context back into the model.
+
+Common signals include requests for Event Hooks, Claude Code-style hook schemas, `SessionStart`, `Stop`, `SessionEnd`, `PreCompact`, `PostCompact`, `PreToolUse`, `PostToolUse`, `UserPromptSubmit`, `SubagentStop`, `Notification`, `approval_requested`, blocking hooks, async/fire-and-forget hooks, `on_failure = "abort"`, `additionalContext`, `hookSpecificOutput`, Shell/Edit/Write matcher coverage, documented event names, config schema, execution semantics, stability expectations, and working examples.
+
+The fix is to capture Codex app/CLI/extension version, OS, surface, `[features].hooks` state, current docs or release note link, exact event names requested, blocking versus async semantics, failure policy, matcher needs for Shell/Edit/Write/MCP/approval events, whether stdout should inject model-visible context, config/TOML examples, payload fields needed, and the guardrail, compliance, context-memory, formatting, tmux/status, or orchestration workflow that is blocked.
+
 ## Codex Hooks Runtime
 
 Codex hooks can be configured but unreliable across surfaces. Because hooks often carry safety checks, logging, automation, and local workflow glue, duplicate runs or missed lifecycle events can quietly invalidate user expectations.

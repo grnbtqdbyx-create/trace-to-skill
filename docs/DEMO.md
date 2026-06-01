@@ -1,10 +1,10 @@
 # trace-to-skill Demo
 
-Scenario: **Codex subagent orchestration and configuration gap**
+Scenario: **Codex hooks contract and coverage gap**
 
-Official subagent support, per-agent model/reasoning config, role definitions, MCP tool scoping, and repo-level orchestration are missing or unclear.
+Users need documented hook events, blocking/async semantics, matcher coverage, additionalContext, and lifecycle coverage for guardrails and automation.
 
-Fixture: `fixtures/codex-subagent-orchestration.md`
+Fixture: `fixtures/codex-hooks-contract.md`
 
 This is a packaged public fixture, so you can try the project without collecting a private trace first.
 
@@ -14,7 +14,7 @@ This is a packaged public fixture, so you can try the project without collecting
 
 Score: **75/100**
 
-Likely failure class: **Codex subagent orchestration or configuration gap (codex_subagent_orchestration, high)**
+Likely failure class: **Codex hooks contract or coverage gap (codex_hooks_contract, high)**
 
 Agent workflow needs clearer verification, instruction, or security hardening before broad reuse.
 
@@ -23,25 +23,25 @@ Agent workflow needs clearer verification, instruction, or security hardening be
 ```md
 ### What happened?
 
-trace-to-skill detected Codex subagent orchestration or configuration gap (codex_subagent_orchestration). Users want official subagent functionality that can isolate context, specialize roles, and configure model, reasoning, permissions, MCP tools, and repo-level instructions per helper instead of forcing one global agent configuration.
+trace-to-skill detected Codex hooks contract or coverage gap (codex_hooks_contract). Hooks are the integration point for guardrails, context discipline, enterprise governance, and automation; users need a documented event contract, predictable blocking/async semantics, and enough lifecycle coverage to integrate Codex without reverse engineering.
 
 ### Detected failure class
 
-- codex_subagent_orchestration: Codex subagent orchestration or configuration gap (high)
+- codex_hooks_contract: Codex hooks contract or coverage gap (high)
 
 ### Evidence
 
-#### Codex subagent orchestration or configuration gap
-- fixtures/codex-subagent-orchestration.md:3 - Public issue cluster: Subagent Support and Subagent configuration and orchestration.
-- fixtures/codex-subagent-orchestration.md:5 - ## Official Subagent Support
-- fixtures/codex-subagent-orchestration.md:7 - - Users request official subagent functionality in Codex instead of prompt-only or headless CLI workarounds.
-- fixtures/codex-subagent-orchestration.md:8 - - The requested system includes an agent registry, persistent agent storage, TUI integration for agent creation, prompt templating for agent definitions, and an agent selection interface.
-- fixtures/codex-subagent-orchestration.md:9 - - Expected subagent benefits include specialized expertise, context isolation, workflow optimization, separate concerns, focused conversations, and less context switching.
-- fixtures/codex-subagent-orchestration.md:15 - - Users want subagent configuration and orchestration so each helper can use a different model, `reasoning_effort`, permission profile, and MCP tool set.
+#### Codex hooks contract or coverage gap
+- fixtures/codex-hooks-contract.md:3 - Public issue cluster: Event Hooks and hook contract requests.
+- fixtures/codex-hooks-contract.md:7 - - Users ask for Event Hooks with pattern matching so scripts or commands can run before and after Codex behaviors.
+- fixtures/codex-hooks-contract.md:8 - - The requested lifecycle events include `SessionStart`, `SessionEnd`, `Stop`, `PreCompact`, `PostCompact`, `PreToolUse`, `PostToolUse`, `UserPromptSubmit`, `SubagentStop`, and `Notification`.
+- fixtures/codex-hooks-contract.md:9 - - Enterprise users want hooks for governance, compliance checks, devops monitoring, multi-agent memory discipline, persistent summaries, and guardrails.
+- fixtures/codex-hooks-contract.md:10 - - Users compare the desired contract to Claude Code, Cursor, OpenCode, and other hook systems with blocking plus feedback-providing hooks.
+- fixtures/codex-hooks-contract.md:15 - - Users need to know whether hooks are blocking or async, whether `on_failure` can `continue` or `abort`, and whether hooks can return a decision.
 
 ### Diagnostics to attach
 
-- When reporting Codex subagent orchestration gaps, capture the requested subagent workflow, Codex app/CLI/TUI version, whether built-in `spawn_agent` or `/agents` exists, desired role definitions, per-agent model/reasoning/speed settings, `agents_config.toml` or `~/.codex/config.toml` shape, repo-level versus user-level override needs, instruction-file behavior versus AGENTS.md, permission/sandbox/read-only settings, MCP tool allowlist/denylist expectations, context-isolation requirements, examples of planner/explorer/implementer/reviewer roles, and whether current workarounds such as headless `codex exec` subagents preserve logs, timeouts, and cost.
+- When reporting Codex hooks contract or coverage gaps, capture Codex app/CLI/extension version, OS, surface, `[features].hooks` state, current docs link or release note, exact hook events requested, whether each event must be blocking or async, desired failure policy (`continue`, `abort`, or feedback), matcher needs for Shell/Edit/Write/MCP/approval events, whether hook stdout should inject `additionalContext`, config schema/TOML examples, payload fields needed for session/thread/turn/cwd/model/tool result, stability expectation for experimental versus stable hooks, Windows/Code Mode/Desktop coverage, comparison to Claude Code/OpenCode hooks if relevant, and the guardrail, compliance, context-memory, formatting, tmux/status, or orchestration workflow that is blocked.
 
 ### Privacy
 
@@ -50,25 +50,25 @@ trace-to-skill detected Codex subagent orchestration or configuration gap (codex
 
 ## Findings
 
-### 1. Codex subagent orchestration or configuration gap
+### 1. Codex hooks contract or coverage gap
 
 Severity: **high**
 
-Users want official subagent functionality that can isolate context, specialize roles, and configure model, reasoning, permissions, MCP tools, and repo-level instructions per helper instead of forcing one global agent configuration.
+Hooks are the integration point for guardrails, context discipline, enterprise governance, and automation; users need a documented event contract, predictable blocking/async semantics, and enough lifecycle coverage to integrate Codex without reverse engineering.
 
 Evidence:
-- `fixtures/codex-subagent-orchestration.md:3` Public issue cluster: Subagent Support and Subagent configuration and orchestration.
-- `fixtures/codex-subagent-orchestration.md:5` ## Official Subagent Support
-- `fixtures/codex-subagent-orchestration.md:7` - Users request official subagent functionality in Codex instead of prompt-only or headless CLI workarounds.
-- `fixtures/codex-subagent-orchestration.md:8` - The requested system includes an agent registry, persistent agent storage, TUI integration for agent creation, prompt templating for agent definitions, and an agent selection interface.
-- `fixtures/codex-subagent-orchestration.md:9` - Expected subagent benefits include specialized expertise, context isolation, workflow optimization, separate concerns, focused conversations, and less context switching.
-- `fixtures/codex-subagent-orchestration.md:15` - Users want subagent configuration and orchestration so each helper can use a different model, `reasoning_effort`, permission profile, and MCP tool set.
-- `fixtures/codex-subagent-orchestration.md:16` - A common desired split is a strong planner/orchestrator model with faster explorer or implementation subagents such as Spark for scoped tasks.
-- `fixtures/codex-subagent-orchestration.md:18` - Requested config surfaces include `~/.codex/config.toml`, `agents_config.toml`, and repo-level files such as `.agents/subagents/explore_agent.md`.
+- `fixtures/codex-hooks-contract.md:3` Public issue cluster: Event Hooks and hook contract requests.
+- `fixtures/codex-hooks-contract.md:7` - Users ask for Event Hooks with pattern matching so scripts or commands can run before and after Codex behaviors.
+- `fixtures/codex-hooks-contract.md:8` - The requested lifecycle events include `SessionStart`, `SessionEnd`, `Stop`, `PreCompact`, `PostCompact`, `PreToolUse`, `PostToolUse`, `UserPromptSubmit`, `SubagentStop`, and `Notification`.
+- `fixtures/codex-hooks-contract.md:9` - Enterprise users want hooks for governance, compliance checks, devops monitoring, multi-agent memory discipline, persistent summaries, and guardrails.
+- `fixtures/codex-hooks-contract.md:10` - Users compare the desired contract to Claude Code, Cursor, OpenCode, and other hook systems with blocking plus feedback-providing hooks.
+- `fixtures/codex-hooks-contract.md:15` - Users need to know whether hooks are blocking or async, whether `on_failure` can `continue` or `abort`, and whether hooks can return a decision.
+- `fixtures/codex-hooks-contract.md:16` - A key request is hook stdout or `hookSpecificOutput.additionalContext` so `SessionStart` or `UserPromptSubmit` can inject context the model sees.
+- `fixtures/codex-hooks-contract.md:17` - Tool matcher coverage matters: users ask whether Shell, Edit, Write, MCP, approval-requested, and command events can be matched in `PreToolUse` and `PostToolUse`.
 
 Suggested rule:
 
-> When reporting Codex subagent orchestration gaps, capture the requested subagent workflow, Codex app/CLI/TUI version, whether built-in `spawn_agent` or `/agents` exists, desired role definitions, per-agent model/reasoning/speed settings, `agents_config.toml` or `~/.codex/config.toml` shape, repo-level versus user-level override needs, instruction-file behavior versus AGENTS.md, permission/sandbox/read-only settings, MCP tool allowlist/denylist expectations, context-isolation requirements, examples of planner/explorer/implementer/reviewer roles, and whether current workarounds such as headless `codex exec` subagents preserve logs, timeouts, and cost.
+> When reporting Codex hooks contract or coverage gaps, capture Codex app/CLI/extension version, OS, surface, `[features].hooks` state, current docs link or release note, exact hook events requested, whether each event must be blocking or async, desired failure policy (`continue`, `abort`, or feedback), matcher needs for Shell/Edit/Write/MCP/approval events, whether hook stdout should inject `additionalContext`, config schema/TOML examples, payload fields needed for session/thread/turn/cwd/model/tool result, stability expectation for experimental versus stable hooks, Windows/Code Mode/Desktop coverage, comparison to Claude Code/OpenCode hooks if relevant, and the guardrail, compliance, context-memory, formatting, tmux/status, or orchestration workflow that is blocked.
 
 
 ## Reporter Notes
@@ -84,6 +84,7 @@ Suggested rule:
 - `remote-compact`: Long sessions break when `/compact` or auto-compaction times out, disconnects, or fails at `responses/compact`.
 - `context-fork-bloat`: Conversation forks duplicate parent transcript blocks, inflate token usage, or break prompt-cache lineage before new work happens.
 - `subagent-prompt-leakage`: MultiAgentV2 child agents receive assistant/commentary prompt envelopes or sibling prompts despite `fork_turns: "none"`.
+- `subagent-orchestration`: Official subagent support, per-agent model/reasoning config, role definitions, MCP tool scoping, and repo-level orchestration are missing or unclear.
 - `windows-helper-path`: Windows Desktop exposes bundled rg/node/plugin helpers from WindowsApps or missing LocalCache paths that cannot execute.
 - `approval-friction`: Repeated approval prompts, Approve for this session misses, and noisy trusted MCP tool approvals.
 - `latency-regression`: Fast mode feels like Standard, with long thinking, search, read, or compaction stalls.
@@ -126,6 +127,7 @@ trace-to-skill demo connector-auth-cache
 trace-to-skill demo mcp-discovery-mismatch
 trace-to-skill demo mcp-streamable-http
 trace-to-skill demo hooks-runtime
+trace-to-skill demo hooks-contract
 trace-to-skill demo terminal-output-integrity
 trace-to-skill demo subagent-lifecycle
 trace-to-skill demo usage-bucket-confusion

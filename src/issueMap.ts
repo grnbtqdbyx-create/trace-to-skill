@@ -402,6 +402,13 @@ function roadmapAction(kind: FindingKind): { targetArtifact: string; command: st
     };
   }
 
+  if (kind === "codex_hooks_contract") {
+    return {
+      targetArtifact: "Hooks contract and lifecycle coverage evidence report",
+      command: "trace-to-skill codex-report ./runs --output openai-codex-hooks-contract.md"
+    };
+  }
+
   if (kind === "codex_subagent_lifecycle" || kind === "codex_subagent_prompt_leakage") {
     return {
       targetArtifact: "Subagent lifecycle fixture and session audit",

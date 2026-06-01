@@ -1,9 +1,9 @@
 # GitHub Issue Pain Map
 
-Generated: 2026-06-01T04:05:17.325Z
+Generated: 2026-06-01T04:17:52.403Z
 
-Issues analyzed: **22**
-Matched issues: **21**
+Issues analyzed: **23**
+Matched issues: **22**
 Unmatched issues: **1**
 
 This report maps GitHub issues onto deterministic `trace-to-skill` failure classes. Fetch a repository directly with `--repo`, or export issues with `gh issue list` / `gh search issues` and pass the JSON file.
@@ -21,16 +21,16 @@ gh issue list --repo openai/codex --state all --limit 100 --json number,title,bo
 | ---: | --- | --- | ---: | ---: | ---: | --- |
 | 3101 | `codex_platform_availability` | high | 3 | 328 | 1368 | [#10410 Codex Desktop App: macOS Intel (x86_64) support](https://github.com/openai/codex/issues/10410) |
 | 1895 | `codex_remote_connection` | high | 1 | 176 | 851 | [#10450 Remote Development in Codex Desktop App](https://github.com/openai/codex/issues/10450) |
+| 1471 | `codex_hooks_contract` | high | 1 | 76 | 689 | [#2109 Event Hooks](https://github.com/openai/codex/issues/2109) |
 | 1135 | `codex_subagent_orchestration` | high | 2 | 172 | 468 | [#2604 Subagent Support](https://github.com/openai/codex/issues/2604) |
+| 1095 | `weak_evidence` | medium | 23 | 2762 | 3619 | [#14593 Burning tokens very fast](https://github.com/openai/codex/issues/14593) |
 | 1051 | `codex_token_burn` | high | 2 | 918 | 53 | [#14593 Burning tokens very fast](https://github.com/openai/codex/issues/14593) |
-| 946 | `weak_evidence` | medium | 22 | 2686 | 2930 | [#14593 Burning tokens very fast](https://github.com/openai/codex/issues/14593) |
 | 434 | `codex_thinking_hang` | high | 2 | 201 | 103 | [#14048 All models - Codex CLI hangs indefinitely on all prompts, no response generated](https://github.com/openai/codex/issues/14048) |
 | 409 | `codex_auth_verification` | high | 2 | 346 | 18 | [#20161 Phone number verification doesn't work](https://github.com/openai/codex/issues/20161) |
 | 304 | `codex_model_routing_mismatch` | high | 3 | 231 | 18 | [#11189 GPT-5.3-Codex being routed to GPT-5.2](https://github.com/openai/codex/issues/11189) |
 | 257 | `codex_context_visibility` | high | 3 | 168 | 26 | [#23794 Codex Desktop no longer shows visible context/token usage indicator](https://github.com/openai/codex/issues/23794) |
 | 202 | `premature_completion` | high | 1 | 169 | 8 | [#1243 "Sign in With ChatGPT" functionality needs to be robust against all account types](https://github.com/openai/codex/issues/1243) |
 | 137 | `codex_remote_compact` | high | 1 | 90 | 15 | [#14860 Error running remote compact task](https://github.com/openai/codex/issues/14860) |
-| 137 | `context_compaction` | high | 1 | 90 | 15 | [#14860 Error running remote compact task](https://github.com/openai/codex/issues/14860) |
 
 ## Maintainer Roadmap
 
@@ -38,9 +38,9 @@ gh issue list --repo openai/codex --state all --limit 100 --json number,title,bo
 | ---: | --- | --- | --- |
 | 1 | Platform availability fixture and support-policy evidence report | 3 issue(s), 328 comment(s), severity high; top signal: codex_platform_availability. | `trace-to-skill codex-report ./runs --output openai-codex-platform-availability.md` |
 | 2 | Remote connection fixture and SSH workspace evidence report | 1 issue(s), 176 comment(s), severity high; top signal: codex_remote_connection. | `trace-to-skill codex-report ./runs --output openai-codex-remote-connection.md` |
-| 3 | Subagent orchestration fixture and configuration evidence report | 2 issue(s), 172 comment(s), severity high; top signal: codex_subagent_orchestration. | `trace-to-skill codex-report ./runs --output openai-codex-subagent-orchestration.md` |
-| 4 | Usage evidence fixture and support-ready token report | 2 issue(s), 918 comment(s), severity high; top signal: codex_token_burn. | `trace-to-skill usage-evidence ./usage-notes.md --output usage-evidence.md` |
-| 5 | Codex-ready issue report and failure fixture | 2 issue(s), 201 comment(s), severity high; top signal: codex_thinking_hang. | `trace-to-skill codex-report ./runs --output openai-codex-issue.md` |
+| 3 | Hooks contract and lifecycle coverage evidence report | 1 issue(s), 76 comment(s), severity high; top signal: codex_hooks_contract. | `trace-to-skill codex-report ./runs --output openai-codex-hooks-contract.md` |
+| 4 | Subagent orchestration fixture and configuration evidence report | 2 issue(s), 172 comment(s), severity high; top signal: codex_subagent_orchestration. | `trace-to-skill codex-report ./runs --output openai-codex-subagent-orchestration.md` |
+| 5 | Usage evidence fixture and support-ready token report | 2 issue(s), 918 comment(s), severity high; top signal: codex_token_burn. | `trace-to-skill usage-evidence ./usage-notes.md --output usage-evidence.md` |
 
 ## Suggested Next Actions
 
@@ -66,6 +66,16 @@ Example issues:
 Evidence rule prompts:
 - When reporting Codex remote connection failures, capture Codex Desktop version, remote Codex CLI/app-server version, local OS, remote OS/architecture, SSH target alias from `~/.ssh/config`, whether `[features].remote_connections = true` is set, Settings > Connections visibility, selected host/path, remote workspace path, whether the remote filesystem is the source of truth, exact tunnel/app-server error, codex-server pid and restart result, `ps -ef | rg 'codex app-server|openai.chatgpt.*/codex'` evidence if available, remote PATH/auth/proxy/API reachability, model list differences versus local, fs/getMetadata or folder listing errors, ForwardAgent/proxy requirements, and whether reconnect/resume or a clean host works.
 
+### codex_hooks_contract
+
+Priority score: 1471. 1 issue(s), 76 comment(s).
+
+Example issues:
+- [#2109 Event Hooks](https://github.com/openai/codex/issues/2109) (76 comments; labels: enhancement, hooks)
+
+Evidence rule prompts:
+- When reporting Codex hooks contract or coverage gaps, capture Codex app/CLI/extension version, OS, surface, `[features].hooks` state, current docs link or release note, exact hook events requested, whether each event must be blocking or async, desired failure policy (`continue`, `abort`, or feedback), matcher needs for Shell/Edit/Write/MCP/approval events, whether hook stdout should inject `additionalContext`, config schema/TOML examples, payload fields needed for session/thread/turn/cwd/model/tool result, stability expectation for experimental versus stable hooks, Windows/Code Mode/Desktop coverage, comparison to Claude Code/OpenCode hooks if relevant, and the guardrail, compliance, context-memory, formatting, tmux/status, or orchestration workflow that is blocked.
+
 ### codex_subagent_orchestration
 
 Priority score: 1135. 2 issue(s), 172 comment(s).
@@ -87,17 +97,6 @@ Example issues:
 
 Evidence rule prompts:
 - When reporting Codex token burn, capture plan/workspace, client and version, model and reasoning/speed settings, fast-mode/large-context/subagent/review flags, recent /status and usage-dashboard deltas, local token totals including cached input/output/reasoning if available, background process ids and write_stdin poll cadence, compaction attempts and failures, retry/tool-loop counts, whether the app was idle, and a minimal reproduction with before/after usage percentages.
-
-### codex_thinking_hang
-
-Priority score: 434. 2 issue(s), 201 comment(s).
-
-Example issues:
-- [#14048 All models - Codex CLI hangs indefinitely on all prompts, no response generated](https://github.com/openai/codex/issues/14048) (131 comments; labels: bug, agent)
-- [#7156 Codex hangs during cli command execution](https://github.com/openai/codex/issues/7156) (70 comments; labels: bug, CLI)
-
-Evidence rule prompts:
-- When reporting Codex thinking or CLI no-response hangs, capture app/CLI/extension version, OS/terminal such as WSL, model and reasoning/speed settings, subscription/workspace, turn/thread id, prompt timestamp, whether the prompt is accepted but no streaming output/error/timeout appears, status bar or usage percent such as 100% left, `turn/start` or `task_started` timestamp, last successful tool-call output, first `response_item` or assistant timestamp if it eventually appears, `RUST_LOG`/SSE evidence including unhandled responses events, transport (`responses_http` or websocket), `time.busy`/`time.idle` close metrics, reconnect or stream-disconnect lines, status incident link or cluster mitigation note if relevant, MCP/subagent state, whether stop/Ctrl+C/interrupt works, and whether a new thread, logout/login, downgrade, API billing path, or minimal config without MCPs recovers.
 
 ## Unmatched Issues
 

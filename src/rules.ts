@@ -678,6 +678,28 @@ const RULES: RuleDefinition[] = [
     suggestedSkill: "codex-mcp-streamable-http-triage"
   },
   {
+    kind: "codex_hooks_contract",
+    severity: "high",
+    title: "Codex hooks contract or coverage gap",
+    why: "Hooks are the integration point for guardrails, context discipline, enterprise governance, and automation; users need a documented event contract, predictable blocking/async semantics, and enough lifecycle coverage to integrate Codex without reverse engineering.",
+    patterns: [
+      /\bEvent Hooks\b|\bevent hooks?\b.{0,220}\b(pattern matching|before\/after|before or after|lifecycle|Codex behaviors|trigger scripts?|trigger commands?)\b/i,
+      /\b(hooks?|hook system)\b.{0,220}\b(Claude Code|Cursor|OpenCode|opencode)\b.{0,220}\b(schema|pattern matching|blocking|feedback|lifecycle|PreToolUse|PostToolUse|UserPromptSubmit)\b/i,
+      /\b(blocking|async|fire-and-forget|feedback providing|approval requests?|approval_requested|decision|abort|continue)\b.{0,220}\b(hooks?|PreToolUse|PostToolUse|approval|governance|guardrails?)\b/i,
+      /\b(SessionStart|SessionEnd|Stop|PreCompact|BeforeCompact|PostCompact|PreToolUse|PostToolUse|UserPromptSubmit|SubagentStop|Notification)\b.{0,220}\b(hook event|lifecycle event|coverage|support|missing feature|request|requested|needed|should support|want|need)\b/i,
+      /\b(need|want|request|requested|should support|coverage|documented contract|hook surface|lifecycle coverage)\b.{0,220}\b(SessionStart|SessionEnd|Stop|PreCompact|BeforeCompact|PostCompact|PreToolUse|PostToolUse|UserPromptSubmit|SubagentStop|Notification)\b/i,
+      /\badditionalContext\b|\bhookSpecificOutput\b|\bhook stdout\b.{0,180}\b(context|system context|model sees|inject)\b/i,
+      /\b(config schema|schema details|documented contract|official reference|supported event names|execution semantics|stability expectations|working examples)\b.{0,220}\b(hooks?|hook surface|experimental hooks)\b/i,
+      /\b(hooks?|hook surface|experimental hooks)\b.{0,220}\b(config schema|schema details|documented contract|official reference|supported event names|execution semantics|stability expectations|working examples)\b/i,
+      /\b(Edit|Write|Shell|command|tool names?|matcher|matchers?)\b.{0,180}\b(PreToolUse|PostToolUse|hooks?|hook matcher|tool matcher)\b.{0,180}\b(support|coverage|request|missing|needed)\b/i,
+      /\b(enterprise|governance|guardrail|compliance|devops monitoring|multi-agent memory|persistent memory|Neon|pgvector|checkpoint)\b.{0,240}\b(hooks?|SessionStart|Stop|PreCompact|PreToolUse|PostToolUse|UserPromptSubmit)\b/i,
+      /\b(hooks?|PreCompact|SessionStart|Stop)\b.{0,220}\b(checkpoint|session summary|cross-agent delta|persistent memory|context discipline|compaction destroys|soft enforcement)\b/i
+    ],
+    suggestedRule:
+      "When reporting Codex hooks contract or coverage gaps, capture Codex app/CLI/extension version, OS, surface, `[features].hooks` state, current docs link or release note, exact hook events requested, whether each event must be blocking or async, desired failure policy (`continue`, `abort`, or feedback), matcher needs for Shell/Edit/Write/MCP/approval events, whether hook stdout should inject `additionalContext`, config schema/TOML examples, payload fields needed for session/thread/turn/cwd/model/tool result, stability expectation for experimental versus stable hooks, Windows/Code Mode/Desktop coverage, comparison to Claude Code/OpenCode hooks if relevant, and the guardrail, compliance, context-memory, formatting, tmux/status, or orchestration workflow that is blocked.",
+    suggestedSkill: "codex-hooks-contract-triage"
+  },
+  {
     kind: "codex_hooks_runtime",
     severity: "high",
     title: "Codex hooks runtime or UI failure",

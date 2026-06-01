@@ -24,6 +24,7 @@ Runtime: Node.js 20+
 - Codex mobile and remote-control route health failures such as `Waiting for desktop`, `Directory Unavailable`, stale listeners on `127.0.0.1:14567`, stale `server_name` enrollment, empty backend environments, and incomplete helper bundles
 - Codex MCP runtime failures such as cancelled non-interactive approvals, `request_user_input is not supported in exec mode`, dropped namespace or `serverName` metadata, `unsupported call: mcp__...__...`, and closed `StdioServerTransport` sessions
 - Codex Streamable HTTP MCP failures where Penpot, n8n, DingTalk, or another HTTP/SSE MCP server initializes but fails JSON-RPC parsing, `Content-Type: text/event-stream` handling, handshakes, OAuth gating, stale session ids, missing headers, or reconnects
+- Codex hooks contract gaps where users need documented event names, config schema, blocking/async semantics, Shell/Edit/Write matcher coverage, `additionalContext`, `SessionStart`, `PreCompact`, `UserPromptSubmit`, or lifecycle coverage for guardrails and automation
 - Codex hooks runtime failures where hooks duplicate, stop firing, emit stale `codex_hooks` warnings, skip Code Mode/Windows/Desktop surfaces, or become hard to manage in Hooks settings
 - Codex MCP discovery and config-scope mismatches where CLI `/mcp` works but VS Code, Desktop, WSL, project `.codex/config.toml`, `CODEX_HOME`, or an older conversation exposes no `mcp__*` tools
 - Codex terminal output and scrollback integrity failures where streamed lines disappear, get overwritten, truncate, duplicate, misalign, snap to the bottom, or only survive in raw logs/transcripts
@@ -98,6 +99,7 @@ npx trace-to-skill demo platform-availability
 npx trace-to-skill demo cli-no-response
 npx trace-to-skill demo mcp-discovery-mismatch
 npx trace-to-skill demo mcp-streamable-http
+npx trace-to-skill demo hooks-contract
 npx trace-to-skill demo hooks-runtime
 npx trace-to-skill demo terminal-output-integrity
 npx trace-to-skill demo subagent-lifecycle
@@ -135,7 +137,7 @@ gh issue list --repo openai/codex --state all --limit 100 --json number,title,bo
 ## GitHub Action
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.100
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.101
   with:
     mode: all
     doctor-threshold: "85"
@@ -148,7 +150,7 @@ gh issue list --repo openai/codex --state all --limit 100 --json number,title,bo
 ## Weekly Codex Issue Radar
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.100
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.101
   with:
     mode: issue-map
     issue-map-repo: openai/codex

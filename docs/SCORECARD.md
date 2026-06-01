@@ -9,7 +9,7 @@ Status: **pass**
 | Failed doctor checks | 0 |
 | Critical findings | 0 |
 | Built-in benchmark | pass |
-| Benchmark cases | 45 |
+| Benchmark cases | 46 |
 
 ## Doctor Summary
 
@@ -53,6 +53,7 @@ This benchmark runs the public fixture pack that ships with the repository and p
 | Codex MCP runtime failure | `fixtures/codex-mcp-runtime.md` | 75 | 2 | 0 | `codex_mcp_runtime`, `weak_evidence` | pass |
 | Codex Streamable HTTP MCP parse and handshake failure | `fixtures/codex-mcp-streamable-http.md` | 75 | 2 | 0 | `codex_mcp_streamable_http`, `weak_evidence` | pass |
 | Codex hooks runtime and UI failure | `fixtures/codex-hooks-runtime.md` | 75 | 2 | 0 | `codex_hooks_runtime`, `weak_evidence` | pass |
+| Codex hooks contract and coverage gap | `fixtures/codex-hooks-contract.md` | 75 | 2 | 0 | `codex_hooks_contract`, `weak_evidence` | pass |
 | Codex MCP discovery and config-scope mismatch | `fixtures/codex-mcp-discovery-mismatch.md` | 75 | 2 | 0 | `codex_mcp_discovery_mismatch`, `weak_evidence` | pass |
 | Codex plugin runtime and bundled capability failure | `fixtures/codex-plugin-runtime.md` | 59 | 3 | 0 | `codex_plugin_runtime`, `codex_windows_helper_path`, `weak_evidence` | pass |
 | Codex file tree and workspace navigation UI failure | `fixtures/codex-file-tree-ui.md` | 75 | 2 | 0 | `codex_file_tree_ui`, `weak_evidence` | pass |

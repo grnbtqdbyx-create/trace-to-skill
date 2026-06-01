@@ -121,6 +121,12 @@ const DEMO_SCENARIOS: DemoScenario[] = [
     description: "Hooks duplicate, stop firing, warn about stale config, skip surfaces, or become hard to manage in Desktop settings."
   },
   {
+    id: "hooks-contract",
+    title: "Codex hooks contract and coverage gap",
+    fixture: "fixtures/codex-hooks-contract.md",
+    description: "Users need documented hook events, blocking/async semantics, matcher coverage, additionalContext, and lifecycle coverage for guardrails and automation."
+  },
+  {
     id: "terminal-output-integrity",
     title: "Codex terminal output integrity",
     fixture: "fixtures/codex-terminal-output-integrity.md",
@@ -253,6 +259,7 @@ export function renderDemoMarkdown(result: DemoResult): string {
     "trace-to-skill demo mcp-discovery-mismatch",
     "trace-to-skill demo mcp-streamable-http",
     "trace-to-skill demo hooks-runtime",
+    "trace-to-skill demo hooks-contract",
     "trace-to-skill demo terminal-output-integrity",
     "trace-to-skill demo subagent-lifecycle",
     "trace-to-skill demo usage-bucket-confusion",
@@ -293,6 +300,7 @@ export function renderDemoScenarioList(scenarios = listDemoScenarios()): string 
     "trace-to-skill demo mcp-discovery-mismatch",
     "trace-to-skill demo mcp-streamable-http",
     "trace-to-skill demo hooks-runtime",
+    "trace-to-skill demo hooks-contract",
     "trace-to-skill demo terminal-output-integrity",
     "trace-to-skill demo subagent-lifecycle",
     "trace-to-skill demo usage-bucket-confusion",

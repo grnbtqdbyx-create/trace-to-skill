@@ -22,6 +22,7 @@ npx trace-to-skill demo deeplink-launch
 npx trace-to-skill demo connector-auth-cache
 npx trace-to-skill demo mcp-discovery-mismatch
 npx trace-to-skill demo mcp-streamable-http
+npx trace-to-skill demo hooks-contract
 npx trace-to-skill demo hooks-runtime
 npx trace-to-skill demo terminal-output-integrity
 npx trace-to-skill demo subagent-lifecycle
@@ -35,7 +36,7 @@ What it proves:
 
 - packaged fixtures can produce a real Codex issue report immediately
 - maintainers can inspect the output shape before sharing any private log
-- demos cover remote compact failures, context fork bloat, subagent prompt leakage, subagent orchestration/configuration demand, usage bucket confusion, Windows helper path failures, patch overwrite safety, approval friction, latency, Thinking hangs, clipboard/attachment regressions, deeplink/OAuth launch regressions, connector auth-cache regressions, MCP discovery/config-scope mismatches, Streamable HTTP MCP parse/handshake failures, hooks runtime failures, terminal output/scrollback integrity, subagent lifecycle drift, token burn, sensitive files, and prompt injection
+- demos cover remote compact failures, context fork bloat, subagent prompt leakage, subagent orchestration/configuration demand, usage bucket confusion, Windows helper path failures, patch overwrite safety, approval friction, latency, Thinking hangs, clipboard/attachment regressions, deeplink/OAuth launch regressions, connector auth-cache regressions, MCP discovery/config-scope mismatches, Streamable HTTP MCP parse/handshake failures, hooks contract gaps, hooks runtime failures, terminal output/scrollback integrity, subagent lifecycle drift, token burn, sensitive files, and prompt injection
 - `sensitive-audit` scans filenames and paths before an agent run, without reading file contents, so teams can build `.agentignore`, `.aiexclude`, `.codexignore`, `.gitignore`, or sandbox permission profiles from a concrete repo report
 - `lsp-audit` scans repo language signals and PATH availability so teams know which language servers are ready before asking Codex for symbol-aware edits
 
@@ -60,7 +61,7 @@ What it proves:
 Recommended CI surface:
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.100
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.101
   with:
     mode: all
     doctor-threshold: "85"
@@ -552,7 +553,20 @@ This catches signals such as Penpot `JsonRpcMessage deserialize` or response-par
 
 Include Codex version, MCP server name, transport URL without secrets, initialize/tools/list/tools/call results, HTTP status, `Content-Type`, SSE event framing, JSON-RPC message shape, session id before and after reconnect or server restart, auth/OAuth expectations, User-Agent/header requirements, exact parse/deserialize error, whether curl or another MCP client succeeds, and whether restarting Codex or reinitializing the transport recovers.
 
-## 30. Codex Hooks Runtime Evidence
+## 30. Codex Hooks Contract Evidence
+
+Use this when Codex hooks exist or are requested, but users still need documented event names, config schema, blocking/async semantics, matcher coverage, `additionalContext`, or lifecycle events for guardrails and automation.
+
+```bash
+npx trace-to-skill demo hooks-contract
+npx trace-to-skill codex-report ./runs --output openai-codex-hooks-contract.md
+```
+
+This catches signals such as Event Hooks, Claude Code-style hook schemas, `SessionStart`, `Stop`, `PreCompact`, `PostCompact`, `PreToolUse`, `PostToolUse`, `UserPromptSubmit`, `SubagentStop`, `approval_requested`, blocking and feedback-providing hooks, async hooks, `on_failure`, Shell/Edit/Write matcher coverage, `hookSpecificOutput.additionalContext`, documented contracts, execution semantics, stability expectations, and enterprise guardrail or persistent-memory workflows.
+
+Include Codex app/CLI/extension version, OS, surface, `[features].hooks` state, docs or release-note link, exact event names requested, blocking versus async behavior, failure policy, matcher needs, stdout/context injection requirements, config/TOML examples, payload fields needed, Windows/Code Mode/Desktop coverage, and the guardrail, compliance, formatting, tmux/status, persistent-memory, or orchestration workflow that is blocked.
+
+## 31. Codex Hooks Runtime Evidence
 
 Use this when Codex hooks duplicate, stop firing, emit stale deprecation warnings, behave differently across CLI/Desktop/Code Mode/Windows, or become hard to inspect in settings.
 
@@ -566,7 +580,7 @@ This catches signals such as duplicate Hooks entries for one tool call, `PostToo
 
 Include Codex app/CLI/extension version, OS, surface, shell or Desktop route, `[features].hooks` and `hooks.json` snippets without secrets, hook event type, matcher, handler command/name, expected versus observed fire count, duplicate event ids, exact deprecation warning, trust state, live-edit/rate-limit/auto-restore timing, Code Mode `exec` versus normal CLI comparison, linked-worktree cwd, Hooks settings UI screenshot if relevant, and whether restart/reload/new session restores behavior.
 
-## 31. Patch Overwrite Guard
+## 32. Patch Overwrite Guard
 
 Use this before applying a generated patch when you want create/update/delete semantics checked against the actual workspace.
 
