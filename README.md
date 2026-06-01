@@ -765,6 +765,18 @@ This project is designed to support open-source maintainers who use Codex for:
 
 The goal is not to let agents autonomously rewrite project policy. The goal is to turn repeated, evidence-backed agent failures into small, reviewable improvements that maintainers can accept or reject.
 
+## Contributor Roadmap
+
+Pick work by maintainer value, then keep the proof small and reviewable:
+
+| Theme | Good first target |
+| --- | --- |
+| Action validation | [Add actionlint coverage](https://github.com/grnbtqdbyx-create/trace-to-skill/issues/9) for `action.yml` and workflow regressions. |
+| Demo clarity | [Create a minimal maintainer demo](https://github.com/grnbtqdbyx-create/trace-to-skill/issues/11) using only public fixtures. |
+| Contributor intake | [Keep the roadmap compact](https://github.com/grnbtqdbyx-create/trace-to-skill/issues/13) so new maintainers can choose a useful first patch. |
+
+New detectors need a fixture plus `node:test` coverage. Docs-only patches should link the public workflow they improve and keep generated policy advisory.
+
 ## Roadmap
 
 - Codex session JSONL adapters

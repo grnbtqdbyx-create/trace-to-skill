@@ -2617,6 +2617,19 @@ test("repository exposes contributor intake and scoped network policy", async ()
   assert.match(prTemplate, /Public surface/);
 });
 
+test("README exposes a contributor-friendly roadmap", async () => {
+  const readme = await readFile("README.md", "utf8");
+  const section = readme.match(/## Contributor Roadmap\n([\s\S]*?)(?=\n## )/);
+
+  assert.ok(section, "README should include a contributor roadmap section");
+  assert.match(section[1], /fixture/i);
+  assert.match(section[1], /node:test/);
+  assert.match(section[1], /https:\/\/github\.com\/grnbtqdbyx-create\/trace-to-skill\/issues\/9/);
+  assert.match(section[1], /https:\/\/github\.com\/grnbtqdbyx-create\/trace-to-skill\/issues\/11/);
+  assert.match(section[1], /https:\/\/github\.com\/grnbtqdbyx-create\/trace-to-skill\/issues\/13/);
+  assert.ok(section[1].trim().split("\n").length <= 18, "roadmap section should stay compact for first-time visitors");
+});
+
 test("repository publishes npm through trusted publishing workflow", async () => {
   const workflow = await readFile(".github/workflows/npm-publish.yml", "utf8");
   const releaseGuide = await readFile("docs/RELEASE.md", "utf8");
