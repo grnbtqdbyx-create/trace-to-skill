@@ -3,34 +3,35 @@
 | Field | Value |
 | --- | --- |
 | Repository | https://github.com/grnbtqdbyx-create/trace-to-skill |
-| Package | trace-to-skill@0.1.85 |
+| Package | trace-to-skill@0.1.86 |
 | License | Apache-2.0 |
 | Codex readiness | ready (100/100) |
 | Benchmark | pass, 38 cases |
 
 ## Why This Repository Qualifies
 
-trace-to-skill helps open-source maintainers adopt Codex safely by turning failed coding-agent runs into evidence-backed rules, reusable workflows, and CI gates. It supports real maintenance work: PR review, issue triage, release quality, MCP risk, prompt-injection defense, privacy-preserving trace sharing, and repeat failure reduction. The repository is ready, scores 100/100 on the local Codex readiness doctor, and ships a deterministic benchmark with 38 public fixture cases.
+trace-to-skill helps open-source maintainers adopt Codex safely by turning failed coding-agent runs into evidence-backed rules, reusable workflows, and CI gates. It supports real maintenance work: PR review, GitHub issue demand mining, release quality, MCP risk, prompt-injection defense, privacy-preserving trace sharing, and repeat failure reduction. The repository is ready, scores 100/100 on the local Codex readiness doctor, and ships a deterministic benchmark with 38 public fixture cases.
 
 ### 500-Character Version
 
-> trace-to-skill helps open-source maintainers adopt Codex safely by turning failed coding-agent runs into evidence-backed rules, reusable workflows, and CI gates. It supports real maintenance work: PR review, issue triage, release quality, MCP risk, prompt-injection defense, privacy-preserving trace sharing, and repeat failure reduction. The repository is ready, scores 100/100 on the local Codex readiness doctor, and ships a deterministic benchmark with 38 public fixture cases.
+> trace-to-skill helps open-source maintainers adopt Codex safely by turning failed coding-agent runs into evidence-backed rules, reusable workflows, and CI gates. It supports real maintenance work: PR review, GitHub issue demand mining, release quality, MCP risk, prompt-injection defense, privacy-preserving trace sharing, and repeat failure reduction. The repository is ready, scores 100/100 on the local Codex readiness doctor, and ships a deterministic benchmark with 38 public fixture cases.
 
 ## How API Credits Would Be Used
 
-API credits would power optional maintainer workflows on top of the local deterministic scanner: classifying failed Codex sessions, generating candidate AGENTS.md rules or SKILL.md workflows, comparing before/after runs, and producing PR-ready triage reports. The local CLI remains free, dependency-light, and usable without API credits.
+API credits would power optional maintainer workflows on top of the local deterministic scanner: classifying failed Codex sessions, mining public GitHub issue clusters, generating candidate AGENTS.md rules or SKILL.md workflows, comparing before/after runs, and producing PR-ready triage reports. The local CLI remains free, dependency-light, and usable without API credits.
 
 ### 500-Character Version
 
-> API credits would power optional maintainer workflows on top of the local deterministic scanner: classifying failed Codex sessions, generating candidate AGENTS.md rules or SKILL.md workflows, comparing before/after runs, and producing PR-ready triage reports. The local CLI remains free, dependency-light, and usable without API credits.
+> API credits would power optional maintainer workflows on top of the local deterministic scanner: classifying failed Codex sessions, mining public GitHub issue clusters, generating candidate AGENTS.md rules or SKILL.md workflows, comparing before/after runs, and producing PR-ready triage reports. The local CLI remains free, dependency-light, and usable without API credits.
 
 ## Evidence
 
 - Public repository: https://github.com/grnbtqdbyx-create/trace-to-skill
-- One-command package: npx trace-to-skill@0.1.85
+- One-command package: npx trace-to-skill@0.1.86
 - Open-source license: Apache-2.0
 - Codex readiness doctor: ready, 100/100, 0 failed checks.
 - Public fixture benchmark: pass, 38 cases.
+- GitHub issue demand mining: issue-map ranks exported OpenAI/Codex issues by failure class, comments, reactions, and evidence gaps.
 - Maintainer control: generated rules are suggestions, evidence is line-linked, and secrets can be redacted before sharing.
 
 ## Next Steps Before Submitting

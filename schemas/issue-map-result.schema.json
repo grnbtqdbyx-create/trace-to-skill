@@ -1,0 +1,137 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/grnbtqdbyx-create/trace-to-skill/main/schemas/issue-map-result.schema.json",
+  "title": "trace-to-skill issue-map result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "generatedAt",
+    "sources",
+    "issueCount",
+    "matchedIssueCount",
+    "unmatchedIssueCount",
+    "summaries",
+    "unmatchedIssues"
+  ],
+  "properties": {
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "issueCount": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "matchedIssueCount": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "unmatchedIssueCount": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "summaries": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/summary"
+      }
+    },
+    "unmatchedIssues": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/example"
+      }
+    }
+  },
+  "$defs": {
+    "severity": {
+      "type": "string",
+      "enum": ["low", "medium", "high", "critical"]
+    },
+    "example": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "title", "comments", "labels"],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        },
+        "comments": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "labels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "title",
+        "severity",
+        "issues",
+        "comments",
+        "reactions",
+        "priorityScore",
+        "examples",
+        "suggestedRules"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "severity": {
+          "$ref": "#/$defs/severity"
+        },
+        "issues": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "comments": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "reactions": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "priorityScore": {
+          "type": "integer"
+        },
+        "examples": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/example"
+          }
+        },
+        "suggestedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

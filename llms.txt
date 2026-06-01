@@ -120,7 +120,7 @@ npx trace-to-skill init --comment --sarif
 ## GitHub Action
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.85
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.86
   with:
     mode: all
     doctor-threshold: "85"
@@ -146,6 +146,7 @@ npx trace-to-skill init --comment --sarif
 - Session audit JSON schema: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/schemas/session-audit-result.schema.json
 - Usage evidence JSON schema: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/schemas/usage-evidence-result.schema.json
 - Process audit JSON schema: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/schemas/process-audit-result.schema.json
+- Issue map JSON schema: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/schemas/issue-map-result.schema.json
 - Workspace checkpoint JSON schema: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/schemas/workspace-checkpoint-result.schema.json
 
 ## Search phrases this project should answer

@@ -499,6 +499,7 @@ Stable machine-readable contracts are published with the npm package and release
 - [`schemas/session-audit-result.schema.json`](schemas/session-audit-result.schema.json) describes `trace-to-skill session-audit --format json`.
 - [`schemas/usage-evidence-result.schema.json`](schemas/usage-evidence-result.schema.json) describes `trace-to-skill usage-evidence --format json`.
 - [`schemas/process-audit-result.schema.json`](schemas/process-audit-result.schema.json) describes `trace-to-skill process-audit --format json`.
+- [`schemas/issue-map-result.schema.json`](schemas/issue-map-result.schema.json) describes `trace-to-skill issue-map --format json`.
 - [`schemas/workspace-checkpoint-result.schema.json`](schemas/workspace-checkpoint-result.schema.json) describes `trace-to-skill checkpoint --format json`.
 
 These schemas let downstream Codex workflows, dashboards, and CI bots consume reports without scraping Markdown.
@@ -531,7 +532,7 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v5
-      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.85
+      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.86
         with:
           mode: all
           doctor-threshold: "85"
@@ -580,7 +581,7 @@ Composite action usage:
 
 ```yaml
 - id: trace-to-skill
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.85
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.86
   with:
     mode: all
     doctor-threshold: "85"
@@ -592,6 +593,18 @@ Composite action usage:
     comment: "true"
     github-token: ${{ github.token }}
 - run: echo "Codex readiness score is ${{ steps.trace-to-skill.outputs.doctor-score }}"
+```
+
+Issue-map action usage for a committed or downloaded GitHub issue export:
+
+```yaml
+- id: codex-issue-map
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.86
+  with:
+    mode: issue-map
+    issue-map-path: codex-issues.json
+    job-summary: "true"
+- run: echo "Top Codex issue cluster is ${{ steps.codex-issue-map.outputs.issue-map-top-kind }}"
 ```
 
 Action outputs:
@@ -619,10 +632,15 @@ Action outputs:
 | `scorecard-status` | Combined scorecard status, `pass` or `fail` |
 | `scorecard-report` | Markdown scorecard report path |
 | `scorecard-json` | JSON scorecard report path |
+| `issue-map-issues` | Number of GitHub issues analyzed by issue-map mode |
+| `issue-map-matched` | Number of issues matched to deterministic failure classes |
+| `issue-map-top-kind` | Highest-priority issue-map failure class |
+| `issue-map-report` | Markdown issue-map report path |
+| `issue-map-json` | JSON issue-map report path |
 
 By default, generated reports are also appended to the GitHub Actions Job Summary. Set `job-summary: "false"` to disable that UI output.
 
-Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.85` executes that release's checked-out source instead of pulling the default branch at runtime.
+Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.86` executes that release's checked-out source instead of pulling the default branch at runtime.
 
 ## Codex Skill
 

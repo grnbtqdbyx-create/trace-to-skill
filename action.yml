@@ -6,7 +6,7 @@ branding:
   color: green
 inputs:
   mode:
-    description: Run "traces", "agents-lint", "github-context", "doctor", "benchmark", "both", or "all".
+    description: Run "traces", "agents-lint", "github-context", "doctor", "benchmark", "issue-map", "both", or "all".
     required: false
     default: traces
   doctor-path:
@@ -29,6 +29,10 @@ inputs:
     description: File or directory containing agent traces.
     required: false
     default: runs
+  issue-map-path:
+    description: GitHub issue export JSON or Markdown path to map with "issue-map" mode.
+    required: false
+    default: codex-issues.json
   threshold:
     description: Minimum passing score.
     required: false
@@ -113,6 +117,21 @@ outputs:
   scorecard-json:
     description: Path to the JSON scorecard report.
     value: ${{ steps.scorecard.outputs.json }}
+  issue-map-issues:
+    description: Number of GitHub issues analyzed by issue-map mode.
+    value: ${{ steps.issue-map.outputs.issues }}
+  issue-map-matched:
+    description: Number of GitHub issues matched to deterministic failure classes.
+    value: ${{ steps.issue-map.outputs.matched }}
+  issue-map-top-kind:
+    description: Highest-priority issue-map failure class.
+    value: ${{ steps.issue-map.outputs.top-kind }}
+  issue-map-report:
+    description: Path to the Markdown issue-map report.
+    value: ${{ steps.issue-map.outputs.report }}
+  issue-map-json:
+    description: Path to the JSON issue-map report.
+    value: ${{ steps.issue-map.outputs.json }}
 runs:
   using: composite
   steps:
@@ -128,8 +147,8 @@ runs:
       shell: bash
     - run: |
         case "${{ inputs.mode }}" in
-          traces|agents-lint|github-context|doctor|benchmark|both|all) ;;
-          *) echo "::error::mode must be one of: traces, agents-lint, github-context, doctor, benchmark, both, all"; exit 1 ;;
+          traces|agents-lint|github-context|doctor|benchmark|issue-map|both|all) ;;
+          *) echo "::error::mode must be one of: traces, agents-lint, github-context, doctor, benchmark, issue-map, both, all"; exit 1 ;;
         esac
       shell: bash
     - id: agents-lint
@@ -305,6 +324,33 @@ runs:
         echo "::error::trace-to-skill benchmark failed"
         exit 1
       if: steps.benchmark.outputs.status == 'fail' && (inputs.mode == 'benchmark' || inputs.mode == 'all')
+      shell: bash
+    - id: issue-map
+      run: |
+        set -euo pipefail
+        node "$TRACE_TO_SKILL_CLI" issue-map "${{ inputs.issue-map-path }}" --format json --output trace-to-skill-issue-map.json
+        node "$TRACE_TO_SKILL_CLI" issue-map "${{ inputs.issue-map-path }}" --output trace-to-skill-issue-map.md
+        node --input-type=module <<'NODE'
+        import { appendFileSync, readFileSync } from "node:fs";
+        const report = JSON.parse(readFileSync("trace-to-skill-issue-map.json", "utf8"));
+        const output = [
+          `issues=${report.issueCount}`,
+          `matched=${report.matchedIssueCount}`,
+          `top-kind=${report.summaries[0]?.kind ?? ""}`,
+          "report=trace-to-skill-issue-map.md",
+          "json=trace-to-skill-issue-map.json"
+        ].join("\n");
+        appendFileSync(process.env.GITHUB_OUTPUT, `${output}\n`);
+        NODE
+      if: inputs.mode == 'issue-map'
+      shell: bash
+    - run: |
+        {
+          echo "## trace-to-skill GitHub Issue Pain Map"
+          echo
+          cat trace-to-skill-issue-map.md
+        } >> "$GITHUB_STEP_SUMMARY"
+      if: always() && inputs.job-summary == 'true' && inputs.mode == 'issue-map'
       shell: bash
     - id: scorecard
       run: |

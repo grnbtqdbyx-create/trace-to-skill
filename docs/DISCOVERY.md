@@ -150,6 +150,7 @@ npx trace-to-skill suggest ./runs --target agents-md
 - `schemas/session-audit-result.schema.json`
 - `schemas/usage-evidence-result.schema.json`
 - `schemas/process-audit-result.schema.json`
+- `schemas/issue-map-result.schema.json`
 - `schemas/workspace-checkpoint-result.schema.json`
 
 ## Related Keywords

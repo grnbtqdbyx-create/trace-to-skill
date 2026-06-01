@@ -1819,6 +1819,11 @@ test("composite action exposes Codex readiness doctor mode", async () => {
   assert.match(action, /scorecard-status:/);
   assert.match(action, /scorecard-report:/);
   assert.match(action, /scorecard-json:/);
+  assert.match(action, /issue-map-issues:/);
+  assert.match(action, /issue-map-matched:/);
+  assert.match(action, /issue-map-top-kind:/);
+  assert.match(action, /issue-map-report:/);
+  assert.match(action, /issue-map-json:/);
   assert.match(action, /agent-report:/);
   assert.match(action, /agents-lint-score:/);
   assert.match(action, /agents-lint-status:/);
@@ -1834,12 +1839,15 @@ test("composite action exposes Codex readiness doctor mode", async () => {
   assert.match(action, /steps\.github-context\.outputs\.status/);
   assert.match(action, /steps\.benchmark\.outputs\.status/);
   assert.match(action, /steps\.scorecard\.outputs\.status/);
+  assert.match(action, /steps\.issue-map\.outputs\.top-kind/);
   assert.match(action, /codex-readiness-report\.json/);
   assert.match(action, /agents-lint-report\.json/);
   assert.match(action, /github-context-report\.json/);
   assert.match(action, /trace-to-skill-benchmark\.json/);
   assert.match(action, /trace-to-skill-scorecard\.json/);
+  assert.match(action, /trace-to-skill-issue-map\.json/);
   assert.match(action, /mode:/);
+  assert.match(action, /issue-map-path:/);
   assert.match(action, /context-threshold:/);
   assert.match(action, /doctor-threshold:/);
   assert.match(action, /doctor-comment:/);
@@ -1857,6 +1865,7 @@ test("composite action exposes Codex readiness doctor mode", async () => {
   assert.match(action, /trace-to-skill GitHub Context Guard/);
   assert.match(action, /trace-to-skill Agent Learning/);
   assert.match(action, /trace-to-skill Benchmark/);
+  assert.match(action, /trace-to-skill GitHub Issue Pain Map/);
   assert.match(action, /trace-to-skill Scorecard/);
   assert.match(action, /node "\$TRACE_TO_SKILL_CLI" doctor/);
   assert.match(action, /node "\$TRACE_TO_SKILL_CLI" lint-agents/);
@@ -1864,16 +1873,18 @@ test("composite action exposes Codex readiness doctor mode", async () => {
   assert.match(action, /github\.event_name != 'push'/);
   assert.match(action, /node "\$TRACE_TO_SKILL_CLI" doctor-comment/);
   assert.match(action, /node "\$TRACE_TO_SKILL_CLI" benchmark/);
+  assert.match(action, /node "\$TRACE_TO_SKILL_CLI" issue-map/);
   assert.match(action, /node "\$TRACE_TO_SKILL_CLI" scorecard/);
   assert.match(action, /node "\$TRACE_TO_SKILL_CLI" scorecard-comment/);
   assert.match(action, /inputs\.mode == 'agents-lint' \|\| inputs\.mode == 'all'/);
   assert.match(action, /inputs\.mode == 'github-context' \|\| inputs\.mode == 'all'/);
   assert.match(action, /inputs\.mode == 'doctor' \|\| inputs\.mode == 'both' \|\| inputs\.mode == 'all'/);
   assert.match(action, /inputs\.mode == 'benchmark' \|\| inputs\.mode == 'all'/);
+  assert.match(action, /inputs\.mode == 'issue-map'/);
   assert.match(action, /always\(\) && github\.event_name == 'pull_request' && inputs\.doctor-comment == 'true'/);
   assert.match(action, /always\(\) && github\.event_name == 'pull_request' && inputs\.scorecard-comment == 'true'/);
   assert.match(action, /github\.event_name == 'pull_request' && inputs\.comment == 'true'/);
-  assert.match(action, /mode must be one of: traces, agents-lint, github-context, doctor, benchmark, both, all/);
+  assert.match(action, /mode must be one of: traces, agents-lint, github-context, doctor, benchmark, issue-map, both, all/);
 });
 
 test("repository dogfoods the local Codex readiness action", async () => {
@@ -1892,6 +1903,10 @@ test("repository dogfoods the local Codex readiness action", async () => {
   assert.match(workflow, /steps\.readiness\.outputs\.context-status/);
   assert.match(workflow, /steps\.readiness\.outputs\.benchmark-status/);
   assert.match(workflow, /steps\.readiness\.outputs\.scorecard-status/);
+  assert.match(workflow, /id: issue-map/);
+  assert.match(workflow, /mode: issue-map/);
+  assert.match(workflow, /issue-map-path: fixtures\/github-codex-issues-export\.json/);
+  assert.match(workflow, /steps\.issue-map\.outputs\.issue-map-top-kind/);
 });
 
 test("repository publishes npm through trusted publishing workflow", async () => {
@@ -1972,6 +1987,11 @@ test("published JSON schemas describe CLI result contracts", async () => {
     $defs: Record<string, unknown>;
   };
   const processAuditSchema = JSON.parse(await readFile("schemas/process-audit-result.schema.json", "utf8")) as {
+    required: string[];
+    properties: Record<string, unknown>;
+    $defs: Record<string, unknown>;
+  };
+  const issueMapSchema = JSON.parse(await readFile("schemas/issue-map-result.schema.json", "utf8")) as {
     required: string[];
     properties: Record<string, unknown>;
     $defs: Record<string, unknown>;
@@ -2080,6 +2100,10 @@ test("published JSON schemas describe CLI result contracts", async () => {
   assert.ok(processAuditSchema.properties.signals);
   assert.ok(processAuditSchema.$defs.signal);
   assert.ok((processAuditSchema.$defs.kind as { enum: string[] }).enum.includes("powershell_cim_polling"));
+  assert.deepEqual(issueMapSchema.required, ["generatedAt", "sources", "issueCount", "matchedIssueCount", "unmatchedIssueCount", "summaries", "unmatchedIssues"]);
+  assert.ok(issueMapSchema.properties.summaries);
+  assert.ok(issueMapSchema.$defs.summary);
+  assert.ok(issueMapSchema.$defs.example);
   assert.deepEqual(checkpointSchema.required, ["generatedAt", "root", "outputDir", "includeUntracked", "includeIgnored", "summary", "files", "artifacts"]);
   assert.ok(checkpointSchema.properties.artifacts);
   assert.ok(checkpointSchema.$defs.file);
@@ -2172,7 +2196,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.equal(brief.scorecard.benchmarkStatus, "pass");
   assert.equal(brief.scorecard.benchmarkCases, 38);
   assert.equal(brief.packageName, "trace-to-skill");
-  assert.equal(brief.packageVersion, "0.1.85");
+  assert.equal(brief.packageVersion, "0.1.86");
   assert.equal(brief.license, "Apache-2.0");
   assert.ok(brief.repository?.includes("github.com/grnbtqdbyx-create/trace-to-skill"));
   assert.ok(brief.qualification.max500.length <= 500);
@@ -2180,7 +2204,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.match(markdown, /OpenAI OSS Brief/);
   assert.match(markdown, /Why This Repository Qualifies/);
   assert.match(markdown, /500-Character Version/);
-  assert.match(markdown, /npx trace-to-skill@0\.1\.85/);
+  assert.match(markdown, /npx trace-to-skill@0\.1\.86/);
 });
 
 test("scorecard-comment dry-run resolves pull request event", async () => {

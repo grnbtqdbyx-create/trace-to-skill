@@ -35,3 +35,14 @@ jobs:
           echo "Benchmark status: ${{ steps.readiness.outputs.benchmark-status }}"
           echo "Benchmark cases: ${{ steps.readiness.outputs.benchmark-cases }}"
           echo "Scorecard status: ${{ steps.readiness.outputs.scorecard-status }}"
+      - id: issue-map
+        uses: ./
+        with:
+          mode: issue-map
+          issue-map-path: fixtures/github-codex-issues-export.json
+          job-summary: "true"
+      - name: Show issue-map outputs
+        run: |
+          echo "Issue-map issues: ${{ steps.issue-map.outputs.issue-map-issues }}"
+          echo "Issue-map matched: ${{ steps.issue-map.outputs.issue-map-matched }}"
+          echo "Issue-map top kind: ${{ steps.issue-map.outputs.issue-map-top-kind }}"
