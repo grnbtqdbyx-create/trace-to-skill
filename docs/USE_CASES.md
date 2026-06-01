@@ -78,6 +78,8 @@ Use this when you want to see what Codex users are actually complaining about on
 ```bash
 npx trace-to-skill issue-map --repo openai/codex --state all --limit 100 --output codex-issue-radar.md
 npx trace-to-skill issue-heat --repo openai/codex --state open --limit 100 --window-hours 24 --output codex-issue-heat.md
+npx trace-to-skill duplicate-audit --repo openai/codex --issue 25507 --output codex-duplicate-audit.md
+npx trace-to-skill duplicate-audit --repo openai/codex --issue 25507 --candidates 25391,25488 --format json
 npx trace-to-skill surface-matrix --repo openai/codex --state all --limit 100 --output codex-surface-matrix.md
 npx trace-to-skill issue-map --repo openai/codex --format json
 npx trace-to-skill init --issue-map-repo openai/codex --issue-map-state all --issue-map-limit 100
@@ -98,6 +100,7 @@ What it proves:
 - high-comment pain points are mapped to deterministic failure classes such as token burn, remote compact, MCP discovery, usage buckets, context drift, sandbox, and resource leaks
 - maintainers get example issue links, evidence-rule prompts, and a Maintainer Roadmap with the next artifact plus the command to generate it
 - `issue-heat` highlights what became noisy in the last 24-72 hours and links each hot cluster to the first support artifact to generate
+- `duplicate-audit` checks Codex Action duplicate suggestions against failure kinds, labels, surfaces, and title overlap before maintainers close or merge issues
 - `issue-heat-comment` and Action `mode: issue-heat` can update a stable tracking issue with the current hot clusters
 - `init --issue-map-repo owner/name` can install a weekly/manual Codex Issue Radar workflow without committing generated reports
 - `issue-map-comment` can update a stable tracking issue comment so scheduled radar output remains visible after the Action summary scrolls away

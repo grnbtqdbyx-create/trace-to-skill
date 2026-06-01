@@ -9,6 +9,8 @@ export { listDemoScenarios, renderDemoMarkdown, renderDemoScenarioList, runDemo 
 export { createDiagnosticsBundle, renderDiagnosticsBundleMarkdown } from "./diagnosticsBundle.js";
 export type { DiagnosticsBundleOptions, DiagnosticsBundleReport, DiagnosticsBundleResult, DiagnosticsBundleStatus } from "./diagnosticsBundle.js";
 export { doctorRepo } from "./doctor.js";
+export { buildDuplicateAudit, buildDuplicateAuditFromExport, buildDuplicateAuditFromIssues, buildGithubDuplicateAudit, renderDuplicateAuditMarkdown } from "./duplicateAudit.js";
+export type { DuplicateAuditCandidate, DuplicateAuditIssue, DuplicateAuditResult, DuplicateVerdict, GithubDuplicateAuditOptions } from "./duplicateAudit.js";
 export { compareAnalyses, evaluate } from "./eval.js";
 export { analyzeGithubEventContext, extractGithubContextInputs } from "./githubContext.js";
 export { buildGithubIssueMap, buildIssueMap, renderIssueMapMarkdown } from "./issueMap.js";

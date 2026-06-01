@@ -1,0 +1,201 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/grnbtqdbyx-create/trace-to-skill/main/schemas/duplicate-audit-result.schema.json",
+  "title": "trace-to-skill duplicate-audit result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "generatedAt",
+    "source",
+    "issue",
+    "suggestedDuplicates",
+    "candidates",
+    "summary"
+  ],
+  "properties": {
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "source": {
+      "type": "string"
+    },
+    "issue": {
+      "$ref": "#/$defs/issue"
+    },
+    "suggestedDuplicates": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "candidates": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/candidate"
+      }
+    },
+    "summary": {
+      "$ref": "#/$defs/summary"
+    }
+  },
+  "$defs": {
+    "verdict": {
+      "type": "string",
+      "enum": ["likely_duplicate", "related_not_duplicate", "needs_human_review", "weak_match"]
+    },
+    "issue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "title", "body", "labels", "comments", "commentBodies"],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "number": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "title": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        },
+        "labels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "comments": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "commentBodies": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "updatedAt": {
+          "type": "string"
+        }
+      }
+    },
+    "candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "issue",
+        "verdict",
+        "confidence",
+        "titleOverlap",
+        "sharedKinds",
+        "issueOnlyKinds",
+        "candidateOnlyKinds",
+        "sharedLabels",
+        "issueOnlyLabels",
+        "candidateOnlyLabels",
+        "sharedSurfaces",
+        "issueOnlySurfaces",
+        "candidateOnlySurfaces",
+        "reasons",
+        "nextAction"
+      ],
+      "properties": {
+        "issue": {
+          "$ref": "#/$defs/issue"
+        },
+        "verdict": {
+          "$ref": "#/$defs/verdict"
+        },
+        "confidence": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "titleOverlap": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "sharedKinds": {
+          "$ref": "#/$defs/stringArray"
+        },
+        "issueOnlyKinds": {
+          "$ref": "#/$defs/stringArray"
+        },
+        "candidateOnlyKinds": {
+          "$ref": "#/$defs/stringArray"
+        },
+        "sharedLabels": {
+          "$ref": "#/$defs/stringArray"
+        },
+        "issueOnlyLabels": {
+          "$ref": "#/$defs/stringArray"
+        },
+        "candidateOnlyLabels": {
+          "$ref": "#/$defs/stringArray"
+        },
+        "sharedSurfaces": {
+          "$ref": "#/$defs/stringArray"
+        },
+        "issueOnlySurfaces": {
+          "$ref": "#/$defs/stringArray"
+        },
+        "candidateOnlySurfaces": {
+          "$ref": "#/$defs/stringArray"
+        },
+        "reasons": {
+          "$ref": "#/$defs/stringArray"
+        },
+        "nextAction": {
+          "type": "string"
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "candidateCount",
+        "likelyDuplicates",
+        "relatedNotDuplicates",
+        "needsHumanReview",
+        "weakMatches"
+      ],
+      "properties": {
+        "candidateCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "likelyDuplicates": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "relatedNotDuplicates": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "needsHumanReview": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "weakMatches": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "stringArray": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

@@ -12,6 +12,7 @@ This page is written for maintainers, search engines, package indexes, and AI re
 - npm: https://www.npmjs.com/package/trace-to-skill
 - Latest release: https://github.com/grnbtqdbyx-create/trace-to-skill/releases/latest
 - Use cases: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/USE_CASES.md
+- Codex duplicate audit demo: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/CODEX_DUPLICATE_AUDIT.md
 - Codex Issue Radar demo: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/CODEX_ISSUE_RADAR.md
 - Codex Issue Heat demo: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/CODEX_ISSUE_HEAT.md
 - Codex surface support matrix: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/CODEX_SURFACE_MATRIX.md
@@ -49,6 +50,7 @@ This page is written for maintainers, search engines, package indexes, and AI re
 - Codex weekly or 5-hour reset anchors move unexpectedly, saved usage is lost, or `/status` and the dashboard disagree about reset timing or enforcement.
 - Codex usage evidence is scattered across `/status`, dashboard notes, reset tables, usage-limit messages, token totals, prompt-cache rows, cached input, and overhead clues, making high-signal reports hard to file.
 - Codex token-burn reports need a `usage-doctor` receipt that separates backend quota-window percentages, prompt-cache collapse events, bounded drain experiments, local token totals, and orchestration overhead such as background polling, compaction loops, retry/tool loops, subagent fan-out, or idle drain into confidence-ranked attribution buckets.
+- Codex Action duplicate suggestions need a `duplicate-audit` report that separates exact duplicates from related-but-narrower issues by failure kind, platform/surface, labels, and title overlap.
 - Codex users need a local checkpoint before agent edits because conversation rewind does not protect untracked dirty workspace files.
 - Codex `/compact` or auto-compaction fails against the remote `responses/compact` endpoint with stream disconnects, child-process timeout messages, provider timeout workarounds, or long-thread recovery loss.
 - Codex Desktop, app-server, VS Code extension, renderer, GPU, shell snapshot, or helper processes leak local resources or keep burning CPU/GPU/RAM after the useful work should be idle.
@@ -104,6 +106,8 @@ npx trace-to-skill process-audit ./process-notes.md --output process-audit.md
 npx trace-to-skill issue-map --repo openai/codex --state all --limit 100 --output codex-issue-radar.md
 npx trace-to-skill issue-heat --repo openai/codex --state open --limit 100 --window-hours 24 --output codex-issue-heat.md
 npx trace-to-skill issue-heat-comment --repo openai/codex --issue-number 8 --comment-repository owner/name --dry-run
+npx trace-to-skill duplicate-audit --repo openai/codex --issue 25507 --output codex-duplicate-audit.md
+npx trace-to-skill duplicate-audit --repo openai/codex --issue 25507 --candidates 25391,25488 --format json
 npx trace-to-skill surface-matrix --repo openai/codex --state all --limit 100 --output codex-surface-matrix.md
 npx trace-to-skill init --issue-map-repo openai/codex --issue-map-state all --issue-map-limit 100
 npx trace-to-skill issue-map codex-issues.json --output codex-issue-map.md

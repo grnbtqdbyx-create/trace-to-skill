@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Repository | https://github.com/grnbtqdbyx-create/trace-to-skill |
-| Package | trace-to-skill@0.1.106 |
+| Package | trace-to-skill@0.1.107 |
 | License | Apache-2.0 |
 | Codex readiness | ready (100/100) |
 | Benchmark | pass, 46 cases |
@@ -27,12 +27,13 @@ API credits would power optional maintainer workflows on top of the local determ
 ## Evidence
 
 - Public repository: https://github.com/grnbtqdbyx-create/trace-to-skill
-- One-command package: npx trace-to-skill@0.1.106
+- One-command package: npx trace-to-skill@0.1.107
 - Open-source license: Apache-2.0
 - Codex readiness doctor: ready, 100/100, 0 failed checks.
 - Public fixture benchmark: pass, 46 cases.
 - GitHub issue demand mining: issue-map fetches or reads piped GitHub CLI issue JSON, then ranks OpenAI/Codex issues by failure class, comments, reactions, evidence gaps, and Maintainer Roadmap next artifacts.
 - GitHub Issue Heat: issue-heat ranks what is moving right now by recency, labels, comments, reactions, severity, and the first trace-to-skill action to run; Action mode and issue-heat-comment keep a stable tracking issue updated.
+- Duplicate triage: duplicate-audit checks Codex Action duplicate suggestions against failure kinds, labels, surfaces, and title overlap before maintainers close, merge, or ask for a narrower clarification.
 - Surface support matrix: surface-matrix turns Codex platform, remote workspace, MCP, plugin, file-tree, and context-visibility demand into blocked/degraded rows with support-policy questions.
 - Weekly Codex Issue Radar: init --issue-map-repo owner/name scaffolds a scheduled Action that fetches live GitHub issues and publishes the pain map to the job summary or a stable tracking issue comment.
 - Usage doctor: usage-doctor separates token-burn reports into quota-window accounting, rapid-drain repros, prompt-cache collapse, cached-context replay, and orchestration overhead buckets with confidence and next evidence.

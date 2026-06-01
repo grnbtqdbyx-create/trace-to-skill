@@ -431,6 +431,8 @@ trace-to-skill issue-map --repo openai/codex --state all --limit 100 --output co
 trace-to-skill issue-map --repo openai/codex --format json
 trace-to-skill issue-heat --repo openai/codex --state open --limit 100 --window-hours 24 --output codex-issue-heat.md
 trace-to-skill issue-heat-comment --repo openai/codex --issue-number 8 --comment-repository owner/repo --dry-run
+trace-to-skill duplicate-audit --repo openai/codex --issue 25507 --output codex-duplicate-audit.md
+trace-to-skill duplicate-audit --repo openai/codex --issue 25507 --candidates 25391,25488 --format json
 trace-to-skill init --issue-map-repo openai/codex --issue-map-state all --issue-map-limit 100
 gh issue list --repo openai/codex --state open --limit 100 --json number,title,body,url,labels,comments,createdAt,updatedAt > codex-issues.json
 trace-to-skill issue-map codex-issues.json --output codex-issue-map.md
@@ -442,7 +444,9 @@ gh issue list --repo openai/codex --state all --limit 100 --json number,title,bo
 
 `issue-heat` uses the same detectors but ranks recent issue movement. It is useful when all-time demand is dominated by older high-reaction threads and maintainers need to know what broke or became noisy in the last 24-72 hours. Use `issue-heat-comment` or the `mode: issue-heat` Action to keep a stable tracking issue updated without committing generated reports.
 
-For a live generated radar, see [docs/CODEX_ISSUE_RADAR.md](docs/CODEX_ISSUE_RADAR.md). For recent movement, see [docs/CODEX_ISSUE_HEAT.md](docs/CODEX_ISSUE_HEAT.md). For blocked/degraded surfaces, see [docs/CODEX_SURFACE_MATRIX.md](docs/CODEX_SURFACE_MATRIX.md). To map a Codex problem to the right failure class and report command, see [docs/CODEX_ISSUE_MAP.md](docs/CODEX_ISSUE_MAP.md).
+`duplicate-audit` checks Codex Action "Potential duplicates" suggestions before maintainers close or merge issues. It fetches the current issue, bot-suggested candidates, and candidate comments from GitHub, then compares deterministic failure kinds, labels, platform/surface signals, and title overlap. The output separates `likely_duplicate` from `related_not_duplicate`, so users can write a narrow clarification instead of adding noisy "not a duplicate" comments.
+
+For a live generated radar, see [docs/CODEX_ISSUE_RADAR.md](docs/CODEX_ISSUE_RADAR.md). For recent movement, see [docs/CODEX_ISSUE_HEAT.md](docs/CODEX_ISSUE_HEAT.md). For duplicate triage, see [docs/CODEX_DUPLICATE_AUDIT.md](docs/CODEX_DUPLICATE_AUDIT.md). For blocked/degraded surfaces, see [docs/CODEX_SURFACE_MATRIX.md](docs/CODEX_SURFACE_MATRIX.md). To map a Codex problem to the right failure class and report command, see [docs/CODEX_ISSUE_MAP.md](docs/CODEX_ISSUE_MAP.md).
 
 Create a local pre-agent workspace checkpoint:
 

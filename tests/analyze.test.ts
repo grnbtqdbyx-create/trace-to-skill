@@ -13,6 +13,7 @@ import { auditCodexConfig, renderConfigAuditMarkdown } from "../src/configAudit.
 import { listDemoScenarios, renderDemoMarkdown, renderDemoScenarioList, runDemo } from "../src/demo.js";
 import { createDiagnosticsBundle, renderDiagnosticsBundleMarkdown } from "../src/diagnosticsBundle.js";
 import { doctorRepo } from "../src/doctor.js";
+import { buildDuplicateAuditFromExport, renderDuplicateAuditMarkdown } from "../src/duplicateAudit.js";
 import { compareAnalyses, evaluate } from "../src/eval.js";
 import { analyzeGithubEventContext, extractGithubContextInputs } from "../src/githubContext.js";
 import { buildIssueHeatFromSources, renderIssueHeatMarkdown } from "../src/issueHeat.js";
@@ -1644,6 +1645,43 @@ test("issue-heat-comment dry-run targets a stable issue thread", async () => {
   assert.equal(stdout.trim(), "dry-run: would post trace-to-skill issue-heat report to owner/repo#8");
 });
 
+test("duplicate-audit checks Codex Action duplicate suggestions with differentiators", async () => {
+  const raw = await readFile("fixtures/codex-duplicate-audit.json", "utf8");
+  const result = buildDuplicateAuditFromExport(raw, "fixtures/codex-duplicate-audit.json");
+  const markdown = renderDuplicateAuditMarkdown(result);
+
+  assert.equal(result.summary.candidateCount, 2);
+  assert.equal(result.candidates[0].issue.id, "#25391");
+  assert.equal(result.candidates[0].verdict, "likely_duplicate");
+  assert.ok(result.candidates[0].sharedKinds.includes("codex_windows_helper_path"));
+  assert.ok(result.candidates[0].sharedKinds.includes("codex_plugin_runtime"));
+
+  const sandboxCandidate = result.candidates.find((candidate) => candidate.issue.id === "#25488");
+  assert.ok(sandboxCandidate);
+  assert.equal(sandboxCandidate.verdict, "related_not_duplicate");
+  assert.ok(sandboxCandidate.candidateOnlyKinds.includes("sandbox_permission"));
+  assert.match(sandboxCandidate.nextAction, /cross-link/);
+  assert.match(markdown, /Duplicate Audit/);
+  assert.match(markdown, /related_not_duplicate/);
+});
+
+test("duplicate-audit command reads exports from stdin", async () => {
+  await execFileAsync("npm", ["run", "build"]);
+  const { stdout } = await execFileAsync("bash", [
+    "-lc",
+    "cat fixtures/codex-duplicate-audit.json | node dist/src/cli.js duplicate-audit - --format json"
+  ]);
+  const result = JSON.parse(stdout) as {
+    summary: { candidateCount: number; likelyDuplicates: number; relatedNotDuplicates: number };
+    candidates: Array<{ issue: { id: string }; verdict: string }>;
+  };
+
+  assert.equal(result.summary.candidateCount, 2);
+  assert.equal(result.summary.likelyDuplicates, 1);
+  assert.equal(result.summary.relatedNotDuplicates, 1);
+  assert.equal(result.candidates[0].issue.id, "#25391");
+});
+
 test("process audit packages Codex process polling and high CPU evidence", () => {
   const result = auditProcessEvidenceFromInputs([
     {
@@ -1922,6 +1960,7 @@ test("package metadata points npm users back to the public project", async () =>
   assert.equal(packageJson.publishConfig?.access, "public");
   assert.ok(packageJson.files?.includes("llms.txt"));
   assert.ok(packageJson.files?.includes("docs/DISCOVERY.md"));
+  assert.ok(packageJson.files?.includes("docs/CODEX_DUPLICATE_AUDIT.md"));
   assert.ok(packageJson.files?.includes("docs/CODEX_ISSUE_HEAT.md"));
   assert.ok(packageJson.files?.includes("docs/CODEX_ISSUE_MAP.md"));
   assert.ok(packageJson.files?.includes("docs/DEMO.md"));
@@ -1959,6 +1998,9 @@ test("package metadata points npm users back to the public project", async () =>
   assert.ok(packageJson.keywords?.includes("codex-hot-issues"));
   assert.ok(packageJson.keywords?.includes("issue-heat-action"));
   assert.ok(packageJson.keywords?.includes("issue-heat-comment"));
+  assert.ok(packageJson.keywords?.includes("duplicate-audit"));
+  assert.ok(packageJson.keywords?.includes("codex-duplicate-audit"));
+  assert.ok(packageJson.keywords?.includes("codex-action-duplicates"));
   assert.ok(packageJson.keywords?.includes("surface-matrix"));
   assert.ok(packageJson.keywords?.includes("codex-support-matrix"));
   assert.ok(packageJson.keywords?.includes("remote-development"));
@@ -2488,6 +2530,11 @@ test("published JSON schemas describe CLI result contracts", async () => {
     properties: Record<string, unknown>;
     $defs: Record<string, unknown>;
   };
+  const duplicateAuditSchema = JSON.parse(await readFile("schemas/duplicate-audit-result.schema.json", "utf8")) as {
+    required: string[];
+    properties: Record<string, unknown>;
+    $defs: Record<string, unknown>;
+  };
   const checkpointSchema = JSON.parse(await readFile("schemas/workspace-checkpoint-result.schema.json", "utf8")) as {
     required: string[];
     properties: Record<string, unknown>;
@@ -2606,6 +2653,11 @@ test("published JSON schemas describe CLI result contracts", async () => {
   assert.ok(issueMapSchema.$defs.summary);
   assert.ok(issueMapSchema.$defs.roadmapItem);
   assert.ok(issueMapSchema.$defs.example);
+  assert.deepEqual(duplicateAuditSchema.required, ["generatedAt", "source", "issue", "suggestedDuplicates", "candidates", "summary"]);
+  assert.ok(duplicateAuditSchema.properties.candidates);
+  assert.ok(duplicateAuditSchema.$defs.issue);
+  assert.ok(duplicateAuditSchema.$defs.candidate);
+  assert.ok((duplicateAuditSchema.$defs.verdict as { enum: string[] }).enum.includes("related_not_duplicate"));
   assert.deepEqual(checkpointSchema.required, ["generatedAt", "root", "outputDir", "includeUntracked", "includeIgnored", "summary", "files", "artifacts"]);
   assert.ok(checkpointSchema.properties.artifacts);
   assert.ok(checkpointSchema.$defs.file);
@@ -2709,7 +2761,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.equal(brief.scorecard.benchmarkStatus, "pass");
   assert.equal(brief.scorecard.benchmarkCases, 46);
   assert.equal(brief.packageName, "trace-to-skill");
-  assert.equal(brief.packageVersion, "0.1.106");
+  assert.equal(brief.packageVersion, "0.1.107");
   assert.equal(brief.license, "Apache-2.0");
   assert.ok(brief.repository?.includes("github.com/grnbtqdbyx-create/trace-to-skill"));
   assert.ok(brief.qualification.max500.length <= 500);
@@ -2717,8 +2769,9 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.match(markdown, /OpenAI OSS Brief/);
   assert.match(markdown, /Why This Repository Qualifies/);
   assert.match(markdown, /500-Character Version/);
-  assert.match(markdown, /npx trace-to-skill@0\.1\.106/);
+  assert.match(markdown, /npx trace-to-skill@0\.1\.107/);
   assert.match(markdown, /GitHub Issue Heat/);
+  assert.match(markdown, /Duplicate triage/);
   assert.match(markdown, /hot-issue detection/);
   assert.match(markdown, /Surface support matrix/);
   assert.match(markdown, /surface support planning/);

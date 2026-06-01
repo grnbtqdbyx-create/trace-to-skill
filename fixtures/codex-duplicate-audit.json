@@ -1,0 +1,34 @@
+{
+  "source": "fixture:codex-duplicate-audit",
+  "suggestedDuplicates": ["#25391", "#25488"],
+  "issue": {
+    "number": 25507,
+    "title": "Windows Computer Use unavailable: nativePipe missing and SKY_CUA_NATIVE_PIPE_DIRECTORY not injected",
+    "url": "https://github.com/openai/codex/issues/25507",
+    "labels": ["bug", "windows-os", "app", "computer-use"],
+    "body": "After updating Codex Desktop on Windows, Computer Use appears installed but the runtime does not inject SKY_CUA_NATIVE_PIPE_DIRECTORY. The local codex-computer-use.exe exists in the plugin cache, but nativePipe is missing and Computer Use cannot start. This looks like a plugin registry or bundled-plugin visibility mismatch rather than a missing install.",
+    "comments": [
+      {
+        "body": "Potential duplicates detected. Please review them and close your issue if it is a duplicate.\n\n- #25391\n- #25488\n\nPowered by Codex Action"
+      }
+    ]
+  },
+  "candidates": [
+    {
+      "number": 25391,
+      "title": "Windows Computer Use native pipe path missing after plugin update",
+      "url": "https://github.com/openai/codex/issues/25391",
+      "labels": ["bug", "windows-os", "app", "computer-use"],
+      "body": "Codex Desktop on Windows no longer passes SKY_CUA_NATIVE_PIPE_DIRECTORY to the Computer Use helper. The bundled C:\\Program Files\\WindowsApps\\OpenAI.Codex_26.527.3686.0_x64__2p2nqsd0c76g0\\app\\resources\\codex-computer-use.exe cannot start. Computer Use native pipe path is unavailable, nativePipe is undefined, and the app cannot launch Computer Use.",
+      "commentsCount": 8
+    },
+    {
+      "number": 25488,
+      "title": "Windows Codex Desktop: node_repl / Computer Use fails with \"windows sandbox failed: spawn setup refresh\"",
+      "url": "https://github.com/openai/codex/issues/25488",
+      "labels": ["bug", "windows-os", "sandbox", "app", "computer-use"],
+      "body": "On Windows, node_repl and Browser tools fail before execution with windows sandbox failed: spawn setup refresh. Computer Use is installed, but the failure appears to happen in sandbox setup and permission refresh rather than the native pipe path.",
+      "commentsCount": 3
+    }
+  ]
+}

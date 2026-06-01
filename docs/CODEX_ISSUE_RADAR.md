@@ -10,10 +10,13 @@ This report maps GitHub issues onto deterministic `trace-to-skill` failure class
 
 ```bash
 trace-to-skill issue-map --repo openai/codex --output codex-issue-map.md
+trace-to-skill duplicate-audit --repo openai/codex --issue 25507 --output codex-duplicate-audit.md
 gh issue list --repo openai/codex --state open --limit 100 --json number,title,body,url,labels,comments,createdAt,updatedAt > codex-issues.json
 trace-to-skill issue-map codex-issues.json --output codex-issue-map.md
 gh issue list --repo openai/codex --state all --limit 100 --json number,title,body,url,labels,comments,updatedAt | trace-to-skill issue-map - --format json
 ```
+
+Use `duplicate-audit` when Codex Action posts "Potential duplicates" on a noisy issue. It compares the current issue with bot-suggested candidates and separates likely duplicates from related-but-not-exact duplicates, with the differentiating failure kinds and surfaces called out for a maintainer reply.
 
 ## Top Clusters
 

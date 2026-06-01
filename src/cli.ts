@@ -8,6 +8,7 @@ import { auditCodexConfig, renderConfigAuditMarkdown } from "./configAudit.js";
 import { listDemoScenarios, renderDemoMarkdown, renderDemoScenarioList, runDemo } from "./demo.js";
 import { createDiagnosticsBundle, renderDiagnosticsBundleMarkdown } from "./diagnosticsBundle.js";
 import { doctorRepo } from "./doctor.js";
+import { buildDuplicateAuditFromExport, buildGithubDuplicateAudit, renderDuplicateAuditMarkdown } from "./duplicateAudit.js";
 import { compareAnalyses, evaluate } from "./eval.js";
 import { analyzeGithubEventContext } from "./githubContext.js";
 import { buildGithubIssueHeat, buildIssueHeatFromSources, renderIssueHeatMarkdown } from "./issueHeat.js";
@@ -326,6 +327,25 @@ async function main(): Promise<void> {
     return;
   }
 
+  if (parsed.command === "duplicate-audit") {
+    const repo = stringFlag(parsed.flags.repo);
+    const issueNumber = optionalPositiveIntegerFlag(parsed.flags.issue, "--issue");
+    const candidates = candidateNumberList(stringFlag(parsed.flags.candidates));
+    const result = repo ?
+      await buildGithubDuplicateAudit(repo, {
+        issueNumber: issueNumber ?? (() => {
+          throw new Error("duplicate-audit --repo requires --issue <number>.");
+        })(),
+        candidates,
+        token: stringFlag(parsed.flags.token)
+      }) :
+      await buildDuplicateAuditFromCliTargets(parsed.targets);
+    const format = String(parsed.flags.format ?? "markdown");
+    const output = format === "json" ? `${JSON.stringify(result, null, 2)}\n` : renderDuplicateAuditMarkdown(result);
+    await writeOutput(output, parsed.flags.output);
+    return;
+  }
+
   if (parsed.command === "guard-github-event") {
     const eventPath = parsed.targets[0] ?? stringFlag(parsed.flags.event) ?? process.env.GITHUB_EVENT_PATH;
     if (!eventPath) {
@@ -532,6 +552,24 @@ function optionalPositiveIntegerFlag(value: string | boolean | undefined, flagNa
   return positiveIntegerFlag(value, flagName);
 }
 
+function candidateNumberList(value: string | undefined): number[] | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+  const parsed = value.split(",").map((item) => item.trim()).filter(Boolean).map((item) => {
+    const clean = item.replace(/^#/, "");
+    if (!/^[0-9]{1,10}$/.test(clean)) {
+      throw new Error("--candidates must be a comma-separated list of issue numbers.");
+    }
+    const number = Number(clean);
+    if (!Number.isSafeInteger(number) || number < 1) {
+      throw new Error("--candidates must be a comma-separated list of issue numbers.");
+    }
+    return number;
+  });
+  return parsed.length > 0 ? parsed : undefined;
+}
+
 function byteFlag(value: string | boolean | undefined, multiplier: number): number | undefined {
   if (value === undefined) {
     return undefined;
@@ -673,6 +711,30 @@ async function buildIssueHeatFromCliTargets(targets: string[], options: { top?: 
   return buildIssueHeatFromSources(sources, options);
 }
 
+async function buildDuplicateAuditFromCliTargets(targets: string[]) {
+  if (targets.length === 0) {
+    if (!process.stdin.isTTY) {
+      const raw = await readStdin();
+      if (!raw.trim()) {
+        throw new Error("duplicate-audit received empty stdin. Pipe duplicate audit JSON, pass an export file, or use --repo owner/name --issue number.");
+      }
+      return buildDuplicateAuditFromExport(raw, "stdin");
+    }
+    throw new Error("duplicate-audit requires an export file, stdin input, or --repo owner/name --issue number.");
+  }
+
+  const target = targets[0];
+  if (target === "-") {
+    const raw = await readStdin();
+    if (!raw.trim()) {
+      throw new Error("duplicate-audit received empty stdin. Pipe duplicate audit JSON before using duplicate-audit -.");
+    }
+    return buildDuplicateAuditFromExport(raw, "stdin");
+  }
+
+  return buildDuplicateAuditFromExport(await readFile(target, "utf8"), target);
+}
+
 async function readStdin(): Promise<string> {
   let raw = "";
   process.stdin.setEncoding("utf8");
@@ -716,10 +778,12 @@ Usage:
   trace-to-skill oss-brief [repo-dir] [--threshold 85] [--format markdown|json] [--output docs/OPENAI_OSS_BRIEF.md]
   trace-to-skill issue-map <github-issues.json-or-md> [--top 12] [--format markdown|json] [--output codex-issue-map.md]
   trace-to-skill issue-heat <github-issues.json-or-md> [--window-hours 24] [--top 12] [--format markdown|json] [--output codex-issue-heat.md]
+  trace-to-skill duplicate-audit <duplicate-audit.json> [--format markdown|json] [--output duplicate-audit.md]
   trace-to-skill surface-matrix <github-issues.json-or-md> [--top 12] [--format markdown|json] [--output codex-surface-matrix.md]
   gh issue list --repo openai/codex --json number,title,body,url,labels,comments,updatedAt | trace-to-skill issue-map - [--format markdown|json]
   trace-to-skill issue-map --repo openai/codex [--state open|closed|all] [--limit 100] [--token $GITHUB_TOKEN] [--format markdown|json]
   trace-to-skill issue-heat --repo openai/codex [--state open|closed|all] [--limit 100] [--window-hours 24] [--token $GITHUB_TOKEN] [--format markdown|json]
+  trace-to-skill duplicate-audit --repo openai/codex --issue 25507 [--candidates 25391,25488] [--token $GITHUB_TOKEN] [--format markdown|json]
   trace-to-skill surface-matrix --repo openai/codex [--state open|closed|all] [--limit 100] [--token $GITHUB_TOKEN] [--format markdown|json]
   trace-to-skill issue-map-comment --repo openai/codex --issue-number 8 [--comment-repository owner/repo] [--state open|closed|all] [--limit 100] [--dry-run] [--token $GITHUB_TOKEN]
   trace-to-skill issue-heat-comment --repo openai/codex --issue-number 8 [--comment-repository owner/repo] [--state open|closed|all] [--limit 100] [--window-hours 24] [--dry-run] [--token $GITHUB_TOKEN]
@@ -753,6 +817,8 @@ Examples:
   trace-to-skill eval ./runs --threshold 80
   trace-to-skill benchmark
   trace-to-skill issue-heat --repo openai/codex --state open --limit 100 --window-hours 24 --output codex-issue-heat.md
+  trace-to-skill duplicate-audit --repo openai/codex --issue 25507 --output duplicate-audit.md
+  trace-to-skill duplicate-audit --repo openai/codex --issue 25507 --candidates 25391,25488 --format json
   trace-to-skill surface-matrix --repo openai/codex --output codex-surface-matrix.md
   trace-to-skill scorecard .
   trace-to-skill scorecard-comment . --threshold 85

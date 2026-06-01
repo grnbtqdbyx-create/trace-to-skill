@@ -43,6 +43,7 @@ Runtime: Node.js 20+
 - Codex usage reset schedule drift such as weekly reset dates moving, `reset_at` jumping, saved usage disappearing, outage compensation resets changing the anchor, and `/status` disagreeing with enforcement
 - Codex usage evidence packaging for scattered `/status`, reset-table, usage-limit, token-total, prompt-cache, cached-input, and orchestration-overhead snippets
 - Codex usage receipts that separate backend quota-window percentages, bounded drain experiments, local token totals, and overhead signals such as background polling, compaction loops, retry/tool loops, subagent fan-out, or idle drain
+- Codex Action duplicate triage where maintainers need to confirm whether bot-suggested duplicate issues are exact duplicates or only related by platform, failure kind, labels, or surface
 - Codex undo/rewind support workflows where maintainers need a local pre-agent workspace checkpoint with git diffs plus copied changed/untracked files before agent edits
 - Codex resource leaks and runaway local processes such as high CPU/GPU, `Code Helper`, `Codex Helper Renderer`, orphaned shell snapshots, log floods, thinking animation GPU loops, and non-Git workspace CPU loops
 - Codex quota and usage-limit mismatches where `/status` or the usage page shows remaining quota, accounts share limits unexpectedly, or 5h and weekly quotas move together
@@ -66,6 +67,7 @@ failed agent run -> failure class -> evidence-backed AGENTS.md/SKILL.md suggesti
 
 - README: https://github.com/grnbtqdbyx-create/trace-to-skill#readme
 - Use cases: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/USE_CASES.md
+- Codex duplicate audit demo: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/CODEX_DUPLICATE_AUDIT.md
 - Codex Issue Radar demo: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/CODEX_ISSUE_RADAR.md
 - Codex Issue Heat demo: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/CODEX_ISSUE_HEAT.md
 - Codex surface support matrix: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/CODEX_SURFACE_MATRIX.md
@@ -117,6 +119,8 @@ npx trace-to-skill process-audit ./process-notes.md --output process-audit.md
 npx trace-to-skill issue-map --repo openai/codex --state all --limit 100 --output codex-issue-radar.md
 npx trace-to-skill issue-heat --repo openai/codex --state open --limit 100 --window-hours 24 --output codex-issue-heat.md
 npx trace-to-skill issue-heat-comment --repo openai/codex --issue-number 8 --comment-repository owner/name --dry-run
+npx trace-to-skill duplicate-audit --repo openai/codex --issue 25507 --output codex-duplicate-audit.md
+npx trace-to-skill duplicate-audit --repo openai/codex --issue 25507 --candidates 25391,25488 --format json
 npx trace-to-skill surface-matrix --repo openai/codex --state all --limit 100 --output codex-surface-matrix.md
 npx trace-to-skill issue-map-comment --repo openai/codex --issue-number 8 --comment-repository owner/name --dry-run
 npx trace-to-skill init --issue-map-repo openai/codex --issue-map-state all --issue-map-limit 100
@@ -184,6 +188,7 @@ gh issue list --repo openai/codex --state all --limit 100 --json number,title,bo
 - Usage evidence JSON schema: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/schemas/usage-evidence-result.schema.json
 - Process audit JSON schema: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/schemas/process-audit-result.schema.json
 - Issue map JSON schema: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/schemas/issue-map-result.schema.json
+- Duplicate audit JSON schema: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/schemas/duplicate-audit-result.schema.json
 - Workspace checkpoint JSON schema: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/schemas/workspace-checkpoint-result.schema.json
 
 ## Search phrases this project should answer
