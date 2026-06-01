@@ -16,7 +16,7 @@ import { doctorRepo } from "../src/doctor.js";
 import { compareAnalyses, evaluate } from "../src/eval.js";
 import { analyzeGithubEventContext, extractGithubContextInputs } from "../src/githubContext.js";
 import { buildGithubIssueMap, buildIssueMap, renderIssueMapMarkdown } from "../src/issueMap.js";
-import { postPullRequestComment } from "../src/github.js";
+import { postIssueComment, postPullRequestComment } from "../src/github.js";
 import { initProject } from "../src/init.js";
 import { auditLspReadiness, renderLspAuditMarkdown } from "../src/lspAudit.js";
 import { renderOssBriefMarkdown, runOssBrief } from "../src/ossBrief.js";
@@ -112,6 +112,19 @@ test("postPullRequestComment dry-run supports custom report markers", async () =
   });
 
   assert.equal(message, "dry-run: would post trace-to-skill doctor report to owner/repo#42");
+});
+
+test("postIssueComment dry-run targets a stable issue thread", async () => {
+  const message = await postIssueComment({
+    repository: "owner/repo",
+    issueNumber: 8,
+    body: "test",
+    marker: "<!-- trace-to-skill-issue-map-report -->",
+    reportName: "trace-to-skill issue-map report",
+    dryRun: true
+  });
+
+  assert.equal(message, "dry-run: would post trace-to-skill issue-map report to owner/repo#8");
 });
 
 test("analyzeTargets scores MCP config capabilities and secret env keys", async () => {
@@ -1479,8 +1492,8 @@ test("renderSarif produces GitHub code-scanning compatible results", async () =>
 
 test("initProject scaffolds workflow without overwriting existing files", async () => {
   const cwd = await mkdtemp(path.join(os.tmpdir(), "trace-to-skill-init-"));
-  const first = await initProject({ cwd, comment: true, sarif: true, issueMapRepo: "openai/codex", issueMapState: "all", issueMapLimit: "75" });
-  const second = await initProject({ cwd, comment: true, sarif: true, issueMapRepo: "openai/codex", issueMapState: "all", issueMapLimit: "75" });
+  const first = await initProject({ cwd, comment: true, sarif: true, issueMapRepo: "openai/codex", issueMapState: "all", issueMapLimit: "75", issueMapCommentIssue: "8" });
+  const second = await initProject({ cwd, comment: true, sarif: true, issueMapRepo: "openai/codex", issueMapState: "all", issueMapLimit: "75", issueMapCommentIssue: "8" });
   const workflow = await readFile(path.join(cwd, ".github/workflows/agent-learning.yml"), "utf8");
   const doctorWorkflow = await readFile(path.join(cwd, ".github/workflows/codex-readiness.yml"), "utf8");
   const issueRadarWorkflow = await readFile(path.join(cwd, ".github/workflows/codex-issue-radar.yml"), "utf8");
@@ -1509,6 +1522,9 @@ test("initProject scaffolds workflow without overwriting existing files", async 
   assert.match(issueRadarWorkflow, /issue-map-repo: openai\/codex/);
   assert.match(issueRadarWorkflow, /issue-map-state: all/);
   assert.match(issueRadarWorkflow, /issue-map-limit: "75"/);
+  assert.match(issueRadarWorkflow, /issues: write/);
+  assert.match(issueRadarWorkflow, /issue-map-comment: "true"/);
+  assert.match(issueRadarWorkflow, /issue-map-comment-issue: "8"/);
   assert.match(issueRadarWorkflow, /github-token: \$\{\{ github\.token \}\}/);
 });
 
@@ -1645,6 +1661,10 @@ test("initProject rejects unsafe workflow arguments", async () => {
   await assert.rejects(
     () => initProject({ issueMapLimit: "0" }),
     /between 1 and 100/
+  );
+  await assert.rejects(
+    () => initProject({ issueMapCommentIssue: "0" }),
+    /positive integer/
   );
 });
 
@@ -1922,6 +1942,9 @@ test("composite action exposes Codex readiness doctor mode", async () => {
   assert.match(action, /issue-map-repo:/);
   assert.match(action, /issue-map-state:/);
   assert.match(action, /issue-map-limit:/);
+  assert.match(action, /issue-map-comment:/);
+  assert.match(action, /issue-map-comment-issue:/);
+  assert.match(action, /issue-map-comment-repository:/);
   assert.match(action, /context-threshold:/);
   assert.match(action, /doctor-threshold:/);
   assert.match(action, /doctor-comment:/);
@@ -1948,6 +1971,8 @@ test("composite action exposes Codex readiness doctor mode", async () => {
   assert.match(action, /node "\$TRACE_TO_SKILL_CLI" doctor-comment/);
   assert.match(action, /node "\$TRACE_TO_SKILL_CLI" benchmark/);
   assert.match(action, /node "\$TRACE_TO_SKILL_CLI" issue-map/);
+  assert.match(action, /node "\$TRACE_TO_SKILL_CLI" issue-map-comment/);
+  assert.match(action, /inputs\.issue-map-comment == 'true'/);
   assert.match(action, /issue-map --repo "\$\{\{ inputs\.issue-map-repo \}\}" --state "\$\{\{ inputs\.issue-map-state \}\}" --limit "\$\{\{ inputs\.issue-map-limit \}\}"/);
   assert.match(action, /node "\$TRACE_TO_SKILL_CLI" scorecard/);
   assert.match(action, /node "\$TRACE_TO_SKILL_CLI" scorecard-comment/);
@@ -2271,7 +2296,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.equal(brief.scorecard.benchmarkStatus, "pass");
   assert.equal(brief.scorecard.benchmarkCases, 38);
   assert.equal(brief.packageName, "trace-to-skill");
-  assert.equal(brief.packageVersion, "0.1.89");
+  assert.equal(brief.packageVersion, "0.1.90");
   assert.equal(brief.license, "Apache-2.0");
   assert.ok(brief.repository?.includes("github.com/grnbtqdbyx-create/trace-to-skill"));
   assert.ok(brief.qualification.max500.length <= 500);
@@ -2279,7 +2304,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.match(markdown, /OpenAI OSS Brief/);
   assert.match(markdown, /Why This Repository Qualifies/);
   assert.match(markdown, /500-Character Version/);
-  assert.match(markdown, /npx trace-to-skill@0\.1\.89/);
+  assert.match(markdown, /npx trace-to-skill@0\.1\.90/);
   assert.match(markdown, /Weekly Codex Issue Radar/);
 });
 

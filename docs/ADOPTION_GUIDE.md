@@ -9,6 +9,7 @@ Run the initializer:
 ```bash
 npx trace-to-skill init --comment --sarif
 npx trace-to-skill init --issue-map-repo owner/name --issue-map-state all --issue-map-limit 100
+npx trace-to-skill init --issue-map-repo owner/name --issue-map-comment-issue 8
 ```
 
 This creates:
@@ -21,7 +22,7 @@ This creates:
 
 Open a pull request with those files first. Keep the first PR small so maintainers can review the policy separately from future agent traces.
 
-The optional Codex Issue Radar workflow runs weekly and on demand. It fetches the repository's most-commented issues, filters pull requests, classifies each issue into deterministic agent failure classes, and writes the report to the GitHub Actions job summary without committing generated output.
+The optional Codex Issue Radar workflow runs weekly and on demand. It fetches the repository's most-commented issues, filters pull requests, classifies each issue into deterministic agent failure classes, and writes the report to the GitHub Actions job summary without committing generated output. Add `--issue-map-comment-issue 8` to update a stable tracking issue comment on every run.
 
 ## Maintainer Workflow
 

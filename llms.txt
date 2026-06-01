@@ -104,6 +104,7 @@ npx trace-to-skill diagnostics-bundle ~/.codex --output codex-diagnostics
 npx trace-to-skill usage-evidence ./usage-notes.md --output usage-evidence.md
 npx trace-to-skill process-audit ./process-notes.md --output process-audit.md
 npx trace-to-skill issue-map --repo openai/codex --state all --limit 100 --output codex-issue-radar.md
+npx trace-to-skill issue-map-comment --repo openai/codex --issue-number 8 --comment-repository owner/name --dry-run
 npx trace-to-skill init --issue-map-repo openai/codex --issue-map-state all --issue-map-limit 100
 npx trace-to-skill issue-map codex-issues.json --output codex-issue-map.md
 npx trace-to-skill checkpoint . --output .trace-to-skill/checkpoints/before-codex
@@ -124,7 +125,7 @@ npx trace-to-skill init --issue-map-repo openai/codex --issue-map-state all --is
 ## GitHub Action
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.89
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.90
   with:
     mode: all
     doctor-threshold: "85"
@@ -137,12 +138,14 @@ npx trace-to-skill init --issue-map-repo openai/codex --issue-map-state all --is
 ## Weekly Codex Issue Radar
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.89
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.90
   with:
     mode: issue-map
     issue-map-repo: openai/codex
     issue-map-state: all
     issue-map-limit: "100"
+    issue-map-comment: "true"
+    issue-map-comment-issue: "8"
     job-summary: "true"
     github-token: ${{ github.token }}
 ```

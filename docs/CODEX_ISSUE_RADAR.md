@@ -20,6 +20,8 @@ Install a weekly/manual radar workflow in a repository:
 
 ```bash
 trace-to-skill init --issue-map-repo owner/name --issue-map-state all --issue-map-limit 100
+trace-to-skill init --issue-map-repo owner/name --issue-map-comment-issue 8
+trace-to-skill issue-map-comment --repo openai/codex --issue-number 8 --comment-repository owner/name --dry-run
 ```
 
 ## Top Clusters

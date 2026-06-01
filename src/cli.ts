@@ -11,7 +11,7 @@ import { doctorRepo } from "./doctor.js";
 import { compareAnalyses, evaluate } from "./eval.js";
 import { analyzeGithubEventContext } from "./githubContext.js";
 import { buildGithubIssueMap, buildIssueMap, renderIssueMapMarkdown } from "./issueMap.js";
-import { postPullRequestComment } from "./github.js";
+import { postIssueComment, postPullRequestComment } from "./github.js";
 import { initProject } from "./init.js";
 import { auditLspReadiness, renderLspAuditMarkdown } from "./lspAudit.js";
 import { renderOssBriefMarkdown, runOssBrief } from "./ossBrief.js";
@@ -229,6 +229,33 @@ async function main(): Promise<void> {
     return;
   }
 
+  if (parsed.command === "issue-map-comment") {
+    const issueMapOptions = {
+      top: numberFlag(parsed.flags.top)
+    };
+    const repo = stringFlag(parsed.flags.repo);
+    const result = repo ?
+      await buildGithubIssueMap(repo, {
+        ...issueMapOptions,
+        state: githubIssueStateFlag(parsed.flags.state),
+        limit: numberFlag(parsed.flags.limit),
+        token: stringFlag(parsed.flags.token)
+      }) :
+      await buildIssueMap(parsed.targets, issueMapOptions);
+    const body = `<!-- trace-to-skill-issue-map-report -->\n${renderIssueMapMarkdown(result)}`;
+    const message = await postIssueComment({
+      body,
+      token: stringFlag(parsed.flags.token),
+      repository: stringFlag(parsed.flags["comment-repository"]) ?? stringFlag(parsed.flags.repository),
+      issueNumber: positiveIntegerFlag(parsed.flags["issue-number"], "--issue-number"),
+      dryRun: Boolean(parsed.flags["dry-run"]),
+      marker: "<!-- trace-to-skill-issue-map-report -->",
+      reportName: "trace-to-skill issue-map report"
+    });
+    process.stdout.write(`${message}\n`);
+    return;
+  }
+
   if (parsed.command === "guard-github-event") {
     const eventPath = parsed.targets[0] ?? stringFlag(parsed.flags.event) ?? process.env.GITHUB_EVENT_PATH;
     if (!eventPath) {
@@ -378,6 +405,7 @@ async function main(): Promise<void> {
       issueMapRepo: stringFlag(parsed.flags["issue-map-repo"]),
       issueMapState: githubIssueStateFlag(parsed.flags["issue-map-state"]),
       issueMapLimit: stringFlag(parsed.flags["issue-map-limit"]),
+      issueMapCommentIssue: stringFlag(parsed.flags["issue-map-comment-issue"]),
       comment: Boolean(parsed.flags.comment),
       sarif: Boolean(parsed.flags.sarif),
       force: Boolean(parsed.flags.force),
@@ -409,6 +437,19 @@ function numberFlag(value: string | boolean | undefined): number | undefined {
   const parsed = Number(value);
   if (!Number.isInteger(parsed) || parsed < 1 || parsed > 100) {
     throw new Error("--threshold must be an integer between 1 and 100");
+  }
+
+  return parsed;
+}
+
+function positiveIntegerFlag(value: string | boolean | undefined, flagName: string): number {
+  if (typeof value !== "string" || !/^[0-9]{1,10}$/.test(value)) {
+    throw new Error(`${flagName} must be a positive integer.`);
+  }
+
+  const parsed = Number(value);
+  if (!Number.isSafeInteger(parsed) || parsed < 1) {
+    throw new Error(`${flagName} must be a positive integer.`);
   }
 
   return parsed;
@@ -530,6 +571,7 @@ Usage:
   trace-to-skill oss-brief [repo-dir] [--threshold 85] [--format markdown|json] [--output docs/OPENAI_OSS_BRIEF.md]
   trace-to-skill issue-map <github-issues.json-or-md> [--top 12] [--format markdown|json] [--output codex-issue-map.md]
   trace-to-skill issue-map --repo openai/codex [--state open|closed|all] [--limit 100] [--token $GITHUB_TOKEN] [--format markdown|json]
+  trace-to-skill issue-map-comment --repo openai/codex --issue-number 8 [--comment-repository owner/repo] [--state open|closed|all] [--limit 100] [--dry-run] [--token $GITHUB_TOKEN]
   trace-to-skill guard-github-event [event.json] [--threshold 80] [--format markdown|json] [--output report.md]
   trace-to-skill guard-patch <patch-file> [--root repo-dir] [--format markdown|json] [--output report.md]
   trace-to-skill session-audit [codex-home-or-sessions-dir] [--large-mb 10] [--huge-line-kb 512] [--format markdown|json]
@@ -540,7 +582,7 @@ Usage:
   trace-to-skill compare --before <old-run> --after <new-run> [--format markdown|json]
   trace-to-skill doctor [repo-dir] [--threshold 85] [--format markdown|json|comment] [--output report.md]
   trace-to-skill doctor-comment [repo-dir] [--threshold 85] [--dry-run] [--token $GITHUB_TOKEN]
-  trace-to-skill init [--traces runs] [--threshold 80] [--doctor-threshold 85] [--issue-map-repo owner/name] [--issue-map-state open|closed|all] [--issue-map-limit 100] [--comment] [--sarif] [--dry-run]
+  trace-to-skill init [--traces runs] [--threshold 80] [--doctor-threshold 85] [--issue-map-repo owner/name] [--issue-map-state open|closed|all] [--issue-map-limit 100] [--issue-map-comment-issue 8] [--comment] [--sarif] [--dry-run]
 
 Examples:
   trace-to-skill demo
@@ -564,6 +606,7 @@ Examples:
   gh issue list --repo openai/codex --state open --limit 100 --json number,title,body,url,labels,comments,createdAt,updatedAt > codex-issues.json
   trace-to-skill issue-map codex-issues.json --output codex-issue-map.md
   trace-to-skill issue-map --repo openai/codex --limit 100 --output codex-issue-map.md
+  trace-to-skill issue-map-comment --repo openai/codex --issue-number 8 --comment-repository owner/repo --dry-run
   trace-to-skill guard-github-event "$GITHUB_EVENT_PATH"
   trace-to-skill guard-patch ./change.patch --root .
   trace-to-skill session-audit ~/.codex --format json
@@ -576,6 +619,7 @@ Examples:
   trace-to-skill doctor-comment . --threshold 85
   trace-to-skill init --comment --sarif
   trace-to-skill init --issue-map-repo openai/codex --issue-map-state all --issue-map-limit 100
+  trace-to-skill init --issue-map-repo openai/codex --issue-map-comment-issue 8
 `);
 }
 

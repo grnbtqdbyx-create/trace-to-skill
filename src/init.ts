@@ -9,6 +9,7 @@ export interface InitOptions {
   issueMapRepo?: string;
   issueMapState?: "open" | "closed" | "all";
   issueMapLimit?: string;
+  issueMapCommentIssue?: string;
   comment?: boolean;
   sarif?: boolean;
   force?: boolean;
@@ -29,6 +30,7 @@ export async function initProject(options: InitOptions = {}): Promise<InitResult
   const issueMapRepo = options.issueMapRepo ? normalizeRepo(options.issueMapRepo) : undefined;
   const issueMapState = options.issueMapState ?? "open";
   const issueMapLimit = normalizeThreshold(options.issueMapLimit ?? "100");
+  const issueMapCommentIssue = options.issueMapCommentIssue ? normalizePositiveInteger(options.issueMapCommentIssue, "--issue-map-comment-issue") : undefined;
   const files = buildInitFiles({
     traces,
     threshold,
@@ -36,6 +38,7 @@ export async function initProject(options: InitOptions = {}): Promise<InitResult
     issueMapRepo,
     issueMapState,
     issueMapLimit,
+    issueMapCommentIssue,
     comment: Boolean(options.comment),
     sarif: Boolean(options.sarif)
   });
@@ -86,6 +89,7 @@ interface InitFileOptions {
   issueMapRepo?: string;
   issueMapState: "open" | "closed" | "all";
   issueMapLimit: string;
+  issueMapCommentIssue?: string;
   comment: boolean;
   sarif: boolean;
 }
@@ -113,7 +117,7 @@ function buildInitFiles(options: InitFileOptions): InitFile[] {
   if (options.issueMapRepo) {
     files.push({
       path: ".github/workflows/codex-issue-radar.yml",
-      content: renderIssueRadarWorkflow(options.issueMapRepo, options.issueMapState, options.issueMapLimit)
+      content: renderIssueRadarWorkflow(options.issueMapRepo, options.issueMapState, options.issueMapLimit, options.issueMapCommentIssue)
     });
   }
 
@@ -144,7 +148,7 @@ function renderCodexReadinessWorkflow(doctorThreshold: string, comment: boolean)
     "    steps:",
     "      - uses: actions/checkout@v5",
     "      - id: trace-to-skill",
-    "        uses: grnbtqdbyx-create/trace-to-skill@v0.1.89",
+    "        uses: grnbtqdbyx-create/trace-to-skill@v0.1.90",
     "        with:",
     "          mode: all",
     `          doctor-threshold: "${doctorThreshold}"`,
@@ -173,7 +177,7 @@ function renderAgentLearningWorkflow(traces: string, threshold: string, comment:
   const steps = [
     "      - uses: actions/checkout@v5",
     "      - id: trace-to-skill",
-    "        uses: grnbtqdbyx-create/trace-to-skill@v0.1.89",
+    "        uses: grnbtqdbyx-create/trace-to-skill@v0.1.90",
     "        with:",
     "          mode: traces",
     `          traces: ${traces}`,
@@ -204,7 +208,7 @@ function renderAgentLearningWorkflow(traces: string, threshold: string, comment:
   ].join("\n")}\n`;
 }
 
-function renderIssueRadarWorkflow(repo: string, state: "open" | "closed" | "all", limit: string): string {
+function renderIssueRadarWorkflow(repo: string, state: "open" | "closed" | "all", limit: string, commentIssue: string | undefined): string {
   return `${[
     "name: Codex Issue Radar",
     "",
@@ -218,23 +222,25 @@ function renderIssueRadarWorkflow(repo: string, state: "open" | "closed" | "all"
     "    runs-on: ubuntu-latest",
     "    permissions:",
     "      contents: read",
-    "      issues: read",
+    commentIssue ? "      issues: write" : "      issues: read",
     "    steps:",
     "      - uses: actions/checkout@v5",
     "      - id: issue-map",
-    "        uses: grnbtqdbyx-create/trace-to-skill@v0.1.89",
+    "        uses: grnbtqdbyx-create/trace-to-skill@v0.1.90",
     "        with:",
     "          mode: issue-map",
     `          issue-map-repo: ${repo}`,
     `          issue-map-state: ${state}`,
     `          issue-map-limit: "${limit}"`,
+    commentIssue ? '          issue-map-comment: "true"' : undefined,
+    commentIssue ? `          issue-map-comment-issue: "${commentIssue}"` : undefined,
     "          github-token: ${{ github.token }}",
     '          job-summary: "true"',
     "      - run: |",
     "          echo \"Issue radar analyzed ${{ steps.issue-map.outputs.issue-map-issues }} issues\"",
     "          echo \"Issue radar matched ${{ steps.issue-map.outputs.issue-map-matched }} issues\"",
     "          echo \"Top failure class is ${{ steps.issue-map.outputs.issue-map-top-kind }}\""
-  ].join("\n")}\n`;
+  ].filter((line): line is string => Boolean(line)).join("\n")}\n`;
 }
 
 function renderRunsReadme(): string {
@@ -298,4 +304,17 @@ function normalizeRepo(value: string): string {
   }
 
   return value;
+}
+
+function normalizePositiveInteger(value: string, flagName: string): string {
+  if (!/^[0-9]{1,10}$/.test(value)) {
+    throw new Error(`${flagName} must be a positive integer.`);
+  }
+
+  const parsed = Number(value);
+  if (!Number.isSafeInteger(parsed) || parsed < 1) {
+    throw new Error(`${flagName} must be a positive integer.`);
+  }
+
+  return String(parsed);
 }

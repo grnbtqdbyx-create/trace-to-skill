@@ -45,6 +45,18 @@ inputs:
     description: Maximum issues to fetch when issue-map-repo is set, from 1 to 100.
     required: false
     default: "100"
+  issue-map-comment:
+    description: Post or update the issue-map report as a GitHub issue comment.
+    required: false
+    default: "false"
+  issue-map-comment-issue:
+    description: Issue number to update when issue-map-comment is true.
+    required: false
+    default: ""
+  issue-map-comment-repository:
+    description: Optional owner/repo that receives the issue-map comment. Defaults to the workflow repository.
+    required: false
+    default: ""
   threshold:
     description: Minimum passing score.
     required: false
@@ -54,7 +66,7 @@ inputs:
     required: false
     default: "80"
   github-token:
-    description: GitHub token used to post or update a pull request comment.
+    description: GitHub token used to post or update pull request and issue comments.
     required: false
     default: ""
   comment:
@@ -368,6 +380,23 @@ runs:
           cat trace-to-skill-issue-map.md
         } >> "$GITHUB_STEP_SUMMARY"
       if: always() && inputs.job-summary == 'true' && inputs.mode == 'issue-map'
+      shell: bash
+    - run: |
+        set -euo pipefail
+        if [ -z "${{ inputs.issue-map-comment-issue }}" ]; then
+          echo "::error::issue-map-comment-issue is required when issue-map-comment is true"
+          exit 1
+        fi
+        comment_args=(--issue-number "${{ inputs.issue-map-comment-issue }}" --token "${{ inputs.github-token }}")
+        if [ -n "${{ inputs.issue-map-comment-repository }}" ]; then
+          comment_args+=(--comment-repository "${{ inputs.issue-map-comment-repository }}")
+        fi
+        if [ -n "${{ inputs.issue-map-repo }}" ]; then
+          node "$TRACE_TO_SKILL_CLI" issue-map-comment --repo "${{ inputs.issue-map-repo }}" --state "${{ inputs.issue-map-state }}" --limit "${{ inputs.issue-map-limit }}" "${comment_args[@]}"
+        else
+          node "$TRACE_TO_SKILL_CLI" issue-map-comment "${{ inputs.issue-map-path }}" "${comment_args[@]}"
+        fi
+      if: inputs.mode == 'issue-map' && inputs.issue-map-comment == 'true'
       shell: bash
     - id: scorecard
       run: |

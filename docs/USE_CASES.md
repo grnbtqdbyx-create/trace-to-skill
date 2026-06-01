@@ -59,7 +59,7 @@ What it proves:
 Recommended CI surface:
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.89
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.90
   with:
     mode: all
     doctor-threshold: "85"
@@ -77,6 +77,7 @@ Use this when you want to see what Codex users are actually complaining about on
 npx trace-to-skill issue-map --repo openai/codex --state all --limit 100 --output codex-issue-radar.md
 npx trace-to-skill issue-map --repo openai/codex --format json
 npx trace-to-skill init --issue-map-repo openai/codex --issue-map-state all --issue-map-limit 100
+npx trace-to-skill issue-map-comment --repo openai/codex --issue-number 8 --comment-repository owner/name --dry-run
 gh issue list --repo openai/codex --state open --limit 100 --json number,title,body,url,labels,comments,createdAt,updatedAt > codex-issues.json
 npx trace-to-skill issue-map codex-issues.json --output codex-issue-map.md
 npx trace-to-skill issue-map codex-issues.json --format json
@@ -88,6 +89,7 @@ What it proves:
 - high-comment pain points are mapped to deterministic failure classes such as token burn, remote compact, MCP discovery, usage buckets, context drift, sandbox, and resource leaks
 - maintainers get example issue links and evidence-rule prompts for the next support artifact
 - `init --issue-map-repo owner/name` can install a weekly/manual Codex Issue Radar workflow without committing generated reports
+- `issue-map-comment` can update a stable tracking issue comment so scheduled radar output remains visible after the Action summary scrolls away
 - OSS builders can show that new work is grounded in real GitHub demand instead of generic agent demos
 
 ## 4. AGENTS.md And MCP Hygiene

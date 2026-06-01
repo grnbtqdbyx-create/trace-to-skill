@@ -174,7 +174,7 @@ function buildEvidence(
     `Codex readiness doctor: ${scorecard.doctor.status}, ${scorecard.doctor.score}/100, ${scorecard.doctor.failedChecks} failed checks.`,
     `Public fixture benchmark: ${scorecard.benchmark.status}, ${scorecard.benchmark.cases} cases.`,
     "GitHub issue demand mining: issue-map ranks exported OpenAI/Codex issues by failure class, comments, reactions, and evidence gaps.",
-    "Weekly Codex Issue Radar: init --issue-map-repo owner/name scaffolds a scheduled Action that fetches live GitHub issues and publishes the pain map to the job summary.",
+    "Weekly Codex Issue Radar: init --issue-map-repo owner/name scaffolds a scheduled Action that fetches live GitHub issues and publishes the pain map to the job summary or a stable tracking issue comment.",
     "Maintainer control: generated rules are suggestions, evidence is line-linked, and secrets can be redacted before sharing."
   ];
 }

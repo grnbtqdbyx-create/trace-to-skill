@@ -24,6 +24,7 @@ Install a weekly radar in any repository:
 
 ```bash
 npx trace-to-skill init --issue-map-repo openai/codex --issue-map-state all --issue-map-limit 100
+npx trace-to-skill init --issue-map-repo openai/codex --issue-map-comment-issue 8
 ```
 
 Check whether a repo is Codex-ready:
@@ -537,7 +538,7 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v5
-      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.89
+      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.90
         with:
           mode: all
           doctor-threshold: "85"
@@ -586,7 +587,7 @@ Composite action usage:
 
 ```yaml
 - id: trace-to-skill
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.89
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.90
   with:
     mode: all
     doctor-threshold: "85"
@@ -604,12 +605,14 @@ Issue-map action usage for direct GitHub issue demand mining:
 
 ```yaml
 - id: codex-issue-map
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.89
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.90
   with:
     mode: issue-map
     issue-map-repo: openai/codex
     issue-map-state: all
     issue-map-limit: "100"
+    issue-map-comment: "true"
+    issue-map-comment-issue: "8"
     job-summary: "true"
     github-token: ${{ github.token }}
 - run: echo "Top Codex issue cluster is ${{ steps.codex-issue-map.outputs.issue-map-top-kind }}"
@@ -648,7 +651,7 @@ Action outputs:
 
 By default, generated reports are also appended to the GitHub Actions Job Summary. Set `job-summary: "false"` to disable that UI output.
 
-Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.89` executes that release's checked-out source instead of pulling the default branch at runtime.
+Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.90` executes that release's checked-out source instead of pulling the default branch at runtime.
 
 ## Codex Skill
 

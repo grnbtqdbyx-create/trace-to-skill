@@ -13,7 +13,7 @@ export { compareAnalyses, evaluate } from "./eval.js";
 export { analyzeGithubEventContext, extractGithubContextInputs } from "./githubContext.js";
 export { buildGithubIssueMap, buildIssueMap, renderIssueMapMarkdown } from "./issueMap.js";
 export type { GithubIssueMapOptions, IssueMapIssue, IssueMapKindSummary, IssueMapOptions, IssueMapResult } from "./issueMap.js";
-export { postPullRequestComment } from "./github.js";
+export { postIssueComment, postPullRequestComment } from "./github.js";
 export { initProject } from "./init.js";
 export { auditLspReadiness, renderLspAuditMarkdown } from "./lspAudit.js";
 export type { LspAuditLanguage, LspAuditResult, LspAuditStatus } from "./lspAudit.js";

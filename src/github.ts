@@ -10,6 +10,10 @@ interface GitHubCommentOptions {
   reportName?: string;
 }
 
+interface GitHubIssueCommentOptions extends Omit<GitHubCommentOptions, "eventPath"> {
+  issueNumber: number;
+}
+
 interface ExistingComment {
   id: number;
   body?: string;
@@ -62,6 +66,48 @@ export async function postPullRequestComment(options: GitHubCommentOptions): Pro
   });
 
   return `posted ${reportName} comment on ${repository}#${pullNumber}`;
+}
+
+export async function postIssueComment(options: GitHubIssueCommentOptions): Promise<string> {
+  const token = options.token ?? process.env.GITHUB_TOKEN;
+  const repository = options.repository ?? process.env.GITHUB_REPOSITORY;
+  const marker = options.marker ?? MARKER;
+  const reportName = options.reportName ?? "trace-to-skill report";
+
+  if (!repository) {
+    throw new Error("GITHUB_REPOSITORY is required for issue comments.");
+  }
+
+  if (!Number.isInteger(options.issueNumber) || options.issueNumber < 1) {
+    throw new Error("--issue-number must be a positive integer.");
+  }
+
+  if (options.dryRun) {
+    return `dry-run: would post ${reportName} to ${repository}#${options.issueNumber}`;
+  }
+
+  if (!token) {
+    throw new Error("GITHUB_TOKEN is required for issue comments.");
+  }
+
+  const commentsUrl = `https://api.github.com/repos/${repository}/issues/${options.issueNumber}/comments`;
+  const comments = (await githubRequest(commentsUrl, token)) as ExistingComment[];
+  const existing = comments.find((comment) => comment.user?.type === "Bot" && comment.body?.includes(marker));
+
+  if (existing) {
+    await githubRequest(`https://api.github.com/repos/${repository}/issues/comments/${existing.id}`, token, {
+      method: "PATCH",
+      body: JSON.stringify({ body: options.body })
+    });
+    return `updated ${reportName} comment on ${repository}#${options.issueNumber}`;
+  }
+
+  await githubRequest(commentsUrl, token, {
+    method: "POST",
+    body: JSON.stringify({ body: options.body })
+  });
+
+  return `posted ${reportName} comment on ${repository}#${options.issueNumber}`;
 }
 
 async function resolvePullRequestNumber(eventPath: string | undefined): Promise<number | undefined> {
