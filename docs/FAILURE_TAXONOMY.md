@@ -128,6 +128,14 @@ Common signals include a forked conversation carrying the full parent transcript
 
 The fix is to capture Codex app/CLI/extension version, surface, model, fork source thread id, forked thread id, fork action timestamp, fork boundary marker, `input_tokens` and `cached_input_tokens` before and after the fork, `prompt_cache_key` before and after, cache hit rate, duplicated parent-turn or tool-transcript examples with line ids, whether new files were read before the token jump, compaction state, subagent or `fork_context` history, minimal reproduction steps, and whether a fresh thread or non-fork continuation avoids the bloat.
 
+## Codex Usage Bucket Confusion
+
+Codex usage reports can be technically correct but still impossible for users to interpret. When a popover shows 5h and weekly percentages without saying whether they are used or remaining, rolling or calendar-based, account-wide or workspace-local, users cannot tell whether the display is a metering bug or expected quota accounting.
+
+Common signals include `Usage remaining`, compact rows like `5h 97%` and `Weekly 95%`, reset dates such as `Jun 7`, first-window-of-week confusion, labels that do not say percent remaining versus percent used, unclear rolling 7-day versus natural-week semantics, and uncertainty about whether app, CLI, cloud tasks, reviews, other devices, or other workspaces share the weekly pool.
+
+The fix is to capture subscription plan, account/workspace, app/CLI version, surface, timestamp, screenshot or redacted popover text, 5h percentage, weekly percentage, reset time/date, whether values are used or remaining, whether weekly is rolling or calendar-based, whether weekly includes app/CLI/cloud/review usage, `/status` output, usage dashboard state, and whether other devices or workspaces show the same values.
+
 ## Codex Subagent Prompt Leakage
 
 Codex MultiAgentV2 child agents can fail the task boundary even when the parent asks for isolated children. When `spawn_agent` with `fork_turns: "none"` records the delegated task as an assistant/commentary JSON envelope, or a same-turn parallel child sees a sibling prompt, independent review, QA, and security lanes are no longer independent.

@@ -109,6 +109,12 @@ const DEMO_SCENARIOS: DemoScenario[] = [
     description: "Completed, closed, stale, or interrupted subagents diverge between UI, live registry, persisted state, quota, and parent discoverability."
   },
   {
+    id: "usage-bucket-confusion",
+    title: "Codex usage bucket confusion",
+    fixture: "fixtures/codex-usage-bucket-confusion.md",
+    description: "Usage popovers show 5h and weekly percentages without clear remaining/used, rolling/calendar, or account/workspace scope."
+  },
+  {
     id: "token-burn",
     title: "Codex token burn",
     fixture: "fixtures/codex-token-burn.md",
@@ -205,6 +211,7 @@ export function renderDemoMarkdown(result: DemoResult): string {
     "trace-to-skill demo hooks-runtime",
     "trace-to-skill demo terminal-output-integrity",
     "trace-to-skill demo subagent-lifecycle",
+    "trace-to-skill demo usage-bucket-confusion",
     "trace-to-skill demo file-tree-ui",
     "trace-to-skill demo usage-reset-drift",
     "```",
@@ -239,6 +246,7 @@ export function renderDemoScenarioList(scenarios = listDemoScenarios()): string 
     "trace-to-skill demo hooks-runtime",
     "trace-to-skill demo terminal-output-integrity",
     "trace-to-skill demo subagent-lifecycle",
+    "trace-to-skill demo usage-bucket-confusion",
     "trace-to-skill demo --list",
     "```",
     ""

@@ -95,6 +95,7 @@ Suggested rule:
 - `mcp-streamable-http`: Streamable HTTP or SSE MCP servers pass initialize or tools/list but fail parsing, handshakes, auth gating, stale sessions, or reconnects.
 - `hooks-runtime`: Hooks duplicate, stop firing, warn about stale config, skip surfaces, or become hard to manage in Desktop settings.
 - `terminal-output-integrity`: Terminal scrollback, streamed output, or transcript rendering drops, overwrites, truncates, or makes lines inaccessible.
+- `usage-bucket-confusion`: Usage popovers show 5h and weekly percentages without clear remaining/used, rolling/calendar, or account/workspace scope.
 - `token-burn`: Usage drains from background polling, idle activity, compaction loops, retries, or cached-heavy turns.
 - `patch-overwrite`: `apply_patch` accepts `*** Add File` for an existing path, turning a create operation into a silent overwrite.
 - `sensitive-files`: Secrets, local credentials, production env files, or private databases enter agent context.
@@ -118,6 +119,7 @@ trace-to-skill demo mcp-streamable-http
 trace-to-skill demo hooks-runtime
 trace-to-skill demo terminal-output-integrity
 trace-to-skill demo subagent-lifecycle
+trace-to-skill demo usage-bucket-confusion
 trace-to-skill demo file-tree-ui
 trace-to-skill demo usage-reset-drift
 ```

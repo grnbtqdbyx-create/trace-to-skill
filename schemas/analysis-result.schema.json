@@ -92,6 +92,7 @@
         "codex_plugin_runtime",
         "codex_file_tree_ui",
         "codex_session_state",
+        "codex_usage_bucket_confusion",
         "codex_token_burn",
         "codex_resource_leak",
         "codex_tool_call_integrity",

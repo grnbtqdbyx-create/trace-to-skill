@@ -658,6 +658,24 @@ const RULES: RuleDefinition[] = [
     suggestedSkill: "codex-session-state-triage"
   },
   {
+    kind: "codex_usage_bucket_confusion",
+    severity: "high",
+    title: "Codex usage bucket scope or percentage confusion",
+    why: "Users need usage UI evidence to distinguish percent remaining from percent used, short 5h windows from weekly pools, rolling windows from calendar resets, and account-wide usage from local workspace activity.",
+    patterns: [
+      /\bUsage remaining\b.{0,160}\b5h\b.{0,80}\b\d{1,3}%\b.{0,160}\bWeekly\b.{0,80}\b\d{1,3}%\b/i,
+      /\b5h\b.{0,80}\b\d{1,3}%\b.{0,160}\bWeekly\b.{0,80}\b\d{1,3}%\b.{0,160}\b(remaining|usage popover|reset|Jun|rolling|weekly bucket)\b/i,
+      /\busage popover\b.{0,240}\b(5h|five-hour|weekly|remaining percentage|percent remaining|percent used|reset date|bucket)\b/i,
+      /\b(percent remaining|percent used)\b.{0,240}\b(5h|weekly|usage|popover|bucket|quota)\b/i,
+      /\b(weekly bucket|weekly pool|weekly usage)\b.{0,240}\b(rolling 7-day|natural week|calendar week|account-wide|workspace|device|CLI|cloud tasks?|reviews?)\b/i,
+      /\b(5h|five-hour|short-term window)\b.{0,160}\b(weekly|weekly pool|weekly bucket)\b.{0,160}\b(confusing|contradictory|inconsistent|under-explained|metering bug)\b/i,
+      /\bUsage remaining\b.{0,220}\b(does not say|unclear|ambiguous|scope|semantics|percent used|percent remaining)\b/i
+    ],
+    suggestedRule:
+      "When reporting Codex usage bucket confusion, capture subscription plan, account/workspace, app/CLI version, surface, timestamp, screenshot or redacted popover text, 5h percentage, weekly percentage, reset time/date, whether values are used or remaining, whether weekly is rolling or calendar-based, whether weekly includes app/CLI/cloud/review usage, `/status` output, usage dashboard state, and whether other devices or workspaces show the same values.",
+    suggestedSkill: "codex-usage-bucket-triage"
+  },
+  {
     kind: "codex_token_burn",
     severity: "high",
     title: "Codex token burn or usage-drain loop",

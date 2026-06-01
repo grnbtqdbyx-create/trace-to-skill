@@ -66,6 +66,7 @@ Use it when you need to:
 - **Audit bundled plugin drift:** run `trace-to-skill plugin-audit ~/.codex --app /Applications/Codex.app --format json` to check Browser, Chrome, Computer Use, bundled marketplace, plugin cache, manifest, helper app, `CODEX_HOME`, and unsupported feature-flag drift without posting raw logs.
 - **Bundle Codex diagnostics safely:** run `trace-to-skill diagnostics-bundle ~/.codex --output codex-diagnostics` to create a metadata-only support folder with manifest, README, config, plugin, and session audit reports while excluding raw logs, SQLite state, raw config, and transcripts.
 - **Package Codex usage evidence:** run `trace-to-skill usage-evidence ./usage-notes.md --output usage-evidence.md` to turn `/status`, reset tables, usage-limit errors, token totals, prompt-cache collapse rows, rapid drain experiments, and orchestration-overhead clues into a redaction-aware usage receipt.
+- **Clarify usage bucket reports:** run `trace-to-skill codex-report ./runs` when the usage popover shows confusing 5h vs weekly percentages and does not explain remaining/used, rolling/calendar, or account/workspace scope.
 - **Package Codex process evidence:** run `trace-to-skill process-audit ./process-notes.md --output process-audit.md` to turn Task Manager, System Informer, `Get-CimInstance`, `ps`, or `top` snippets into a privacy-aware report for PowerShell CIM polling, stale process-manager entries, high CPU helpers, and runaway renderers.
 - **Bookmark a workspace before agent edits:** run `trace-to-skill checkpoint . --output .trace-to-skill/checkpoints/before-codex` to store git diffs plus copied changed/untracked files before Codex, Claude, Cursor, or another agent touches a dirty repo. It does not auto-restore or run destructive commands.
 - **Share failed traces safely:** run `trace-to-skill redact ./runs --output redacted-runs` before publishing anonymized failure fixtures.
@@ -234,6 +235,7 @@ Trace analysis detects run-level failures:
 | Codex plugin runtime | Browser, Computer Use, Chrome, connectors, or bundled plugins are advertised but fail because helper paths, plugin-list schemas, or cache state drift |
 | Codex file tree UI | Desktop file tree, floating file panel, or file preview cannot be revealed, refreshes stale entries, or loses workspace navigation |
 | Codex session state | Resume, history rendering, context compression, archived chats, or local SQLite/global-state migrations break long sessions |
+| Codex usage bucket confusion | Usage popover 5h and weekly percentages do not explain remaining/used, rolling/calendar, or account/workspace scope |
 | Codex token burn | Background polling, idle app activity, compaction/replay, cached-token-heavy turns, or retry loops drain usage unexpectedly |
 | Codex usage reset drift | Weekly or 5-hour reset anchors move unexpectedly, saved usage is lost, or reset display differs from enforcement |
 | Codex resource leak | Desktop/app/extension/helper processes, shell snapshots, renderer, GPU, or log loops keep consuming local resources |
@@ -280,6 +282,7 @@ trace-to-skill demo connector-auth-cache
 trace-to-skill demo mcp-discovery-mismatch
 trace-to-skill demo mcp-streamable-http
 trace-to-skill demo hooks-runtime
+trace-to-skill demo usage-bucket-confusion
 trace-to-skill demo terminal-output-integrity
 trace-to-skill demo subagent-lifecycle
 trace-to-skill demo patch-overwrite
@@ -515,7 +518,7 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v5
-      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.83
+      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.84
         with:
           mode: all
           doctor-threshold: "85"
@@ -564,7 +567,7 @@ Composite action usage:
 
 ```yaml
 - id: trace-to-skill
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.83
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.84
   with:
     mode: all
     doctor-threshold: "85"
@@ -606,7 +609,7 @@ Action outputs:
 
 By default, generated reports are also appended to the GitHub Actions Job Summary. Set `job-summary: "false"` to disable that UI output.
 
-Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.83` executes that release's checked-out source instead of pulling the default branch at runtime.
+Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.84` executes that release's checked-out source instead of pulling the default branch at runtime.
 
 ## Codex Skill
 

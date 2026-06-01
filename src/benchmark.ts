@@ -216,6 +216,12 @@ const BENCHMARK_CASES: BenchmarkCaseDefinition[] = [
     expectedKinds: ["codex_session_state", "weak_evidence"]
   },
   {
+    id: "codex-usage-bucket-confusion",
+    title: "Codex usage bucket scope and percentage confusion",
+    fixture: "fixtures/codex-usage-bucket-confusion.md",
+    expectedKinds: ["codex_usage_bucket_confusion", "weak_evidence"]
+  },
+  {
     id: "codex-token-burn",
     title: "Codex token burn and usage-drain loop",
     fixture: "fixtures/codex-token-burn.md",
