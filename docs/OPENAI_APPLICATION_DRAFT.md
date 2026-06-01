@@ -22,6 +22,7 @@ Current proof points:
 - Public npm package for one-command use.
 - npm Trusted Publishing workflow prepared to reduce manual release friction and avoid long-lived publish tokens.
 - Crawler-friendly `llms.txt` and `docs/DISCOVERY.md` for bot/research discovery.
+- Public `docs/CODEX_ISSUE_RADAR.md` demo generated from live `openai/codex` issues.
 - Public `docs/CODEX_ISSUE_MAP.md` that maps active Codex issue clusters to deterministic report commands.
 - CI-backed TypeScript CLI.
 - Codex-style JSONL parsing.
@@ -90,7 +91,7 @@ Current proof points:
 - SARIF output for GitHub code scanning.
 - Before/after eval comparison with keep/revise/reject decisions.
 - One-command repository setup via `trace-to-skill init`.
-- Public release v0.1.88.
+- Public release v0.1.89.
 - Current GitHub scorecard: 100/100 Codex-ready, benchmark passing.
 
 500-character version:

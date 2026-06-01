@@ -12,6 +12,7 @@ This page is written for maintainers, search engines, package indexes, and AI re
 - npm: https://www.npmjs.com/package/trace-to-skill
 - Latest release: https://github.com/grnbtqdbyx-create/trace-to-skill/releases/latest
 - Use cases: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/USE_CASES.md
+- Codex Issue Radar demo: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/CODEX_ISSUE_RADAR.md
 - Codex issue map: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/CODEX_ISSUE_MAP.md
 - Scorecard: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/SCORECARD.md
 - OpenAI OSS strategy: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/OPENAI_OSS_STRATEGY.md
@@ -98,7 +99,8 @@ npx trace-to-skill plugin-audit ~/.codex --app /Applications/Codex.app --format 
 npx trace-to-skill diagnostics-bundle ~/.codex --output codex-diagnostics
 npx trace-to-skill usage-evidence ./usage-notes.md --output usage-evidence.md
 npx trace-to-skill process-audit ./process-notes.md --output process-audit.md
-npx trace-to-skill issue-map --repo openai/codex --limit 100 --output codex-issue-map.md
+npx trace-to-skill issue-map --repo openai/codex --state all --limit 100 --output codex-issue-radar.md
+npx trace-to-skill init --issue-map-repo openai/codex --issue-map-state all --issue-map-limit 100
 npx trace-to-skill issue-map codex-issues.json --output codex-issue-map.md
 npx trace-to-skill checkpoint . --output .trace-to-skill/checkpoints/before-codex
 npx trace-to-skill redact ./runs --output redacted-runs
@@ -130,6 +132,7 @@ npx trace-to-skill suggest ./runs --target agents-md
 - OpenAI/Codex issue-ready Markdown from `trace-to-skill codex-report`
 - Packaged zero-setup Codex issue-report demo from `trace-to-skill demo`
 - OpenAI OSS support/application brief from `trace-to-skill oss-brief`
+- Live Codex Issue Radar demo in `docs/CODEX_ISSUE_RADAR.md`
 - Codex issue-cluster mapping in `docs/CODEX_ISSUE_MAP.md`
 - GitHub issue demand mining in `docs/CODEX_GITHUB_ISSUE_PAIN_MAP.md`
 - GitHub Action outputs for doctor, AGENTS lint, GitHub context guard, benchmark, and scorecard modes

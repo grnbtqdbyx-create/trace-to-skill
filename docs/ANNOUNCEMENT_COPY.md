@@ -137,6 +137,7 @@ I’m especially looking for anonymized failed agent traces and feedback from OS
 
 Repo: https://github.com/grnbtqdbyx-create/trace-to-skill
 npm: https://www.npmjs.com/package/trace-to-skill
+Codex Issue Radar demo: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/CODEX_ISSUE_RADAR.md
 Codex issue map: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/CODEX_ISSUE_MAP.md
 Demo output: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/DEMO.md
 ```

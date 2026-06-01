@@ -62,6 +62,7 @@ Secondary headline:
 - [x] Codex usage reset drift detector for moving weekly reset anchors and saved-usage loss reports
 - [x] Codex resource-leak detector for high CPU/GPU/RAM, orphaned shell snapshots, renderer/helper loops, and thinking-animation GPU reports
 - [x] Codex issue map linking active issue clusters to deterministic report commands
+- [x] Live Codex Issue Radar demo generated from public `openai/codex` issues
 - [x] Sensitive-file access detector for `.env`, private keys, package auth files, cloud credentials, and local databases
 - [x] Codex file tree/workspace navigation UI detector for `View > Toggle File Tree`, stale file panels, and preview failures
 
@@ -69,9 +70,10 @@ Secondary headline:
 
 - Repository: https://github.com/grnbtqdbyx-create/trace-to-skill
 - npm: https://www.npmjs.com/package/trace-to-skill
-- Latest release: https://github.com/grnbtqdbyx-create/trace-to-skill/releases/tag/v0.1.88
+- Latest release: https://github.com/grnbtqdbyx-create/trace-to-skill/releases/tag/v0.1.89
 - CI: passing on `main`
 - Codex issue map: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/CODEX_ISSUE_MAP.md
+- Codex Issue Radar demo: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/CODEX_ISSUE_RADAR.md
 - Demo: https://github.com/grnbtqdbyx-create/trace-to-skill/blob/main/docs/DEMO.md
 - Profile README: https://github.com/grnbtqdbyx-create/grnbtqdbyx-create
 

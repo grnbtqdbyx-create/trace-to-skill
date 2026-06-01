@@ -59,7 +59,7 @@ What it proves:
 Recommended CI surface:
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.88
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.89
   with:
     mode: all
     doctor-threshold: "85"
@@ -74,7 +74,7 @@ Recommended CI surface:
 Use this when you want to see what Codex users are actually complaining about on GitHub before choosing the next fixture, report template, or diagnostic helper.
 
 ```bash
-npx trace-to-skill issue-map --repo openai/codex --limit 100 --output codex-issue-map.md
+npx trace-to-skill issue-map --repo openai/codex --state all --limit 100 --output codex-issue-radar.md
 npx trace-to-skill issue-map --repo openai/codex --format json
 npx trace-to-skill init --issue-map-repo openai/codex --issue-map-state all --issue-map-limit 100
 gh issue list --repo openai/codex --state open --limit 100 --json number,title,body,url,labels,comments,createdAt,updatedAt > codex-issues.json
