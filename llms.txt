@@ -122,10 +122,12 @@ npx trace-to-skill init --comment --sarif
 npx trace-to-skill init --issue-map-repo openai/codex --issue-map-state all --issue-map-limit 100
 ```
 
+`issue-map` JSON and Markdown include a Maintainer Roadmap: the highest-priority failure classes, the next public artifact to build, and the exact `trace-to-skill` command that generates the supporting evidence.
+
 ## GitHub Action
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.90
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.91
   with:
     mode: all
     doctor-threshold: "85"
@@ -138,7 +140,7 @@ npx trace-to-skill init --issue-map-repo openai/codex --issue-map-state all --is
 ## Weekly Codex Issue Radar
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.90
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.91
   with:
     mode: issue-map
     issue-map-repo: openai/codex

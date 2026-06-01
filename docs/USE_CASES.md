@@ -59,7 +59,7 @@ What it proves:
 Recommended CI surface:
 
 ```yaml
-- uses: grnbtqdbyx-create/trace-to-skill@v0.1.90
+- uses: grnbtqdbyx-create/trace-to-skill@v0.1.91
   with:
     mode: all
     doctor-threshold: "85"
@@ -87,7 +87,7 @@ What it proves:
 
 - public issue clusters can be ranked without private telemetry
 - high-comment pain points are mapped to deterministic failure classes such as token burn, remote compact, MCP discovery, usage buckets, context drift, sandbox, and resource leaks
-- maintainers get example issue links and evidence-rule prompts for the next support artifact
+- maintainers get example issue links, evidence-rule prompts, and a Maintainer Roadmap with the next artifact plus the command to generate it
 - `init --issue-map-repo owner/name` can install a weekly/manual Codex Issue Radar workflow without committing generated reports
 - `issue-map-comment` can update a stable tracking issue comment so scheduled radar output remains visible after the Action summary scrolls away
 - OSS builders can show that new work is grounded in real GitHub demand instead of generic agent demos

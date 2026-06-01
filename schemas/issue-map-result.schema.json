@@ -11,6 +11,7 @@
     "matchedIssueCount",
     "unmatchedIssueCount",
     "summaries",
+    "roadmap",
     "unmatchedIssues"
   ],
   "properties": {
@@ -40,6 +41,12 @@
       "type": "array",
       "items": {
         "$ref": "#/$defs/summary"
+      }
+    },
+    "roadmap": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/roadmapItem"
       }
     },
     "unmatchedIssues": {
@@ -76,6 +83,46 @@
           "type": "array",
           "items": {
             "type": "string"
+          }
+        }
+      }
+    },
+    "roadmapItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rank",
+        "kind",
+        "priorityScore",
+        "targetArtifact",
+        "command",
+        "rationale",
+        "examples"
+      ],
+      "properties": {
+        "rank": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "kind": {
+          "type": "string"
+        },
+        "priorityScore": {
+          "type": "integer"
+        },
+        "targetArtifact": {
+          "type": "string"
+        },
+        "command": {
+          "type": "string"
+        },
+        "rationale": {
+          "type": "string"
+        },
+        "examples": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/example"
           }
         }
       }

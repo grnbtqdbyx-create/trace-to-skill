@@ -1259,7 +1259,12 @@ test("issue-map ranks GitHub issue exports by detected Codex failure classes", a
   assert.ok(kinds.includes("codex_mcp_discovery_mismatch"));
   assert.ok(kinds.includes("codex_usage_bucket_confusion"));
   assert.equal(result.summaries[0]?.kind, "codex_token_burn");
+  assert.equal(result.roadmap[0]?.kind, "codex_token_burn");
+  assert.match(result.roadmap[0]?.targetArtifact ?? "", /Usage evidence/);
+  assert.match(result.roadmap[0]?.command ?? "", /usage-evidence/);
   assert.match(markdown, /GitHub Issue Pain Map/);
+  assert.match(markdown, /Maintainer Roadmap/);
+  assert.match(markdown, /Usage evidence fixture/);
   assert.match(markdown, /#14593 Burning tokens very fast/);
   assert.match(markdown, /gh issue list --repo openai\/codex/);
 });
@@ -1308,6 +1313,8 @@ test("issue-map fetches repository issues from GitHub-compatible API", async () 
     assert.equal(result.issueCount, 1);
     assert.equal(result.matchedIssueCount, 1);
     assert.equal(result.summaries[0]?.kind, "codex_token_burn");
+    assert.equal(result.roadmap[0]?.kind, "codex_token_burn");
+    assert.match(result.roadmap[0]?.command ?? "", /usage-evidence/);
     assert.match(requests[0] ?? "", /state=open/);
     assert.match(requests[0] ?? "", /sort=comments/);
     assert.match(requests[0] ?? "", /direction=desc/);
@@ -2200,9 +2207,11 @@ test("published JSON schemas describe CLI result contracts", async () => {
   assert.ok(processAuditSchema.properties.signals);
   assert.ok(processAuditSchema.$defs.signal);
   assert.ok((processAuditSchema.$defs.kind as { enum: string[] }).enum.includes("powershell_cim_polling"));
-  assert.deepEqual(issueMapSchema.required, ["generatedAt", "sources", "issueCount", "matchedIssueCount", "unmatchedIssueCount", "summaries", "unmatchedIssues"]);
+  assert.deepEqual(issueMapSchema.required, ["generatedAt", "sources", "issueCount", "matchedIssueCount", "unmatchedIssueCount", "summaries", "roadmap", "unmatchedIssues"]);
   assert.ok(issueMapSchema.properties.summaries);
+  assert.ok(issueMapSchema.properties.roadmap);
   assert.ok(issueMapSchema.$defs.summary);
+  assert.ok(issueMapSchema.$defs.roadmapItem);
   assert.ok(issueMapSchema.$defs.example);
   assert.deepEqual(checkpointSchema.required, ["generatedAt", "root", "outputDir", "includeUntracked", "includeIgnored", "summary", "files", "artifacts"]);
   assert.ok(checkpointSchema.properties.artifacts);
@@ -2296,7 +2305,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.equal(brief.scorecard.benchmarkStatus, "pass");
   assert.equal(brief.scorecard.benchmarkCases, 38);
   assert.equal(brief.packageName, "trace-to-skill");
-  assert.equal(brief.packageVersion, "0.1.90");
+  assert.equal(brief.packageVersion, "0.1.91");
   assert.equal(brief.license, "Apache-2.0");
   assert.ok(brief.repository?.includes("github.com/grnbtqdbyx-create/trace-to-skill"));
   assert.ok(brief.qualification.max500.length <= 500);
@@ -2304,7 +2313,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.match(markdown, /OpenAI OSS Brief/);
   assert.match(markdown, /Why This Repository Qualifies/);
   assert.match(markdown, /500-Character Version/);
-  assert.match(markdown, /npx trace-to-skill@0\.1\.90/);
+  assert.match(markdown, /npx trace-to-skill@0\.1\.91/);
   assert.match(markdown, /Weekly Codex Issue Radar/);
 });
 

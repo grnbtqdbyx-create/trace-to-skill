@@ -43,6 +43,16 @@ export interface IssueMapKindSummary {
   suggestedRules: string[];
 }
 
+export interface IssueMapRoadmapItem {
+  rank: number;
+  kind: FindingKind;
+  priorityScore: number;
+  targetArtifact: string;
+  command: string;
+  rationale: string;
+  examples: IssueMapKindSummary["examples"];
+}
+
 export interface IssueMapResult {
   generatedAt: string;
   sources: string[];
@@ -50,6 +60,7 @@ export interface IssueMapResult {
   matchedIssueCount: number;
   unmatchedIssueCount: number;
   summaries: IssueMapKindSummary[];
+  roadmap: IssueMapRoadmapItem[];
   unmatchedIssues: Array<{
     id: string;
     title: string;
@@ -237,6 +248,7 @@ function buildIssueMapFromNormalized(normalized: NormalizedIssue[], sources: str
     matchedIssueCount: matchedIssues.size,
     unmatchedIssueCount: issues.length - matchedIssues.size,
     summaries,
+    roadmap: buildRoadmap(summaries),
     unmatchedIssues: issues
       .filter((issue) => !matchedIssues.has(issue.id))
       .sort((a, b) => b.comments - a.comments || a.title.localeCompare(b.title))
@@ -271,20 +283,21 @@ export function renderIssueMapMarkdown(result: IssueMapResult): string {
 
   for (const summary of result.summaries) {
     const example = summary.examples[0];
-    lines.push([
-      `| ${summary.priorityScore}`,
-      `\`${summary.kind}\``,
-      summary.severity,
-      `${summary.issues}`,
-      `${summary.comments}`,
-      `${summary.reactions}`,
-      example ? formatIssueLink(example) : "none",
-      "|"
-    ].join(" | "));
+    lines.push(`| ${summary.priorityScore} | \`${summary.kind}\` | ${summary.severity} | ${summary.issues} | ${summary.comments} | ${summary.reactions} | ${example ? formatIssueLink(example) : "none"} |`);
+  }
+
+  if (result.roadmap.length > 0) {
+    lines.push("", "## Maintainer Roadmap", "");
+    lines.push("| Rank | Next artifact | Why now | Command |");
+    lines.push("| ---: | --- | --- | --- |");
+    for (const item of result.roadmap) {
+      lines.push(`| ${item.rank} | ${escapeMarkdownTable(item.targetArtifact)} | ${escapeMarkdownTable(item.rationale)} | \`${escapeMarkdownTable(item.command)}\` |`);
+    }
   }
 
   lines.push("", "## Suggested Next Actions", "");
-  for (const summary of result.summaries.slice(0, 5)) {
+  const suggestedSummaries = result.summaries.filter((summary) => summary.kind !== "weak_evidence");
+  for (const summary of (suggestedSummaries.length > 0 ? suggestedSummaries : result.summaries).slice(0, 5)) {
     lines.push(`### ${summary.kind}`, "");
     lines.push(`Priority score: ${summary.priorityScore}. ${summary.issues} issue(s), ${summary.comments} comment(s).`, "");
     lines.push("Example issues:");
@@ -306,7 +319,87 @@ export function renderIssueMapMarkdown(result: IssueMapResult): string {
     lines.push("");
   }
 
-  return `${lines.join("\n")}\n`;
+  return `${lines.join("\n").trimEnd()}\n`;
+}
+
+function buildRoadmap(summaries: IssueMapKindSummary[]): IssueMapRoadmapItem[] {
+  const actionable = summaries.filter((summary) => summary.kind !== "weak_evidence");
+  const selected = (actionable.length > 0 ? actionable : summaries).slice(0, 5);
+  return selected.map((summary, index) => {
+    const action = roadmapAction(summary.kind);
+    return {
+      rank: index + 1,
+      kind: summary.kind,
+      priorityScore: summary.priorityScore,
+      targetArtifact: action.targetArtifact,
+      command: action.command,
+      rationale: `${summary.issues} issue(s), ${summary.comments} comment(s), severity ${summary.severity}; top signal: ${summary.kind}.`,
+      examples: summary.examples
+    };
+  });
+}
+
+function roadmapAction(kind: FindingKind): { targetArtifact: string; command: string } {
+  if (kind === "codex_token_burn" || kind === "codex_usage_bucket_confusion" || kind === "codex_usage_reset_drift" || kind === "quota_mismatch") {
+    return {
+      targetArtifact: "Usage evidence fixture and support-ready token report",
+      command: "trace-to-skill usage-evidence ./usage-notes.md --output usage-evidence.md"
+    };
+  }
+
+  if (kind === "codex_remote_compact" || kind === "context_compaction" || kind === "codex_context_fork_bloat" || kind === "codex_latest_turn_drift") {
+    return {
+      targetArtifact: "Compaction/session regression fixture and Codex issue report",
+      command: "trace-to-skill codex-report ./runs --output openai-codex-issue.md"
+    };
+  }
+
+  if (kind === "codex_subagent_lifecycle" || kind === "codex_subagent_prompt_leakage") {
+    return {
+      targetArtifact: "Subagent lifecycle fixture and session audit",
+      command: "trace-to-skill session-audit ~/.codex --format markdown"
+    };
+  }
+
+  if (kind === "sensitive_file_access" || kind === "prompt_injection") {
+    return {
+      targetArtifact: "Privacy/safety guardrail and redacted support bundle",
+      command: "trace-to-skill diagnostics-bundle ~/.codex --output codex-diagnostics"
+    };
+  }
+
+  if (kind === "codex_tool_call_integrity") {
+    return {
+      targetArtifact: "Patch safety fixture and pre-agent checkpoint workflow",
+      command: "trace-to-skill checkpoint . --output .trace-to-skill/checkpoints/before-codex"
+    };
+  }
+
+  if (kind === "codex_windows_helper_path" || kind === "sandbox_permission") {
+    return {
+      targetArtifact: "Windows sandbox/helper diagnostic bundle",
+      command: "trace-to-skill diagnostics-bundle ~/.codex --output codex-diagnostics"
+    };
+  }
+
+  if (kind === "codex_mcp_discovery_mismatch" || kind === "codex_mcp_runtime" || kind === "codex_mcp_streamable_http") {
+    return {
+      targetArtifact: "MCP startup and transport diagnostic fixture",
+      command: "trace-to-skill plugin-audit ~/.codex --format markdown"
+    };
+  }
+
+  if (kind === "codex_terminal_output_integrity" || kind === "codex_resource_leak") {
+    return {
+      targetArtifact: "Runtime/process evidence report",
+      command: "trace-to-skill process-audit ./process-notes.md --output process-audit.md"
+    };
+  }
+
+  return {
+    targetArtifact: "Codex-ready issue report and failure fixture",
+    command: "trace-to-skill codex-report ./runs --output openai-codex-issue.md"
+  };
 }
 
 function parseIssueExport(raw: string, source: string): NormalizedIssue[] {

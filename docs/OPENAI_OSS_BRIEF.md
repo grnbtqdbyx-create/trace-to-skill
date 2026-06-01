@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Repository | https://github.com/grnbtqdbyx-create/trace-to-skill |
-| Package | trace-to-skill@0.1.90 |
+| Package | trace-to-skill@0.1.91 |
 | License | Apache-2.0 |
 | Codex readiness | ready (100/100) |
 | Benchmark | pass, 38 cases |
@@ -27,11 +27,11 @@ API credits would power optional maintainer workflows on top of the local determ
 ## Evidence
 
 - Public repository: https://github.com/grnbtqdbyx-create/trace-to-skill
-- One-command package: npx trace-to-skill@0.1.90
+- One-command package: npx trace-to-skill@0.1.91
 - Open-source license: Apache-2.0
 - Codex readiness doctor: ready, 100/100, 0 failed checks.
 - Public fixture benchmark: pass, 38 cases.
-- GitHub issue demand mining: issue-map ranks exported OpenAI/Codex issues by failure class, comments, reactions, and evidence gaps.
+- GitHub issue demand mining: issue-map ranks exported OpenAI/Codex issues by failure class, comments, reactions, evidence gaps, and Maintainer Roadmap next artifacts.
 - Weekly Codex Issue Radar: init --issue-map-repo owner/name scaffolds a scheduled Action that fetches live GitHub issues and publishes the pain map to the job summary or a stable tracking issue comment.
 - Maintainer control: generated rules are suggestions, evidence is line-linked, and secrets can be redacted before sharing.
 
