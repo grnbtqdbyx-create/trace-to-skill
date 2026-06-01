@@ -278,6 +278,34 @@ async function main(): Promise<void> {
     return;
   }
 
+  if (parsed.command === "issue-heat-comment") {
+    const issueHeatOptions = {
+      top: numberFlag(parsed.flags.top),
+      windowHours: optionalPositiveIntegerFlag(parsed.flags["window-hours"], "--window-hours")
+    };
+    const repo = stringFlag(parsed.flags.repo);
+    const result = repo ?
+      await buildGithubIssueHeat(repo, {
+        ...issueHeatOptions,
+        state: githubIssueStateFlag(parsed.flags.state),
+        limit: numberFlag(parsed.flags.limit),
+        token: stringFlag(parsed.flags.token)
+      }) :
+      await buildIssueHeatFromCliTargets(parsed.targets, issueHeatOptions);
+    const body = `<!-- trace-to-skill-issue-heat-report -->\n${renderIssueHeatMarkdown(result)}`;
+    const message = await postIssueComment({
+      body,
+      token: stringFlag(parsed.flags.token),
+      repository: stringFlag(parsed.flags["comment-repository"]) ?? stringFlag(parsed.flags.repository),
+      issueNumber: positiveIntegerFlag(parsed.flags["issue-number"], "--issue-number"),
+      dryRun: Boolean(parsed.flags["dry-run"]),
+      marker: "<!-- trace-to-skill-issue-heat-report -->",
+      reportName: "trace-to-skill issue-heat report"
+    });
+    process.stdout.write(`${message}\n`);
+    return;
+  }
+
   if (parsed.command === "surface-matrix") {
     const issueMapOptions = {
       top: numberFlag(parsed.flags.top)
@@ -694,6 +722,7 @@ Usage:
   trace-to-skill issue-heat --repo openai/codex [--state open|closed|all] [--limit 100] [--window-hours 24] [--token $GITHUB_TOKEN] [--format markdown|json]
   trace-to-skill surface-matrix --repo openai/codex [--state open|closed|all] [--limit 100] [--token $GITHUB_TOKEN] [--format markdown|json]
   trace-to-skill issue-map-comment --repo openai/codex --issue-number 8 [--comment-repository owner/repo] [--state open|closed|all] [--limit 100] [--dry-run] [--token $GITHUB_TOKEN]
+  trace-to-skill issue-heat-comment --repo openai/codex --issue-number 8 [--comment-repository owner/repo] [--state open|closed|all] [--limit 100] [--window-hours 24] [--dry-run] [--token $GITHUB_TOKEN]
   trace-to-skill guard-github-event [event.json] [--threshold 80] [--format markdown|json] [--output report.md]
   trace-to-skill guard-patch <patch-file> [--root repo-dir] [--format markdown|json] [--output report.md]
   trace-to-skill session-audit [codex-home-or-sessions-dir] [--large-mb 10] [--huge-line-kb 512] [--format markdown|json]
@@ -733,6 +762,7 @@ Examples:
   gh issue list --repo openai/codex --state all --limit 100 --json number,title,body,url,labels,comments,updatedAt | trace-to-skill issue-map - --format json
   trace-to-skill issue-map --repo openai/codex --limit 100 --output codex-issue-map.md
   trace-to-skill issue-map-comment --repo openai/codex --issue-number 8 --comment-repository owner/repo --dry-run
+  trace-to-skill issue-heat-comment --repo openai/codex --issue-number 8 --comment-repository owner/repo --dry-run
   trace-to-skill guard-github-event "$GITHUB_EVENT_PATH"
   trace-to-skill guard-patch ./change.patch --root .
   trace-to-skill session-audit ~/.codex --format json

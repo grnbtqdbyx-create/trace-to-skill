@@ -1627,6 +1627,23 @@ test("issue-heat command reads GitHub issue exports from stdin", async () => {
   assert.ok(!result.hot.some((summary) => summary.kind === "weak_evidence"));
 });
 
+test("issue-heat-comment dry-run targets a stable issue thread", async () => {
+  const { stdout } = await execFileAsync("node", [
+    "dist/src/cli.js",
+    "issue-heat-comment",
+    "fixtures/github-codex-issues-export.json",
+    "--window-hours",
+    "8",
+    "--issue-number",
+    "8",
+    "--comment-repository",
+    "owner/repo",
+    "--dry-run"
+  ]);
+
+  assert.equal(stdout.trim(), "dry-run: would post trace-to-skill issue-heat report to owner/repo#8");
+});
+
 test("process audit packages Codex process polling and high CPU evidence", () => {
   const result = auditProcessEvidenceFromInputs([
     {
@@ -1832,9 +1849,15 @@ test("initProject scaffolds workflow without overwriting existing files", async 
   assert.match(issueRadarWorkflow, /issue-map-repo: openai\/codex/);
   assert.match(issueRadarWorkflow, /issue-map-state: all/);
   assert.match(issueRadarWorkflow, /issue-map-limit: "75"/);
+  assert.match(issueRadarWorkflow, /id: issue-heat/);
+  assert.match(issueRadarWorkflow, /mode: issue-heat/);
+  assert.match(issueRadarWorkflow, /issue-heat-repo: openai\/codex/);
+  assert.match(issueRadarWorkflow, /issue-heat-window-hours: "24"/);
   assert.match(issueRadarWorkflow, /issues: write/);
   assert.match(issueRadarWorkflow, /issue-map-comment: "true"/);
   assert.match(issueRadarWorkflow, /issue-map-comment-issue: "8"/);
+  assert.match(issueRadarWorkflow, /issue-heat-comment: "true"/);
+  assert.match(issueRadarWorkflow, /issue-heat-comment-issue: "8"/);
   assert.match(issueRadarWorkflow, /github-token: \$\{\{ github\.token \}\}/);
 });
 
@@ -1934,6 +1957,8 @@ test("package metadata points npm users back to the public project", async () =>
   assert.ok(packageJson.keywords?.includes("issue-heat"));
   assert.ok(packageJson.keywords?.includes("codex-issue-heat"));
   assert.ok(packageJson.keywords?.includes("codex-hot-issues"));
+  assert.ok(packageJson.keywords?.includes("issue-heat-action"));
+  assert.ok(packageJson.keywords?.includes("issue-heat-comment"));
   assert.ok(packageJson.keywords?.includes("surface-matrix"));
   assert.ok(packageJson.keywords?.includes("codex-support-matrix"));
   assert.ok(packageJson.keywords?.includes("remote-development"));
@@ -2255,6 +2280,12 @@ test("composite action exposes Codex readiness doctor mode", async () => {
   assert.match(action, /issue-map-top-kind:/);
   assert.match(action, /issue-map-report:/);
   assert.match(action, /issue-map-json:/);
+  assert.match(action, /issue-heat-issues:/);
+  assert.match(action, /issue-heat-considered:/);
+  assert.match(action, /issue-heat-matched:/);
+  assert.match(action, /issue-heat-top-kind:/);
+  assert.match(action, /issue-heat-report:/);
+  assert.match(action, /issue-heat-json:/);
   assert.match(action, /agent-report:/);
   assert.match(action, /agents-lint-score:/);
   assert.match(action, /agents-lint-status:/);
@@ -2271,12 +2302,14 @@ test("composite action exposes Codex readiness doctor mode", async () => {
   assert.match(action, /steps\.benchmark\.outputs\.status/);
   assert.match(action, /steps\.scorecard\.outputs\.status/);
   assert.match(action, /steps\.issue-map\.outputs\.top-kind/);
+  assert.match(action, /steps\.issue-heat\.outputs\.top-kind/);
   assert.match(action, /codex-readiness-report\.json/);
   assert.match(action, /agents-lint-report\.json/);
   assert.match(action, /github-context-report\.json/);
   assert.match(action, /trace-to-skill-benchmark\.json/);
   assert.match(action, /trace-to-skill-scorecard\.json/);
   assert.match(action, /trace-to-skill-issue-map\.json/);
+  assert.match(action, /trace-to-skill-issue-heat\.json/);
   assert.match(action, /mode:/);
   assert.match(action, /issue-map-path:/);
   assert.match(action, /issue-map-repo:/);
@@ -2285,6 +2318,14 @@ test("composite action exposes Codex readiness doctor mode", async () => {
   assert.match(action, /issue-map-comment:/);
   assert.match(action, /issue-map-comment-issue:/);
   assert.match(action, /issue-map-comment-repository:/);
+  assert.match(action, /issue-heat-path:/);
+  assert.match(action, /issue-heat-repo:/);
+  assert.match(action, /issue-heat-state:/);
+  assert.match(action, /issue-heat-limit:/);
+  assert.match(action, /issue-heat-window-hours:/);
+  assert.match(action, /issue-heat-comment:/);
+  assert.match(action, /issue-heat-comment-issue:/);
+  assert.match(action, /issue-heat-comment-repository:/);
   assert.match(action, /context-threshold:/);
   assert.match(action, /doctor-threshold:/);
   assert.match(action, /doctor-comment:/);
@@ -2303,6 +2344,7 @@ test("composite action exposes Codex readiness doctor mode", async () => {
   assert.match(action, /trace-to-skill Agent Learning/);
   assert.match(action, /trace-to-skill Benchmark/);
   assert.match(action, /trace-to-skill GitHub Issue Pain Map/);
+  assert.match(action, /trace-to-skill GitHub Issue Heat/);
   assert.match(action, /trace-to-skill Scorecard/);
   assert.match(action, /node "\$TRACE_TO_SKILL_CLI" doctor/);
   assert.match(action, /node "\$TRACE_TO_SKILL_CLI" lint-agents/);
@@ -2312,8 +2354,12 @@ test("composite action exposes Codex readiness doctor mode", async () => {
   assert.match(action, /node "\$TRACE_TO_SKILL_CLI" benchmark/);
   assert.match(action, /node "\$TRACE_TO_SKILL_CLI" issue-map/);
   assert.match(action, /node "\$TRACE_TO_SKILL_CLI" issue-map-comment/);
+  assert.match(action, /node "\$TRACE_TO_SKILL_CLI" issue-heat/);
+  assert.match(action, /node "\$TRACE_TO_SKILL_CLI" issue-heat-comment/);
   assert.match(action, /inputs\.issue-map-comment == 'true'/);
+  assert.match(action, /inputs\.issue-heat-comment == 'true'/);
   assert.match(action, /issue-map --repo "\$\{\{ inputs\.issue-map-repo \}\}" --state "\$\{\{ inputs\.issue-map-state \}\}" --limit "\$\{\{ inputs\.issue-map-limit \}\}"/);
+  assert.match(action, /issue-heat --repo "\$\{\{ inputs\.issue-heat-repo \}\}" --state "\$\{\{ inputs\.issue-heat-state \}\}" --limit "\$\{\{ inputs\.issue-heat-limit \}\}" --window-hours "\$\{\{ inputs\.issue-heat-window-hours \}\}"/);
   assert.match(action, /node "\$TRACE_TO_SKILL_CLI" scorecard/);
   assert.match(action, /node "\$TRACE_TO_SKILL_CLI" scorecard-comment/);
   assert.match(action, /inputs\.mode == 'agents-lint' \|\| inputs\.mode == 'all'/);
@@ -2321,10 +2367,11 @@ test("composite action exposes Codex readiness doctor mode", async () => {
   assert.match(action, /inputs\.mode == 'doctor' \|\| inputs\.mode == 'both' \|\| inputs\.mode == 'all'/);
   assert.match(action, /inputs\.mode == 'benchmark' \|\| inputs\.mode == 'all'/);
   assert.match(action, /inputs\.mode == 'issue-map'/);
+  assert.match(action, /inputs\.mode == 'issue-heat'/);
   assert.match(action, /always\(\) && github\.event_name == 'pull_request' && inputs\.doctor-comment == 'true'/);
   assert.match(action, /always\(\) && github\.event_name == 'pull_request' && inputs\.scorecard-comment == 'true'/);
   assert.match(action, /github\.event_name == 'pull_request' && inputs\.comment == 'true'/);
-  assert.match(action, /mode must be one of: traces, agents-lint, github-context, doctor, benchmark, issue-map, both, all/);
+  assert.match(action, /mode must be one of: traces, agents-lint, github-context, doctor, benchmark, issue-map, issue-heat, both, all/);
 });
 
 test("repository dogfoods the local Codex readiness action", async () => {
@@ -2347,6 +2394,11 @@ test("repository dogfoods the local Codex readiness action", async () => {
   assert.match(workflow, /mode: issue-map/);
   assert.match(workflow, /issue-map-path: fixtures\/github-codex-issues-export\.json/);
   assert.match(workflow, /steps\.issue-map\.outputs\.issue-map-top-kind/);
+  assert.match(workflow, /id: issue-heat/);
+  assert.match(workflow, /mode: issue-heat/);
+  assert.match(workflow, /issue-heat-path: fixtures\/github-codex-issues-export\.json/);
+  assert.match(workflow, /issue-heat-window-hours: "99999"/);
+  assert.match(workflow, /steps\.issue-heat\.outputs\.issue-heat-top-kind/);
 });
 
 test("repository publishes npm through trusted publishing workflow", async () => {
@@ -2657,7 +2709,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.equal(brief.scorecard.benchmarkStatus, "pass");
   assert.equal(brief.scorecard.benchmarkCases, 46);
   assert.equal(brief.packageName, "trace-to-skill");
-  assert.equal(brief.packageVersion, "0.1.105");
+  assert.equal(brief.packageVersion, "0.1.106");
   assert.equal(brief.license, "Apache-2.0");
   assert.ok(brief.repository?.includes("github.com/grnbtqdbyx-create/trace-to-skill"));
   assert.ok(brief.qualification.max500.length <= 500);
@@ -2665,7 +2717,7 @@ test("oss-brief creates OpenAI application-ready evidence", async () => {
   assert.match(markdown, /OpenAI OSS Brief/);
   assert.match(markdown, /Why This Repository Qualifies/);
   assert.match(markdown, /500-Character Version/);
-  assert.match(markdown, /npx trace-to-skill@0\.1\.105/);
+  assert.match(markdown, /npx trace-to-skill@0\.1\.106/);
   assert.match(markdown, /GitHub Issue Heat/);
   assert.match(markdown, /hot-issue detection/);
   assert.match(markdown, /Surface support matrix/);

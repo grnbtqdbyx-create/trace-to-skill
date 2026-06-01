@@ -148,7 +148,7 @@ function renderCodexReadinessWorkflow(doctorThreshold: string, comment: boolean)
     "    steps:",
     "      - uses: actions/checkout@v5",
     "      - id: trace-to-skill",
-    "        uses: grnbtqdbyx-create/trace-to-skill@v0.1.105",
+    "        uses: grnbtqdbyx-create/trace-to-skill@v0.1.106",
     "        with:",
     "          mode: all",
     `          doctor-threshold: "${doctorThreshold}"`,
@@ -177,7 +177,7 @@ function renderAgentLearningWorkflow(traces: string, threshold: string, comment:
   const steps = [
     "      - uses: actions/checkout@v5",
     "      - id: trace-to-skill",
-    "        uses: grnbtqdbyx-create/trace-to-skill@v0.1.105",
+    "        uses: grnbtqdbyx-create/trace-to-skill@v0.1.106",
     "        with:",
     "          mode: traces",
     `          traces: ${traces}`,
@@ -226,7 +226,7 @@ function renderIssueRadarWorkflow(repo: string, state: "open" | "closed" | "all"
     "    steps:",
     "      - uses: actions/checkout@v5",
     "      - id: issue-map",
-    "        uses: grnbtqdbyx-create/trace-to-skill@v0.1.105",
+    "        uses: grnbtqdbyx-create/trace-to-skill@v0.1.106",
     "        with:",
     "          mode: issue-map",
     `          issue-map-repo: ${repo}`,
@@ -236,10 +236,24 @@ function renderIssueRadarWorkflow(repo: string, state: "open" | "closed" | "all"
     commentIssue ? `          issue-map-comment-issue: "${commentIssue}"` : undefined,
     "          github-token: ${{ github.token }}",
     '          job-summary: "true"',
+    "      - id: issue-heat",
+    "        uses: grnbtqdbyx-create/trace-to-skill@v0.1.106",
+    "        with:",
+    "          mode: issue-heat",
+    `          issue-heat-repo: ${repo}`,
+    `          issue-heat-state: ${state}`,
+    `          issue-heat-limit: "${limit}"`,
+    '          issue-heat-window-hours: "24"',
+    commentIssue ? '          issue-heat-comment: "true"' : undefined,
+    commentIssue ? `          issue-heat-comment-issue: "${commentIssue}"` : undefined,
+    "          github-token: ${{ github.token }}",
+    '          job-summary: "true"',
     "      - run: |",
     "          echo \"Issue radar analyzed ${{ steps.issue-map.outputs.issue-map-issues }} issues\"",
     "          echo \"Issue radar matched ${{ steps.issue-map.outputs.issue-map-matched }} issues\"",
-    "          echo \"Top failure class is ${{ steps.issue-map.outputs.issue-map-top-kind }}\""
+    "          echo \"Top failure class is ${{ steps.issue-map.outputs.issue-map-top-kind }}\"",
+    "          echo \"Issue heat considered ${{ steps.issue-heat.outputs.issue-heat-considered }} recent issues\"",
+    "          echo \"Hottest recent failure class is ${{ steps.issue-heat.outputs.issue-heat-top-kind }}\""
   ].filter((line): line is string => Boolean(line)).join("\n")}\n`;
 }
 

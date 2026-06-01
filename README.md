@@ -430,6 +430,7 @@ Mine public GitHub issue demand into a maintainer pain map:
 trace-to-skill issue-map --repo openai/codex --state all --limit 100 --output codex-issue-radar.md
 trace-to-skill issue-map --repo openai/codex --format json
 trace-to-skill issue-heat --repo openai/codex --state open --limit 100 --window-hours 24 --output codex-issue-heat.md
+trace-to-skill issue-heat-comment --repo openai/codex --issue-number 8 --comment-repository owner/repo --dry-run
 trace-to-skill init --issue-map-repo openai/codex --issue-map-state all --issue-map-limit 100
 gh issue list --repo openai/codex --state open --limit 100 --json number,title,body,url,labels,comments,createdAt,updatedAt > codex-issues.json
 trace-to-skill issue-map codex-issues.json --output codex-issue-map.md
@@ -439,7 +440,7 @@ gh issue list --repo openai/codex --state all --limit 100 --json number,title,bo
 
 `issue-map` can fetch a public GitHub repository directly through the GitHub REST API, read JSON exported by `gh issue list` / `gh search issues`, or consume piped GitHub CLI JSON through `issue-map -`. It analyzes each issue with the same deterministic failure detectors, ranks clusters by issue count, comment count, reactions, and severity, then emits a Maintainer Roadmap with the next artifact and command to run. Use it to decide what people are actively asking for on GitHub before adding the next fixture, Codex report template, diagnostic bundle, or OpenAI-ready support artifact.
 
-`issue-heat` uses the same detectors but ranks recent issue movement. It is useful when all-time demand is dominated by older high-reaction threads and maintainers need to know what broke or became noisy in the last 24-72 hours.
+`issue-heat` uses the same detectors but ranks recent issue movement. It is useful when all-time demand is dominated by older high-reaction threads and maintainers need to know what broke or became noisy in the last 24-72 hours. Use `issue-heat-comment` or the `mode: issue-heat` Action to keep a stable tracking issue updated without committing generated reports.
 
 For a live generated radar, see [docs/CODEX_ISSUE_RADAR.md](docs/CODEX_ISSUE_RADAR.md). For recent movement, see [docs/CODEX_ISSUE_HEAT.md](docs/CODEX_ISSUE_HEAT.md). For blocked/degraded surfaces, see [docs/CODEX_SURFACE_MATRIX.md](docs/CODEX_SURFACE_MATRIX.md). To map a Codex problem to the right failure class and report command, see [docs/CODEX_ISSUE_MAP.md](docs/CODEX_ISSUE_MAP.md).
 
@@ -554,7 +555,7 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v5
-      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.105
+      - uses: grnbtqdbyx-create/trace-to-skill@v0.1.106
         with:
           mode: all
           doctor-threshold: "85"
@@ -603,7 +604,7 @@ Composite action usage:
 
 ```yaml
 - id: trace-to-skill
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.105
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.106
   with:
     mode: all
     doctor-threshold: "85"
@@ -621,7 +622,7 @@ Issue-map action usage for direct GitHub issue demand mining:
 
 ```yaml
 - id: codex-issue-map
-  uses: grnbtqdbyx-create/trace-to-skill@v0.1.105
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.106
   with:
     mode: issue-map
     issue-map-repo: openai/codex
@@ -632,6 +633,24 @@ Issue-map action usage for direct GitHub issue demand mining:
     job-summary: "true"
     github-token: ${{ github.token }}
 - run: echo "Top Codex issue cluster is ${{ steps.codex-issue-map.outputs.issue-map-top-kind }}"
+```
+
+Issue-heat action usage for recency-weighted GitHub issue movement:
+
+```yaml
+- id: codex-issue-heat
+  uses: grnbtqdbyx-create/trace-to-skill@v0.1.106
+  with:
+    mode: issue-heat
+    issue-heat-repo: openai/codex
+    issue-heat-state: open
+    issue-heat-limit: "100"
+    issue-heat-window-hours: "24"
+    issue-heat-comment: "true"
+    issue-heat-comment-issue: "8"
+    job-summary: "true"
+    github-token: ${{ github.token }}
+- run: echo "Hottest recent Codex issue cluster is ${{ steps.codex-issue-heat.outputs.issue-heat-top-kind }}"
 ```
 
 Action outputs:
@@ -667,7 +686,7 @@ Action outputs:
 
 By default, generated reports are also appended to the GitHub Actions Job Summary. Set `job-summary: "false"` to disable that UI output.
 
-Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.105` executes that release's checked-out source instead of pulling the default branch at runtime.
+Tagged Action releases build and run the CLI from `$GITHUB_ACTION_PATH`, so a workflow pinned to a release tag such as `@v0.1.106` executes that release's checked-out source instead of pulling the default branch at runtime.
 
 ## Codex Skill
 

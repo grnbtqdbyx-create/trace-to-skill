@@ -46,3 +46,16 @@ jobs:
           echo "Issue-map issues: ${{ steps.issue-map.outputs.issue-map-issues }}"
           echo "Issue-map matched: ${{ steps.issue-map.outputs.issue-map-matched }}"
           echo "Issue-map top kind: ${{ steps.issue-map.outputs.issue-map-top-kind }}"
+      - id: issue-heat
+        uses: ./
+        with:
+          mode: issue-heat
+          issue-heat-path: fixtures/github-codex-issues-export.json
+          issue-heat-window-hours: "99999"
+          job-summary: "true"
+      - name: Show issue-heat outputs
+        run: |
+          echo "Issue-heat issues: ${{ steps.issue-heat.outputs.issue-heat-issues }}"
+          echo "Issue-heat considered: ${{ steps.issue-heat.outputs.issue-heat-considered }}"
+          echo "Issue-heat matched: ${{ steps.issue-heat.outputs.issue-heat-matched }}"
+          echo "Issue-heat top kind: ${{ steps.issue-heat.outputs.issue-heat-top-kind }}"

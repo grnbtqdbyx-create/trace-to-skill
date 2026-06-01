@@ -63,7 +63,7 @@ Current proof points:
 - Local `plugin-audit` command for privacy-preserving Codex bundled-plugin diagnostics: plugin cache, manifests, generated marketplaces, optional app-bundle marketplace, Computer Use helper app, `CODEX_HOME`, and unsupported feature flags.
 - Local `diagnostics-bundle` command for metadata-only OpenAI support bundles: manifest, README, config audit, plugin audit, and session audit reports without copying raw config, logs, SQLite state, or transcripts.
 - Local `checkpoint` command for pre-agent workspace bundles: git status, staged/unstaged binary diffs, restore notes, and copied changed/untracked files without automatic destructive restore.
-- Recency-weighted `issue-heat` command for separating what is moving right now on GitHub from older high-reaction Codex issue clusters.
+- Recency-weighted `issue-heat` command, Action mode, and stable issue comment updater for separating what is moving right now on GitHub from older high-reaction Codex issue clusters.
 - Context compaction failure detection for stuck Codex sessions and shareable support traces.
 - Sandbox and permission failure detection for Codex setup refresh, Windows `os error 740`, ACL, workspace ownership, and approval-mode drift reports.
 - Codex file tree and workspace navigation UI detection for missing `View > Toggle File Tree`, stale floating file panels, and file-preview failures.
@@ -93,7 +93,7 @@ Current proof points:
 - SARIF output for GitHub code scanning.
 - Before/after eval comparison with keep/revise/reject decisions.
 - One-command repository setup via `trace-to-skill init`.
-- Public release v0.1.105.
+- Public release v0.1.106.
 - Current GitHub scorecard: 100/100 Codex-ready, benchmark passing.
 
 500-character version:

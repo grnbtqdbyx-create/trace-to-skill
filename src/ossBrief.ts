@@ -174,7 +174,7 @@ function buildEvidence(
     `Codex readiness doctor: ${scorecard.doctor.status}, ${scorecard.doctor.score}/100, ${scorecard.doctor.failedChecks} failed checks.`,
     `Public fixture benchmark: ${scorecard.benchmark.status}, ${scorecard.benchmark.cases} cases.`,
     "GitHub issue demand mining: issue-map fetches or reads piped GitHub CLI issue JSON, then ranks OpenAI/Codex issues by failure class, comments, reactions, evidence gaps, and Maintainer Roadmap next artifacts.",
-    "GitHub Issue Heat: issue-heat ranks what is moving right now by recency, labels, comments, reactions, severity, and the first trace-to-skill action to run.",
+    "GitHub Issue Heat: issue-heat ranks what is moving right now by recency, labels, comments, reactions, severity, and the first trace-to-skill action to run; Action mode and issue-heat-comment keep a stable tracking issue updated.",
     "Surface support matrix: surface-matrix turns Codex platform, remote workspace, MCP, plugin, file-tree, and context-visibility demand into blocked/degraded rows with support-policy questions.",
     "Weekly Codex Issue Radar: init --issue-map-repo owner/name scaffolds a scheduled Action that fetches live GitHub issues and publishes the pain map to the job summary or a stable tracking issue comment.",
     "Usage doctor: usage-doctor separates token-burn reports into quota-window accounting, rapid-drain repros, prompt-cache collapse, cached-context replay, and orchestration overhead buckets with confidence and next evidence.",

@@ -103,6 +103,7 @@ npx trace-to-skill usage-doctor ./usage-notes.md --output usage-evidence.md
 npx trace-to-skill process-audit ./process-notes.md --output process-audit.md
 npx trace-to-skill issue-map --repo openai/codex --state all --limit 100 --output codex-issue-radar.md
 npx trace-to-skill issue-heat --repo openai/codex --state open --limit 100 --window-hours 24 --output codex-issue-heat.md
+npx trace-to-skill issue-heat-comment --repo openai/codex --issue-number 8 --comment-repository owner/name --dry-run
 npx trace-to-skill surface-matrix --repo openai/codex --state all --limit 100 --output codex-surface-matrix.md
 npx trace-to-skill init --issue-map-repo openai/codex --issue-map-state all --issue-map-limit 100
 npx trace-to-skill issue-map codex-issues.json --output codex-issue-map.md

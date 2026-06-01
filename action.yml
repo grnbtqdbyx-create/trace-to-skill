@@ -6,7 +6,7 @@ branding:
   color: green
 inputs:
   mode:
-    description: Run "traces", "agents-lint", "github-context", "doctor", "benchmark", "issue-map", "both", or "all".
+    description: Run "traces", "agents-lint", "github-context", "doctor", "benchmark", "issue-map", "issue-heat", "both", or "all".
     required: false
     default: traces
   doctor-path:
@@ -55,6 +55,38 @@ inputs:
     default: ""
   issue-map-comment-repository:
     description: Optional owner/repo that receives the issue-map comment. Defaults to the workflow repository.
+    required: false
+    default: ""
+  issue-heat-path:
+    description: GitHub issue export JSON or Markdown path to rank with "issue-heat" mode.
+    required: false
+    default: codex-issues.json
+  issue-heat-repo:
+    description: Optional owner/repo to fetch directly in "issue-heat" mode instead of reading issue-heat-path.
+    required: false
+    default: ""
+  issue-heat-state:
+    description: "Issue state to fetch when issue-heat-repo is set: open, closed, or all."
+    required: false
+    default: open
+  issue-heat-limit:
+    description: Maximum issues to fetch when issue-heat-repo is set, from 1 to 100.
+    required: false
+    default: "100"
+  issue-heat-window-hours:
+    description: Recency window for issue-heat mode.
+    required: false
+    default: "24"
+  issue-heat-comment:
+    description: Post or update the issue-heat report as a GitHub issue comment.
+    required: false
+    default: "false"
+  issue-heat-comment-issue:
+    description: Issue number to update when issue-heat-comment is true.
+    required: false
+    default: ""
+  issue-heat-comment-repository:
+    description: Optional owner/repo that receives the issue-heat comment. Defaults to the workflow repository.
     required: false
     default: ""
   threshold:
@@ -156,6 +188,24 @@ outputs:
   issue-map-json:
     description: Path to the JSON issue-map report.
     value: ${{ steps.issue-map.outputs.json }}
+  issue-heat-issues:
+    description: Number of GitHub issues fetched by issue-heat mode.
+    value: ${{ steps.issue-heat.outputs.issues }}
+  issue-heat-considered:
+    description: Number of GitHub issues inside the issue-heat recency window.
+    value: ${{ steps.issue-heat.outputs.considered }}
+  issue-heat-matched:
+    description: Number of recent issues matched to deterministic failure classes.
+    value: ${{ steps.issue-heat.outputs.matched }}
+  issue-heat-top-kind:
+    description: Hottest recent issue failure class.
+    value: ${{ steps.issue-heat.outputs.top-kind }}
+  issue-heat-report:
+    description: Path to the Markdown issue-heat report.
+    value: ${{ steps.issue-heat.outputs.report }}
+  issue-heat-json:
+    description: Path to the JSON issue-heat report.
+    value: ${{ steps.issue-heat.outputs.json }}
 runs:
   using: composite
   steps:
@@ -171,8 +221,8 @@ runs:
       shell: bash
     - run: |
         case "${{ inputs.mode }}" in
-          traces|agents-lint|github-context|doctor|benchmark|issue-map|both|all) ;;
-          *) echo "::error::mode must be one of: traces, agents-lint, github-context, doctor, benchmark, issue-map, both, all"; exit 1 ;;
+          traces|agents-lint|github-context|doctor|benchmark|issue-map|issue-heat|both|all) ;;
+          *) echo "::error::mode must be one of: traces, agents-lint, github-context, doctor, benchmark, issue-map, issue-heat, both, all"; exit 1 ;;
         esac
       shell: bash
     - id: agents-lint
@@ -397,6 +447,56 @@ runs:
           node "$TRACE_TO_SKILL_CLI" issue-map-comment "${{ inputs.issue-map-path }}" "${comment_args[@]}"
         fi
       if: inputs.mode == 'issue-map' && inputs.issue-map-comment == 'true'
+      shell: bash
+    - id: issue-heat
+      run: |
+        set -euo pipefail
+        if [ -n "${{ inputs.issue-heat-repo }}" ]; then
+          node "$TRACE_TO_SKILL_CLI" issue-heat --repo "${{ inputs.issue-heat-repo }}" --state "${{ inputs.issue-heat-state }}" --limit "${{ inputs.issue-heat-limit }}" --window-hours "${{ inputs.issue-heat-window-hours }}" --token "${{ inputs.github-token }}" --format json --output trace-to-skill-issue-heat.json
+          node "$TRACE_TO_SKILL_CLI" issue-heat --repo "${{ inputs.issue-heat-repo }}" --state "${{ inputs.issue-heat-state }}" --limit "${{ inputs.issue-heat-limit }}" --window-hours "${{ inputs.issue-heat-window-hours }}" --token "${{ inputs.github-token }}" --output trace-to-skill-issue-heat.md
+        else
+          node "$TRACE_TO_SKILL_CLI" issue-heat "${{ inputs.issue-heat-path }}" --window-hours "${{ inputs.issue-heat-window-hours }}" --format json --output trace-to-skill-issue-heat.json
+          node "$TRACE_TO_SKILL_CLI" issue-heat "${{ inputs.issue-heat-path }}" --window-hours "${{ inputs.issue-heat-window-hours }}" --output trace-to-skill-issue-heat.md
+        fi
+        node --input-type=module <<'NODE'
+        import { appendFileSync, readFileSync } from "node:fs";
+        const report = JSON.parse(readFileSync("trace-to-skill-issue-heat.json", "utf8"));
+        const output = [
+          `issues=${report.issueCount}`,
+          `considered=${report.consideredIssueCount}`,
+          `matched=${report.matchedIssueCount}`,
+          `top-kind=${report.hot[0]?.kind ?? ""}`,
+          "report=trace-to-skill-issue-heat.md",
+          "json=trace-to-skill-issue-heat.json"
+        ].join("\n");
+        appendFileSync(process.env.GITHUB_OUTPUT, `${output}\n`);
+        NODE
+      if: inputs.mode == 'issue-heat'
+      shell: bash
+    - run: |
+        {
+          echo "## trace-to-skill GitHub Issue Heat"
+          echo
+          cat trace-to-skill-issue-heat.md
+        } >> "$GITHUB_STEP_SUMMARY"
+      if: always() && inputs.job-summary == 'true' && inputs.mode == 'issue-heat'
+      shell: bash
+    - run: |
+        set -euo pipefail
+        if [ -z "${{ inputs.issue-heat-comment-issue }}" ]; then
+          echo "::error::issue-heat-comment-issue is required when issue-heat-comment is true"
+          exit 1
+        fi
+        comment_args=(--issue-number "${{ inputs.issue-heat-comment-issue }}" --token "${{ inputs.github-token }}")
+        if [ -n "${{ inputs.issue-heat-comment-repository }}" ]; then
+          comment_args+=(--comment-repository "${{ inputs.issue-heat-comment-repository }}")
+        fi
+        if [ -n "${{ inputs.issue-heat-repo }}" ]; then
+          node "$TRACE_TO_SKILL_CLI" issue-heat-comment --repo "${{ inputs.issue-heat-repo }}" --state "${{ inputs.issue-heat-state }}" --limit "${{ inputs.issue-heat-limit }}" --window-hours "${{ inputs.issue-heat-window-hours }}" "${comment_args[@]}"
+        else
+          node "$TRACE_TO_SKILL_CLI" issue-heat-comment "${{ inputs.issue-heat-path }}" --window-hours "${{ inputs.issue-heat-window-hours }}" "${comment_args[@]}"
+        fi
+      if: inputs.mode == 'issue-heat' && inputs.issue-heat-comment == 'true'
       shell: bash
     - id: scorecard
       run: |

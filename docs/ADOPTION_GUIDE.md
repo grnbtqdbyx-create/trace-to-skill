@@ -22,7 +22,7 @@ This creates:
 
 Open a pull request with those files first. Keep the first PR small so maintainers can review the policy separately from future agent traces.
 
-The optional Codex Issue Radar workflow runs weekly and on demand. It fetches the repository's most-commented issues, filters pull requests, classifies each issue into deterministic agent failure classes, and writes the report to the GitHub Actions job summary without committing generated output. The report also includes a Maintainer Roadmap that turns hot clusters into the next artifact and command to run. Add `--issue-map-comment-issue 8` to update a stable tracking issue comment on every run.
+The optional Codex Issue Radar workflow runs weekly and on demand. It fetches the repository's most-commented issues, filters pull requests, classifies each issue into deterministic agent failure classes, and writes the report to the GitHub Actions job summary without committing generated output. The report also includes a Maintainer Roadmap that turns hot clusters into the next artifact and command to run. Add `--issue-map-comment-issue 8` to update stable tracking issue comments for both the all-time issue map and the recency-weighted issue heat report on every run.
 
 ## Maintainer Workflow
 
