@@ -71,6 +71,12 @@ const BENCHMARK_CASES: BenchmarkCaseDefinition[] = [
     expectedKinds: ["codex_context_fork_bloat", "weak_evidence"]
   },
   {
+    id: "codex-subagent-prompt-leakage",
+    title: "Codex subagent prompt leakage or boundary failure",
+    fixture: "fixtures/codex-subagent-prompt-leakage.md",
+    expectedKinds: ["codex_subagent_prompt_leakage", "weak_evidence"]
+  },
+  {
     id: "codex-latest-turn-drift",
     title: "Codex latest-turn drift after compaction",
     fixture: "fixtures/codex-latest-turn-drift.md",

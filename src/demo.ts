@@ -31,6 +31,12 @@ const DEMO_SCENARIOS: DemoScenario[] = [
     description: "Conversation forks duplicate parent transcript blocks, inflate token usage, or break prompt-cache lineage before new work happens."
   },
   {
+    id: "subagent-prompt-leakage",
+    title: "Codex subagent prompt leakage",
+    fixture: "fixtures/codex-subagent-prompt-leakage.md",
+    description: "MultiAgentV2 child agents receive assistant/commentary prompt envelopes or sibling prompts despite `fork_turns: \"none\"`."
+  },
+  {
     id: "windows-helper-path",
     title: "Codex Windows helper path failure",
     fixture: "fixtures/codex-windows-helper-path.md",
@@ -187,6 +193,7 @@ export function renderDemoMarkdown(result: DemoResult): string {
     "trace-to-skill demo --list",
     "trace-to-skill demo remote-compact",
     "trace-to-skill demo context-fork-bloat",
+    "trace-to-skill demo subagent-prompt-leakage",
     "trace-to-skill demo windows-helper-path",
     "trace-to-skill demo patch-overwrite",
     "trace-to-skill demo thinking-hang",
@@ -219,6 +226,7 @@ export function renderDemoScenarioList(scenarios = listDemoScenarios()): string 
     "trace-to-skill demo",
     "trace-to-skill demo remote-compact",
     "trace-to-skill demo context-fork-bloat",
+    "trace-to-skill demo subagent-prompt-leakage",
     "trace-to-skill demo windows-helper-path",
     "trace-to-skill demo patch-overwrite",
     "trace-to-skill demo latency-regression",

@@ -9,7 +9,7 @@ Status: **pass**
 | Failed doctor checks | 0 |
 | Critical findings | 0 |
 | Built-in benchmark | pass |
-| Benchmark cases | 36 |
+| Benchmark cases | 37 |
 
 ## Doctor Summary
 
@@ -29,6 +29,7 @@ This benchmark runs the public fixture pack that ships with the repository and p
 | Codex remote compact task failure | `fixtures/codex-remote-compact.md` | 59 | 3 | 0 | `codex_remote_compact`, `context_compaction`, `weak_evidence` | pass |
 | Codex context compaction failure | `fixtures/context-compaction.md` | 59 | 3 | 0 | `codex_remote_compact`, `context_compaction`, `weak_evidence` | pass |
 | Codex conversation fork context bloat | `fixtures/codex-context-fork-bloat.md` | 59 | 3 | 0 | `codex_context_fork_bloat`, `codex_thinking_hang`, `weak_evidence` | pass |
+| Codex subagent prompt leakage or boundary failure | `fixtures/codex-subagent-prompt-leakage.md` | 75 | 2 | 0 | `codex_subagent_prompt_leakage`, `weak_evidence` | pass |
 | Codex latest-turn drift after compaction | `fixtures/codex-latest-turn-drift.md` | 59 | 3 | 0 | `codex_latest_turn_drift`, `premature_completion`, `weak_evidence` | pass |
 | Codex model and runtime latency regression | `fixtures/codex-latency-regression.md` | 75 | 2 | 0 | `codex_latency_regression`, `weak_evidence` | pass |
 | Codex thinking and stream hang | `fixtures/codex-thinking-hang.md` | 75 | 2 | 0 | `codex_thinking_hang`, `weak_evidence` | pass |

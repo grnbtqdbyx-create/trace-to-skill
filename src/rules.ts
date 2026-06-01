@@ -193,6 +193,26 @@ const RULES: RuleDefinition[] = [
     suggestedSkill: "codex-context-fork-bloat-triage"
   },
   {
+    kind: "codex_subagent_prompt_leakage",
+    severity: "high",
+    title: "Codex subagent prompt leakage or boundary failure",
+    why: "Multi-agent Codex workflows rely on child agents receiving the delegated task as isolated user-equivalent input. Assistant/commentary prompt envelopes or sibling prompt leakage make review, QA, and security lanes untrustworthy.",
+    patterns: [
+      /\bspawn_agent\b.{0,180}\bfork_turns["'` ]*[:=]["'` ]*none\b/i,
+      /\bspawn_agent\b.{0,240}\bfork_turns["'` ]*[:=]["'` ]*none\b.{0,240}\b(role=assistant|assistant\/commentary|phase=commentary|commentary JSON envelope|not as a user|not as (?:a )?task)\b/i,
+      /\bfork_turns["'` ]*[:=]["'` ]*none\b.{0,240}\b(initial task|message argument|spawn message|delegated prompt)\b.{0,240}\b(assistant|commentary|envelope|not user|not task)\b/i,
+      /\b(role=assistant|assistant\/commentary|phase=commentary)\b.{0,240}\b(recipient|trigger_turn|spawn_agent|task_name|BLACKBOX|delegated prompt|child rollout)\b/i,
+      /\bparallel (?:child|children|spawns?)\b.{0,240}\b(sibling prompt|prompt envelope|prompt leakage|cross-contaminated|child A|child B|another child)\b/i,
+      /\bsibling (?:child )?prompt\b.{0,240}\b(leak|visible|appears?|included|contamination|child rollout|fork_turns)\b/i,
+      /\bmulti_tool_use\.parallel\b.{0,240}\b(spawn_agent|parallel child|sibling prompt|prompt envelope|leak|contamination)\b/i,
+      /\bwait_agent\b.{0,180}\b(close_agent|completed|completion)\b.{0,220}\b(did not perform|wrong task|generic workspace|AGENTS acknowledgement|ignored assigned task)\b/i,
+      /\b(worker|reviewer|subagent)\b.{0,220}\b(saw|received|included)\b.{0,120}\b(sibling prompt|other child|other agent|prompt envelope)\b/i
+    ],
+    suggestedRule:
+      "When reporting Codex subagent prompt leakage, capture Codex Desktop/app/CLI version, MultiAgentV2 state, OS, model, parent thread id, child thread ids, exact spawn_agent arguments, fork_turns value, role/profile, whether multi_tool_use.parallel or same-turn parallel spawning was used, redacted child rollout line order, first user/task message, assistant/commentary envelope lines, sibling prompt excerpts, wait_agent and close_agent results, whether the child executed tools unexpectedly, and sequential single-child versus parallel-child controls.",
+    suggestedSkill: "codex-subagent-prompt-boundary-triage"
+  },
+  {
     kind: "codex_latest_turn_drift",
     severity: "high",
     title: "Codex responded to an older turn instead of the latest request",

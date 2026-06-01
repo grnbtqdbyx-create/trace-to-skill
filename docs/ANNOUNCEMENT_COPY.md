@@ -82,6 +82,7 @@ trace-to-skill checks repo readiness and scans agent traces/logs to generate:
 - Codex deeplink/OAuth launch detection for `codex://oauth_callback`, notification `type=click&tag`, AppX/MSIX protocol evidence, mobile links, and `codex app <path>` routing regressions
 - Codex app connector auth-cache detection for `401 Reauthentication required`, stale `link_*`, `isAccessible: false`, and external MCP workaround evidence
 - Codex context fork bloat detection for duplicated parent transcript blocks, inflated `input_tokens`, `prompt_cache_key` lineage breaks, cache-hit drops, and `fork_context` subagent history leaking into child context
+- Codex subagent prompt leakage detection for `spawn_agent` with `fork_turns: "none"`, assistant/commentary prompt envelopes, sibling prompt contamination, and wrong-task child completions
 - Codex resource-leak detection for high CPU/GPU/RAM, orphaned shell snapshots, renderer/helper loops, and thinking-animation GPU reports
 - Codex quota mismatch detection for usage-limit, account-switching, reset-time, and rate-limit evidence
 - sensitive-file access detection for `.env`, private keys, package auth files, cloud credentials, local databases, and production secret manifests entering agent context
@@ -102,6 +103,7 @@ npx trace-to-skill demo clipboard-attachment
 npx trace-to-skill demo deeplink-launch
 npx trace-to-skill demo connector-auth-cache
 npx trace-to-skill demo context-fork-bloat
+npx trace-to-skill demo subagent-prompt-leakage
 npx trace-to-skill demo mcp-discovery-mismatch
 npx trace-to-skill demo terminal-output-integrity
 npx trace-to-skill demo subagent-lifecycle

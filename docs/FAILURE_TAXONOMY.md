@@ -128,6 +128,14 @@ Common signals include a forked conversation carrying the full parent transcript
 
 The fix is to capture Codex app/CLI/extension version, surface, model, fork source thread id, forked thread id, fork action timestamp, fork boundary marker, `input_tokens` and `cached_input_tokens` before and after the fork, `prompt_cache_key` before and after, cache hit rate, duplicated parent-turn or tool-transcript examples with line ids, whether new files were read before the token jump, compaction state, subagent or `fork_context` history, minimal reproduction steps, and whether a fresh thread or non-fork continuation avoids the bloat.
 
+## Codex Subagent Prompt Leakage
+
+Codex MultiAgentV2 child agents can fail the task boundary even when the parent asks for isolated children. When `spawn_agent` with `fork_turns: "none"` records the delegated task as an assistant/commentary JSON envelope, or a same-turn parallel child sees a sibling prompt, independent review, QA, and security lanes are no longer independent.
+
+Common signals include `spawn_agent` arguments with `fork_turns: "none"`, the initial child task appearing as `role=assistant` or `phase=commentary`, child rollout lines containing `recipient`, `trigger_turn`, or JSON prompt envelopes, `multi_tool_use.parallel` spawning multiple children in one parent turn, child A seeing child B's prompt, generic AGENTS/workspace acknowledgements instead of the assigned output, unexpected child tool calls from leaked sibling prompts, and `wait_agent` or `close_agent` reporting completion despite the wrong task.
+
+The fix is to capture Codex Desktop/app/CLI version, MultiAgentV2 state, OS, model, parent thread id, child thread ids, exact `spawn_agent` arguments, `fork_turns`, role/profile, whether `multi_tool_use.parallel` or same-turn parallel spawning was used, redacted child rollout line order, first user/task message, assistant/commentary envelope lines, sibling prompt excerpts, `wait_agent` and `close_agent` results, unexpected child tool calls, and sequential single-child versus parallel-child controls.
+
 ## Codex Streamable HTTP MCP
 
 Streamable HTTP and SSE MCP servers can be reachable and still fail inside Codex before or during tool calls. This is different from discovery mismatch because the server may initialize or expose tools, and different from stdio runtime failure because the failure sits in HTTP framing, JSON-RPC parsing, session reuse, auth expectations, or reconnect behavior.

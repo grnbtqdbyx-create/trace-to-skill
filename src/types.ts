@@ -15,6 +15,7 @@ export type FindingKind =
   | "codex_remote_compact"
   | "context_compaction"
   | "codex_context_fork_bloat"
+  | "codex_subagent_prompt_leakage"
   | "codex_latest_turn_drift"
   | "codex_latency_regression"
   | "codex_thinking_hang"
